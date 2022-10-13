@@ -1098,6 +1098,41 @@ bool Shader::validateBuffer(const UniformInfo *info, Buffer *buffer, bool intern
 	return true;
 }
 
+bool Shader::fillUniformReflectionData(UniformInfo &u)
+{
+	const auto &r = validationReflection;
+
+	if (u.baseType == UNIFORM_STORAGETEXTURE)
+	{
+		const auto reflectionit = r.storageTextures.find(u.name);
+		if (reflectionit != r.storageTextures.end())
+		{
+			u.storageTextureFormat = reflectionit->second.format;
+			u.access = reflectionit->second.access;
+			return true;
+		}
+
+		// No reflection info - maybe glslang was better at detecting dead code
+		// than the driver's compiler?
+		return false;
+	}
+	else if (u.baseType == UNIFORM_STORAGEBUFFER)
+	{
+		const auto reflectionit = r.storageBuffers.find(u.name);
+		if (reflectionit != r.storageBuffers.end())
+		{
+			u.bufferStride = reflectionit->second.stride;
+			u.bufferMemberCount = reflectionit->second.memberCount;
+			u.access = reflectionit->second.access;
+			return true;
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
 bool Shader::initialize()
 {
 	return glslang::InitializeProcess();

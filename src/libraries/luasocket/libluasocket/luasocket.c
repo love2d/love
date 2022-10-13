@@ -12,16 +12,6 @@
 * standard Lua read and write functions.
 \*=========================================================================*/
 
-/*=========================================================================*\
-* Standard include files
-\*=========================================================================*/
-#include "lua.h"
-#include "lauxlib.h"
-#include "compat.h"
-
-/*=========================================================================*\
-* LuaSocket includes
-\*=========================================================================*/
 #include "luasocket.h"
 #include "auxiliar.h"
 #include "except.h"
@@ -64,7 +54,7 @@ static luaL_Reg func[] = {
 * Skip a few arguments
 \*-------------------------------------------------------------------------*/
 static int global_skip(lua_State *L) {
-    int amount = luaL_checkinteger(L, 1);
+    int amount = (int) luaL_checkinteger(L, 1);
     int ret = lua_gettop(L) - amount - 1;
     return ret >= 0 ? ret : 0;
 }

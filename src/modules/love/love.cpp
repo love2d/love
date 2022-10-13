@@ -652,7 +652,7 @@ int luaopen_love(lua_State *L)
 #endif
 
 #ifdef LOVE_ENABLE_LUASOCKET
-	love::luasocket::__open(L);
+	love::luasocket::preload(L);
 #endif
 #ifdef LOVE_ENABLE_ENET
 	love::luax_preload(L, luaopen_enet, "enet");

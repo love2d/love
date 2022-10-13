@@ -179,7 +179,6 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	, requestedMSAA(settings.msaa > 1 ? settings.msaa : 0)
 	, samplerState()
 	, graphicsMemorySize(0)
-	, usingDefaultTexture(false)
 {
 	if (slices != nullptr && slices->getMipmapCount() > 0 && slices->getSliceCount() > 0)
 	{
@@ -453,7 +452,7 @@ void Texture::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap
 		throw love::Exception("replacePixels cannot be called on this Texture while it's an active render target.");
 
 	// No effect if the texture hasn't been created yet.
-	if (getHandle() == 0 || usingDefaultTexture)
+	if (getHandle() == 0)
 		return;
 
 	if (d->getFormat() != getPixelFormat())

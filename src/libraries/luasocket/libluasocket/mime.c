@@ -2,13 +2,10 @@
 * MIME support functions
 * LuaSocket toolkit
 \*=========================================================================*/
-#include <string.h>
-
-#include "lua.h"
-#include "lauxlib.h"
-#include "compat.h"
-
+#include "luasocket.h"
 #include "mime.h"
+#include <string.h>
+#include <ctype.h>
 
 /*=========================================================================*\
 * Don't want to trust escape character constants
@@ -30,12 +27,12 @@ static int mime_global_eol(lua_State *L);
 static int mime_global_dot(lua_State *L);
 
 static size_t dot(int c, size_t state, luaL_Buffer *buffer);
-static void b64setup(UC *base);
+/*static void b64setup(UC *base);*/
 static size_t b64encode(UC c, UC *input, size_t size, luaL_Buffer *buffer);
 static size_t b64pad(const UC *input, size_t size, luaL_Buffer *buffer);
 static size_t b64decode(UC c, UC *input, size_t size, luaL_Buffer *buffer);
 
-static void qpsetup(UC *class, UC *unbase);
+/*static void qpsetup(UC *class, UC *unbase);*/
 static void qpquote(UC c, luaL_Buffer *buffer);
 static size_t qpdecode(UC c, UC *input, size_t size, luaL_Buffer *buffer);
 static size_t qpencode(UC c, UC *input, size_t size,
@@ -58,17 +55,111 @@ static luaL_Reg func[] = {
 /*-------------------------------------------------------------------------*\
 * Quoted-printable globals
 \*-------------------------------------------------------------------------*/
-static UC qpclass[256];
-static UC qpbase[] = "0123456789ABCDEF";
-static UC qpunbase[256];
 enum {QP_PLAIN, QP_QUOTED, QP_CR, QP_IF_LAST};
+
+static const UC qpclass[] = {
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_IF_LAST, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_CR, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_IF_LAST, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_QUOTED, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN, QP_PLAIN,
+    QP_PLAIN, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED,
+    QP_QUOTED, QP_QUOTED, QP_QUOTED, QP_QUOTED
+};
+
+static const UC qpbase[] = "0123456789ABCDEF";
+
+static const UC qpunbase[] = {
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 255,
+    255, 255, 255, 255, 255, 255, 10, 11, 12, 13, 14, 15,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 10, 11, 12, 13, 14, 15, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255
+};
 
 /*-------------------------------------------------------------------------*\
 * Base64 globals
 \*-------------------------------------------------------------------------*/
 static const UC b64base[] =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-static UC b64unbase[256];
+
+static const UC b64unbase[] = {
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 62, 255, 255, 255, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 255, 255, 255, 0,
+    255, 255, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+    14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 255, 255,
+    255, 255, 255, 255, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+    36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+    51, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255
+};
 
 /*=========================================================================*\
 * Exported functions
@@ -76,7 +167,7 @@ static UC b64unbase[256];
 /*-------------------------------------------------------------------------*\
 * Initializes module
 \*-------------------------------------------------------------------------*/
-MIME_API int luaopen_mime_core(lua_State *L)
+LUASOCKET_API int luaopen_mime_core(lua_State *L)
 {
     lua_newtable(L);
     luaL_setfuncs(L, func, 0);
@@ -85,8 +176,8 @@ MIME_API int luaopen_mime_core(lua_State *L)
     lua_pushstring(L, MIME_VERSION);
     lua_rawset(L, -3);
     /* initialize lookup tables */
-    qpsetup(qpclass, qpunbase);
-    b64setup(b64unbase);
+    /*qpsetup(qpclass, qpunbase);*/
+    /*b64setup(b64unbase);*/
     return 1;
 }
 
@@ -142,6 +233,7 @@ static int mime_global_wrp(lua_State *L)
     return 2;
 }
 
+#if 0
 /*-------------------------------------------------------------------------*\
 * Fill base64 decode map.
 \*-------------------------------------------------------------------------*/
@@ -151,7 +243,14 @@ static void b64setup(UC *unbase)
     for (i = 0; i <= 255; i++) unbase[i] = (UC) 255;
     for (i = 0; i < 64; i++) unbase[b64base[i]] = (UC) i;
     unbase['='] = 0;
+
+    printf("static const UC b64unbase[] = {\n");
+    for (int i = 0; i < 256; i++) {
+        printf("%d, ", unbase[i]);
+    }
+    printf("\n}\n;");
 }
+#endif
 
 /*-------------------------------------------------------------------------*\
 * Acumulates bytes in input buffer until 3 bytes are available.
@@ -345,12 +444,14 @@ static int mime_global_unb64(lua_State *L)
 * To encode one byte, we need to see the next two.
 * Worst case is when we see a space, and wonder if a CRLF is comming
 \*-------------------------------------------------------------------------*/
+#if 0
 /*-------------------------------------------------------------------------*\
 * Split quoted-printable characters into classes
 * Precompute reverse map for encoding
 \*-------------------------------------------------------------------------*/
 static void qpsetup(UC *cl, UC *unbase)
 {
+
     int i;
     for (i = 0; i < 256; i++) cl[i] = QP_QUOTED;
     for (i = 33; i <= 60; i++) cl[i] = QP_PLAIN;
@@ -367,7 +468,37 @@ static void qpsetup(UC *cl, UC *unbase)
     unbase['c'] = 12; unbase['D'] = 13; unbase['d'] = 13;
     unbase['E'] = 14; unbase['e'] = 14; unbase['F'] = 15;
     unbase['f'] = 15;
+
+printf("static UC qpclass[] = {");
+    for (int i = 0; i < 256; i++) {
+        if (i % 6 == 0) {
+            printf("\n    ");
+        }
+        switch(cl[i]) {
+            case QP_QUOTED:
+                printf("QP_QUOTED, ");
+                break;
+            case QP_PLAIN:
+                printf("QP_PLAIN, ");
+                break;
+            case QP_CR:
+                printf("QP_CR, ");
+                break;
+            case QP_IF_LAST:
+                printf("QP_IF_LAST, ");
+                break;
+        }
+    }
+printf("\n};\n");
+
+printf("static const UC qpunbase[] = {");
+    for (int i = 0; i < 256; i++) {
+        int c = qpunbase[i];
+        printf("%d, ", c);
+    }
+printf("\";\n");
 }
+#endif
 
 /*-------------------------------------------------------------------------*\
 * Output one character in form =XX
@@ -447,7 +578,6 @@ static size_t qppad(UC *input, size_t size, luaL_Buffer *buffer)
 \*-------------------------------------------------------------------------*/
 static int mime_global_qp(lua_State *L)
 {
-
     size_t asize = 0, isize = 0;
     UC atom[3];
     const UC *input = (const UC *) luaL_optlstring(L, 1, NULL, &isize);
@@ -654,7 +784,7 @@ static int eolprocess(int c, int last, const char *marker,
 \*-------------------------------------------------------------------------*/
 static int mime_global_eol(lua_State *L)
 {
-    int ctx = luaL_checkinteger(L, 1);
+    int ctx = (int) luaL_checkinteger(L, 1);
     size_t isize = 0;
     const char *input = luaL_optlstring(L, 2, NULL, &isize);
     const char *last = input + isize;
@@ -689,6 +819,7 @@ static size_t dot(int c, size_t state, luaL_Buffer *buffer)
         case '.':
             if (state == 2)
                 luaL_addchar(buffer, '.');
+            /* Falls through. */
         default:
             return 0;
     }
