@@ -148,7 +148,7 @@ This distribution contains code from the following projects (full license text b
 	Copyright (c) 2017-2022 Advanced Micro Devices, Inc.
 
  - volk
-    Website: https://github.com/zeux/volk
+	Website: https://github.com/zeux/volk
 	License: MIT/Expat
 	Copyright (c) 2018-2022 Arseny Kapoulkine
 
