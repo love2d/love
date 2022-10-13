@@ -947,7 +947,7 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 	dirtyRenderState = 0;
 }
 
-void Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::graphics::Shader *shader)
+bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::graphics::Shader *shader)
 {
 	Shader *s = (Shader *)shader;
 
@@ -982,6 +982,8 @@ void Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 
 	uniformBufferOffset += alignUp(size, alignment);
 
+	bool allWritableVariablesSet = true;
+
 	for (const Shader::TextureBinding &b : s->getTextureBindings())
 	{
 		id<MTLTexture> texture = b.texture;
@@ -991,7 +993,12 @@ void Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 		uint8 sampindex = b.samplerStages[SHADERSTAGE_COMPUTE];
 
 		if (texindex != LOVE_UINT8_MAX)
+		{
 			setTexture(encoder, bindings, texindex, texture);
+			if ((b.access & Shader::ACCESS_WRITE) != 0 && texture == nil)
+				allWritableVariablesSet = false;
+		}
+		
 		if (sampindex != LOVE_UINT8_MAX)
 			setSampler(encoder, bindings, sampindex, samplertex);
 	}
@@ -1000,8 +1007,14 @@ void Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 	{
 		uint8 index = b.stages[SHADERSTAGE_COMPUTE];
 		if (index != LOVE_UINT8_MAX)
+		{
 			setBuffer(encoder, bindings, index, b.buffer, 0);
+			if ((b.access & Shader::ACCESS_WRITE) != 0 && b.buffer == nil)
+				allWritableVariablesSet = false;
+		}
 	}
+
+	return allWritableVariablesSet;
 }
 
 void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader, love::graphics::Texture *maintex)
@@ -1299,7 +1312,8 @@ bool Graphics::dispatch(int x, int y, int z)
 
 	id<MTLComputeCommandEncoder> computeEncoder = useComputeEncoder();
 
-	applyShaderUniforms(computeEncoder, shader);
+	if (!applyShaderUniforms(computeEncoder, shader))
+		return false;
 
 	// TODO: track this state?
 	[computeEncoder setComputePipelineState:pipeline];

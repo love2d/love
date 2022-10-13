@@ -455,12 +455,104 @@ void Shader::buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv
 	}
 }
 
+void Shader::addImage(const spirv_cross::CompilerMSL &msl, const spirv_cross::Resource &resource, UniformType baseType)
+{
+	using namespace spirv_cross;
+
+	const SPIRType &basetype = msl.get_type(resource.base_type_id);
+	const SPIRType &type = msl.get_type(resource.type_id);
+	const SPIRType &imagetype = msl.get_type(basetype.image.type);
+
+	UniformInfo u = {};
+	u.baseType = baseType;
+	u.name = resource.name;
+	u.count = type.array.empty() ? 1 : type.array[0];
+	u.isDepthSampler = type.image.depth;
+	u.components = 1;
+
+	auto it = uniforms.find(u.name);
+	if (it != uniforms.end())
+		return;
+
+	if (!fillUniformReflectionData(u))
+		return;
+
+	switch (imagetype.basetype)
+	{
+	case SPIRType::Float:
+		u.dataBaseType = DATA_BASETYPE_FLOAT;
+		break;
+	case SPIRType::Int:
+		u.dataBaseType = DATA_BASETYPE_INT;
+		break;
+	case SPIRType::UInt:
+		u.dataBaseType = DATA_BASETYPE_UINT;
+		break;
+	default:
+		break;
+	}
+
+	switch (basetype.image.dim)
+	{
+	case spv::Dim2D:
+		u.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
+		u.textures = new love::graphics::Texture*[u.count];
+		break;
+	case spv::Dim3D:
+		u.textureType = TEXTURE_VOLUME;
+		u.textures = new love::graphics::Texture*[u.count];
+		break;
+	case spv::DimCube:
+		if (basetype.image.arrayed)
+			throw love::Exception("Cubemap Arrays are not currently supported.");
+		u.textureType = TEXTURE_CUBE;
+		u.textures = new love::graphics::Texture*[u.count];
+		break;
+	case spv::DimBuffer:
+		u.baseType = UNIFORM_TEXELBUFFER;
+		u.buffers = new love::graphics::Buffer*[u.count];
+		break;
+	default:
+		// TODO: error? continue?
+		break;
+	}
+
+	u.dataSize = sizeof(int) * u.count;
+	u.data = malloc(u.dataSize);
+	for (int i = 0; i < u.count; i++)
+		u.ints[i] = -1; // Initialized below, after compiling.
+
+	if (u.baseType == UNIFORM_SAMPLER)
+	{
+		auto tex = Graphics::getInstance()->getDefaultTexture(u.textureType);
+		for (int i = 0; i < u.count; i++)
+		{
+			tex->retain();
+			u.textures[i] = tex;
+		}
+	}
+	else if (u.baseType == UNIFORM_TEXELBUFFER)
+	{
+		for (int i = 0; i < u.count; i++)
+			u.buffers[i] = nullptr; // TODO
+	}
+	else if (u.baseType == UNIFORM_STORAGETEXTURE)
+	{
+		for (int i = 0; i < u.count; i++)
+			u.textures[i] = nullptr;
+	}
+
+	uniforms[u.name] = u;
+
+	BuiltinUniform builtin;
+	if (getConstant(resource.name.c_str(), builtin))
+		builtinUniformInfo[builtin] = &uniforms[u.name];
+}
+
 void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program)
 {
 	using namespace glslang;
 	using namespace spirv_cross;
-
-	auto gfx = Graphics::getInstance();
 
 	std::map<std::string, int> varyings;
 	int nextVaryingLocation = 0;
@@ -499,84 +591,14 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 
 			ShaderResources resources = msl.get_shader_resources();
 
+			for (const auto &resource : resources.storage_images)
+			{
+				addImage(msl, resource, UNIFORM_STORAGETEXTURE);
+			}
+
 			for (const auto &resource : resources.sampled_images)
 			{
-				const SPIRType &basetype = msl.get_type(resource.base_type_id);
-				const SPIRType &type = msl.get_type(resource.type_id);
-				const SPIRType &imagetype = msl.get_type(basetype.image.type);
-
-				UniformInfo u = {};
-				u.baseType = UNIFORM_SAMPLER;
-				u.name = resource.name;
-				u.count = type.array.empty() ? 1 : type.array[0];
-				u.isDepthSampler = type.image.depth;
-				u.components = 1;
-
-				switch (imagetype.basetype)
-				{
-				case SPIRType::Float:
-					u.dataBaseType = DATA_BASETYPE_FLOAT;
-					break;
-				case SPIRType::Int:
-					u.dataBaseType = DATA_BASETYPE_INT;
-					break;
-				case SPIRType::UInt:
-					u.dataBaseType = DATA_BASETYPE_UINT;
-					break;
-				default:
-					break;
-				}
-
-				switch (basetype.image.dim)
-				{
-				case spv::Dim2D:
-					u.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
-					u.textures = new love::graphics::Texture*[u.count];
-					break;
-				case spv::Dim3D:
-					u.textureType = TEXTURE_VOLUME;
-					u.textures = new love::graphics::Texture*[u.count];
-					break;
-				case spv::DimCube:
-					if (basetype.image.arrayed)
-						throw love::Exception("Cubemap Arrays are not currently supported.");
-					u.textureType = TEXTURE_CUBE;
-					u.textures = new love::graphics::Texture*[u.count];
-					break;
-				case spv::DimBuffer:
-					u.baseType = UNIFORM_TEXELBUFFER;
-					u.buffers = new love::graphics::Buffer*[u.count];
-					break;
-				default:
-					// TODO: error? continue?
-					break;
-				}
-
-				u.dataSize = sizeof(int) * u.count;
-				u.data = malloc(u.dataSize);
-				for (int i = 0; i < u.count; i++)
-					u.ints[i] = -1; // Initialized below, after compiling.
-
-				if (u.baseType == UNIFORM_SAMPLER)
-				{
-					auto tex = gfx->getDefaultTexture(u.textureType);
-					for (int i = 0; i < u.count; i++)
-					{
-						tex->retain();
-						u.textures[i] = tex;
-					}
-				}
-				else if (u.baseType == UNIFORM_TEXELBUFFER)
-				{
-					for (int i = 0; i < u.count; i++)
-						u.buffers[i] = nullptr; // TODO
-				}
-
-				uniforms[u.name] = u;
-
-				BuiltinUniform builtin;
-				if (getConstant(resource.name.c_str(), builtin))
-					builtinUniformInfo[builtin] = &uniforms[u.name];
+				addImage(msl, resource, UNIFORM_SAMPLER);
 			}
 
 			for (const auto &resource : resources.uniform_buffers)
@@ -639,19 +661,8 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 				u.name = resource.name;
 				u.count = type.array.empty() ? 1 : type.array[0];
 
-				const auto reflectionit = validationReflection.storageBuffers.find(u.name);
-				if (reflectionit != validationReflection.storageBuffers.end())
-				{
-					u.bufferStride = reflectionit->second.stride;
-					u.bufferMemberCount = reflectionit->second.memberCount;
-					u.access = reflectionit->second.access;
-				}
-				else
-				{
-					// No reflection info - maybe glslang was better at detecting
-					// dead code than the driver's compiler?
+				if (!fillUniformReflectionData(u))
 					continue;
-				}
 
 				u.buffers = new love::graphics::Buffer*[u.count];
 				u.dataSize = sizeof(int) * u.count;
@@ -741,11 +752,11 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 
 			functions[stageindex] = [library newFunctionWithName:library.functionNames[0]];
 
-			for (const auto &resource : resources.sampled_images)
+			auto setTextureBinding = [this](CompilerMSL &msl, int stageindex, const spirv_cross::Resource &resource) -> void
 			{
 				auto it = uniforms.find(resource.name);
 				if (it == uniforms.end())
-					continue;
+					return;
 
 				UniformInfo &u = it->second;
 
@@ -753,7 +764,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 				uint32 samplerbinding = msl.get_automatic_msl_resource_binding_secondary(resource.id);
 
 				if (texturebinding == (uint32)-1)
-					continue;
+					return;
 
 				for (int i = 0; i < u.count; i++)
 				{
@@ -761,6 +772,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 					{
 						u.ints[i] = (int)textureBindings.size();
 						TextureBinding b = {};
+						b.access = u.access;
 
 						if (u.baseType == UNIFORM_TEXELBUFFER)
 						{
@@ -788,6 +800,16 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 					b.textureStages[stageindex] = (uint8) texturebinding;
 					b.samplerStages[stageindex] = (uint8) samplerbinding;
 				}
+			};
+
+			for (const auto &resource : resources.sampled_images)
+			{
+				setTextureBinding(msl, stageindex, resource);
+			}
+
+			for (const auto &resource : resources.storage_images)
+			{
+				setTextureBinding(msl, stageindex, resource);
 			}
 
 			for (const auto &resource : resources.storage_buffers)
@@ -808,6 +830,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 					{
 						u.ints[i] = (int)bufferBindings.size();
 						BufferBinding b = {};
+						b.access = u.access;
 
 						for (uint8 &stagebinding : b.stages)
 							stagebinding = LOVE_UINT8_MAX;
@@ -841,7 +864,7 @@ Shader::~Shader()
 	for (const auto &it : uniforms)
 	{
 		const auto &u = it.second;
-		if (u.baseType == UNIFORM_SAMPLER)
+		if (u.baseType == UNIFORM_SAMPLER || u.baseType == UNIFORM_STORAGETEXTURE)
 		{
 			free(u.data);
 			for (int i = 0; i < u.count; i++)
@@ -940,7 +963,7 @@ void Shader::updateUniform(const UniformInfo *info, int count)
 
 void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)
 { @autoreleasepool {
-	if (info->baseType != UNIFORM_SAMPLER)
+	if (info->baseType != UNIFORM_SAMPLER && info->baseType != UNIFORM_STORAGETEXTURE)
 		return;
 
 	if (current == this)

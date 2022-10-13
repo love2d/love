@@ -1479,6 +1479,12 @@ set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 	src/libraries/luasocket/libluasocket/udp.c
 	src/libraries/luasocket/libluasocket/udp.h
 	src/libraries/luasocket/libluasocket/url.lua.h
+	src/libraries/luasocket/libluasocket/unix.c
+	src/libraries/luasocket/libluasocket/unix.h
+	src/libraries/luasocket/libluasocket/unixdgram.c
+	src/libraries/luasocket/libluasocket/unixdgram.h
+	src/libraries/luasocket/libluasocket/unixstream.c
+	src/libraries/luasocket/libluasocket/unixstream.h
 )
 
 set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET)
@@ -1498,12 +1504,6 @@ else()
 	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
 		src/libraries/luasocket/libluasocket/serial.c
-		src/libraries/luasocket/libluasocket/unix.c
-		src/libraries/luasocket/libluasocket/unix.h
-		src/libraries/luasocket/libluasocket/unixtcp.c
-		src/libraries/luasocket/libluasocket/unixtcp.h
-		src/libraries/luasocket/libluasocket/unixudp.c
-		src/libraries/luasocket/libluasocket/unixudp.h
 		src/libraries/luasocket/libluasocket/usocket.c
 		src/libraries/luasocket/libluasocket/usocket.h
 	)
