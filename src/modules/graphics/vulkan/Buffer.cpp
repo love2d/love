@@ -148,8 +148,25 @@ ptrdiff_t Buffer::getTexelBufferHandle() const
 
 void *Buffer::map(MapType map, size_t offset, size_t size)
 {
+	if (size == 0)
+		return nullptr;
+
+	if (map == MAP_WRITE_INVALIDATE && (isImmutable() || dataUsage == BUFFERDATAUSAGE_READBACK))
+		return nullptr;
+
+	if (map == MAP_READ_ONLY && dataUsage != BUFFERDATAUSAGE_READBACK)
+		return  nullptr;
+
+	mappedRange = Range(offset, size);
+
+	if (!Range(0, getSize()).contains(mappedRange))
+		return nullptr;
+
 	if (dataUsage == BUFFERDATAUSAGE_READBACK)
 	{
+		if (!coherent)
+			vmaInvalidateAllocation(allocator, allocation, offset, size);
+
 		char *data = (char*)allocInfo.pMappedData;
 		return (void*) (data + offset);
 	}
@@ -166,8 +183,6 @@ void *Buffer::map(MapType map, size_t offset, size_t size)
 
 		if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAllocation, &stagingAllocInfo) != VK_SUCCESS)
 			throw love::Exception("failed to create staging buffer");
-
-		mappedRange = Range(offset, size);
 
 		return stagingAllocInfo.pMappedData;
 	}
