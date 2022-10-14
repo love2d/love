@@ -220,7 +220,7 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 
 		VkMemoryPropertyFlags memoryProperties;
 		vmaGetAllocationMemoryProperties(allocator, fillAllocation, &memoryProperties);
-		if (!(memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+		if (~memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
 			vmaFlushAllocation(allocator, fillAllocation, 0, size);
 
 		VkBufferCopy bufferCopy{};
@@ -239,12 +239,7 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 
 void Buffer::unmap(size_t usedoffset, size_t usedsize)
 {
-	if (dataUsage == BUFFERDATAUSAGE_READBACK)
-	{
-		if (!coherent)
-			vmaFlushAllocation(allocator, allocation, usedoffset, usedsize);
-	}
-	else
+	if (dataUsage != BUFFERDATAUSAGE_READBACK)
 	{
 		VkBufferCopy bufferCopy{};
 		bufferCopy.srcOffset = usedoffset - mappedRange.getOffset();
@@ -253,7 +248,7 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 
 		VkMemoryPropertyFlags memoryProperties;
 		vmaGetAllocationMemoryProperties(allocator, stagingAllocation, &memoryProperties);
-		if (!(memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+		if (~memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
 			vmaFlushAllocation(allocator, stagingAllocation, bufferCopy.srcOffset, usedsize);
 
 		vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), stagingBuffer, buffer, 1, &bufferCopy);
