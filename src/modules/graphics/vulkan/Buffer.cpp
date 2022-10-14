@@ -190,50 +190,46 @@ void *Buffer::map(MapType map, size_t offset, size_t size)
 
 bool Buffer::fill(size_t offset, size_t size, const void *data)
 {
-	if (dataUsage == BUFFERDATAUSAGE_READBACK)
-	{
-		void *dst = (void*)((char*)allocInfo.pMappedData + offset);
-		memcpy(dst, data, size);
+	if (size == 0 || isImmutable() || dataUsage == BUFFERDATAUSAGE_READBACK)
+		return false;
 
-		if (!coherent)
-			vmaFlushAllocation(allocator, allocation, offset, size);
-	}
-	else
-	{
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
-		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	if (!Range(0, getSize()).contains(Range(offset, size)))
+		return false;
 
-		VmaAllocationCreateInfo allocInfo{};
-		allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
-		allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	VkBufferCreateInfo bufferInfo{};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = size;
+	bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-		VkBuffer fillBuffer;
-		VmaAllocation fillAllocation;
-		VmaAllocationInfo fillAllocInfo;
+	VmaAllocationCreateInfo allocInfo{};
+	allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+	allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-		if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &fillBuffer, &fillAllocation, &fillAllocInfo) != VK_SUCCESS)
-			throw love::Exception("failed to create fill buffer");
+	VkBuffer fillBuffer;
+	VmaAllocation fillAllocation;
+	VmaAllocationInfo fillAllocInfo;
 
-		memcpy(fillAllocInfo.pMappedData, data, size);
+	if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &fillBuffer, &fillAllocation, &fillAllocInfo) != VK_SUCCESS)
+		throw love::Exception("failed to create fill buffer");
 
-		VkMemoryPropertyFlags memoryProperties;
-		vmaGetAllocationMemoryProperties(allocator, fillAllocation, &memoryProperties);
-		if (~memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
-			vmaFlushAllocation(allocator, fillAllocation, 0, size);
+	memcpy(fillAllocInfo.pMappedData, data, size);
 
-		VkBufferCopy bufferCopy{};
-		bufferCopy.srcOffset = 0;
-		bufferCopy.dstOffset = offset;
-		bufferCopy.size = size;
+	VkMemoryPropertyFlags memoryProperties;
+	vmaGetAllocationMemoryProperties(allocator, fillAllocation, &memoryProperties);
+	if (~memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+		vmaFlushAllocation(allocator, fillAllocation, 0, size);
 
-		vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), fillBuffer, buffer, 1, &bufferCopy);
+	VkBufferCopy bufferCopy{};
+	bufferCopy.srcOffset = 0;
+	bufferCopy.dstOffset = offset;
+	bufferCopy.size = size;
 
-		vgfx->queueCleanUp([allocator = allocator, fillBuffer = fillBuffer, fillAllocation = fillAllocation]() {
-			vmaDestroyBuffer(allocator, fillBuffer, fillAllocation);
-		});
-	}
+	vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), fillBuffer, buffer, 1, &bufferCopy);
+
+	vgfx->queueCleanUp([allocator = allocator, fillBuffer = fillBuffer, fillAllocation = fillAllocation]() {
+		vmaDestroyBuffer(allocator, fillBuffer, fillAllocation);
+	});
+
 	return true;
 }
 
