@@ -37,20 +37,20 @@ jobs:
         path: love-${{ github.sha }}.AppImage
   windows-os:
     runs-on: windows-latest
+    shell: cmd
     strategy:
       matrix:
         platform: [Win32, x64]
         install: [compat, modern]
         include:
-          - platform: Win32
-            arch: x86
-          - platform: x64
-            arch: x64
-            upload_jitmodules: true
-          - install: compat
-            compatdef: -DLOVE_INSTALL_UCRT=ON
-            compatname: -compat
-
+        - platform: Win32
+          arch: x86
+        - platform: x64
+          arch: x64
+          upload_jitmodules: true
+        - install: compat
+          compatdef: -DLOVE_INSTALL_UCRT=ON
+          compatname: -compat
     steps:
     - name: Clone Megasource
       uses: actions/checkout@v2
@@ -69,12 +69,10 @@ jobs:
         vulkan-components: Vulkan-Headers, Vulkan-Loader
         vulkan-use-cache: true
     - name: Configure
-      shell: cmd
       env:
         PLATFORM: ${{ matrix.platform }}
       run: cmake -Bbuild -Hmegasource -T v142 -A %PLATFORM% ${{ matrix.compatdef }} -DCMAKE_INSTALL_PREFIX=%CD%\install
     - name: Install
-      shell: cmd
       run: cmake --build build --target PACKAGE --config Release -j2
     - name: Artifact
       uses: actions/upload-artifact@v2
