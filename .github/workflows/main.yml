@@ -37,7 +37,6 @@ jobs:
         path: love-${{ github.sha }}.AppImage
   windows-os:
     runs-on: windows-latest
-    shell: cmd
     strategy:
       matrix:
         platform: [Win32, x64, ARM64]
@@ -45,6 +44,9 @@ jobs:
         exclude:
         - platform: ARM64
           install: compat
+    defaults:
+      run:
+        shell: cmd
     continue-on-error: ${{ matrix.platform == 'ARM64' }}
     steps:
     - name: Define Variables
