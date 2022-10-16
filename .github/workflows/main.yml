@@ -21,6 +21,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: MikuAuahDark/love-appimage-source
+        ref: 12.x
     - name: Checkout LÖVE
       uses: actions/checkout@v2
       with:
