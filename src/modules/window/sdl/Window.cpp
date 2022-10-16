@@ -262,11 +262,9 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 		}
 	}
 
-	if (!preferGLES)
-	{
-		const char *gleshint = SDL_GetHint("LOVE_GRAPHICS_USE_OPENGLES");
+	const char *gleshint = SDL_GetHint("LOVE_GRAPHICS_USE_OPENGLES");
+	if (gleshint != nullptr)
 		preferGLES = (gleshint != nullptr && gleshint[0] != '0');
-	}
 
 	// Do we want a debug context?
 	bool debug = love::graphics::isDebugEnabled();
