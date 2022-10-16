@@ -54,18 +54,18 @@ jobs:
       run: |
         rem Compat/Modern switch
         if "${{ matrix.install }}" == "compat" (
-          echo moredef=-DLOVE_INSTALL_UCRT=ON >> "%GITHUB_OUTPUT%"
-          echo compatname=-compat >> "%GITHUB_OUTPUT%"
+          echo moredef=-DLOVE_INSTALL_UCRT=ON>> "%GITHUB_OUTPUT%"
+          echo compatname=-compat>> "%GITHUB_OUTPUT%"
         ) else (
-          echo moredef= >> "%GITHUB_OUTPUT%"
-          echo compatname= >> "%GITHUB_OUTPUT%"
+          echo moredef=>> "%GITHUB_OUTPUT%"
+          echo compatname=>> "%GITHUB_OUTPUT%"
         )
         
         rem JIT Modules
         if "${{ matrix.platform }}-${{ matrix.install }}" == "x64-modern" (
-          echo jitmodules=1 >> "%GITHUB_OUTPUT%"
+          (echo jitmodules=1)>> "%GITHUB_OUTPUT%"
         ) else (
-          echo jitmodules=0 >> "%GITHUB_OUTPUT%"
+          (echo jitmodules=0)>> "%GITHUB_OUTPUT%"
         )
         
         rem Architecture-Specific Switch
@@ -73,22 +73,22 @@ jobs:
         exit /b 1
         
         :Win32
-        echo arch=x86 >> "%GITHUB_OUTPUT%"
-        echo angle=0 >> "%GITHUB_OUTPUT%"
-        echo nofiles=warn >> "%GITHUB_OUTPUT%"
+        (echo arch=x86)>> "%GITHUB_OUTPUT%"
+        (echo angle=0)>> "%GITHUB_OUTPUT%"
+        echo nofiles=warn>> "%GITHUB_OUTPUT%"
         exit /b 0
         
         :x64
-        echo arch=x64 >> "%GITHUB_OUTPUT%"
-        echo angle=0 >> "%GITHUB_OUTPUT%"
-        echo nofiles=warn >> "%GITHUB_OUTPUT%"
+        (echo arch=x64)>> "%GITHUB_OUTPUT%"
+        (echo angle=0)>> "%GITHUB_OUTPUT%"
+        echo nofiles=warn>> "%GITHUB_OUTPUT%"
         exit /b 0
         
         :ARM64
-        echo arch=arm64 >> "%GITHUB_OUTPUT%"
-        echo angle=1 >> "%GITHUB_OUTPUT%"
-        echo nofiles=ignore >> "%GITHUB_OUTPUT%"
-        echo moredef=-DLOVE_EXTRA_DLLS=%CD%\angle\libEGL.dll;%CD%\angle\libGLESv2.dll
+        (echo arch=arm64)>> "%GITHUB_OUTPUT%"
+        (echo angle=1)>> "%GITHUB_OUTPUT%"
+        echo nofiles=ignore>> "%GITHUB_OUTPUT%"
+        echo moredef=-DLOVE_EXTRA_DLLS=%CD%\angle\libEGL.dll;%CD%\angle\libGLESv2.dll>> "%GITHUB_OUTPUT%"
         exit /b 0
     - name: Clone Megasource
       uses: actions/checkout@v3
