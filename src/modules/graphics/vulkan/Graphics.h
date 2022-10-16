@@ -365,9 +365,10 @@ private:
 	VkSampler createSampler(const SamplerState &sampler);
 	void cleanupUnusedObjects();
 
-	uint32_t vulkanApiVersion = VK_VERSION_1_0;
+	uint32_t instanceVersion = VK_API_VERSION_1_0;
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	uint32_t deviceApiVersion = VK_API_VERSION_1_0;
 	bool windowHasStencil = false;
 	int requestedMsaa = 0;
 	VkDevice device = VK_NULL_HANDLE; 

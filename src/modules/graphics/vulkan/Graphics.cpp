@@ -82,7 +82,7 @@ Graphics::Graphics()
 
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
 
-	vulkanApiVersion = volkGetInstanceVersion();
+	instanceVersion = volkGetInstanceVersion();
 }
 
 Graphics::~Graphics()
@@ -1295,7 +1295,7 @@ void Graphics::createVulkanInstance()
 	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	// get this version from somewhere else?
 	appInfo.pEngineName = "LOVE Game Framework";
 	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
-	appInfo.apiVersion = vulkanApiVersion;
+	appInfo.apiVersion = instanceVersion;
 
 	VkInstanceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -1330,11 +1330,6 @@ void Graphics::createVulkanInstance()
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
 	}
-	else
-	{
-		createInfo.enabledLayerCount = 0;
-		createInfo.ppEnabledLayerNames = nullptr;
-	}
 
 	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
 		throw love::Exception("couldn't create vulkan instance");
@@ -1354,12 +1349,14 @@ bool Graphics::checkValidationSupport()
 	{
 		bool layerFound = false;
 
-		for (const auto &layerProperties : availableLayers)
+		for (const auto& layerProperties : availableLayers)
+		{
 			if (strcmp(layerName, layerProperties.layerName) == 0)
 			{
 				layerFound = true;
 				break;
 			}
+		}
 
 		if (!layerFound)
 			return false;
@@ -1395,6 +1392,7 @@ void Graphics::pickPhysicalDevice()
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 	minUniformBufferOffsetAlignment = properties.limits.minUniformBufferOffsetAlignment;
+	deviceApiVersion = properties.apiVersion;
 
 	msaaSamples = getMsaaCount(requestedMsaa);
 }
@@ -1556,7 +1554,7 @@ void Graphics::createLogicalDevice()
 		optionalDeviceFeatures.memoryBudget = false;
 	if (optionalDeviceFeatures.spirv14 && !optionalDeviceFeatures.shaderFloatControls)
 		optionalDeviceFeatures.spirv14 = false;
-	if (optionalDeviceFeatures.spirv14 && vulkanApiVersion < VK_API_VERSION_1_1)
+	if (optionalDeviceFeatures.spirv14 && deviceApiVersion < VK_API_VERSION_1_1)
 		optionalDeviceFeatures.spirv14 = false;
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
@@ -1584,7 +1582,7 @@ void Graphics::createLogicalDevice()
 		enabledExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
 	if (optionalDeviceFeatures.spirv14)
 		enabledExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
-	if (vulkanApiVersion >= VK_API_VERSION_1_1)
+	if (deviceApiVersion >= VK_API_VERSION_1_1)
 		enabledExtensions.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
@@ -1595,8 +1593,6 @@ void Graphics::createLogicalDevice()
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = validationLayers.data();
 	}
-	else
-		createInfo.enabledLayerCount = 0;
 
 	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures{};
 	extendedDynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
@@ -1617,7 +1613,7 @@ void Graphics::createLogicalDevice()
 void Graphics::initVMA()
 {
 	VmaAllocatorCreateInfo allocatorCreateInfo = {};
-	allocatorCreateInfo.vulkanApiVersion = vulkanApiVersion;
+	allocatorCreateInfo.vulkanApiVersion = deviceApiVersion;
 	allocatorCreateInfo.physicalDevice = physicalDevice;
 	allocatorCreateInfo.device = device;
 	allocatorCreateInfo.instance = instance;
