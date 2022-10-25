@@ -2335,6 +2335,8 @@ int w_getBackgroundColor(lua_State *L)
 
 int w_setNewFont(lua_State *L)
 {
+	luax_markdeprecated(L, 1, "love.graphics.setNewFont", API_FUNCTION, DEPRECATED_NO_REPLACEMENT, nullptr);
+
 	int ret = w_newFont(L);
 	Font *font = luax_checktype<Font>(L, -1);
 	instance()->setFont(font);

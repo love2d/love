@@ -53,11 +53,14 @@ else()
 	set(LOVE_TARGET_PLATFORM x86)
 endif()
 
-if(APPLE)
-	option(LOVE_JIT "Use LuaJIT" FALSE)
+
+if(APPLE OR MEGA_ARM64)
+	set(LOVE_DEFAULT_JIT FALSE)
 else()
-	option(LOVE_JIT "Use LuaJIT" TRUE)
+	set(LOVE_DEFAULT_JIT TRUE)
 endif()
+
+option(LOVE_JIT "Use LuaJIT" ${LOVE_DEFAULT_JIT})
 
 if(LOVE_JIT)
 	if(APPLE)
@@ -119,12 +122,16 @@ if(MEGA)
 		${MEGA_OPENAL}
 	)
 
+	# LOVE_EXTRA_DLLS are non-runtime DLLs which should be bundled with the
+	# love binary in installers, etc. It's only needed for external
+	# (non-CMake) targets, i.e. LuaJIT.
+	if(NOT DEFINED LOVE_EXTRA_DLLS)
+		set(LOVE_EXTRA_DLLS)
+	endif()
+
 	if(LOVE_JIT)
 		set(LOVE_LUA_LIBRARY ${MEGA_LUAJIT_LIB})
-		# LOVE_EXTRA_DLLS are non-runtime DLLs which should be bundled with the
-		# love binary in installers, etc. It's only needed for external
-		# (non-CMake) targets, i.e. LuaJIT.
-		set(LOVE_EXTRA_DLLS ${MEGA_LUAJIT_DLL})
+		set(LOVE_EXTRA_DLLS ${LOVE_EXTRA_DLLS} ${MEGA_LUAJIT_DLL})
 		set(LOVE_EXTRA_DEPENDECIES luajit)
 
 		set(LOVE_INCLUDE_DIRS
@@ -1996,6 +2003,14 @@ message(STATUS "Version: ${LOVE_VERSION_STR}")
 ###################################
 install(TARGETS ${LOVE_EXE_NAME} ${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME} RUNTIME DESTINATION .)
 
+# Our install script (and NSIS) doesn't fully support Windows ARM64 yet.
+if(MEGA_ARM64)
+	set(CPACK_GENERATOR ZIP)
+	set(CPACK_SYSTEM_NAME woa64)
+else()
+	set(CPACK_GENERATOR ZIP NSIS)
+endif()
+
 # Extra DLLs.
 if(LOVE_EXTRA_DLLS)
 	foreach(DLL ${LOVE_EXTRA_DLLS})
@@ -2038,7 +2053,6 @@ install(FILES
 		${CMAKE_CURRENT_SOURCE_DIR}/extra/nsis/game.ico
 		DESTINATION .)
 
-set(CPACK_GENERATOR ZIP NSIS)
 set(CPACK_PACKAGE_NAME "love")
 set(CPACK_PACKAGE_VENDOR "love2d.org")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "LOVE -- It's awesome")

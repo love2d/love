@@ -17,11 +17,12 @@ jobs:
                                           libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
                                           libsndio-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev
     - name: Checkout love-appimage-source
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: MikuAuahDark/love-appimage-source
+        ref: 12.x
     - name: Checkout LÖVE
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: love2d-${{ github.sha }}
     - name: Build AppImage
@@ -29,7 +30,7 @@ jobs:
     - name: Print LuaJIT branch
       run: git -C LuaJIT-v2.1 branch -v
     - name: Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: love-linux-x86_64.AppImage
         path: love-${{ github.sha }}.AppImage
@@ -37,47 +38,96 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        platform: [Win32, x64]
+        platform: [Win32, x64, ARM64]
         install: [compat, modern]
-        include:
-          - platform: Win32
-            arch: x86
-          - platform: x64
-            arch: x64
-            upload_jitmodules: true
-          - install: compat
-            compatdef: -DLOVE_INSTALL_UCRT=ON
-            compatname: -compat
-
+        exclude:
+        - platform: ARM64
+          install: compat
+    defaults:
+      run:
+        shell: cmd
+    continue-on-error: ${{ matrix.platform == 'ARM64' }}
     steps:
+    - name: Define Variables
+      id: vars
+      run: |
+        rem Compat/Modern switch
+        if "${{ matrix.install }}" == "compat" (
+          echo moredef=-DLOVE_INSTALL_UCRT=ON>> "%GITHUB_OUTPUT%"
+          echo compatname=-compat>> "%GITHUB_OUTPUT%"
+        ) else (
+          echo moredef=>> "%GITHUB_OUTPUT%"
+          echo compatname=>> "%GITHUB_OUTPUT%"
+        )
+        
+        rem JIT Modules
+        if "${{ matrix.platform }}-${{ matrix.install }}" == "x64-modern" (
+          (echo jitmodules=1)>> "%GITHUB_OUTPUT%"
+        ) else (
+          (echo jitmodules=0)>> "%GITHUB_OUTPUT%"
+        )
+        
+        rem Architecture-Specific Switch
+        goto ${{ matrix.platform }}
+        exit /b 1
+        
+        :Win32
+        (echo arch=x86)>> "%GITHUB_OUTPUT%"
+        (echo angle=0)>> "%GITHUB_OUTPUT%"
+        echo nofiles=warn>> "%GITHUB_OUTPUT%"
+        exit /b 0
+        
+        :x64
+        (echo arch=x64)>> "%GITHUB_OUTPUT%"
+        (echo angle=0)>> "%GITHUB_OUTPUT%"
+        echo nofiles=warn>> "%GITHUB_OUTPUT%"
+        exit /b 0
+        
+        :ARM64
+        (echo arch=arm64)>> "%GITHUB_OUTPUT%"
+        (echo angle=1)>> "%GITHUB_OUTPUT%"
+        echo nofiles=ignore>> "%GITHUB_OUTPUT%"
+        echo moredef=-DLOVE_EXTRA_DLLS=%CD%\angle\libEGL.dll;%CD%\angle\libGLESv2.dll>> "%GITHUB_OUTPUT%"
+        exit /b 0
     - name: Clone Megasource
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: megasource
         repository: love2d/megasource
         ref: 12.x
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: megasource/libs/love
+    - name: Download ANGLE
+      uses: robinraju/release-downloader@v1.5
+      if: steps.vars.outputs.angle == '1'
+      with:
+        repository: MikuAuahDark/angle-winbuild
+        tag: cr_5249
+        fileName: angle-win-${{ steps.vars.outputs.arch }}.zip
+        tarBall: false
+        zipBall: false
+        out-file-path: angle
+    - name: Extract ANGLE
+      if: steps.vars.outputs.angle == '1'
+      working-directory: angle
+      run: 7z x angle-win-${{ steps.vars.outputs.arch }}.zip
     - name: Configure
-      shell: cmd
-      env:
-        PLATFORM: ${{ matrix.platform }}
-      run: cmake -Bbuild -Hmegasource -T v142 -A %PLATFORM% ${{ matrix.compatdef }} -DCMAKE_INSTALL_PREFIX=%CD%\install
+      run: cmake -Bbuild -Hmegasource -T v142 -A ${{ matrix.platform }} -DCMAKE_INSTALL_PREFIX=%CD%\install ${{ steps.vars.outputs.moredef }}
     - name: Install
-      shell: cmd
       run: cmake --build build --target PACKAGE --config Release -j2
     - name: Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-        name: love-windows-${{ matrix.arch }}${{ matrix.compatname }}
+        name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}
         path: |
           build/*.zip
           build/*.exe
+        if-no-files-found: ${{ steps.vars.outputs.nofiles }}
     - name: Artifact JIT Modules
-      if: matrix.upload_jitmodules
-      uses: actions/upload-artifact@v2
+      if: steps.vars.outputs.jitmodules == '1'
+      uses: actions/upload-artifact@v3
       with:
         name: love-windows-jitmodules
         path: build/libs/LuaJIT/src/jit/*.lua
@@ -85,9 +135,9 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Clone Dependencies
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
@@ -105,7 +155,7 @@ jobs:
       run:
         ditto -c -k --sequesterRsrc --keepParent love-macos/love.app love-macos.zip 
     - name: Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: love-macos
         path: love-macos.zip
@@ -113,9 +163,9 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Clone Dependencies
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
