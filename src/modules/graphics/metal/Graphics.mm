@@ -31,6 +31,11 @@
 
 #import <QuartzCore/CAMetalLayer.h>
 
+#ifdef LOVE_MACOS
+// Needed for the GPU dynamic switching hack below.
+#import <Cocoa/Cocoa.h>
+#endif
+
 namespace love
 {
 namespace graphics
@@ -290,6 +295,33 @@ Graphics::Graphics()
 	{
 		throw love::Exception("LOVE's Metal graphics backend requires macOS 10.15+ or iOS 13+.");
 	}
+
+#ifdef LOVE_MACOS
+	// On multi-GPU macOS systems with a low and high power GPU (e.g. a 2016
+	// Macbook Pro), the OS doesn't activate the high power GPU for final
+	// monitor blitting even when MTLCreateSystemDefaultDevice is called, on
+	// newer macOS versions. https://developer.apple.com/forums/thread/675411
+	// But it does when an OpenGL context is created, so this big hack forces it
+	// when we want it to happen.
+	if (!device.isLowPower && MTLCopyAllDevices().count > 1)
+	{
+		NSOpenGLPixelFormatAttribute attributes[] =
+		{
+			NSOpenGLPFADoubleBuffer,
+			NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core,
+			NSOpenGLPFAColorSize, 24,
+			NSOpenGLPFAAlphaSize, 8,
+			NSOpenGLPFADepthSize, 24,
+			NSOpenGLPFAStencilSize, 8,
+			NSOpenGLPFASampleBuffers, 0,
+			0,
+		};
+
+		auto pixelformat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attributes];
+		auto glcontext = [[NSOpenGLContext alloc] initWithFormat:pixelformat shareContext:nullptr];
+		LOVE_UNUSED(glcontext);
+	}
+#endif
 
 	commandQueue = [device newCommandQueue];
 	passDesc = [MTLRenderPassDescriptor new];
