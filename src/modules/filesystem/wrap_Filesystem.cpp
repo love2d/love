@@ -305,10 +305,11 @@ File *luax_getfile(lua_State *L, int idx)
 	return file;
 }
 
-FileData *luax_getfiledata(lua_State *L, int idx, bool ioerror)
+FileData *luax_getfiledata(lua_State *L, int idx, bool ioerror, int &nresults)
 {
 	FileData *data = nullptr;
 	File *file = nullptr;
+	nresults = 0;
 
 	if (lua_isstring(L, idx) || luax_istype(L, idx, File::type))
 	{
@@ -322,7 +323,7 @@ FileData *luax_getfiledata(lua_State *L, int idx, bool ioerror)
 
 	if (!data && !file)
 	{
-		luaL_argerror(L, idx, "filename, File, or FileData expected");
+		nresults = luaL_argerror(L, idx, "filename, File, or FileData expected");
 		return nullptr; // Never reached.
 	}
 	else if (file && !data)
@@ -335,10 +336,10 @@ FileData *luax_getfiledata(lua_State *L, int idx, bool ioerror)
 		{
 			file->release();
 			if (ioerror)
-				luax_ioError(L, "%s", e.what());
+				nresults = luax_ioError(L, "%s", e.what());
 			else
-				luaL_error(L, "%s", e.what());
-			return nullptr; // Never reached.
+				nresults = luaL_error(L, "%s", e.what());
+			return nullptr; // Never reached if ioerror is false.
 		}
 
 		file->release();
@@ -349,7 +350,8 @@ FileData *luax_getfiledata(lua_State *L, int idx, bool ioerror)
 
 FileData *luax_getfiledata(lua_State *L, int idx)
 {
-	return luax_getfiledata(L, idx, false);
+	int nresults = 0;
+	return luax_getfiledata(L, idx, false, nresults);
 }
 
 Data *luax_getdata(lua_State *L, int idx)
@@ -404,7 +406,10 @@ int w_newFileData(lua_State *L)
 	// Single argument: treat as filepath or File.
 	if (lua_gettop(L) == 1)
 	{
-		FileData *data = luax_getfiledata(L, 1, true);
+		int nresults = 0;
+		FileData *data = luax_getfiledata(L, 1, true, nresults);
+		if (data == nullptr)
+			return nresults;
 		luax_pushtype(L, data);
 		data->release();
 		return 1;
