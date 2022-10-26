@@ -141,6 +141,21 @@ enum DoneAction
 	DONE_RESTART,
 };
 
+static void print_usage()
+{
+    // when editing this message, change it at boot.lua too
+    printf("LÖVE is an *awesome* framework you can use to make 2D games in Lua\n"
+        "https://love2d.org\n"
+        "\n"
+        "usage:\n"
+        "    love --version                  prints LÖVE version and quits\n"
+        "    love --help                     prints this message and quits\n"
+        "    love path/to/gamedir            runs the game from the given directory which contains a main.lua file\n"
+        "    love path/to/packagedgame.love  runs the packaged game from the provided .love file\n"
+        "    love path/to/file.lua           runs the game from the given .lua file\n"
+        );
+}
+
 static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &restartvalue)
 {
 	// Oh, you just want the version? Okay!
@@ -151,6 +166,13 @@ static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &res
 		love_openConsole(err);
 #endif
 		printf("LOVE %s (%s)\n", love_version(), love_codename());
+		retval = 0;
+		return DONE_QUIT;
+	}
+
+	if (argc > 1 && strcmp(argv[1], "--help") == 0)
+	{
+		print_usage();
 		retval = 0;
 		return DONE_QUIT;
 	}

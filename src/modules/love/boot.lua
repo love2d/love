@@ -135,6 +135,17 @@ function love.boot()
 	end
 
 	if not can_has_game then
+        -- when editing this message, change it at love.cpp too
+        print([[LÖVE is an *awesome* framework you can use to make 2D games in Lua
+https://love2d.org
+
+usage:
+    love --version                  prints LÖVE version and quits
+    love --help                     prints this message and quits
+    love path/to/gamedir            runs the game from the given directory which contains a main.lua file
+    love path/to/packagedgame.love  runs the packaged game from the provided .love file
+    love path/to/file.lua           runs the game from the given .lua file
+]]);
 		local nogame = require("love.nogame")
 		nogame()
 	end
