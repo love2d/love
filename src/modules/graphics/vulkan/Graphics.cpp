@@ -2184,17 +2184,18 @@ void Graphics::createVulkanVertexFormat(
 {
 	std::set<uint32_t> usedBuffers;
 
-	auto allBits = vertexAttributes.enableBits;
+	auto enableBits = vertexAttributes.enableBits;
+	auto allBits = enableBits;
 
 	bool usesColor = false;
 
 	uint8_t highestBufferBinding = 0;
 
-	// fixme: change to loop like in opengl implementation ?
-	for (uint32_t i = 0; i < VertexAttributes::MAX; i++)
+	uint32_t i = 0;
+	while (allBits)
 	{
 		uint32 bit = 1u << i;
-		if (allBits & bit)
+		if (enableBits & bit)
 		{
 			if (i == ATTRIB_COLOR)
 				usesColor = true;
@@ -2225,6 +2226,9 @@ void Graphics::createVulkanVertexFormat(
 
 			attributeDescriptions.push_back(attributeDescription);
 		}
+
+		i++;
+		allBits >>= 1;
 	}
 
 	if (!usesColor)
