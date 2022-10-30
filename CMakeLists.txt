@@ -177,7 +177,6 @@ Please see https://github.com/love2d/megasource
 	find_package(Vorbis REQUIRED)
 	find_package(ZLIB REQUIRED)
 	find_package(Ogg REQUIRED)
-	find_package(Vulkan REQUIRED)
 
 	# required for enet
 	add_definitions(-D HAS_SOCKLEN_T)
@@ -191,7 +190,6 @@ Please see https://github.com/love2d/megasource
 		${MODPLUG_INCLUDE_DIR}
 		${OGG_INCLUDE_DIR}
 		${THEORA_INCLUDE_DIR}
-		${Vulkan_INCLUDE_DIRS}
 	)
 
 	set(LOVE_LINK_LIBRARIES

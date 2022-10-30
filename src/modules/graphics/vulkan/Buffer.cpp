@@ -102,6 +102,13 @@ bool Buffer::loadVolatile()
 			throw love::Exception("failed to create texel buffer view");
 	}
 
+	VkMemoryPropertyFlags memoryProperties;
+	vmaGetAllocationMemoryProperties(allocator, allocation, &memoryProperties);
+	if (memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+		coherent = true;
+	else
+		coherent = false;
+
 	return true;
 }
 
@@ -141,8 +148,25 @@ ptrdiff_t Buffer::getTexelBufferHandle() const
 
 void *Buffer::map(MapType map, size_t offset, size_t size)
 {
+	if (size == 0)
+		return nullptr;
+
+	if (map == MAP_WRITE_INVALIDATE && (isImmutable() || dataUsage == BUFFERDATAUSAGE_READBACK))
+		return nullptr;
+
+	if (map == MAP_READ_ONLY && dataUsage != BUFFERDATAUSAGE_READBACK)
+		return  nullptr;
+
+	mappedRange = Range(offset, size);
+
+	if (!Range(0, getSize()).contains(mappedRange))
+		return nullptr;
+
 	if (dataUsage == BUFFERDATAUSAGE_READBACK)
 	{
+		if (!coherent)
+			vmaInvalidateAllocation(allocator, allocation, offset, size);
+
 		char *data = (char*)allocInfo.pMappedData;
 		return (void*) (data + offset);
 	}
@@ -160,50 +184,52 @@ void *Buffer::map(MapType map, size_t offset, size_t size)
 		if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAllocation, &stagingAllocInfo) != VK_SUCCESS)
 			throw love::Exception("failed to create staging buffer");
 
-		mappedRange = Range(offset, size);
-
 		return stagingAllocInfo.pMappedData;
 	}
 }
 
 bool Buffer::fill(size_t offset, size_t size, const void *data)
 {
-	if (dataUsage == BUFFERDATAUSAGE_READBACK)
-	{
-		void *dst = (void*)((char*)allocInfo.pMappedData + offset);
-		memcpy(dst, data, size);
-	}
-	else
-	{
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = size;
-		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	if (size == 0 || isImmutable() || dataUsage == BUFFERDATAUSAGE_READBACK)
+		return false;
 
-		VmaAllocationCreateInfo allocInfo{};
-		allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
-		allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+	if (!Range(0, getSize()).contains(Range(offset, size)))
+		return false;
 
-		VkBuffer fillBuffer;
-		VmaAllocation fillAllocation;
-		VmaAllocationInfo fillAllocInfo;
+	VkBufferCreateInfo bufferInfo{};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = size;
+	bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-		if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &fillBuffer, &fillAllocation, &fillAllocInfo) != VK_SUCCESS)
-			throw love::Exception("failed to create fill buffer");
+	VmaAllocationCreateInfo allocInfo{};
+	allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+	allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-		memcpy(fillAllocInfo.pMappedData, data, size);
+	VkBuffer fillBuffer;
+	VmaAllocation fillAllocation;
+	VmaAllocationInfo fillAllocInfo;
 
-		VkBufferCopy bufferCopy{};
-		bufferCopy.srcOffset = 0;
-		bufferCopy.dstOffset = offset;
-		bufferCopy.size = size;
+	if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &fillBuffer, &fillAllocation, &fillAllocInfo) != VK_SUCCESS)
+		throw love::Exception("failed to create fill buffer");
 
-		vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), fillBuffer, buffer, 1, &bufferCopy);
+	memcpy(fillAllocInfo.pMappedData, data, size);
 
-		vgfx->queueCleanUp([allocator = allocator, fillBuffer = fillBuffer, fillAllocation = fillAllocation]() {
-			vmaDestroyBuffer(allocator, fillBuffer, fillAllocation);
-		});
-	}
+	VkMemoryPropertyFlags memoryProperties;
+	vmaGetAllocationMemoryProperties(allocator, fillAllocation, &memoryProperties);
+	if (~memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+		vmaFlushAllocation(allocator, fillAllocation, 0, size);
+
+	VkBufferCopy bufferCopy{};
+	bufferCopy.srcOffset = 0;
+	bufferCopy.dstOffset = offset;
+	bufferCopy.size = size;
+
+	vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), fillBuffer, buffer, 1, &bufferCopy);
+
+	vgfx->queueCleanUp([allocator = allocator, fillBuffer = fillBuffer, fillAllocation = fillAllocation]() {
+		vmaDestroyBuffer(allocator, fillBuffer, fillAllocation);
+	});
+
 	return true;
 }
 
@@ -215,6 +241,11 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 		bufferCopy.srcOffset = usedoffset - mappedRange.getOffset();
 		bufferCopy.dstOffset = usedoffset;
 		bufferCopy.size = usedsize;
+
+		VkMemoryPropertyFlags memoryProperties;
+		vmaGetAllocationMemoryProperties(allocator, stagingAllocation, &memoryProperties);
+		if (~memoryProperties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+			vmaFlushAllocation(allocator, stagingAllocation, bufferCopy.srcOffset, usedsize);
 
 		vkCmdCopyBuffer(vgfx->getCommandBufferForDataTransfer(), stagingBuffer, buffer, 1, &bufferCopy);
 

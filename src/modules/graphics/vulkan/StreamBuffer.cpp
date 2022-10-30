@@ -65,6 +65,13 @@ bool StreamBuffer::loadVolatile()
 	if (vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo) != VK_SUCCESS)
 		throw love::Exception("Cannot create stream buffer: out of graphics memory.");
 
+	VkMemoryPropertyFlags properties;
+	vmaGetAllocationMemoryProperties(allocator, allocation, &properties);
+	if (properties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+		coherent = true;
+	else
+		coherent = false;
+
 	return true;
 }
 
@@ -99,9 +106,13 @@ love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t /*minsize*/)
 	return info;
 }
 
-size_t StreamBuffer::unmap(size_t /*usedSize*/)
+size_t StreamBuffer::unmap(size_t usedSize)
 {
 	size_t offset = (frameIndex * bufferSize) + frameGPUReadOffset;
+
+	if (!coherent)
+		vmaFlushAllocation(allocator, allocation, offset, usedSize);
+
 	return offset;
 }
 

@@ -365,9 +365,10 @@ private:
 	VkSampler createSampler(const SamplerState &sampler);
 	void cleanupUnusedObjects();
 
-	uint32_t vulkanApiVersion = VK_VERSION_1_0;
+	uint32_t instanceVersion = VK_API_VERSION_1_0;
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+	uint32_t deviceApiVersion = VK_API_VERSION_1_0;
 	bool windowHasStencil = false;
 	int requestedMsaa = 0;
 	VkDevice device = VK_NULL_HANDLE; 
@@ -417,7 +418,7 @@ private:
 	StrongRef<love::graphics::Texture> defaultTexture;
 	StrongRef<love::graphics::Buffer> defaultConstantColor;
 	// functions that need to be called to cleanup objects that were needed for rendering a frame.
-	// just like batchedDrawBuffers we need a vector for each frame in flight.
+	// We need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 	std::vector<std::vector<std::function<void()>>> readbackCallbacks;
 	std::vector<ScreenshotReadbackBuffer> screenshotReadbackBuffers;

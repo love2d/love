@@ -23,8 +23,6 @@
 #include "graphics/ShaderStage.h"
 #include "modules/graphics/Graphics.h"
 
-#include "VulkanWrapper.h"
-
 namespace love
 {
 namespace graphics

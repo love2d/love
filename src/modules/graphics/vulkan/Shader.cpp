@@ -355,6 +355,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 	};
 
 	for (const auto &builtin : builtinUniformTextures)
+	{
 		if (builtinUniformInfo[builtin] != nullptr)
 		{
 			auto texture = dynamic_cast<Texture*>(builtinUniformInfo[builtin]->textures[0]);
@@ -374,6 +375,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 
 			vkUpdateDescriptorSets(device, 1, &textureWrite, 0, nullptr);
 		}
+	}
 
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
 
@@ -765,7 +767,7 @@ void Shader::compileShaders()
 		auto shaderResources = comp.get_shader_resources(active);
 		comp.set_enabled_interface_variables(std::move(active));
 
-		for (const auto  &resource : shaderResources.uniform_buffers)
+		for (const auto &resource : shaderResources.uniform_buffers)
 		{
 			if (resource.name == "gl_DefaultUniformBlock")
 			{
@@ -1039,12 +1041,14 @@ void Shader::setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cb
 	static_assert(textures.size() == builtIns.size(), "expected number of textures to be the same");
 
 	for (size_t i = 0; i < textures.size(); i++)
+	{
 		if (builtinUniformInfo[builtIns[i]] != nullptr)
 		{
 			textures[i]->retain();
 			builtinUniformInfo[builtIns[i]]->textures[0]->release();
 			builtinUniformInfo[builtIns[i]]->textures[0] = textures[i];
 		}
+	}
 }
 
 bool Shader::hasUniform(const std::string &name) const
