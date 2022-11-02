@@ -405,7 +405,12 @@ b2AABB Physics::scaleUp(const b2AABB &aabb)
 	return t;
 }
 
-void Physics::b2LinearFrequency(float& frequency, float& ratio, float stiffness, float damping, b2Body* bodyA, b2Body* bodyB)
+void Physics::computeLinearStiffness(float &stiffness, float &damping, float frequency, float dampingRatio, b2Body *bodyA, b2Body *bodyB)
+{
+	b2LinearStiffness(stiffness, damping, frequency, dampingRatio, bodyA, bodyB);
+}
+
+void Physics::computeLinearFrequency(float &frequency, float &ratio, float stiffness, float damping, b2Body *bodyA, b2Body *bodyB)
 {
 	float massA = bodyA->GetMass();
 	float massB = bodyB->GetMass();
@@ -435,7 +440,12 @@ void Physics::b2LinearFrequency(float& frequency, float& ratio, float stiffness,
 	ratio = damping / (mass * 2.0f * omega);
 }
 
-void Physics::b2AngularFrequency(float& frequency, float& ratio, float stiffness, float damping, b2Body* bodyA, b2Body* bodyB)
+void Physics::computeAngularStiffness(float &stiffness, float &damping, float frequency, float dampingRatio, b2Body *bodyA, b2Body *bodyB)
+{
+	b2AngularStiffness(stiffness, damping, frequency, dampingRatio, bodyA, bodyB);
+}
+
+void Physics::computeAngularFrequency(float &frequency, float &ratio, float stiffness, float damping, b2Body *bodyA, b2Body *bodyB)
 {
 	float IA = bodyA->GetInertia();
 	float IB = bodyB->GetInertia();
