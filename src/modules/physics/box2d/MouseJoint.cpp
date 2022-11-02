@@ -49,6 +49,7 @@ MouseJoint::MouseJoint(Body *body1, float x, float y)
 	def.bodyB = body1->body;
 	def.maxForce = 1000.0f * body1->body->GetMass();
 	def.target = Physics::scaleDown(b2Vec2(x,y));
+	b2LinearStiffness(def.stiffness, def.damping, 5.0f, 0.7f, def.bodyA, def.bodyB);
 	joint = (b2MouseJoint *)createJoint(&def);
 }
 
