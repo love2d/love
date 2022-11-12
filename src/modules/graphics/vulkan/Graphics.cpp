@@ -81,8 +81,6 @@ Graphics::Graphics()
 		throw love::Exception("could not find vulkan");
 
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
-
-	instanceVersion = volkGetInstanceVersion();
 }
 
 Graphics::~Graphics()
@@ -599,7 +597,7 @@ void Graphics::unSetMode()
 	renderPassUsages.clear();
 	framebufferUsages.clear();
 	pipelineUsages.clear();
-
+	
 	created = false;
 	vkDeviceWaitIdle(device);
 	Volatile::unloadAll();
@@ -673,34 +671,7 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 
 	Graphics::RendererInfo info;
 
-	if (isDebugEnabled())
-	{
-		std::stringstream ss;
-		ss << "Vulkan( ";
-		ss << renderPasses.size() << " ";
-		ss << framebuffers.size() << " ";
-		ss << graphicsPipelines.size() << " ";
-		if (optionalDeviceFeatures.extendedDynamicState)
-			ss << "eds ";
-		if (optionalDeviceFeatures.memoryRequirements2)
-			ss << "mr2 ";
-		if (optionalDeviceFeatures.dedicatedAllocation)
-			ss << "da ";
-		if (optionalDeviceFeatures.bufferDeviceAddress)
-			ss << "bda ";
-		if (optionalDeviceFeatures.memoryBudget)
-			ss << "mb ";
-		if (optionalDeviceFeatures.shaderFloatControls)
-			ss << "sfc ";
-		if (optionalDeviceFeatures.spirv14)
-			ss << "spv14 ";
-		ss << ")";
-
-		info.name = ss.str();
-	}
-	else
-		info.name = "Vulkan";
-
+	info.name = "Vulkan";
 	info.device = deviceProperties.deviceName;
 	info.vendor = Vulkan::getVendorName(deviceProperties.vendorID);
 	info.version = Vulkan::getVulkanApiVersion(deviceProperties.apiVersion);
@@ -1295,7 +1266,7 @@ void Graphics::createVulkanInstance()
 	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	// get this version from somewhere else?
 	appInfo.pEngineName = "LOVE Game Framework";
 	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
-	appInfo.apiVersion = instanceVersion;
+	appInfo.apiVersion = VK_API_VERSION_1_3;
 
 	VkInstanceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
