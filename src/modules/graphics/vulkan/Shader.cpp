@@ -1023,7 +1023,9 @@ void Shader::createDescriptorPoolSizes()
 
 void Shader::createStreamBuffers()
 {
-	streamBuffers.push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
+	size_t size = STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned;
+	if (size > 0)
+		streamBuffers.push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, size));
 }
 
 void Shader::setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cbtexture, graphics::Texture *crtexture)
