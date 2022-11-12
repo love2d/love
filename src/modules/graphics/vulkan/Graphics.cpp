@@ -801,11 +801,7 @@ void Graphics::setScissor(const Rect &rect)
 {
 	flushBatchedDraws();
 
-	VkRect2D scissor = computeScissor(rect,
-                                      static_cast<double>(swapChainExtent.width),
-                                      static_cast<double>(swapChainExtent.height),
-									  getCurrentDPIScale(),
-                                      preTransform);
+	VkRect2D scissor = computeScissor(rect, static_cast<double>(swapChainExtent.width), static_cast<double>(swapChainExtent.height), getCurrentDPIScale(), preTransform);
 	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 
 	states.back().scissor = true;
@@ -1515,8 +1511,8 @@ void Graphics::createLogicalDevice()
 
 	// sanity check for dependencies.
 
-    if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
-        optionalDeviceFeatures.extendedDynamicState = false;
+	if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
+		optionalDeviceFeatures.extendedDynamicState = false;
 	if (optionalDeviceFeatures.dedicatedAllocation && !optionalDeviceFeatures.memoryRequirements2)
 		optionalDeviceFeatures.dedicatedAllocation = false;
 	if (optionalDeviceFeatures.bufferDeviceAddress && !optionalInstanceExtensions.physicalDeviceProperties2)
@@ -1575,7 +1571,7 @@ void Graphics::createLogicalDevice()
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
 		throw love::Exception("failed to create logical device");
 
-    volkLoadDevice(device);
+	volkLoadDevice(device);
 
 	vkGetDeviceQueue(device, indices.graphicsFamily.value, 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value, 0, &presentQueue);
@@ -1674,15 +1670,15 @@ void Graphics::createSwapChain()
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
 	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
-    if ((swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) ||
-        (swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR))
+	if ((swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) ||
+		(swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR))
 	{
-        uint32_t width, height;
-        width = extent.width;
-        height = extent.height;
-        extent.width = height;
-        extent.height = width;
-    }
+		uint32_t width, height;
+		width = extent.width;
+		height = extent.height;
+		extent.width = height;
+		extent.height = width;
+	}
 
 	auto currentTransform = swapChainSupport.capabilities.currentTransform;
 	constexpr float PI = 3.14159265358979323846f;
@@ -1842,12 +1838,12 @@ VkCompositeAlphaFlagBitsKHR Graphics::chooseCompositeAlpha(const VkSurfaceCapabi
 		return VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
 		return VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
-    else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
-        return VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
-    else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
-        return VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
-    else
-        throw love::Exception("failed to find composite alpha");
+	else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
+		return VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+	else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
+		return VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+	else
+		throw love::Exception("failed to find composite alpha");
 }
 
 void Graphics::createImageViews()
@@ -2033,8 +2029,8 @@ void Graphics::createDefaultShaders()
 
 VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 {
-    VkSubpassDescription subPass{};
-    subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	VkSubpassDescription subPass{};
+	subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
 	std::vector<VkAttachmentDescription> attachments;
 	std::vector<VkAttachmentReference> colorAttachmentRefs;
@@ -2062,8 +2058,8 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		attachments.push_back(colorDescription);
 	}
 
-    subPass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
-    subPass.pColorAttachments = colorAttachmentRefs.data();
+	subPass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
+	subPass.pColorAttachments = colorAttachmentRefs.data();
 
 	VkAttachmentReference depthStencilAttachmentRef{};
 	if (configuration.staticData.depthAttachment.format != VK_FORMAT_UNDEFINED)
@@ -2127,20 +2123,20 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 
 	std::array<VkSubpassDependency, 2> dependencies = { dependency, readbackDependency };
 
-    VkRenderPassCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    createInfo.pAttachments = attachments.data();
-    createInfo.subpassCount = 1;
-    createInfo.pSubpasses = &subPass;
+	VkRenderPassCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	createInfo.pAttachments = attachments.data();
+	createInfo.subpassCount = 1;
+	createInfo.pSubpasses = &subPass;
 	createInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	createInfo.pDependencies = dependencies.data();
 
-    VkRenderPass renderPass;
-    if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS)
-        throw love::Exception("failed to create render pass");
+	VkRenderPass renderPass;
+	if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS)
+		throw love::Exception("failed to create render pass");
 
-    return renderPass;
+	return renderPass;
 }
 
 bool Graphics::usesConstantVertexColor(const VertexAttributes &vertexAttributes)
@@ -2232,7 +2228,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 
 	GraphicsPipelineConfiguration configuration{};
 
-    configuration.renderPass = renderPassState.beginInfo.renderPass;
+	configuration.renderPass = renderPassState.beginInfo.renderPass;
 	configuration.vertexAttributes = attributes;
 	configuration.shader = (Shader*)Shader::current;
 	configuration.wireFrame = states.back().wireframe;
@@ -2659,7 +2655,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 	pipelineInfo.basePipelineIndex = -1;
-    pipelineInfo.renderPass = configuration.renderPass;
+	pipelineInfo.renderPass = configuration.renderPass;
 
 	VkPipeline graphicsPipeline;
 	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
@@ -2943,9 +2939,9 @@ void Graphics::cleanupSwapChain()
 	vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
 	vkDestroyImageView(device, depthImageView, nullptr);
 	vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
-    for (const auto &swapChainImageView : swapChainImageViews)
-        vkDestroyImageView(device, swapChainImageView, nullptr);
-    swapChainImageViews.clear();
+	for (const auto &swapChainImageView : swapChainImageViews)
+		vkDestroyImageView(device, swapChainImageView, nullptr);
+	swapChainImageViews.clear();
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 
