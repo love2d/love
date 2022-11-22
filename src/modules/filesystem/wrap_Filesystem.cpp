@@ -738,12 +738,15 @@ static void replaceAll(std::string &str, const std::string &substr, const std::s
 int loader(lua_State *L)
 {
 	std::string modulename = luax_checkstring(L, 1);
+	std::stringstream errstr;
 
 	for (char &c : modulename)
 	{
 		if (c == '.')
 			c = '/';
 	}
+
+	errstr << "\n\tno '" << modulename << "' in LOVE game directories:";
 
 	auto *inst = instance();
 	for (std::string element : inst->getRequirePath())
@@ -757,11 +760,11 @@ int loader(lua_State *L)
 			lua_pushstring(L, element.c_str());
 			return w_load(L);
 		}
+
+		errstr << "\n\t  tried '" << element << "'";
 	}
 
-	std::string errstr = "\n\tno '%s' in LOVE game directories.";
-
-	lua_pushfstring(L, errstr.c_str(), modulename.c_str());
+	luax_pushstring(L, errstr.str());
 	return 1;
 }
 
@@ -781,6 +784,7 @@ int extloader(lua_State *L)
 	std::string filename = luax_checkstring(L, 1);
 	std::string tokenized_name(filename);
 	std::string tokenized_function(filename);
+	std::stringstream errstr;
 
 	// We need both the tokenized filename (dots replaced with slashes)
 	// and the tokenized function name (dots replaced with underscores)
@@ -793,6 +797,8 @@ int extloader(lua_State *L)
 			tokenized_function[i] = '_';
 		}
 	}
+
+	errstr << "\n\tno file '" << tokenized_name << "' in LOVE paths:";
 
 	void *handle = nullptr;
 	auto *inst = instance();
@@ -828,7 +834,10 @@ int extloader(lua_State *L)
 
 			Filesystem::Info info = {};
 			if (!inst->getInfo(element.c_str(), info) || info.type == Filesystem::FILETYPE_DIRECTORY)
+			{
+				errstr << "\n\t  tried '" << element << "' in save directory";
 				continue;
+			}
 
 			// Now resolve the full path, as we're bypassing physfs for the next part.
 			std::string filepath = inst->getRealDirectory(element.c_str()) + LOVE_PATH_SEPARATOR + element;
@@ -837,6 +846,8 @@ int extloader(lua_State *L)
 			// Can fail, for instance if it turned out the source was a zip
 			if (handle)
 				break;
+
+			errstr << "\n\t  tried '" << filepath << "'";
 		}
 
 		if (handle)
@@ -849,9 +860,11 @@ int extloader(lua_State *L)
 
 	if (!handle)
 	{
-		lua_pushfstring(L, "\n\tno file '%s' in LOVE paths.", tokenized_name.c_str());
+		luax_pushstring(L, errstr.str());
 		return 1;
 	}
+
+	errstr.clear();
 
 	// We look for both loveopen_ and luaopen_, so libraries with specific love support
 	// can tell when they've been loaded by love.
