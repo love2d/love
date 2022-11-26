@@ -551,7 +551,7 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	// Note: backends are expected to handle this situation if highp is ever
 	// conditional in that backend.
 	if (!gfx->getCapabilities().features[Graphics::FEATURE_PIXEL_SHADER_HIGHP])
-		ss << "#define LOVE_SPLIT_UNIFORMS_PER_DRAW 1";
+		ss << "#define LOVE_SPLIT_UNIFORMS_PER_DRAW 1\n";
 
 	for (const auto &def : options.defines)
 		ss << "#define " + def.first + " " + def.second + "\n";
