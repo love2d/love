@@ -866,9 +866,7 @@ static void replaceAll(std::string &str, const std::string &substr, const std::s
 int loader(lua_State *L)
 {
 	std::string modulename = luax_checkstring(L, 1);
-
-	if (modulename.find('/') != std::string::npos)
-		luax_markdeprecated(L, 2, "character in require string (forward slashes), use dots instead.", API_CUSTOM);
+	bool hasSlash = modulename.find('/') != std::string::npos;
 
 	for (char &c : modulename)
 	{
@@ -884,6 +882,9 @@ int loader(lua_State *L)
 		Filesystem::Info info = {};
 		if (inst->getInfo(element.c_str(), info) && info.type != Filesystem::FILETYPE_DIRECTORY)
 		{
+			if (hasSlash)
+				luax_markdeprecated(L, 2, "character in require string (forward slashes), use dots instead.", API_CUSTOM);
+
 			lua_pop(L, 1);
 			lua_pushstring(L, element.c_str());
 			return w_load(L);
