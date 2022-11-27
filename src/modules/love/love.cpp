@@ -86,6 +86,11 @@ extern "C"
 #	include "audio/Audio.h"
 #endif
 
+// For love::system::System::getOS.
+#ifdef LOVE_ENABLE_SYSTEM
+#	include "system/System.h"
+#endif
+
 // Scripts.
 #include "scripts/nogame.lua.h"
 
@@ -599,18 +604,8 @@ int luaopen_love(lua_State *L)
 	lua_pushcfunction(L, w_love_isVersionCompatible);
 	lua_setfield(L, -2, "isVersionCompatible");
 
-#ifdef LOVE_WINDOWS_UWP
-	lua_pushstring(L, "UWP");
-#elif LOVE_WINDOWS
-	lua_pushstring(L, "Windows");
-#elif defined(LOVE_MACOS)
-	lua_pushstring(L, "OS X");
-#elif defined(LOVE_IOS)
-	lua_pushstring(L, "iOS");
-#elif defined(LOVE_ANDROID)
-	lua_pushstring(L, "Android");
-#elif defined(LOVE_LINUX)
-	lua_pushstring(L, "Linux");
+#ifdef LOVE_ENABLE_SYSTEM
+	lua_pushstring(L, love::system::System::getOS());
 #else
 	lua_pushstring(L, "Unknown");
 #endif
