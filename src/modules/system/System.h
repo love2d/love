@@ -57,7 +57,7 @@ public:
 	/**
 	 * Gets the current operating system.
 	 **/
-	std::string getOS() const;
+	static const char *getOS();
 
 	/**
 	 * Gets the number of reported CPU cores on the current system.
