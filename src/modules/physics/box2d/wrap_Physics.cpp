@@ -477,10 +477,95 @@ int w_setMeter(lua_State *L)
 	return 0;
 
 }
+
 int w_getMeter(lua_State *L)
 {
 	lua_pushinteger(L, Physics::getMeter());
 	return 1;
+}
+
+int w_computeLinearStiffness(lua_State *L)
+{
+	float frequency = (float)luaL_checknumber(L, 1);
+	float dampingRatio = (float)luaL_checknumber(L, 2);
+	Body *body1 = luax_checkbody(L, 3);
+	b2Body *other = 0;
+
+	if (lua_isnoneornil(L, 4))
+		other = body1->getWorld()->getGroundBody();
+	else
+		other = luax_checkbody(L, 4)->body;
+
+	float stiffness, damping;
+	Physics::computeLinearStiffness(stiffness, damping, frequency, dampingRatio, body1->body, other);
+
+	lua_pushnumber(L, stiffness);
+	lua_pushnumber(L, damping);
+
+	return 2;
+}
+
+int w_computeLinearFrequency(lua_State *L)
+{
+	float stiffness = (float)luaL_checknumber(L, 1);
+	float damping = (float)luaL_checknumber(L, 2);
+	Body *body1 = luax_checkbody(L, 3);
+	b2Body *other = 0;
+
+	if (lua_isnoneornil(L, 4))
+		other = body1->getWorld()->getGroundBody();
+	else
+		other = luax_checkbody(L, 4)->body;
+
+	float frequency, dampingRatio;
+	Physics::computeLinearFrequency(frequency, dampingRatio, stiffness, damping, body1->body, other);
+
+	lua_pushnumber(L, frequency);
+	lua_pushnumber(L, dampingRatio);
+
+	return 2;
+}
+
+int w_computeAngularStiffness(lua_State *L)
+{
+	float frequency = (float)luaL_checknumber(L, 1);
+	float dampingRatio = (float)luaL_checknumber(L, 2);
+	Body *body1 = luax_checkbody(L, 3);
+	b2Body *other = 0;
+
+	if (lua_isnoneornil(L, 4))
+		other = body1->getWorld()->getGroundBody();
+	else
+		other = luax_checkbody(L, 4)->body;
+
+	float stiffness, damping;
+	Physics::computeAngularStiffness(stiffness, damping, frequency, dampingRatio, body1->body, other);
+
+	lua_pushnumber(L, stiffness);
+	lua_pushnumber(L, damping);
+
+	return 2;
+}
+
+int w_computeAngularFrequency(lua_State *L)
+{
+	float stiffness = (float)luaL_checknumber(L, 1);
+	float damping = (float)luaL_checknumber(L, 2);
+	Body *body1 = luax_checkbody(L, 3);
+	b2Body *other = 0;
+
+	if (lua_isnoneornil(L, 4))
+		other = body1->getWorld()->getGroundBody();
+	else
+		other = luax_checkbody(L, 4)->body;
+
+	float frequency, dampingRatio;
+	Physics::computeAngularFrequency(frequency, dampingRatio, stiffness, damping, body1->body, other);
+
+	lua_pushnumber(L, frequency);
+	lua_pushnumber(L, dampingRatio);
+
+	return 2;
 }
 
 // List of functions to wrap.
@@ -508,6 +593,10 @@ static const luaL_Reg functions[] =
 	{ "getDistance", w_getDistance },
 	{ "getMeter", w_getMeter },
 	{ "setMeter", w_setMeter },
+	{ "computeLinearStiffness", w_computeLinearStiffness },
+	{ "computeLinearFrequency", w_computeLinearFrequency },
+	{ "computeAngularStiffness", w_computeAngularStiffness },
+	{ "computeAngularFrequency", w_computeAngularFrequency },
 	{ 0, 0 },
 };
 
