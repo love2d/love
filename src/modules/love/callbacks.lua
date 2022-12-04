@@ -232,7 +232,8 @@ function love.errhand(msg)
 	if love.audio then love.audio.stop() end
 
 	love.graphics.reset()
-	local font = love.graphics.setNewFont(14)
+	local font = love.graphics.newFont(14)
+	love.graphics.setFont(font)
 
 	love.graphics.setColor(1, 1, 1)
 
