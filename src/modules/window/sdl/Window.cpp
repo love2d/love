@@ -1119,6 +1119,7 @@ void Window::setVSync(int vsync)
 	}
 
 #ifdef LOVE_GRAPHICS_VULKAN
+	// TODO: this doesn't update the swap-chain, but it should.
 	love::graphics::vulkan::Vulkan::setVsync(vsync);
 #endif
 

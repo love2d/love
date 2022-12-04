@@ -1816,16 +1816,20 @@ VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentMode
 		else
 			return VK_PRESENT_MODE_FIFO_KHR;
 	case 0:
-		if (std::find(begin, end, VK_PRESENT_MODE_MAILBOX_KHR) != end)
+		// Mailbox mode might be better than immediate mode for a lot of people.
+		// But on at least some systems it acts as if vsync is enabled
+		// https://github.com/love2d/love/issues/1852
+		// TODO: is that a bug in love's code or the graphics driver / compositor?
+		// Should love expose mailbox mode in an API to users in some manner,
+		// instead of trying to guess what to do?
+		if (std::find(begin, end, VK_PRESENT_MODE_IMMEDIATE_KHR) != end)
+			return VK_PRESENT_MODE_IMMEDIATE_KHR;
+		else if (std::find(begin, end, VK_PRESENT_MODE_MAILBOX_KHR) != end)
 			return VK_PRESENT_MODE_MAILBOX_KHR;
 		else
-		{
-			if (std::find(begin, end, VK_PRESENT_MODE_IMMEDIATE_KHR) != end)
-				return VK_PRESENT_MODE_IMMEDIATE_KHR;
-			else
-				return VK_PRESENT_MODE_FIFO_KHR;
-		}
+			return VK_PRESENT_MODE_FIFO_KHR;
 	default:
+		// TODO: support for swap interval = 2, etc?
 		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 }
