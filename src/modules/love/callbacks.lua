@@ -88,6 +88,9 @@ function love.createhandlers()
 		joystickremoved = function (j)
 			if love.joystickremoved then return love.joystickremoved(j) end
 		end,
+		joysticksensorupdate = function (j, sensorType, x, y, z)
+			if love.joysticksensorupdate then return love.joysticksensorupdate(j, sensorType, x, y, z) end
+		end
 		focus = function (f)
 			if love.focus then return love.focus(f) end
 		end,
@@ -134,9 +137,9 @@ function love.createhandlers()
 				love.audio.setPlaybackDevice()
 			end
 		end,
-		sensorupdate = function (sensorType, ...)
-			if love.sensorupdate then return love.sensorupdate(sensorType, ...) end
-		end
+		sensorupdate = function (sensorType, x, y, z)
+			if love.sensorupdate then return love.sensorupdate(sensorType, x, y, z) end
+		end,
 	}, {
 		__index = function(self, name)
 			error("Unknown event: " .. name)
