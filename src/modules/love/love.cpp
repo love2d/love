@@ -784,6 +784,10 @@ int w__setAccelerometerAsJoystick(lua_State *L)
 {
 	bool enable = (bool) lua_toboolean(L, 1);
 	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, enable ? "1" : "0");
+
+	if (enable)
+		love::luax_markdeprecated(L, 1, "accelerometerjoystick", love::API_FIELD, love::DEPRECATED_REPLACED, "love.sensor module");
+
 	return 0;
 }
 #endif // LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
