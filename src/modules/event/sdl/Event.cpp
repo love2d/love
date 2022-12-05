@@ -368,6 +368,7 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_CONTROLLERBUTTONDOWN:
 	case SDL_CONTROLLERBUTTONUP:
 	case SDL_CONTROLLERAXISMOTION:
+	case SDL_CONTROLLERSENSORUPDATE:
 		msg = convertJoystickEvent(e);
 		break;
 	case SDL_WINDOWEVENT:
@@ -595,6 +596,26 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			msg = new Message("joystickremoved", vargs);
 		}
 		break;
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	case SDL_CONTROLLERSENSORUPDATE:
+		stick = joymodule->getJoystickFromID(e.csensor.which);
+		if (stick)
+		{
+			using Sensor = love::sensor::Sensor;
+
+			const char *sensorName = "unknown";
+			Sensor::SensorType sensorType = love::sensor::sdl::Sensor::convert((SDL_SensorType) e.csensor.sensor);
+			Sensor::getConstant(sensorType, sensorName);
+
+			vargs.emplace_back(joysticktype, stick);
+			vargs.emplace_back(sensorName, strlen(sensorName));
+			vargs.emplace_back(e.csensor.data[0]);
+			vargs.emplace_back(e.csensor.data[1]);
+			vargs.emplace_back(e.csensor.data[2]);
+			msg = new Message("joysticksensorupdate", vargs);
+		}
+		break;
+#endif
 	default:
 		break;
 	}
