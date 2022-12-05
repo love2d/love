@@ -25,6 +25,10 @@ Released: N/A
 * Added love.keyboard.isModifierActive.
 * Added Joystick:setPlayerIndex and Joystick:getPlayerIndex.
 * Added Joystick:getGamepadType.
+* Added Joystick:hasSensor.
+* Added Joystick:isSensorEnabled.
+* Added Joystick:setSensorEnabled.
+* Added Joystick:getSensorData.
 * Added new Gamepad API buttons: "misc1", "paddle1", "paddle2", "paddle3", "paddle4". and "touchpad".
 * Added World:getFixturesInArea().
 * Added support for saving .exr image files via ImageData:encode.
@@ -61,6 +65,9 @@ Released: N/A
 * Added a variant of love.graphics.setColorMask which accepts a single boolean.
 * Added new 'clampone' wrap mode.
 * Added a variant of Font:getWidth which takes a codepoint number argument.
+* Added love.sensor module.
+* Added love.sensorupdate callback.
+* Added love.joysticksensorupdate callback.
 
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
@@ -75,6 +82,7 @@ Released: N/A
 * Changed love.filesystem.exists to no longer be deprecated.
 * Changed RevoluteJoint:getMotorTorque to take 'dt' as a parameter instead of 'inverse_dt'.
 * Changed love.math.perlinNoise and simplexNoise to use higher precision numbers for its internal calculations.
+* Changed t.accelerometerjoystick startup flag in love.conf to nil by default.
 
 * Renamed 'display' field to 'displayindex' in love.window.setMode/updateMode/getMode and love.conf.
 
@@ -86,6 +94,7 @@ Released: N/A
 * Deprecated love.math.noise (replaced by perlinNoise and simplexNoise).
 * Deprecated love.graphics.getImageFormats and love.graphics.getCanvasFormats (replaced by getTextureFormats).
 * Deprecated t.window.highdpi in love.conf and the highdpi flag of love.window.setMode (replaced by t.highdpi in love.conf).
+* Deprecated t.accelerometerjoystick in love.conf (replaced by love.sensor module).
 * Deprecated the variants of Mesh:attachAttribute and SpriteBatch:attachAttribute which accept a Mesh (replaced by variants which accept a Buffer).
 * Deprecated Texture:newImageData (replaced by love.graphics.readbackTexture).
 
