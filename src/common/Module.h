@@ -51,6 +51,7 @@ public:
 		M_MATH,
 		M_MOUSE,
 		M_PHYSICS,
+		M_SENSOR,
 		M_SOUND,
 		M_SYSTEM,
 		M_THREAD,
