@@ -46,7 +46,7 @@ public:
 	// Implements Module.
 	const char *getName() const override;
 
-	bool isAvailable(SensorType type) override;
+	bool hasSensor(SensorType type) override;
 	bool isEnabled(SensorType type) override;
 	void setEnabled(SensorType type, bool enable) override;
 	std::vector<float> getData(SensorType type) override;

@@ -49,7 +49,7 @@ const char *Sensor::getName() const
 	return "love.sensor.sdl";
 }
 
-bool Sensor::isAvailable(SensorType type)
+bool Sensor::hasSensor(SensorType type)
 {
 	for (int i = 0; i < SDL_NumSensors(); i++)
 	{

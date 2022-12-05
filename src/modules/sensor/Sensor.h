@@ -49,7 +49,7 @@ public:
 	/**
 	 * Check the availability of the sensor.
 	 **/
-	virtual bool isAvailable(SensorType type) = 0;
+	virtual bool hasSensor(SensorType type) = 0;
 
 	/**
 	 * Check if the sensor is enabled.

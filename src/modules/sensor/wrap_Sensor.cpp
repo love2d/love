@@ -40,11 +40,11 @@ inline Sensor::SensorType luax_checksensortype(lua_State *L, int i)
 	return type;
 }
 
-static int w_isAvailable(lua_State *L)
+static int w_hasSensor(lua_State *L)
 {
 	Sensor::SensorType type = luax_checksensortype(L, 1);
 
-	lua_pushboolean(L, instance()->isAvailable(type));
+	lua_pushboolean(L, instance()->hasSensor(type));
 	return 1;
 }
 
@@ -90,8 +90,7 @@ static int w_getName(lua_State *L)
 
 static const luaL_Reg functions[] =
 {
-	{ "isAvailable", w_isAvailable },
-	{ "hasSensor", w_isAvailable },
+	{ "hasSensor", w_hasSensor },
 	{ "isEnabled", w_isEnabled },
 	{ "setEnabled", w_setEnabled },
 	{ "getData", w_getData },
