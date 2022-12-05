@@ -75,7 +75,7 @@ static int w_getData(lua_State *L)
 	for (float f: data)
 		lua_pushnumber(L, f);
 
-	return data.size();
+	return (int) data.size();
 }
 
 static int w_getName(lua_State *L)

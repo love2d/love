@@ -713,7 +713,7 @@ std::vector<float> Joystick::getSensorData(Sensor::SensorType type) const
 		throw love::Exception("\"%s\" gamepad sensor is not enabled", name);
 	}
 
-	if (SDL_GameControllerGetSensorData(controller, SDLSensor::convert(type), data.data(), data.size()) != 0)
+	if (SDL_GameControllerGetSensorData(controller, SDLSensor::convert(type), data.data(), (int) data.size()) != 0)
 	{
 		const char *name = nullptr;
 		SDLSensor::getConstant(type, name);

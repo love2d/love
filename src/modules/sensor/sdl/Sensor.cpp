@@ -106,7 +106,7 @@ std::vector<float> Sensor::getData(SensorType type)
 
 	std::vector<float> values(3);
 
-	if (SDL_SensorGetData(sensors[type], values.data(), values.size()) != 0)
+	if (SDL_SensorGetData(sensors[type], values.data(), (int) values.size()) != 0)
 	{
 		const char *name = nullptr;
 		getConstant(type, name);
