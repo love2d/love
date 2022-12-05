@@ -44,6 +44,11 @@ Sensor::~Sensor()
 	SDL_QuitSubSystem(SDL_INIT_SENSOR);
 }
 
+const char *Sensor::getName() const
+{
+	return "love.sensor.sdl";
+}
+
 bool Sensor::isAvailable(SensorType type)
 {
 	for (int i = 0; i < SDL_NumSensors(); i++)

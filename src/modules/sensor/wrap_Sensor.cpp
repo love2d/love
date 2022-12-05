@@ -17,3 +17,94 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  **/
+
+ // LOVE
+#include "wrap_Sensor.h"
+#include "sdl/Sensor.h"
+
+namespace love
+{
+namespace sensor
+{
+
+#define instance() (Module::getInstance<Sensor>(Module::M_SENSOR))
+
+inline Sensor::SensorType luax_checksensortype(lua_State *L, int i)
+{
+	const char *sensorType = luaL_checkstring(L, i);
+	Sensor::SensorType type = Sensor::SENSOR_MAX_ENUM;
+
+	if (!Sensor::getConstant(sensorType, type))
+		luax_enumerror(L, "sensor mode", Sensor::getConstants(type), sensorType);
+
+	return type;
+}
+
+static int w_isAvailable(lua_State *L)
+{
+	Sensor::SensorType type = luax_checksensortype(L, 1);
+
+	lua_pushboolean(L, instance()->isAvailable(type));
+	return 1;
+}
+
+static int w_isEnabled(lua_State *L)
+{
+	Sensor::SensorType type = luax_checksensortype(L, 1);
+
+	lua_pushboolean(L, instance()->isEnabled(type));
+	return 1;
+}
+
+static int w_setEnabled(lua_State *L)
+{
+	Sensor::SensorType type = luax_checksensortype(L, 1);
+	bool enabled = luax_checkboolean(L, 2);
+
+	luax_catchexcept(L, [&](){ instance()->setEnabled(type, enabled); });
+	return 0;
+}
+
+static int w_getData(lua_State *L)
+{
+	Sensor::SensorType type = luax_checksensortype(L, 1);
+
+	std::vector<float> data;
+	luax_catchexcept(L, [&](){ data = instance()->getData(type); });
+
+	for (float f: data)
+		lua_pushnumber(L, f);
+
+	return data.size();
+}
+
+static const luaL_Reg functions[] =
+{
+	{ "isAvailable", w_isAvailable },
+	{ "hasSensor", w_isAvailable },
+	{ "isEnabled", w_isEnabled },
+	{ "setEnabled", w_setEnabled },
+	{ "getData", w_getData },
+	{ nullptr, nullptr }
+};
+
+extern "C" int luaopen_love_sensor(lua_State * L)
+{
+	Sensor *instance = instance();
+	if (instance == nullptr)
+		luax_catchexcept(L, [&]() { instance = new love::sensor::sdl::Sensor(); });
+	else
+		instance->retain();
+
+	WrappedModule w;
+	w.module = instance;
+	w.name = "sensor";
+	w.type = &Module::type;
+	w.functions = functions;
+	w.types = nullptr;
+
+	return luax_register_module(L, w);
+}
+
+} // sensor
+} // love
