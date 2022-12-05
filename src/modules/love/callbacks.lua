@@ -134,6 +134,9 @@ function love.createhandlers()
 				love.audio.setPlaybackDevice()
 			end
 		end,
+		sensorupdate = function (sensorType, ...)
+			if love.sensorupdate then return love.sensorupdate(sensorType, ...) end
+		end
 	}, {
 		__index = function(self, name)
 			error("Unknown event: " .. name)

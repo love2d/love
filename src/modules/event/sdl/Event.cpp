@@ -32,6 +32,7 @@
 #include "audio/Audio.h"
 #include "common/config.h"
 #include "timer/Timer.h"
+#include "sensor/sdl/Sensor.h"
 
 #include <cmath>
 
@@ -178,6 +179,7 @@ Message *Event::convert(const SDL_Event &e)
 	vargs.reserve(4);
 
 	love::filesystem::Filesystem *filesystem = nullptr;
+	love::sensor::Sensor *sensorInstance = nullptr;
 
 	love::keyboard::Keyboard::Key key = love::keyboard::Keyboard::KEY_UNKNOWN;
 	love::keyboard::Keyboard::Scancode scancode = love::keyboard::Keyboard::SCANCODE_UNKNOWN;
@@ -446,6 +448,37 @@ Message *Event::convert(const SDL_Event &e)
 		msg = new Message("localechanged");
 		break;
 #endif
+	case SDL_SENSORUPDATE:
+		sensorInstance = Module::getInstance<sensor::Sensor>(M_SENSOR);
+		if (sensorInstance)
+		{
+			std::vector<void*> sensors = sensorInstance->getHandles();
+
+			for (void *s: sensors)
+			{
+				SDL_Sensor *sensor = (SDL_Sensor *) s;
+				SDL_SensorID id = SDL_SensorGetInstanceID(sensor);
+
+				if (e.sensor.which == id)
+				{
+					// Found sensor
+					const char *sensorType = "unknown";
+					sensor::Sensor::getConstant(sensor::sdl::Sensor::convert(SDL_SensorGetType(sensor)), sensorType);
+					vargs.emplace_back(sensorType, strlen(sensorType));
+					vargs.emplace_back(e.sensor.data[0]);
+					vargs.emplace_back(e.sensor.data[1]);
+					vargs.emplace_back(e.sensor.data[2]);
+					vargs.emplace_back(e.sensor.data[3]);
+					vargs.emplace_back(e.sensor.data[4]);
+					// NOTE: LOVE event loop only pass up to 6 additional message for now
+					vargs.emplace_back(e.sensor.data[5]);
+					msg = new Message("sensorupdate", vargs);
+
+					break;
+				}
+			}
+		}
+		break;
 	default:
 		break;
 	}

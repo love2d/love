@@ -52,10 +52,10 @@ public:
 	std::vector<float> getData(SensorType type) override;
 	std::vector<void*> getHandles() override;
 
+	static SensorType convert(SDL_SensorType type);
+
 private:
 	std::map<SensorType, SDL_Sensor*> sensors;
-
-	static SensorType convert(SDL_SensorType type);
 
 }; // Sensor
 
