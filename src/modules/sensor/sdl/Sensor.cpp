@@ -116,7 +116,10 @@ std::vector<void*> Sensor::getHandles()
 	std::vector<void*> nativeSensor;
 
 	for (const std::pair<SensorType, SDL_Sensor*> &data: sensors)
-		nativeSensor.push_back(data.second);
+	{
+		if (data.second)
+			nativeSensor.push_back(data.second);
+	}
 
 	return nativeSensor;
 }
