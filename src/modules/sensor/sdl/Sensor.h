@@ -54,6 +54,7 @@ public:
 	const char *getSensorName(SensorType type) override;
 
 	static SensorType convert(SDL_SensorType type);
+	static SDL_SensorType convert(SensorType type);
 
 private:
 	std::map<SensorType, SDL_Sensor*> sensors;

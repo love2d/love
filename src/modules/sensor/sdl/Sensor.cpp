@@ -156,6 +156,19 @@ Sensor::SensorType Sensor::convert(SDL_SensorType type)
 	}
 }
 
+SDL_SensorType Sensor::convert(Sensor::SensorType type)
+{
+	switch (type)
+	{
+		case SENSOR_ACCELEROMETER:
+			return SDL_SENSOR_ACCEL;
+		case SENSOR_GYROSCOPE:
+			return SDL_SENSOR_GYRO;
+		default:
+			return SDL_SENSOR_UNKNOWN;
+	}
+}
+
 }
 }
 }
