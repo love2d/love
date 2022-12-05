@@ -465,13 +465,11 @@ Message *Event::convert(const SDL_Event &e)
 					const char *sensorType = "unknown";
 					sensor::Sensor::getConstant(sensor::sdl::Sensor::convert(SDL_SensorGetType(sensor)), sensorType);
 					vargs.emplace_back(sensorType, strlen(sensorType));
+					// Both accelerometer and gyroscope only pass up to 3 values.
+					// https://github.com/libsdl-org/SDL/blob/SDL2/include/SDL_sensor.h#L81-L127
 					vargs.emplace_back(e.sensor.data[0]);
 					vargs.emplace_back(e.sensor.data[1]);
 					vargs.emplace_back(e.sensor.data[2]);
-					vargs.emplace_back(e.sensor.data[3]);
-					vargs.emplace_back(e.sensor.data[4]);
-					// NOTE: LOVE event loop only pass up to 6 additional message for now
-					vargs.emplace_back(e.sensor.data[5]);
 					msg = new Message("sensorupdate", vargs);
 
 					break;

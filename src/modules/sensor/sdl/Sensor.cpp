@@ -104,10 +104,16 @@ std::vector<float> Sensor::getData(SensorType type)
 		throw love::Exception("\"%s\" sensor is not enabled", name);
 	}
 
-	std::vector<float> values;
-	values.resize(3);
+	std::vector<float> values(3);
 
-	SDL_SensorGetData(sensors[type], values.data(), 3);
+	if (SDL_SensorGetData(sensors[type], values.data(), values.size()) != 0)
+	{
+		const char *name = nullptr;
+		getConstant(type, name);
+
+		throw love::Exception("Could not get \"%s\" SDL sensor data (%s)", name, SDL_GetError());
+	}
+
 	return values;
 }
 
