@@ -51,6 +51,7 @@ public:
 	void setEnabled(SensorType type, bool enable) override;
 	std::vector<float> getData(SensorType type) override;
 	std::vector<void*> getHandles() override;
+	const char *getSensorName(SensorType type) override;
 
 	static SensorType convert(SDL_SensorType type);
 

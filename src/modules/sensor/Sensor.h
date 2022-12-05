@@ -71,6 +71,8 @@ public:
 	 **/
 	virtual std::vector<void *> getHandles() = 0;
 
+	virtual const char *getSensorName(SensorType type) = 0;
+
 	STRINGMAP_CLASS_DECLARE(SensorType);
 
 }; // Sensor

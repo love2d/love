@@ -124,6 +124,19 @@ std::vector<void*> Sensor::getHandles()
 	return nativeSensor;
 }
 
+const char *Sensor::getSensorName(SensorType type)
+{
+	if (sensors[type] == nullptr)
+	{
+		const char *name = nullptr;
+		getConstant(type, name);
+
+		throw love::Exception("\"%s\" sensor is not enabled", name);
+	}
+
+	return SDL_SensorGetName(sensors[type]);
+}
+
 Sensor::SensorType Sensor::convert(SDL_SensorType type)
 {
 	switch (type)

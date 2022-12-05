@@ -78,6 +78,16 @@ static int w_getData(lua_State *L)
 	return data.size();
 }
 
+static int w_getName(lua_State *L)
+{
+	Sensor::SensorType type = luax_checksensortype(L, 1);
+	const char *name = nullptr;
+
+	luax_catchexcept(L, [&](){ name = instance()->getSensorName(type); });
+	lua_pushstring(L, name);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "isAvailable", w_isAvailable },
@@ -85,6 +95,7 @@ static const luaL_Reg functions[] =
 	{ "isEnabled", w_isEnabled },
 	{ "setEnabled", w_setEnabled },
 	{ "getData", w_getData },
+	{ "getName", w_getName },
 	{ nullptr, nullptr }
 };
 
