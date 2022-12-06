@@ -413,7 +413,6 @@ int Joystick::getID() const
 
 void Joystick::getDeviceInfo(int &vendorID, int &productID, int &productVersion) const
 {
-#if SDL_VERSION_ATLEAST(2, 0, 6)
 	if (joyhandle != nullptr)
 	{
 		vendorID = SDL_JoystickGetVendor(joyhandle);
@@ -421,7 +420,6 @@ void Joystick::getDeviceInfo(int &vendorID, int &productID, int &productVersion)
 		productVersion = SDL_JoystickGetProductVersion(joyhandle);
 	}
 	else
-#endif
 	{
 		vendorID = 0;
 		productID = 0;
@@ -525,10 +523,8 @@ bool Joystick::setVibration(float left, float right, float duration)
 
 	bool success = false;
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	if (SDL_JoystickRumble(joyhandle, (Uint16)(left * LOVE_UINT16_MAX), (Uint16)(right * LOVE_UINT16_MAX), length) == 0)
 		success = true;
-#endif
 
 	if (!success && !checkCreateHaptic())
 		return false;
@@ -610,10 +606,8 @@ bool Joystick::setVibration()
 {
 	bool success = false;
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	if (!success)
 		success = isConnected() && SDL_JoystickRumble(joyhandle, 0, 0, 0) == 0;
-#endif
 
 	if (!success && SDL_WasInit(SDL_INIT_HAPTIC) && haptic && SDL_HapticIndex(haptic) != -1)
 		success = (SDL_HapticStopEffect(haptic, vibration.id) == 0);

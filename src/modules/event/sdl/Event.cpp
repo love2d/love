@@ -193,10 +193,6 @@ Message *Event::convert(const SDL_Event &e)
 	love::touch::Touch::TouchInfo touchinfo;
 #endif
 
-#ifdef LOVE_LINUX
-	static bool touchNormalizationBug = false;
-#endif
-
 	switch (e.type)
 	{
 	case SDL_KEYDOWN:
@@ -315,22 +311,9 @@ Message *Event::convert(const SDL_Event &e)
 		touchinfo.dy = e.tfinger.dy;
 		touchinfo.pressure = e.tfinger.pressure;
 
-#ifdef LOVE_LINUX
-		// FIXME: hacky workaround for SDL not normalizing touch coordinates in
-		// its X11 backend: https://bugzilla.libsdl.org/show_bug.cgi?id=2307
-		if (touchNormalizationBug || fabs(touchinfo.x) >= 1.5 || fabs(touchinfo.y) >= 1.5 || fabs(touchinfo.dx) >= 1.5 || fabs(touchinfo.dy) >= 1.5)
-		{
-			touchNormalizationBug = true;
-			windowToDPICoords(&touchinfo.x, &touchinfo.y);
-			windowToDPICoords(&touchinfo.dx, &touchinfo.dy);
-		}
-		else
-#endif
-		{
-			// SDL's coords are normalized to [0, 1], but we want screen coords.
-			normalizedToDPICoords(&touchinfo.x, &touchinfo.y);
-			normalizedToDPICoords(&touchinfo.dx, &touchinfo.dy);
-		}
+		// SDL's coords are normalized to [0, 1], but we want screen coords.
+		normalizedToDPICoords(&touchinfo.x, &touchinfo.y);
+		normalizedToDPICoords(&touchinfo.dx, &touchinfo.dy);
 
 		// We need to update the love.touch.sdl internal state from here.
 		touchmodule = (touch::sdl::Touch *) Module::getInstance("love.touch.sdl");
@@ -374,7 +357,6 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_WINDOWEVENT:
 		msg = convertWindowEvent(e);
 		break;
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	case SDL_DISPLAYEVENT:
 		if (e.display.event == SDL_DISPLAYEVENT_ORIENTATION)
 		{
@@ -408,7 +390,6 @@ Message *Event::convert(const SDL_Event &e)
 			msg = new Message("displayrotated", vargs);
 		}
 		break;
-#endif
 	case SDL_DROPFILE:
 		filesystem = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
 		if (filesystem != nullptr)
