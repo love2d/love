@@ -463,8 +463,10 @@ Message *Event::convert(const SDL_Event &e)
 				if (e.sensor.which == id)
 				{
 					// Found sensor
-					const char *sensorType = "unknown";
-					sensor::Sensor::getConstant(sensor::sdl::Sensor::convert(SDL_SensorGetType(sensor)), sensorType);
+					const char *sensorType;
+					if (!sensor::Sensor::getConstant(sensor::sdl::Sensor::convert(SDL_SensorGetType(sensor)), sensorType))
+						sensorType = "unknown";
+
 					vargs.emplace_back(sensorType, strlen(sensorType));
 					// Both accelerometer and gyroscope only pass up to 3 values.
 					// https://github.com/libsdl-org/SDL/blob/SDL2/include/SDL_sensor.h#L81-L127
@@ -603,9 +605,10 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		{
 			using Sensor = love::sensor::Sensor;
 
-			const char *sensorName = "unknown";
+			const char *sensorName;
 			Sensor::SensorType sensorType = love::sensor::sdl::Sensor::convert((SDL_SensorType) e.csensor.sensor);
-			Sensor::getConstant(sensorType, sensorName);
+			if (!Sensor::getConstant(sensorType, sensorName))
+				sensorName = "unknown";
 
 			vargs.emplace_back(joysticktype, stick);
 			vargs.emplace_back(sensorName, strlen(sensorName));
