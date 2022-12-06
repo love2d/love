@@ -1114,6 +1114,15 @@
 		FACA02FB1F5E397E0084B28F /* HashFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA02E61F5E396B0084B28F /* HashFunction.cpp */; };
 		FACA02FC1F5E39810084B28F /* wrap_CompressedData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA02E81F5E396B0084B28F /* wrap_CompressedData.cpp */; };
 		FACA02FD1F5E39840084B28F /* wrap_DataModule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA02EA1F5E396B0084B28F /* wrap_DataModule.cpp */; };
+		FACA06AC293EE5CD001A2557 /* wrap_Sensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA06A5293EE5CD001A2557 /* wrap_Sensor.cpp */; };
+		FACA06AD293EE5CD001A2557 /* wrap_Sensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA06A5293EE5CD001A2557 /* wrap_Sensor.cpp */; };
+		FACA06AE293EE5CD001A2557 /* Sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = FACA06A6293EE5CD001A2557 /* Sensor.h */; };
+		FACA06AF293EE5CD001A2557 /* Sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = FACA06A8293EE5CD001A2557 /* Sensor.h */; };
+		FACA06B0293EE5CD001A2557 /* Sensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA06A9293EE5CD001A2557 /* Sensor.cpp */; };
+		FACA06B1293EE5CD001A2557 /* Sensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA06A9293EE5CD001A2557 /* Sensor.cpp */; };
+		FACA06B2293EE5CD001A2557 /* Sensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA06AA293EE5CD001A2557 /* Sensor.cpp */; };
+		FACA06B3293EE5CD001A2557 /* Sensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FACA06AA293EE5CD001A2557 /* Sensor.cpp */; };
+		FACA06B4293EE5CD001A2557 /* wrap_Sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = FACA06AB293EE5CD001A2557 /* wrap_Sensor.h */; };
 		FACFB751276D7E3B0089F78D /* freetype.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FACFB750276D7E2B0089F78D /* freetype.xcframework */; };
 		FACFB753276D7F860089F78D /* Lua.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = FACFB752276D7F6F0089F78D /* Lua.xcframework */; };
 		FAD19A171DFF8CA200D5398A /* ImageDataBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */; };
@@ -2138,6 +2147,12 @@
 		FACA02E91F5E396B0084B28F /* wrap_CompressedData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_CompressedData.h; sourceTree = "<group>"; };
 		FACA02EA1F5E396B0084B28F /* wrap_DataModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_DataModule.cpp; sourceTree = "<group>"; };
 		FACA02EB1F5E396B0084B28F /* wrap_DataModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_DataModule.h; sourceTree = "<group>"; };
+		FACA06A5293EE5CD001A2557 /* wrap_Sensor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Sensor.cpp; sourceTree = "<group>"; };
+		FACA06A6293EE5CD001A2557 /* Sensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sensor.h; sourceTree = "<group>"; };
+		FACA06A8293EE5CD001A2557 /* Sensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sensor.h; sourceTree = "<group>"; };
+		FACA06A9293EE5CD001A2557 /* Sensor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sensor.cpp; sourceTree = "<group>"; };
+		FACA06AA293EE5CD001A2557 /* Sensor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sensor.cpp; sourceTree = "<group>"; };
+		FACA06AB293EE5CD001A2557 /* wrap_Sensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Sensor.h; sourceTree = "<group>"; };
 		FACFB750276D7E2B0089F78D /* freetype.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = freetype.xcframework; path = ios/libraries/freetype.xcframework; sourceTree = "<group>"; };
 		FACFB752276D7F6F0089F78D /* Lua.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Lua.xcframework; path = ios/libraries/Lua.xcframework; sourceTree = "<group>"; };
 		FAD19A151DFF8CA200D5398A /* ImageDataBase.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageDataBase.cpp; sourceTree = "<group>"; };
@@ -2660,6 +2675,7 @@
 				FA0B7C001A95902C000E1D17 /* math */,
 				FA0B7C0D1A95902C000E1D17 /* mouse */,
 				FA0B7C1B1A95902C000E1D17 /* physics */,
+				FACA06A4293EE5CD001A2557 /* sensor */,
 				FA0B7C7B1A95902C000E1D17 /* sound */,
 				FA0B7C9A1A95902C000E1D17 /* system */,
 				FA0B7CA21A95902C000E1D17 /* thread */,
@@ -3807,6 +3823,27 @@
 			path = data;
 			sourceTree = "<group>";
 		};
+		FACA06A4293EE5CD001A2557 /* sensor */ = {
+			isa = PBXGroup;
+			children = (
+				FACA06A7293EE5CD001A2557 /* sdl */,
+				FACA06AA293EE5CD001A2557 /* Sensor.cpp */,
+				FACA06A6293EE5CD001A2557 /* Sensor.h */,
+				FACA06A5293EE5CD001A2557 /* wrap_Sensor.cpp */,
+				FACA06AB293EE5CD001A2557 /* wrap_Sensor.h */,
+			);
+			path = sensor;
+			sourceTree = "<group>";
+		};
+		FACA06A7293EE5CD001A2557 /* sdl */ = {
+			isa = PBXGroup;
+			children = (
+				FACA06A9293EE5CD001A2557 /* Sensor.cpp */,
+				FACA06A8293EE5CD001A2557 /* Sensor.h */,
+			);
+			path = sdl;
+			sourceTree = "<group>";
+		};
 		FAF13FBF1E20934C00F898D2 /* glslang */ = {
 			isa = PBXGroup;
 			children = (
@@ -4010,6 +4047,7 @@
 				FA0B7D4A1A95902C000E1D17 /* Polyline.h in Headers */,
 				FABDA9E72552448300B5C523 /* b2_chain_shape.h in Headers */,
 				FAF1405C1E20934C00F898D2 /* InitializeGlobals.h in Headers */,
+				FACA06B4293EE5CD001A2557 /* wrap_Sensor.h in Headers */,
 				FA0B7DB31A95902C000E1D17 /* wrap_Image.h in Headers */,
 				FAF140591E20934C00F898D2 /* Common.h in Headers */,
 				FA0B7EC31A95902C000E1D17 /* threads.h in Headers */,
@@ -4299,6 +4337,7 @@
 				FA0B7DC31A95902C000E1D17 /* wrap_Joystick.h in Headers */,
 				FA18CF3B23DCF67900263725 /* spirv_cross_util.hpp in Headers */,
 				FAF140631E20934C00F898D2 /* Types.h in Headers */,
+				FACA06AF293EE5CD001A2557 /* Sensor.h in Headers */,
 				FA4F2BE61DE6650600CA37D7 /* wrap_Transform.h in Headers */,
 				FA0B7EE71A95902D000E1D17 /* Window.h in Headers */,
 				FA0B7E651A95902C000E1D17 /* wrap_PolygonShape.h in Headers */,
@@ -4359,6 +4398,7 @@
 				FA0B7E931A95902C000E1D17 /* ModPlugDecoder.h in Headers */,
 				FA0B7D111A95902C000E1D17 /* BMFontRasterizer.h in Headers */,
 				217DFBE61D9F6D490055D849 /* http.lua.h in Headers */,
+				FACA06AE293EE5CD001A2557 /* Sensor.h in Headers */,
 				FA18CF1D23DCF67900263725 /* sampler.hpp in Headers */,
 				FA0B7E3E1A95902C000E1D17 /* wrap_Body.h in Headers */,
 				FABDA9C92552448300B5C523 /* b2_distance.h in Headers */,
@@ -4613,6 +4653,7 @@
 				FAE64A952071365100BC7981 /* physfs_platform_qnx.c in Sources */,
 				FABDA9FC2552448300B5C523 /* b2_collide_polygon.cpp in Sources */,
 				FABDA9D12552448300B5C523 /* b2_draw.cpp in Sources */,
+				FACA06B3293EE5CD001A2557 /* Sensor.cpp in Sources */,
 				FA0B7EA41A95902C000E1D17 /* SoundData.cpp in Sources */,
 				FAF1406A1E20934C00F898D2 /* glslang_tab.cpp in Sources */,
 				FA8951A31AA2EDF300EC385A /* wrap_Event.cpp in Sources */,
@@ -4688,6 +4729,7 @@
 				FA0B7AD51A958EA3000E1D17 /* unix.c in Sources */,
 				FAB17BE71ABFAA9000F9BA27 /* lz4.c in Sources */,
 				FAE64A902071364800BC7981 /* physfs_unicode.c in Sources */,
+				FACA06B1293EE5CD001A2557 /* Sensor.cpp in Sources */,
 				FA4F2BE71DE6650D00CA37D7 /* Transform.cpp in Sources */,
 				FAF140A11E20934C00F898D2 /* RemoveTree.cpp in Sources */,
 				FABDA9972552448300B5C523 /* b2_distance_joint.cpp in Sources */,
@@ -4833,6 +4875,7 @@
 				FA4F2BB41DE1E4BD00CA37D7 /* RecordingDevice.cpp in Sources */,
 				FA0B7DF51A95902C000E1D17 /* wrap_Mouse.cpp in Sources */,
 				FA0B7E861A95902C000E1D17 /* CoreAudioDecoder.cpp in Sources */,
+				FACA06AD293EE5CD001A2557 /* wrap_Sensor.cpp in Sources */,
 				FA0B7E761A95902C000E1D17 /* wrap_WeldJoint.cpp in Sources */,
 				FA0B7D561A95902C000E1D17 /* Buffer.cpp in Sources */,
 				FA1557C51CE90BD900AFF582 /* EXRHandler.cpp in Sources */,
@@ -5037,6 +5080,7 @@
 				FAF6C9E623C2DE2900D7B5BC /* SpvBuilder.cpp in Sources */,
 				FABDA9C12552448300B5C523 /* b2_rope.cpp in Sources */,
 				FA0B7D1E1A95902C000E1D17 /* ImageRasterizer.cpp in Sources */,
+				FACA06B2293EE5CD001A2557 /* Sensor.cpp in Sources */,
 				FABDA9FB2552448300B5C523 /* b2_collide_polygon.cpp in Sources */,
 				FABDA9D02552448300B5C523 /* b2_draw.cpp in Sources */,
 				FAF140A31E20934C00F898D2 /* Scan.cpp in Sources */,
@@ -5112,6 +5156,7 @@
 				FA0B7AB51A958EA3000E1D17 /* ddsparse.cpp in Sources */,
 				FACA02F41F5E396B0084B28F /* wrap_CompressedData.cpp in Sources */,
 				FAF140AC1E20934C00F898D2 /* Versions.cpp in Sources */,
+				FACA06B0293EE5CD001A2557 /* Sensor.cpp in Sources */,
 				FA0B79461A958E3B000E1D17 /* Vector.cpp in Sources */,
 				FAC7CD811FE35E95006A60C7 /* physfs_platform_os2.c in Sources */,
 				FABDA9962552448300B5C523 /* b2_distance_joint.cpp in Sources */,
@@ -5257,6 +5302,7 @@
 				FAC7CD891FE35E95006A60C7 /* physfs_archiver_dir.c in Sources */,
 				FAF140751E20934C00F898D2 /* IntermTraverse.cpp in Sources */,
 				FA0B7CE21A95902C000E1D17 /* wrap_Audio.cpp in Sources */,
+				FACA06AC293EE5CD001A2557 /* wrap_Sensor.cpp in Sources */,
 				FA0B7DF71A95902C000E1D17 /* Body.cpp in Sources */,
 				FABDA9ED2552448300B5C523 /* b2_circle_shape.cpp in Sources */,
 				FA0B7DF41A95902C000E1D17 /* wrap_Mouse.cpp in Sources */,
