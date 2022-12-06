@@ -66,8 +66,8 @@ Released: N/A
 * Added new 'clampone' wrap mode.
 * Added a variant of Font:getWidth which takes a codepoint number argument.
 * Added love.sensor module.
-* Added love.sensorupdate callback.
-* Added love.joysticksensorupdate callback.
+* Added love.sensorupdated callback.
+* Added love.joysticksensorupdated callback.
 
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
@@ -82,7 +82,7 @@ Released: N/A
 * Changed love.filesystem.exists to no longer be deprecated.
 * Changed RevoluteJoint:getMotorTorque to take 'dt' as a parameter instead of 'inverse_dt'.
 * Changed love.math.perlinNoise and simplexNoise to use higher precision numbers for its internal calculations.
-* Changed t.accelerometerjoystick startup flag in love.conf to nil by default.
+* Changed t.accelerometerjoystick startup flag in love.conf to unset by default.
 
 * Renamed 'display' field to 'displayindex' in love.window.setMode/updateMode/getMode and love.conf.
 

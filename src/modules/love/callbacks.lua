@@ -88,9 +88,9 @@ function love.createhandlers()
 		joystickremoved = function (j)
 			if love.joystickremoved then return love.joystickremoved(j) end
 		end,
-		joysticksensorupdate = function (j, sensorType, x, y, z)
-			if love.joysticksensorupdate then return love.joysticksensorupdate(j, sensorType, x, y, z) end
-		end
+		joysticksensorupdated = function (j, sensorType, x, y, z)
+			if love.joysticksensorupdated then return love.joysticksensorupdated(j, sensorType, x, y, z) end
+		end,
 		focus = function (f)
 			if love.focus then return love.focus(f) end
 		end,
@@ -137,8 +137,8 @@ function love.createhandlers()
 				love.audio.setPlaybackDevice()
 			end
 		end,
-		sensorupdate = function (sensorType, x, y, z)
-			if love.sensorupdate then return love.sensorupdate(sensorType, x, y, z) end
+		sensorupdated = function (sensorType, x, y, z)
+			if love.sensorupdated then return love.sensorupdated(sensorType, x, y, z) end
 		end,
 	}, {
 		__index = function(self, name)

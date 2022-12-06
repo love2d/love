@@ -471,7 +471,7 @@ Message *Event::convert(const SDL_Event &e)
 					vargs.emplace_back(e.sensor.data[0]);
 					vargs.emplace_back(e.sensor.data[1]);
 					vargs.emplace_back(e.sensor.data[2]);
-					msg = new Message("sensorupdate", vargs);
+					msg = new Message("sensorupdated", vargs);
 
 					break;
 				}
@@ -612,7 +612,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			vargs.emplace_back(e.csensor.data[0]);
 			vargs.emplace_back(e.csensor.data[1]);
 			vargs.emplace_back(e.csensor.data[2]);
-			msg = new Message("joysticksensorupdate", vargs);
+			msg = new Message("joysticksensorupdated", vargs);
 		}
 		break;
 #endif
