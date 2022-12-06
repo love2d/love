@@ -374,7 +374,6 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_WINDOWEVENT:
 		msg = convertWindowEvent(e);
 		break;
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	case SDL_DISPLAYEVENT:
 		if (e.display.event == SDL_DISPLAYEVENT_ORIENTATION)
 		{
@@ -408,7 +407,6 @@ Message *Event::convert(const SDL_Event &e)
 			msg = new Message("displayrotated", vargs);
 		}
 		break;
-#endif
 	case SDL_DROPFILE:
 		filesystem = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
 		if (filesystem != nullptr)

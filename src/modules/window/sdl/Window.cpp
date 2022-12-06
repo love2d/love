@@ -588,12 +588,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		if (!f.fullscreen)
 			SDL_SetWindowSize(window, width, height);
 
-		// On linux systems 2.0.5+ might not be available...
-		// TODO: require at least 2.0.5?
-#if SDL_VERSION_ATLEAST(2, 0, 5)
 		if (this->settings.resizable != f.resizable)
 			SDL_SetWindowResizable(window, f.resizable ? SDL_TRUE : SDL_FALSE);
-#endif
 
 		if (this->settings.borderless != f.borderless)
 			SDL_SetWindowBordered(window, f.borderless ? SDL_FALSE : SDL_TRUE);
@@ -909,9 +905,6 @@ const char *Window::getDisplayName(int displayindex) const
 
 Window::DisplayOrientation Window::getDisplayOrientation(int displayindex) const
 {
-	// TODO: We can expose this everywhere, we just need to watch out for the
-	// SDL binary being older than the headers on Linux.
-#if SDL_VERSION_ATLEAST(2, 0, 9) && (defined(LOVE_ANDROID) || !defined(LOVE_LINUX))
 	switch (SDL_GetDisplayOrientation(displayindex))
 	{
 		case SDL_ORIENTATION_UNKNOWN: return ORIENTATION_UNKNOWN;
@@ -920,9 +913,6 @@ Window::DisplayOrientation Window::getDisplayOrientation(int displayindex) const
 		case SDL_ORIENTATION_PORTRAIT: return ORIENTATION_PORTRAIT;
 		case SDL_ORIENTATION_PORTRAIT_FLIPPED: return ORIENTATION_PORTRAIT_FLIPPED;
 	}
-#else
-	LOVE_UNUSED(displayindex);
-#endif
 
 	return ORIENTATION_UNKNOWN;
 }

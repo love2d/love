@@ -172,7 +172,7 @@ Please see https://github.com/love2d/megasource
 	find_package(ModPlug REQUIRED)
 	find_package(OpenAL REQUIRED)
 	find_package(OpenGL REQUIRED)
-	find_package(SDL2 REQUIRED)
+	find_package(SDL2 2.0.9 REQUIRED)
 	find_package(Theora REQUIRED)
 	find_package(Vorbis REQUIRED)
 	find_package(ZLIB REQUIRED)

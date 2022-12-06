@@ -21,7 +21,7 @@ AC_DEFUN([ACLOVE_DEP_LIBM], [
 
 AC_DEFUN([ACLOVE_DEP_SDL2], [
 	aclove_sdl2_found=no
-	AM_PATH_SDL2([], [aclove_sdl2_found=yes], [])
+	AM_PATH_SDL2([2.0.9], [aclove_sdl2_found=yes], [])
 	AS_VAR_IF([aclove_sdl2_found], [no], [LOVE_MSG_ERROR([SDL 2])], [])])
 
 AC_DEFUN([ACLOVE_DEP_PTHREAD], [
