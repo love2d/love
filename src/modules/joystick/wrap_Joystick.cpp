@@ -21,6 +21,7 @@
 // LOVE
 #include "wrap_Joystick.h"
 #include "wrap_JoystickModule.h"
+#include "sensor/Sensor.h"
 
 #include <vector>
 
@@ -367,6 +368,78 @@ int w_Joystick_getVibration(lua_State *L)
 	return 2;
 }
 
+#ifdef LOVE_ENABLE_SENSOR
+
+int w_Joystick_hasSensor(lua_State *L)
+{
+	using namespace love::sensor;
+
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char *sensorType = luaL_checkstring(L, 2);
+
+	Sensor::SensorType type;
+	if (!Sensor::getConstant(sensorType, type))
+		luax_enumerror(L, "sensor type", Sensor::getConstants(type), sensorType);
+
+	luax_pushboolean(L, j->hasSensor(type));
+	return 1;
+}
+
+int w_Joystick_isSensorEnabled(lua_State *L)
+{
+	using namespace love::sensor;
+
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char *sensorType = luaL_checkstring(L, 2);
+
+	Sensor::SensorType type;
+	if (!Sensor::getConstant(sensorType, type))
+		luax_enumerror(L, "sensor type", Sensor::getConstants(type), sensorType);
+
+	luax_pushboolean(L, j->isSensorEnabled(type));
+	return 1;
+}
+
+int w_Joystick_setSensorEnabled(lua_State *L)
+{
+	using namespace love::sensor;
+
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char *sensorType = luaL_checkstring(L, 2);
+
+	Sensor::SensorType type;
+	if (!Sensor::getConstant(sensorType, type))
+		luax_enumerror(L, "sensor type", Sensor::getConstants(type), sensorType);
+
+	bool enabled = luax_checkboolean(L, 3);
+
+	luax_catchexcept(L, [&]() { j->setSensorEnabled(type, enabled); });
+	return 0;
+}
+
+int w_Joystick_getSensorData(lua_State *L)
+{
+	using namespace love::sensor;
+
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char *sensorType = luaL_checkstring(L, 2);
+
+	Sensor::SensorType type;
+	if (!Sensor::getConstant(sensorType, type))
+		luax_enumerror(L, "sensor type", Sensor::getConstants(type), sensorType);
+
+	std::vector<float> data;
+
+	luax_catchexcept(L, [&]() { data = j->getSensorData(type); });
+
+	for (float f: data)
+		lua_pushnumber(L, f);
+
+	return (int) data.size();
+}
+
+#endif // LOVE_ENABLE_SENSOR
+
 // List of functions to wrap.
 static const luaL_Reg w_Joystick_functions[] =
 {
@@ -395,6 +468,13 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "isVibrationSupported", w_Joystick_isVibrationSupported },
 	{ "setVibration", w_Joystick_setVibration },
 	{ "getVibration", w_Joystick_getVibration },
+
+#ifdef LOVE_ENABLE_SENSOR
+	{ "hasSensor", w_Joystick_hasSensor },
+	{ "isSensorEnabled", w_Joystick_isSensorEnabled },
+	{ "setSensorEnabled", w_Joystick_setSensorEnabled },
+	{ "getSensorData", w_Joystick_setSensorEnabled },
+#endif
 
 	// From wrap_JoystickModule.
 	{ "getConnectedIndex", w_getIndex },

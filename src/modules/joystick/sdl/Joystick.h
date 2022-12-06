@@ -88,6 +88,11 @@ public:
 	bool setVibration() override;
 	void getVibration(float &left, float &right) override;
 
+	bool hasSensor(Sensor::SensorType type) const override;
+	bool isSensorEnabled(Sensor::SensorType type) const override;
+	void setSensorEnabled(Sensor::SensorType type, bool enabled) override;
+	std::vector<float> getSensorData(Sensor::SensorType type) const override;
+
 	static bool getConstant(Hat in, Uint8 &out);
 	static bool getConstant(Uint8 in, Hat &out);
 
