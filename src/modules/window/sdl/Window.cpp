@@ -46,6 +46,10 @@
 // SDL
 #include <SDL_syswm.h>
 
+#ifdef LOVE_GRAPHICS_VULKAN
+#include <SDL_vulkan.h>
+#endif
+
 #if defined(LOVE_WINDOWS)
 #include <windows.h>
 #include <dwmapi.h>
@@ -684,11 +688,16 @@ bool Window::onSizeChanged(int width, int height)
 	windowWidth = width;
 	windowHeight = height;
 
+	// TODO: Use SDL_GetWindowSizeInPixels here when supported.
 	if (glcontext != nullptr)
 		SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 #ifdef LOVE_GRAPHICS_METAL
 	else if (metalView != nullptr)
 		SDL_Metal_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+#endif
+#ifdef LOVE_GRAPHICS_VULKAN
+	else if (windowRenderer == graphics::RENDERER_VULKAN)
+		SDL_Vulkan_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 #endif
 	else
 	{
@@ -716,11 +725,16 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	pixelWidth = windowWidth;
 	pixelHeight = windowHeight;
 
+	// TODO: Use SDL_GetWindowSizeInPixels here when supported.
 	if ((wflags & SDL_WINDOW_OPENGL) != 0)
 		SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 #ifdef LOVE_GRAPHICS_METAL
 	else if ((wflags & SDL_WINDOW_METAL) != 0)
 		SDL_Metal_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+#endif
+#ifdef LOVE_GRAPHICS_VULKAN
+	else if ((wflags & SDL_WINDOW_VULKAN) != 0)
+		SDL_Vulkan_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 #endif
 
 	if ((wflags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)

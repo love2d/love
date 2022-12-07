@@ -28,7 +28,7 @@
 #include "Shader.h"
 #include "Vulkan.h"
 
-#include "SDL_vulkan.h"
+#include <SDL_vulkan.h>
 
 #include <algorithm>
 #include <vector>
@@ -470,13 +470,17 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
 
-	resetProjection();
+	if (!isRenderTargetActive())
+		resetProjection();
 }
 
 bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
 {
 	requestedMsaa = msaa;
 	windowHasStencil = windowhasstencil;
+
+	// Must be called before the swapchain is created.
+	setViewportSize(width, height, pixelwidth, pixelheight);
 
 	cleanUpFunctions.clear();
 	cleanUpFunctions.resize(MAX_FRAMES_IN_FLIGHT);
@@ -530,8 +534,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	createFanIndexBuffer();
 
 	restoreState(states.back());
-
-	setViewportSize(width, height, pixelwidth, pixelheight);
 
 	Vulkan::resetShaderSwitches();
 
@@ -1851,15 +1853,9 @@ VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
 		return capabilities.currentExtent;
 	else
 	{
-		auto window = Module::getInstance<love::window::Window>(M_WINDOW);
-		const void *handle = window->getHandle();
-
-		int width, height;
-		SDL_Vulkan_GetDrawableSize((SDL_Window*)handle, &width, &height);
-
 		VkExtent2D actualExtent = {
-			static_cast<uint32_t>(width),
-			static_cast<uint32_t>(height)
+			static_cast<uint32_t>(pixelWidth),
+			static_cast<uint32_t>(pixelHeight)
 		};
 
 		actualExtent.width = clampuint32_t(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
