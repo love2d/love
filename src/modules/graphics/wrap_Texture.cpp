@@ -242,7 +242,7 @@ int w_Texture_setWrap(lua_State *L)
 		return luax_enumerror(L, "wrap mode", SamplerState::getConstants(s.wrapW), rstr);
 
 	luax_catchexcept(L, [&](){ t->setSamplerState(s); });
-	return 1;
+	return 0;
 }
 
 int w_Texture_getWrap(lua_State *L)
