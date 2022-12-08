@@ -95,7 +95,6 @@ Window::Window()
 	, metalView(nullptr)
 #endif
 	, displayedWindowError(false)
-	, hasSDL203orEarlier(false)
 	, contextAttribs()
 {
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
@@ -103,10 +102,6 @@ Window::Window()
 
 	// Make sure the screensaver doesn't activate by default.
 	setDisplaySleepEnabled(false);
-
-	SDL_version version = {};
-	SDL_GetVersion(&version);
-	hasSDL203orEarlier = (version.major == 2 && version.minor == 0 && version.patch <= 3);
 }
 
 Window::~Window()
@@ -143,16 +138,6 @@ void Window::setGLFramebufferAttributes(bool sRGB)
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 
 	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
-
-	const char *driver = SDL_GetCurrentVideoDriver();
-	if (driver && strstr(driver, "x11") == driver)
-	{
-		// Always disable the sRGB flag when GLX is used with older SDL versions,
-		// because of this bug: https://bugzilla.libsdl.org/show_bug.cgi?id=2897
-		// In practice GLX will always give an sRGB-capable framebuffer anyway.
-		if (hasSDL203orEarlier)
-			SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
-	}
 
 #if defined(LOVE_WINDOWS)
 	// Avoid the Microsoft OpenGL 1.1 software renderer on Windows. Apparently
@@ -254,14 +239,6 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 		if (curdriver && strstr(curdriver, glesdriver) == curdriver)
 		{
 			preferGLES = true;
-
-			// Prior to SDL 2.0.4, backends that use OpenGL ES didn't properly
-			// ask for a sRGB framebuffer when requested by SDL_GL_SetAttribute.
-			// This doesn't account for windowing backends that sometimes use
-			// EGL, e.g. the X11 and windows SDL backends.
-			if (hasSDL203orEarlier)
-				graphics::setGammaCorrect(false);
-
 			break;
 		}
 	}

@@ -175,7 +175,6 @@ private:
 	graphics::Renderer windowRenderer = graphics::RENDERER_NONE;
 
 	bool displayedWindowError;
-	bool hasSDL203orEarlier;
 	ContextAttribs contextAttribs;
 
 	StrongRef<graphics::Graphics> graphics;
