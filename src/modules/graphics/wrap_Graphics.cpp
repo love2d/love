@@ -2101,26 +2101,32 @@ int w_newMesh(lua_State *L)
 	return 1;
 }
 
-int w_newText(lua_State *L)
+int w_newTextBatch(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
 
 	graphics::Font *font = luax_checkfont(L, 1);
-	Text *t = nullptr;
+	TextBatch *t = nullptr;
 
 	if (lua_isnoneornil(L, 2))
-		luax_catchexcept(L, [&](){ t = instance()->newText(font); });
+		luax_catchexcept(L, [&](){ t = instance()->newTextBatch(font); });
 	else
 	{
 		std::vector<Font::ColoredString> text;
 		luax_checkcoloredstring(L, 2, text);
 
-		luax_catchexcept(L, [&](){ t = instance()->newText(font, text); });
+		luax_catchexcept(L, [&](){ t = instance()->newTextBatch(font, text); });
 	}
 
 	luax_pushtype(L, t);
 	t->release();
 	return 1;
+}
+
+int w_newText(lua_State *L)
+{
+	luax_markdeprecated(L, 1, "love.graphics.newText", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newTextBatch");
+	return w_newTextBatch(L);
 }
 
 int w_newVideo(lua_State *L)
@@ -3769,7 +3775,7 @@ static const luaL_Reg functions[] =
 	{ "newVertexBuffer", w_newVertexBuffer },
 	{ "newIndexBuffer", w_newIndexBuffer },
 	{ "newMesh", w_newMesh },
-	{ "newText", w_newText },
+	{ "newTextBatch", w_newTextBatch },
 	{ "_newVideo", w_newVideo },
 
 	{ "readbackBuffer", w_readbackBuffer },
@@ -3895,6 +3901,7 @@ static const luaL_Reg functions[] =
 	{ "newArrayImage", w_newArrayImage },
 	{ "newVolumeImage", w_newVolumeImage },
 	{ "newCubeImage", w_newCubeImage },
+	{ "newText", w_newText },
 	{ "getCanvasFormats", w_getCanvasFormats },
 	{ "getImageFormats", w_getImageFormats },
 
@@ -3919,7 +3926,7 @@ static const lua_CFunction types[] =
 	luaopen_particlesystem,
 	luaopen_shader,
 	luaopen_mesh,
-	luaopen_text,
+	luaopen_textbatch,
 	luaopen_video,
 	0
 };

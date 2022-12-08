@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "Text.h"
+#include "TextBatch.h"
 #include "Graphics.h"
 
 #include <algorithm>
@@ -28,9 +28,9 @@ namespace love
 namespace graphics
 {
 
-love::Type Text::type("Text", &Drawable::type);
+love::Type TextBatch::type("TextBatch", &Drawable::type);
 
-Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
+TextBatch::TextBatch(Font *font, const std::vector<Font::ColoredString> &text)
 	: font(font)
 	, vertexAttributes(Font::vertexFormat, 0)
 	, vertexData(nullptr)
@@ -41,13 +41,13 @@ Text::Text(Font *font, const std::vector<Font::ColoredString> &text)
 	set(text);
 }
 
-Text::~Text()
+TextBatch::~TextBatch()
 {
 	if (vertexData != nullptr)
 		free(vertexData);
 }
 
-void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t vertoffset)
+void TextBatch::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t vertoffset)
 {
 	size_t offset = vertoffset * sizeof(Font::GlyphVertex);
 	size_t datasize = vertices.size() * sizeof(Font::GlyphVertex);
@@ -90,7 +90,7 @@ void Text::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, size_t
 	}
 }
 
-void Text::regenerateVertices()
+void TextBatch::regenerateVertices()
 {
 	// If the font's texture cache was invalidated then we need to recreate the
 	// text's vertices, since glyph texcoords might have changed.
@@ -107,7 +107,7 @@ void Text::regenerateVertices()
 	}
 }
 
-void Text::addTextData(const TextData &t)
+void TextBatch::addTextData(const TextData &t)
 {
 	std::vector<Font::GlyphVertex> vertices;
 	std::vector<Font::DrawCommand> newcommands;
@@ -172,12 +172,12 @@ void Text::addTextData(const TextData &t)
 		regenerateVertices();
 }
 
-void Text::set(const std::vector<Font::ColoredString> &text)
+void TextBatch::set(const std::vector<Font::ColoredString> &text)
 {
 	return set(text, -1.0f, Font::ALIGN_MAX_ENUM);
 }
 
-void Text::set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align)
+void TextBatch::set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align)
 {
 	if (text.empty() || (text.size() == 1 && text[0].str.empty()))
 		return clear();
@@ -188,12 +188,12 @@ void Text::set(const std::vector<Font::ColoredString> &text, float wrap, Font::A
 	addTextData({codepoints, wrap, align, {}, false, false, Matrix4()});
 }
 
-int Text::add(const std::vector<Font::ColoredString> &text, const Matrix4 &m)
+int TextBatch::add(const std::vector<Font::ColoredString> &text, const Matrix4 &m)
 {
 	return addf(text, -1.0f, Font::ALIGN_MAX_ENUM, m);
 }
 
-int Text::addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, const Matrix4 &m)
+int TextBatch::addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, const Matrix4 &m)
 {
 	Font::ColoredCodepoints codepoints;
 	Font::getCodepointsFromString(text, codepoints);
@@ -203,7 +203,7 @@ int Text::addf(const std::vector<Font::ColoredString> &text, float wrap, Font::A
 	return (int) textData.size() - 1;
 }
 
-void Text::clear()
+void TextBatch::clear()
 {
 	textData.clear();
 	drawCommands.clear();
@@ -211,7 +211,7 @@ void Text::clear()
 	vertOffset = 0;
 }
 
-void Text::setFont(Font *f)
+void TextBatch::setFont(Font *f)
 {
 	font.set(f);
 	
@@ -221,12 +221,12 @@ void Text::setFont(Font *f)
 	regenerateVertices();
 }
 
-Font *Text::getFont() const
+Font *TextBatch::getFont() const
 {
 	return font.get();
 }
 
-int Text::getWidth(int index) const
+int TextBatch::getWidth(int index) const
 {
 	if (index < 0)
 		index = std::max((int) textData.size() - 1, 0);
@@ -237,7 +237,7 @@ int Text::getWidth(int index) const
 	return textData[index].textInfo.width;
 }
 
-int Text::getHeight(int index) const
+int TextBatch::getHeight(int index) const
 {
 	if (index < 0)
 		index = std::max((int) textData.size() - 1, 0);
@@ -248,7 +248,7 @@ int Text::getHeight(int index) const
 	return textData[index].textInfo.height;
 }
 
-void Text::draw(Graphics *gfx, const Matrix4 &m)
+void TextBatch::draw(Graphics *gfx, const Matrix4 &m)
 {
 	if (vertexBuffer == nullptr || vertexData == nullptr || drawCommands.empty())
 		return;

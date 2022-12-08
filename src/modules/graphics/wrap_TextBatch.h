@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "Text.h"
+#include "TextBatch.h"
 #include "common/runtime.h"
 
 namespace love
@@ -28,8 +28,8 @@ namespace love
 namespace graphics
 {
 
-Text *luax_checktext(lua_State *L, int idx);
-extern "C" int luaopen_text(lua_State *L);
+TextBatch *luax_checktextbatch(lua_State *L, int idx);
+extern "C" int luaopen_textbatch(lua_State *L);
 
 } // graphics
 } // love

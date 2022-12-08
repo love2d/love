@@ -29,7 +29,7 @@
 #include "wrap_ParticleSystem.h"
 #include "wrap_Shader.h"
 #include "wrap_Mesh.h"
-#include "wrap_Text.h"
+#include "wrap_TextBatch.h"
 #include "wrap_Video.h"
 #include "wrap_Buffer.h"
 #include "wrap_GraphicsReadback.h"

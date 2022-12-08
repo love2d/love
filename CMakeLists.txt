@@ -540,8 +540,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/SpriteBatch.h
 	src/modules/graphics/StreamBuffer.cpp
 	src/modules/graphics/StreamBuffer.h
-	src/modules/graphics/Text.cpp
-	src/modules/graphics/Text.h
+	src/modules/graphics/TextBatch.cpp
+	src/modules/graphics/TextBatch.h
 	src/modules/graphics/Texture.cpp
 	src/modules/graphics/Texture.h
 	src/modules/graphics/vertex.cpp
@@ -570,8 +570,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/wrap_SpriteBatch.h
 	src/modules/graphics/wrap_Texture.cpp
 	src/modules/graphics/wrap_Texture.h
-	src/modules/graphics/wrap_Text.cpp
-	src/modules/graphics/wrap_Text.h
+	src/modules/graphics/wrap_TextBatch.cpp
+	src/modules/graphics/wrap_TextBatch.h
 	src/modules/graphics/wrap_Video.cpp
 	src/modules/graphics/wrap_Video.h
 )

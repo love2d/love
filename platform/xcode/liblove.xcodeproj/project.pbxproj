@@ -1133,12 +1133,12 @@
 		FADF53F81E3C7ACD00012CC0 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */; };
 		FADF53F91E3C7ACD00012CC0 /* Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */; };
 		FADF53FA1E3C7ACD00012CC0 /* Buffer.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF53F71E3C7ACD00012CC0 /* Buffer.h */; };
-		FADF53FD1E3D74F200012CC0 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53FB1E3D74F200012CC0 /* Text.cpp */; };
-		FADF53FE1E3D74F200012CC0 /* Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53FB1E3D74F200012CC0 /* Text.cpp */; };
-		FADF53FF1E3D74F200012CC0 /* Text.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF53FC1E3D74F200012CC0 /* Text.h */; };
-		FADF54021E3D77B500012CC0 /* wrap_Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54001E3D77B500012CC0 /* wrap_Text.cpp */; };
-		FADF54031E3D77B500012CC0 /* wrap_Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54001E3D77B500012CC0 /* wrap_Text.cpp */; };
-		FADF54041E3D77B500012CC0 /* wrap_Text.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF54011E3D77B500012CC0 /* wrap_Text.h */; };
+		FADF53FD1E3D74F200012CC0 /* TextBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53FB1E3D74F200012CC0 /* TextBatch.cpp */; };
+		FADF53FE1E3D74F200012CC0 /* TextBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF53FB1E3D74F200012CC0 /* TextBatch.cpp */; };
+		FADF53FF1E3D74F200012CC0 /* TextBatch.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF53FC1E3D74F200012CC0 /* TextBatch.h */; };
+		FADF54021E3D77B500012CC0 /* wrap_TextBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54001E3D77B500012CC0 /* wrap_TextBatch.cpp */; };
+		FADF54031E3D77B500012CC0 /* wrap_TextBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54001E3D77B500012CC0 /* wrap_TextBatch.cpp */; };
+		FADF54041E3D77B500012CC0 /* wrap_TextBatch.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF54011E3D77B500012CC0 /* wrap_TextBatch.h */; };
 		FADF54071E3D78F700012CC0 /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54051E3D78F700012CC0 /* Video.cpp */; };
 		FADF54081E3D78F700012CC0 /* Video.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FADF54051E3D78F700012CC0 /* Video.cpp */; };
 		FADF54091E3D78F700012CC0 /* Video.h in Headers */ = {isa = PBXBuildFile; fileRef = FADF54061E3D78F700012CC0 /* Video.h */; };
@@ -2161,10 +2161,10 @@
 		FADF4CC52663D0EC004F95C1 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		FADF53F61E3C7ACD00012CC0 /* Buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Buffer.cpp; sourceTree = "<group>"; };
 		FADF53F71E3C7ACD00012CC0 /* Buffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
-		FADF53FB1E3D74F200012CC0 /* Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Text.cpp; sourceTree = "<group>"; };
-		FADF53FC1E3D74F200012CC0 /* Text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Text.h; sourceTree = "<group>"; };
-		FADF54001E3D77B500012CC0 /* wrap_Text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Text.cpp; sourceTree = "<group>"; };
-		FADF54011E3D77B500012CC0 /* wrap_Text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Text.h; sourceTree = "<group>"; };
+		FADF53FB1E3D74F200012CC0 /* TextBatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextBatch.cpp; sourceTree = "<group>"; };
+		FADF53FC1E3D74F200012CC0 /* TextBatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextBatch.h; sourceTree = "<group>"; };
+		FADF54001E3D77B500012CC0 /* wrap_TextBatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_TextBatch.cpp; sourceTree = "<group>"; };
+		FADF54011E3D77B500012CC0 /* wrap_TextBatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_TextBatch.h; sourceTree = "<group>"; };
 		FADF54051E3D78F700012CC0 /* Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Video.cpp; sourceTree = "<group>"; };
 		FADF54061E3D78F700012CC0 /* Video.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Video.h; sourceTree = "<group>"; };
 		FADF540A1E3D7CDD00012CC0 /* wrap_Video.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Video.cpp; sourceTree = "<group>"; };
@@ -2876,8 +2876,8 @@
 				FADF542E1E3DABF600012CC0 /* SpriteBatch.h */,
 				FA29C0041E12355B00268CD8 /* StreamBuffer.cpp */,
 				FA2AF6721DAD62710032B62C /* StreamBuffer.h */,
-				FADF53FB1E3D74F200012CC0 /* Text.cpp */,
-				FADF53FC1E3D74F200012CC0 /* Text.h */,
+				FADF53FB1E3D74F200012CC0 /* TextBatch.cpp */,
+				FADF53FC1E3D74F200012CC0 /* TextBatch.h */,
 				FA0B7BBE1A95902C000E1D17 /* Texture.cpp */,
 				FA0B7BBF1A95902C000E1D17 /* Texture.h */,
 				FA2AF6731DAD64970032B62C /* vertex.cpp */,
@@ -2905,8 +2905,8 @@
 				FA1BA0B61E17043400AA2803 /* wrap_Shader.h */,
 				FADF54321E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp */,
 				FADF54331E3DAE6E00012CC0 /* wrap_SpriteBatch.h */,
-				FADF54001E3D77B500012CC0 /* wrap_Text.cpp */,
-				FADF54011E3D77B500012CC0 /* wrap_Text.h */,
+				FADF54001E3D77B500012CC0 /* wrap_TextBatch.cpp */,
+				FADF54011E3D77B500012CC0 /* wrap_TextBatch.h */,
 				FA620A301AA2F8DB005DB4C2 /* wrap_Texture.cpp */,
 				FA620A311AA2F8DB005DB4C2 /* wrap_Texture.h */,
 				FADF540A1E3D7CDD00012CC0 /* wrap_Video.cpp */,
@@ -4248,7 +4248,7 @@
 				FABDA9EA2552448300B5C523 /* b2_world_callbacks.h in Headers */,
 				FA0B7E7D1A95902C000E1D17 /* wrap_World.h in Headers */,
 				FA0B7EBD1A95902C000E1D17 /* LuaThread.h in Headers */,
-				FADF53FF1E3D74F200012CC0 /* Text.h in Headers */,
+				FADF53FF1E3D74F200012CC0 /* TextBatch.h in Headers */,
 				FA0B7DC01A95902C000E1D17 /* JoystickModule.h in Headers */,
 				FA18CF3923DCF67900263725 /* spirv_msl.hpp in Headers */,
 				FA0B7E871A95902C000E1D17 /* CoreAudioDecoder.h in Headers */,
@@ -4483,7 +4483,7 @@
 				FABDA9CF2552448300B5C523 /* b2_mouse_joint.h in Headers */,
 				FABDA9E42552448300B5C523 /* b2_collision.h in Headers */,
 				FA41A3CA1C0A1F950084430C /* ASTCHandler.h in Headers */,
-				FADF54041E3D77B500012CC0 /* wrap_Text.h in Headers */,
+				FADF54041E3D77B500012CC0 /* wrap_TextBatch.h in Headers */,
 				FA0B7ED31A95902C000E1D17 /* wrap_ThreadModule.h in Headers */,
 				FAB922C6257D99EF0035DAD6 /* Range.h in Headers */,
 				FAC756F61E4F99B400B91289 /* Effect.h in Headers */,
@@ -4685,7 +4685,7 @@
 				FA1BA0A31E16D97500AA2803 /* wrap_Font.cpp in Sources */,
 				FABDA9842552448200B5C523 /* b2_chain_polygon_contact.cpp in Sources */,
 				FA0B7E0D1A95902C000E1D17 /* Fixture.cpp in Sources */,
-				FADF53FE1E3D74F200012CC0 /* Text.cpp in Sources */,
+				FADF53FE1E3D74F200012CC0 /* TextBatch.cpp in Sources */,
 				FA0B7D191A95902C000E1D17 /* TrueTypeRasterizer.cpp in Sources */,
 				FAC271E723B5B5B400C200D3 /* renderstate.cpp in Sources */,
 				FA84DE6727791C36002674C6 /* GraphicsReadback.cpp in Sources */,
@@ -4705,7 +4705,7 @@
 				FA0B7CE61A95902C000E1D17 /* wrap_Source.cpp in Sources */,
 				FA9D8DDE1DEF842A002CD881 /* Drawable.cpp in Sources */,
 				FA0B7CCE1A95902C000E1D17 /* Audio.cpp in Sources */,
-				FADF54031E3D77B500012CC0 /* wrap_Text.cpp in Sources */,
+				FADF54031E3D77B500012CC0 /* wrap_TextBatch.cpp in Sources */,
 				FA0B7DCB1A95902C000E1D17 /* Keyboard.cpp in Sources */,
 				FA0B7DFB1A95902C000E1D17 /* Body.cpp in Sources */,
 				FA0B7ED21A95902C000E1D17 /* wrap_ThreadModule.cpp in Sources */,
@@ -5124,7 +5124,7 @@
 				FAC7CD781FE35E95006A60C7 /* physfs_platform_qnx.c in Sources */,
 				FA0B7D3C1A95902C000E1D17 /* Texture.cpp in Sources */,
 				FABDA9EB2552448300B5C523 /* b2_collide_circle.cpp in Sources */,
-				FADF53FD1E3D74F200012CC0 /* Text.cpp in Sources */,
+				FADF53FD1E3D74F200012CC0 /* TextBatch.cpp in Sources */,
 				FA84DE612778D7F3002674C6 /* SpirvIntrinsics.cpp in Sources */,
 				FAFEB29C28F210550025D7D0 /* unixstream.c in Sources */,
 				FA6A2B741F60B6710074C308 /* ByteData.cpp in Sources */,
@@ -5139,7 +5139,7 @@
 				FA9D8DDD1DEF842A002CD881 /* Drawable.cpp in Sources */,
 				FA0B7DFA1A95902C000E1D17 /* Body.cpp in Sources */,
 				FAF6C9EB23C2DE2900D7B5BC /* GlslangToSpv.cpp in Sources */,
-				FADF54021E3D77B500012CC0 /* wrap_Text.cpp in Sources */,
+				FADF54021E3D77B500012CC0 /* wrap_TextBatch.cpp in Sources */,
 				FA0B7ED11A95902C000E1D17 /* wrap_ThreadModule.cpp in Sources */,
 				FAC7CD7F1FE35E95006A60C7 /* physfs_archiver_wad.c in Sources */,
 				FA0B7EDF1A95902D000E1D17 /* wrap_Touch.cpp in Sources */,

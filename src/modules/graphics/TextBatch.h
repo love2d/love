@@ -34,14 +34,14 @@ namespace graphics
 
 class Graphics;
 
-class Text : public Drawable
+class TextBatch : public Drawable
 {
 public:
 
 	static love::Type type;
 
-	Text(Font *font, const std::vector<Font::ColoredString> &text = {});
-	virtual ~Text();
+	TextBatch(Font *font, const std::vector<Font::ColoredString> &text = {});
+	virtual ~TextBatch();
 
 	void set(const std::vector<Font::ColoredString> &text);
 	void set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align);

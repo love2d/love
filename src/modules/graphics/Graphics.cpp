@@ -30,7 +30,7 @@
 #include "ParticleSystem.h"
 #include "Font.h"
 #include "Video.h"
-#include "Text.h"
+#include "TextBatch.h"
 #include "common/deprecation.h"
 #include "common/config.h"
 
@@ -439,9 +439,9 @@ Mesh *Graphics::newMesh(const std::vector<Mesh::BufferAttribute> &attributes, Pr
 	return new Mesh(attributes, drawmode);
 }
 
-love::graphics::Text *Graphics::newText(graphics::Font *font, const std::vector<Font::ColoredString> &text)
+love::graphics::TextBatch *Graphics::newTextBatch(graphics::Font *font, const std::vector<Font::ColoredString> &text)
 {
-	return new Text(font, text);
+	return new TextBatch(font, text);
 }
 
 love::data::ByteData *Graphics::readbackBuffer(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset)

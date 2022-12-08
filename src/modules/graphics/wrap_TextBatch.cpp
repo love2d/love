@@ -18,7 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#include "wrap_Text.h"
+#include "wrap_TextBatch.h"
 #include "wrap_Font.h"
 #include "math/wrap_Transform.h"
 
@@ -27,14 +27,14 @@ namespace love
 namespace graphics
 {
 
-Text *luax_checktext(lua_State *L, int idx)
+TextBatch *luax_checktextbatch(lua_State *L, int idx)
 {
-	return luax_checktype<Text>(L, idx);
+	return luax_checktype<TextBatch>(L, idx);
 }
 
-int w_Text_set(lua_State *L)
+int w_TextBatch_set(lua_State *L)
 {
-	Text *t = luax_checktext(L, 1);
+	TextBatch *t = luax_checktextbatch(L, 1);
 
 	std::vector<Font::ColoredString> newtext;
 	luax_checkcoloredstring(L, 2, newtext);
@@ -43,9 +43,9 @@ int w_Text_set(lua_State *L)
 	return 0;
 }
 
-int w_Text_setf(lua_State *L)
+int w_TextBatch_setf(lua_State *L)
 {
-	Text *t = luax_checktext(L, 1);
+	TextBatch *t = luax_checktextbatch(L, 1);
 
 	float wraplimit = (float) luaL_checknumber(L, 3);
 
@@ -62,9 +62,9 @@ int w_Text_setf(lua_State *L)
 	return 0;
 }
 
-int w_Text_add(lua_State *L)
+int w_TextBatch_add(lua_State *L)
 {
-	Text *t = luax_checktext(L, 1);
+	TextBatch *t = luax_checktextbatch(L, 1);
 
 	int index = 0;
 
@@ -96,9 +96,9 @@ int w_Text_add(lua_State *L)
 	return 1;
 }
 
-int w_Text_addf(lua_State *L)
+int w_TextBatch_addf(lua_State *L)
 {
-	Text *t = luax_checktext(L, 1);
+	TextBatch *t = luax_checktextbatch(L, 1);
 
 	int index = 0;
 
@@ -138,72 +138,72 @@ int w_Text_addf(lua_State *L)
 	return 1;
 }
 
-int w_Text_clear(lua_State *L)
+int w_TextBatch_clear(lua_State *L)
 {
-	Text *t = luax_checktext(L, 1);
+	TextBatch *t = luax_checktextbatch(L, 1);
 	luax_catchexcept(L, [&](){ t->clear(); });
 	return 0;
 }
 
-int w_Text_setFont(lua_State *L)
+int w_TextBatch_setFont(lua_State *L)
 {
-	Text *t = luax_checktext(L, 1);
+	TextBatch *t = luax_checktextbatch(L, 1);
 	Font *f = luax_checktype<Font>(L, 2);
 	luax_catchexcept(L, [&](){ t->setFont(f); });
 	return 0;
 }
 
-int w_Text_getFont(lua_State *L)
+int w_TextBatch_getFont(lua_State *L)
 {
-	Text *t = luax_checktext(L, 1);
+	TextBatch *t = luax_checktextbatch(L, 1);
 	Font *f = t->getFont();
 	luax_pushtype(L, f);
 	return 1;
 }
 
-int w_Text_getWidth(lua_State *L)
+int w_TextBatch_getWidth(lua_State *L)
 {
-	Text *t = luax_checktext(L, 1);
+	TextBatch *t = luax_checktextbatch(L, 1);
 	int index = (int) luaL_optinteger(L, 2, 0) - 1;
 	lua_pushnumber(L, t->getWidth(index));
 	return 1;
 }
 
-int w_Text_getHeight(lua_State *L)
+int w_TextBatch_getHeight(lua_State *L)
 {
-	Text *t = luax_checktext(L, 1);
+	TextBatch *t = luax_checktextbatch(L, 1);
 	int index = (int) luaL_optinteger(L, 2, 0) - 1;
 	lua_pushnumber(L, t->getHeight(index));
 	return 1;
 }
 
-int w_Text_getDimensions(lua_State *L)
+int w_TextBatch_getDimensions(lua_State *L)
 {
-	Text *t = luax_checktext(L, 1);
+	TextBatch *t = luax_checktextbatch(L, 1);
 	int index = (int) luaL_optinteger(L, 2, 0) - 1;
 	lua_pushnumber(L, t->getWidth(index));
 	lua_pushnumber(L, t->getHeight(index));
 	return 2;
 }
 
-static const luaL_Reg w_Text_functions[] =
+static const luaL_Reg w_TextBatch_functions[] =
 {
-	{ "set", w_Text_set },
-	{ "setf", w_Text_setf },
-	{ "add", w_Text_add },
-	{ "addf", w_Text_addf },
-	{ "clear", w_Text_clear },
-	{ "setFont", w_Text_setFont },
-	{ "getFont", w_Text_getFont },
-	{ "getWidth", w_Text_getWidth },
-	{ "getHeight", w_Text_getHeight },
-	{ "getDimensions", w_Text_getDimensions },
+	{ "set", w_TextBatch_set },
+	{ "setf", w_TextBatch_setf },
+	{ "add", w_TextBatch_add },
+	{ "addf", w_TextBatch_addf },
+	{ "clear", w_TextBatch_clear },
+	{ "setFont", w_TextBatch_setFont },
+	{ "getFont", w_TextBatch_getFont },
+	{ "getWidth", w_TextBatch_getWidth },
+	{ "getHeight", w_TextBatch_getHeight },
+	{ "getDimensions", w_TextBatch_getDimensions },
 	{ 0, 0 }
 };
 
-extern "C" int luaopen_text(lua_State *L)
+extern "C" int luaopen_textbatch(lua_State *L)
 {
-	return luax_register_type(L, &Text::type, w_Text_functions, nullptr);
+	return luax_register_type(L, &TextBatch::type, w_TextBatch_functions, nullptr);
 }
 
 } // graphics
