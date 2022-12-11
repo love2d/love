@@ -2737,7 +2737,8 @@ void Graphics::createColorResources()
 		allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 		allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
-		vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &colorImage, &colorImageAllocation, nullptr);
+		if (vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &colorImage, &colorImageAllocation, nullptr))
+			throw love::Exception("failed to create color image");
 
 		VkImageViewCreateInfo imageViewInfo{};
 		imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -2754,7 +2755,8 @@ void Graphics::createColorResources()
 		imageViewInfo.subresourceRange.baseArrayLayer = 0;
 		imageViewInfo.subresourceRange.layerCount = 1;
 
-		vkCreateImageView(device, &imageViewInfo, nullptr, &colorImageView);
+		if (vkCreateImageView(device, &imageViewInfo, nullptr, &colorImageView) != VK_SUCCESS)
+			throw love::Exception("failed to create color image view");
 	}
 }
 
@@ -2805,7 +2807,8 @@ void Graphics::createDepthResources()
 	allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 	allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
-	vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &depthImage, &depthImageAllocation, nullptr);
+	if (vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &depthImage, &depthImageAllocation, nullptr) != VK_SUCCESS)
+		throw love::Exception("failed to create depth image");
 
 	VkImageViewCreateInfo imageViewInfo{};
 	imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -2824,7 +2827,8 @@ void Graphics::createDepthResources()
 	imageViewInfo.subresourceRange.baseArrayLayer = 0;
 	imageViewInfo.subresourceRange.layerCount = 1;
 
-	vkCreateImageView(device, &imageViewInfo, nullptr, &depthImageView);
+	if (vkCreateImageView(device, &imageViewInfo, nullptr, &depthImageView) != VK_SUCCESS)
+		throw love::Exception("failed to create depth image view");
 }
 
 void Graphics::createCommandPool()
