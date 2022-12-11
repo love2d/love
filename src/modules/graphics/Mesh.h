@@ -57,6 +57,7 @@ public:
 		StrongRef<Buffer> buffer;
 		StrongRef<Mesh> mesh;
 		int indexInBuffer;
+		int startArrayIndex;
 		AttributeStep step;
 		bool enabled;
 	};
@@ -109,7 +110,7 @@ public:
 	 * to make sure this Mesh knows to flush the passed in Mesh's data to its
 	 * buffer when drawing.
 	 **/
-	void attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
+	void attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, int startindex = 0, AttributeStep step = STEP_PER_VERTEX);
 	bool detachAttribute(const std::string &name);
 	const std::vector<BufferAttribute> &getAttachedAttributes() const;
 
