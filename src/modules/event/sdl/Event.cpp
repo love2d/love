@@ -351,7 +351,9 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_CONTROLLERBUTTONDOWN:
 	case SDL_CONTROLLERBUTTONUP:
 	case SDL_CONTROLLERAXISMOTION:
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
 	case SDL_CONTROLLERSENSORUPDATE:
+#endif
 		msg = convertJoystickEvent(e);
 		break;
 	case SDL_WINDOWEVENT:
@@ -599,7 +601,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			msg = new Message("joysticksensorupdated", vargs);
 		}
 		break;
-#endif
+#endif // SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
 	default:
 		break;
 	}
