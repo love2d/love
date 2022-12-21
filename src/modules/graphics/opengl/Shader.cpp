@@ -469,7 +469,7 @@ bool Shader::loadVolatile()
 	// love::graphics::Shader sets up the shader code-side of this.
 	auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr)
-		splitUniformsPerDraw = gfx->getCapabilities().features[Graphics::FEATURE_PIXEL_SHADER_HIGHP];
+		splitUniformsPerDraw = !gfx->getCapabilities().features[Graphics::FEATURE_PIXEL_SHADER_HIGHP];
 
 	// zero out active texture list
 	textureUnits.clear();

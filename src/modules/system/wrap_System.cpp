@@ -31,7 +31,7 @@ namespace system
 
 int w_getOS(lua_State *L)
 {
-	luax_pushstring(L, instance()->getOS());
+	luax_pushstring(L, System::getOS());
 	return 1;
 }
 

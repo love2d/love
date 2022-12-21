@@ -62,7 +62,7 @@ System::System()
 {
 }
 
-std::string System::getOS() const
+const char *System::getOS()
 {
 #if defined(LOVE_MACOS)
 	return "OS X";
