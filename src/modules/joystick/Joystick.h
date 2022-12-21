@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Object.h"
 #include "common/StringMap.h"
+#include "sensor/Sensor.h"
 
 // stdlib
 #include <vector>
@@ -37,6 +38,8 @@ namespace joystick
 class Joystick : public Object
 {
 public:
+
+	using Sensor = love::sensor::Sensor;
 
 	static love::Type type;
 
@@ -197,6 +200,11 @@ public:
 	virtual bool setVibration(float left, float right, float duration = -1.0f) = 0;
 	virtual bool setVibration() = 0;
 	virtual void getVibration(float &left, float &right) = 0;
+
+	virtual bool hasSensor(Sensor::SensorType type) const = 0;
+	virtual bool isSensorEnabled(Sensor::SensorType type) const = 0;
+	virtual void setSensorEnabled(Sensor::SensorType type, bool enabled) = 0;
+	virtual std::vector<float> getSensorData(Sensor::SensorType type) const = 0;
 
 	STRINGMAP_CLASS_DECLARE(Hat);
 	STRINGMAP_CLASS_DECLARE(GamepadType);

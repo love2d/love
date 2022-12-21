@@ -56,34 +56,6 @@ float DistanceJoint::getLength() const
 	return Physics::scaleUp(joint->GetLength());
 }
 
-void DistanceJoint::setFrequency(float hz)
-{
-	float stiffness, damping;
-	b2LinearStiffness(stiffness, damping, hz, getDampingRatio(), joint->GetBodyA(), joint->GetBodyB());
-	joint->SetStiffness(stiffness);
-}
-
-float DistanceJoint::getFrequency() const
-{
-	float frequency, ratio;
-	Physics::b2LinearFrequency(frequency, ratio, joint->GetStiffness(), joint->GetDamping(), joint->GetBodyA(), joint->GetBodyB());
-	return frequency;
-}
-
-void DistanceJoint::setDampingRatio(float ratio)
-{
-	float stiffness, damping;
-	b2LinearStiffness(stiffness, damping, getFrequency(), ratio, joint->GetBodyA(), joint->GetBodyB());
-	joint->SetDamping(damping);
-}
-
-float DistanceJoint::getDampingRatio() const
-{
-	float frequency, ratio;
-	Physics::b2LinearFrequency(frequency, ratio, joint->GetStiffness(), joint->GetDamping(), joint->GetBodyA(), joint->GetBodyB());
-	return ratio;
-}
-
 void DistanceJoint::setStiffness(float k)
 {
 	joint->SetStiffness(k);

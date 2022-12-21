@@ -189,6 +189,7 @@ function love.init()
 			audio = true,
 			math = true,
 			physics = true,
+			sensor = true,
 			sound = true,
 			system = true,
 			font = true,
@@ -204,7 +205,7 @@ function love.init()
 		identity = false,
 		appendidentity = false,
 		externalstorage = false, -- Only relevant for Android.
-		accelerometerjoystick = true, -- Only relevant for Android / iOS.
+		accelerometerjoystick = nil, -- Only relevant for Android / iOS, deprecated.
 		gammacorrect = false,
 		highdpi = false,
 		renderers = nil,
@@ -311,6 +312,7 @@ function love.init()
 		"touch",
 		"sound",
 		"system",
+		"sensor",
 		"audio",
 		"image",
 		"video",

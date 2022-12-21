@@ -46,6 +46,10 @@
 // SDL
 #include <SDL_syswm.h>
 
+#ifdef LOVE_GRAPHICS_VULKAN
+#include <SDL_vulkan.h>
+#endif
+
 #if defined(LOVE_WINDOWS)
 #include <windows.h>
 #include <dwmapi.h>
@@ -91,7 +95,6 @@ Window::Window()
 	, metalView(nullptr)
 #endif
 	, displayedWindowError(false)
-	, hasSDL203orEarlier(false)
 	, contextAttribs()
 {
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
@@ -99,10 +102,6 @@ Window::Window()
 
 	// Make sure the screensaver doesn't activate by default.
 	setDisplaySleepEnabled(false);
-
-	SDL_version version = {};
-	SDL_GetVersion(&version);
-	hasSDL203orEarlier = (version.major == 2 && version.minor == 0 && version.patch <= 3);
 }
 
 Window::~Window()
@@ -139,16 +138,6 @@ void Window::setGLFramebufferAttributes(bool sRGB)
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 
 	SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, sRGB ? 1 : 0);
-
-	const char *driver = SDL_GetCurrentVideoDriver();
-	if (driver && strstr(driver, "x11") == driver)
-	{
-		// Always disable the sRGB flag when GLX is used with older SDL versions,
-		// because of this bug: https://bugzilla.libsdl.org/show_bug.cgi?id=2897
-		// In practice GLX will always give an sRGB-capable framebuffer anyway.
-		if (hasSDL203orEarlier)
-			SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 0);
-	}
 
 #if defined(LOVE_WINDOWS)
 	// Avoid the Microsoft OpenGL 1.1 software renderer on Windows. Apparently
@@ -250,14 +239,6 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 		if (curdriver && strstr(curdriver, glesdriver) == curdriver)
 		{
 			preferGLES = true;
-
-			// Prior to SDL 2.0.4, backends that use OpenGL ES didn't properly
-			// ask for a sRGB framebuffer when requested by SDL_GL_SetAttribute.
-			// This doesn't account for windowing backends that sometimes use
-			// EGL, e.g. the X11 and windows SDL backends.
-			if (hasSDL203orEarlier)
-				graphics::setGammaCorrect(false);
-
 			break;
 		}
 	}
@@ -588,12 +569,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		if (!f.fullscreen)
 			SDL_SetWindowSize(window, width, height);
 
-		// On linux systems 2.0.5+ might not be available...
-		// TODO: require at least 2.0.5?
-#if SDL_VERSION_ATLEAST(2, 0, 5)
 		if (this->settings.resizable != f.resizable)
 			SDL_SetWindowResizable(window, f.resizable ? SDL_TRUE : SDL_FALSE);
-#endif
 
 		if (this->settings.borderless != f.borderless)
 			SDL_SetWindowBordered(window, f.borderless ? SDL_FALSE : SDL_TRUE);
@@ -688,11 +665,16 @@ bool Window::onSizeChanged(int width, int height)
 	windowWidth = width;
 	windowHeight = height;
 
+	// TODO: Use SDL_GetWindowSizeInPixels here when supported.
 	if (glcontext != nullptr)
 		SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 #ifdef LOVE_GRAPHICS_METAL
 	else if (metalView != nullptr)
 		SDL_Metal_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+#endif
+#ifdef LOVE_GRAPHICS_VULKAN
+	else if (windowRenderer == graphics::RENDERER_VULKAN)
+		SDL_Vulkan_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 #endif
 	else
 	{
@@ -720,11 +702,16 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	pixelWidth = windowWidth;
 	pixelHeight = windowHeight;
 
+	// TODO: Use SDL_GetWindowSizeInPixels here when supported.
 	if ((wflags & SDL_WINDOW_OPENGL) != 0)
 		SDL_GL_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 #ifdef LOVE_GRAPHICS_METAL
 	else if ((wflags & SDL_WINDOW_METAL) != 0)
 		SDL_Metal_GetDrawableSize(window, &pixelWidth, &pixelHeight);
+#endif
+#ifdef LOVE_GRAPHICS_VULKAN
+	else if ((wflags & SDL_WINDOW_VULKAN) != 0)
+		SDL_Vulkan_GetDrawableSize(window, &pixelWidth, &pixelHeight);
 #endif
 
 	if ((wflags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)
@@ -909,9 +896,6 @@ const char *Window::getDisplayName(int displayindex) const
 
 Window::DisplayOrientation Window::getDisplayOrientation(int displayindex) const
 {
-	// TODO: We can expose this everywhere, we just need to watch out for the
-	// SDL binary being older than the headers on Linux.
-#if SDL_VERSION_ATLEAST(2, 0, 9) && (defined(LOVE_ANDROID) || !defined(LOVE_LINUX))
 	switch (SDL_GetDisplayOrientation(displayindex))
 	{
 		case SDL_ORIENTATION_UNKNOWN: return ORIENTATION_UNKNOWN;
@@ -920,9 +904,6 @@ Window::DisplayOrientation Window::getDisplayOrientation(int displayindex) const
 		case SDL_ORIENTATION_PORTRAIT: return ORIENTATION_PORTRAIT;
 		case SDL_ORIENTATION_PORTRAIT_FLIPPED: return ORIENTATION_PORTRAIT_FLIPPED;
 	}
-#else
-	LOVE_UNUSED(displayindex);
-#endif
 
 	return ORIENTATION_UNKNOWN;
 }
@@ -1119,6 +1100,7 @@ void Window::setVSync(int vsync)
 	}
 
 #ifdef LOVE_GRAPHICS_VULKAN
+	// TODO: this doesn't update the swap-chain, but it should.
 	love::graphics::vulkan::Vulkan::setVsync(vsync);
 #endif
 
@@ -1146,6 +1128,11 @@ int Window::getVSync() const
 		return 1;
 #endif
 	}
+#endif
+
+#ifdef LOVE_GRAPHICS_VULKAN
+	if (windowRenderer == love::graphics::RENDERER_VULKAN)
+		return love::graphics::vulkan::Vulkan::getVsync();
 #endif
 
 	return 0;

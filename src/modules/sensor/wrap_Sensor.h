@@ -18,18 +18,20 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#pragma once
+#ifndef LOVE_WRAP_SENSOR_H
+#define LOVE_WRAP_SENSOR_H
 
-#include "Text.h"
+ // LOVE
 #include "common/runtime.h"
 
 namespace love
 {
-namespace graphics
+namespace sensor
 {
 
-Text *luax_checktext(lua_State *L, int idx);
-extern "C" int luaopen_text(lua_State *L);
+extern "C" LOVE_EXPORT int luaopen_love_sensor(lua_State *L);
 
-} // graphics
+} // sensor
 } // love
+
+#endif

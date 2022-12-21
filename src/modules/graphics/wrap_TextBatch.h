@@ -20,27 +20,16 @@
 
 #pragma once
 
-// LOVE
-#include "common/config.h"
-#include "wrap_Font.h"
-#include "wrap_Texture.h"
-#include "wrap_Quad.h"
-#include "wrap_SpriteBatch.h"
-#include "wrap_ParticleSystem.h"
-#include "wrap_Shader.h"
-#include "wrap_Mesh.h"
-#include "wrap_TextBatch.h"
-#include "wrap_Video.h"
-#include "wrap_Buffer.h"
-#include "wrap_GraphicsReadback.h"
-#include "Graphics.h"
+#include "TextBatch.h"
+#include "common/runtime.h"
 
 namespace love
 {
 namespace graphics
 {
 
-extern "C" LOVE_EXPORT int luaopen_love_graphics(lua_State *L);
+TextBatch *luax_checktextbatch(lua_State *L, int idx);
+extern "C" int luaopen_textbatch(lua_State *L);
 
 } // graphics
 } // love

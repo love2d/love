@@ -18,29 +18,20 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#pragma once
-
 // LOVE
-#include "common/config.h"
-#include "wrap_Font.h"
-#include "wrap_Texture.h"
-#include "wrap_Quad.h"
-#include "wrap_SpriteBatch.h"
-#include "wrap_ParticleSystem.h"
-#include "wrap_Shader.h"
-#include "wrap_Mesh.h"
-#include "wrap_TextBatch.h"
-#include "wrap_Video.h"
-#include "wrap_Buffer.h"
-#include "wrap_GraphicsReadback.h"
-#include "Graphics.h"
+#include "Sensor.h"
 
 namespace love
 {
-namespace graphics
+namespace sensor
 {
 
-extern "C" LOVE_EXPORT int luaopen_love_graphics(lua_State *L);
+STRINGMAP_CLASS_BEGIN(Sensor, Sensor::SensorType, Sensor::SENSOR_MAX_ENUM, sensorType)
+{
+	{ "accelerometer", Sensor::SENSOR_ACCELEROMETER },
+	{ "gyroscope",     Sensor::SENSOR_GYROSCOPE     },
+}
+STRINGMAP_CLASS_END(Sensor, Sensor::SensorType, Sensor::SENSOR_MAX_ENUM, sensorType)
 
-} // graphics
+} // sensor
 } // love

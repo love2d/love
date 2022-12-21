@@ -18,29 +18,51 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#pragma once
+#ifndef LOVE_SENSOR_SDL_SENSOR_H
+#define LOVE_SENSOR_SDL_SENSOR_H
 
 // LOVE
-#include "common/config.h"
-#include "wrap_Font.h"
-#include "wrap_Texture.h"
-#include "wrap_Quad.h"
-#include "wrap_SpriteBatch.h"
-#include "wrap_ParticleSystem.h"
-#include "wrap_Shader.h"
-#include "wrap_Mesh.h"
-#include "wrap_TextBatch.h"
-#include "wrap_Video.h"
-#include "wrap_Buffer.h"
-#include "wrap_GraphicsReadback.h"
-#include "Graphics.h"
+#include "sensor/Sensor.h"
+
+// SDL
+#include <SDL_sensor.h>
+
+// std
+#include <map>
 
 namespace love
 {
-namespace graphics
+namespace sensor
+{
+namespace sdl
 {
 
-extern "C" LOVE_EXPORT int luaopen_love_graphics(lua_State *L);
+class Sensor : public love::sensor::Sensor
+{
+public:
+	Sensor();
+	~Sensor() override;
 
-} // graphics
+	// Implements Module.
+	const char *getName() const override;
+
+	bool hasSensor(SensorType type) override;
+	bool isEnabled(SensorType type) override;
+	void setEnabled(SensorType type, bool enable) override;
+	std::vector<float> getData(SensorType type) override;
+	std::vector<void*> getHandles() override;
+	const char *getSensorName(SensorType type) override;
+
+	static SensorType convert(SDL_SensorType type);
+	static SDL_SensorType convert(SensorType type);
+
+private:
+	std::map<SensorType, SDL_Sensor*> sensors;
+
+}; // Sensor
+
+} // sdl
+} // sensor
 } // love
+
+#endif

@@ -314,8 +314,9 @@ int w_Mesh_attachAttribute(lua_State *L)
 		return luax_enumerror(L, "vertex attribute step", getConstants(step), stepstr);
 
 	const char *attachname = luaL_optstring(L, 5, name);
+	int startindex = (int) luaL_optinteger(L, 6, 1) - 1;
 
-	luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer, mesh, attachname, step); });
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer, mesh, attachname, startindex, step); });
 	return 0;
 }
 
@@ -340,7 +341,7 @@ int w_Mesh_getAttachedAttributes(lua_State *L)
 	{
 		const auto &attrib = attributes[i];
 
-		lua_createtable(L, 4, 0);
+		lua_createtable(L, 5, 0);
 
 		luax_pushstring(L, attrib.name);
 		lua_rawseti(L, -1, 1);
@@ -357,6 +358,9 @@ int w_Mesh_getAttachedAttributes(lua_State *L)
 		const Buffer::DataMember &member = attrib.buffer->getDataMember(attrib.indexInBuffer);
 		luax_pushstring(L, member.decl.name);
 		lua_rawseti(L, -1, 4);
+
+		lua_pushinteger(L, attrib.startArrayIndex + 1);
+		lua_rawseti(L, -1, 5);
 
 		lua_rawseti(L, -1, i + 1);
 	}

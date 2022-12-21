@@ -22,6 +22,10 @@
 #include "common/config.h"
 #include "Joystick.h"
 #include "common/int.h"
+#include "sensor/sdl/Sensor.h"
+
+// SDL
+#include <SDL_version.h>
 
 // C++
 #include <algorithm>
@@ -409,7 +413,6 @@ int Joystick::getID() const
 
 void Joystick::getDeviceInfo(int &vendorID, int &productID, int &productVersion) const
 {
-#if SDL_VERSION_ATLEAST(2, 0, 6)
 	if (joyhandle != nullptr)
 	{
 		vendorID = SDL_JoystickGetVendor(joyhandle);
@@ -417,7 +420,6 @@ void Joystick::getDeviceInfo(int &vendorID, int &productID, int &productVersion)
 		productVersion = SDL_JoystickGetProductVersion(joyhandle);
 	}
 	else
-#endif
 	{
 		vendorID = 0;
 		productID = 0;
@@ -521,10 +523,8 @@ bool Joystick::setVibration(float left, float right, float duration)
 
 	bool success = false;
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	if (SDL_JoystickRumble(joyhandle, (Uint16)(left * LOVE_UINT16_MAX), (Uint16)(right * LOVE_UINT16_MAX), length) == 0)
 		success = true;
-#endif
 
 	if (!success && !checkCreateHaptic())
 		return false;
@@ -606,10 +606,8 @@ bool Joystick::setVibration()
 {
 	bool success = false;
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	if (!success)
 		success = isConnected() && SDL_JoystickRumble(joyhandle, 0, 0, 0) == 0;
-#endif
 
 	if (!success && SDL_WasInit(SDL_INIT_HAPTIC) && haptic && SDL_HapticIndex(haptic) != -1)
 		success = (SDL_HapticStopEffect(haptic, vibration.id) == 0);
@@ -641,6 +639,86 @@ void Joystick::getVibration(float &left, float &right)
 
 	left = vibration.left;
 	right = vibration.right;
+}
+
+bool Joystick::hasSensor(Sensor::SensorType type) const
+{
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	using SDLSensor = love::sensor::sdl::Sensor;
+
+	if (!isGamepad())
+		return false;
+
+	return SDL_GameControllerHasSensor(controller, SDLSensor::convert(type)) == SDL_TRUE;
+#else
+	return false;
+#endif
+}
+
+bool Joystick::isSensorEnabled(Sensor::SensorType type) const
+{
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	using SDLSensor = love::sensor::sdl::Sensor;
+
+	if (!isGamepad())
+		return false;
+
+	return SDL_GameControllerIsSensorEnabled(controller, SDLSensor::convert(type)) == SDL_TRUE;
+#else
+	return false;
+#endif
+}
+
+void Joystick::setSensorEnabled(Sensor::SensorType type, bool enabled)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	using SDLSensor = love::sensor::sdl::Sensor;
+
+	if (!isGamepad())
+		throw love::Exception("Sensor is only supported on gamepad");
+
+	if (SDL_GameControllerSetSensorEnabled(controller, SDLSensor::convert(type), enabled ? SDL_TRUE : SDL_FALSE) != 0)
+	{
+		const char *name = nullptr;
+		SDLSensor::getConstant(type, name);
+
+		throw love::Exception("Could not open \"%s\" SDL gamepad sensor (%s)", name, SDL_GetError());
+	}
+#else
+	throw love::Exception("Compiled version of SDL or LOVE does not support gamepad sensor");
+#endif
+}
+
+std::vector<float> Joystick::getSensorData(Sensor::SensorType type) const
+{
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	using SDLSensor = love::sensor::sdl::Sensor;
+
+	if (!isGamepad())
+		throw love::Exception("Sensor is only supported on gamepad");
+
+	std::vector<float> data(3);
+
+	if (!isSensorEnabled(type))
+	{
+		const char *name = nullptr;
+		SDLSensor::getConstant(type, name);
+
+		throw love::Exception("\"%s\" gamepad sensor is not enabled", name);
+	}
+
+	if (SDL_GameControllerGetSensorData(controller, SDLSensor::convert(type), data.data(), (int) data.size()) != 0)
+	{
+		const char *name = nullptr;
+		SDLSensor::getConstant(type, name);
+
+		throw love::Exception("Could not get \"%s\" SDL gamepad sensor data (%s)", name, SDL_GetError());
+	}
+
+	return data;
+#else
+	throw love::Exception("Compiled version of SDL or LOVE does not support gamepad sensor");
+#endif
 }
 
 bool Joystick::getConstant(Uint8 in, Joystick::Hat &out)

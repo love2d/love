@@ -58,7 +58,7 @@ namespace graphics
 
 class SpriteBatch;
 class ParticleSystem;
-class Text;
+class TextBatch;
 class Video;
 class Buffer;
 
@@ -460,7 +460,7 @@ public:
 	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferDataUsage usage);
 	Mesh *newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode);
 
-	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
+	TextBatch *newTextBatch(Font *font, const std::vector<Font::ColoredString> &text = {});
 
 	data::ByteData *readbackBuffer(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);
 	GraphicsReadback *readbackBufferAsync(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);

@@ -140,7 +140,7 @@ void Mesh::setupAttachedAttributes()
 		if (getAttachedAttributeIndex(name) != -1)
 			throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
 
-		attachedAttributes.push_back({name, vertexBuffer, nullptr, (int) i, STEP_PER_VERTEX, true});
+		attachedAttributes.push_back({name, vertexBuffer, nullptr, (int) i, 0, STEP_PER_VERTEX, true});
 	}
 }
 
@@ -208,7 +208,7 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 	return attachedAttributes[index].enabled;
 }
 
-void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, AttributeStep step)
+void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, int startindex, AttributeStep step)
 {
 	if ((buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
 		throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
@@ -216,6 +216,9 @@ void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	if (step == STEP_PER_INSTANCE && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
 		throw love::Exception("Vertex attribute instancing is not supported on this system.");
+
+	if (startindex < 0 || startindex >= (int) buffer->getArrayLength())
+		throw love::Exception("Invalid start array index %d.", startindex + 1);
 
 	BufferAttribute oldattrib = {};
 	BufferAttribute newattrib = {};
@@ -231,6 +234,7 @@ void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, 
 	newattrib.mesh = mesh;
 	newattrib.enabled = oldattrib.buffer.get() ? oldattrib.enabled : true;
 	newattrib.indexInBuffer = buffer->getDataMemberIndex(attachname);
+	newattrib.startArrayIndex = startindex;
 	newattrib.step = step;
 
 	if (newattrib.indexInBuffer < 0)
@@ -578,12 +582,13 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 
 			uint16 offset = (uint16) member.offset;
 			uint16 stride = (uint16) buffer->getArrayStride();
+			size_t bufferoffset = (size_t) stride * attrib.startArrayIndex;
 
 			attributes.set(attributeindex, member.decl.format, offset, activebuffers);
 			attributes.setBufferLayout(activebuffers, stride, attrib.step);
 
 			// TODO: Ideally we want to reuse buffers with the same stride+step.
-			buffers.set(activebuffers, buffer, 0);
+			buffers.set(activebuffers, buffer, bufferoffset);
 			activebuffers++;
 		}
 	}

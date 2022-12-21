@@ -172,7 +172,7 @@ Please see https://github.com/love2d/megasource
 	find_package(ModPlug REQUIRED)
 	find_package(OpenAL REQUIRED)
 	find_package(OpenGL REQUIRED)
-	find_package(SDL2 REQUIRED)
+	find_package(SDL2 2.0.9 REQUIRED)
 	find_package(Theora REQUIRED)
 	find_package(Vorbis REQUIRED)
 	find_package(ZLIB REQUIRED)
@@ -540,8 +540,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/SpriteBatch.h
 	src/modules/graphics/StreamBuffer.cpp
 	src/modules/graphics/StreamBuffer.h
-	src/modules/graphics/Text.cpp
-	src/modules/graphics/Text.h
+	src/modules/graphics/TextBatch.cpp
+	src/modules/graphics/TextBatch.h
 	src/modules/graphics/Texture.cpp
 	src/modules/graphics/Texture.h
 	src/modules/graphics/vertex.cpp
@@ -570,8 +570,8 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/wrap_SpriteBatch.h
 	src/modules/graphics/wrap_Texture.cpp
 	src/modules/graphics/wrap_Texture.h
-	src/modules/graphics/wrap_Text.cpp
-	src/modules/graphics/wrap_Text.h
+	src/modules/graphics/wrap_TextBatch.cpp
+	src/modules/graphics/wrap_TextBatch.h
 	src/modules/graphics/wrap_Video.cpp
 	src/modules/graphics/wrap_Video.h
 )
@@ -906,6 +906,30 @@ set(LOVE_SRC_MODULE_PHYSICS
 
 source_group("modules\\physics" FILES ${LOVE_SRC_MODULE_PHYSICS_ROOT})
 source_group("modules\\physics\\box2d" FILES ${LOVE_SRC_MODULE_PHYSICS_BOX2D})
+
+#
+# love.sensor
+#
+
+set(LOVE_SRC_MODULE_SENSOR_ROOT
+	src/modules/sensor/Sensor.cpp
+	src/modules/sensor/Sensor.h
+	src/modules/sensor/wrap_Sensor.cpp
+	src/modules/sensor/wrap_Sensor.h
+)
+
+set(LOVE_SRC_MODULE_SENSOR_SDL
+	src/modules/sensor/sdl/Sensor.cpp
+	src/modules/sensor/sdl/Sensor.h
+)
+
+set(LOVE_SRC_MODULE_SENSOR
+	${LOVE_SRC_MODULE_SENSOR_ROOT}
+	${LOVE_SRC_MODULE_SENSOR_SDL}
+)
+
+source_group("modules\\sensor" FILES ${LOVE_SRC_MODULE_SENSOR_ROOT})
+source_group("modules\\sensor\\sdl" FILES ${LOVE_SRC_MODULE_SENSOR_SDL})
 
 #
 # love.sound
@@ -1881,6 +1905,7 @@ set(LOVE_LIB_SRC
 	${LOVE_SRC_MODULE_MATH}
 	${LOVE_SRC_MODULE_MOUSE}
 	${LOVE_SRC_MODULE_PHYSICS}
+	${LOVE_SRC_MODULE_SENSOR}
 	${LOVE_SRC_MODULE_SOUND}
 	${LOVE_SRC_MODULE_SYSTEM}
 	${LOVE_SRC_MODULE_THREAD}

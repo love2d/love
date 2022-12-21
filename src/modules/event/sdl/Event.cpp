@@ -32,6 +32,7 @@
 #include "audio/Audio.h"
 #include "common/config.h"
 #include "timer/Timer.h"
+#include "sensor/sdl/Sensor.h"
 
 #include <cmath>
 
@@ -178,6 +179,7 @@ Message *Event::convert(const SDL_Event &e)
 	vargs.reserve(4);
 
 	love::filesystem::Filesystem *filesystem = nullptr;
+	love::sensor::Sensor *sensorInstance = nullptr;
 
 	love::keyboard::Keyboard::Key key = love::keyboard::Keyboard::KEY_UNKNOWN;
 	love::keyboard::Keyboard::Scancode scancode = love::keyboard::Keyboard::SCANCODE_UNKNOWN;
@@ -189,10 +191,6 @@ Message *Event::convert(const SDL_Event &e)
 #ifndef LOVE_MACOS
 	love::touch::sdl::Touch *touchmodule = nullptr;
 	love::touch::Touch::TouchInfo touchinfo;
-#endif
-
-#ifdef LOVE_LINUX
-	static bool touchNormalizationBug = false;
 #endif
 
 	switch (e.type)
@@ -313,22 +311,9 @@ Message *Event::convert(const SDL_Event &e)
 		touchinfo.dy = e.tfinger.dy;
 		touchinfo.pressure = e.tfinger.pressure;
 
-#ifdef LOVE_LINUX
-		// FIXME: hacky workaround for SDL not normalizing touch coordinates in
-		// its X11 backend: https://bugzilla.libsdl.org/show_bug.cgi?id=2307
-		if (touchNormalizationBug || fabs(touchinfo.x) >= 1.5 || fabs(touchinfo.y) >= 1.5 || fabs(touchinfo.dx) >= 1.5 || fabs(touchinfo.dy) >= 1.5)
-		{
-			touchNormalizationBug = true;
-			windowToDPICoords(&touchinfo.x, &touchinfo.y);
-			windowToDPICoords(&touchinfo.dx, &touchinfo.dy);
-		}
-		else
-#endif
-		{
-			// SDL's coords are normalized to [0, 1], but we want screen coords.
-			normalizedToDPICoords(&touchinfo.x, &touchinfo.y);
-			normalizedToDPICoords(&touchinfo.dx, &touchinfo.dy);
-		}
+		// SDL's coords are normalized to [0, 1], but we want screen coords.
+		normalizedToDPICoords(&touchinfo.x, &touchinfo.y);
+		normalizedToDPICoords(&touchinfo.dx, &touchinfo.dy);
 
 		// We need to update the love.touch.sdl internal state from here.
 		touchmodule = (touch::sdl::Touch *) Module::getInstance("love.touch.sdl");
@@ -366,12 +351,14 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_CONTROLLERBUTTONDOWN:
 	case SDL_CONTROLLERBUTTONUP:
 	case SDL_CONTROLLERAXISMOTION:
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	case SDL_CONTROLLERSENSORUPDATE:
+#endif
 		msg = convertJoystickEvent(e);
 		break;
 	case SDL_WINDOWEVENT:
 		msg = convertWindowEvent(e);
 		break;
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	case SDL_DISPLAYEVENT:
 		if (e.display.event == SDL_DISPLAYEVENT_ORIENTATION)
 		{
@@ -405,7 +392,6 @@ Message *Event::convert(const SDL_Event &e)
 			msg = new Message("displayrotated", vargs);
 		}
 		break;
-#endif
 	case SDL_DROPFILE:
 		filesystem = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
 		if (filesystem != nullptr)
@@ -446,6 +432,37 @@ Message *Event::convert(const SDL_Event &e)
 		msg = new Message("localechanged");
 		break;
 #endif
+	case SDL_SENSORUPDATE:
+		sensorInstance = Module::getInstance<sensor::Sensor>(M_SENSOR);
+		if (sensorInstance)
+		{
+			std::vector<void*> sensors = sensorInstance->getHandles();
+
+			for (void *s: sensors)
+			{
+				SDL_Sensor *sensor = (SDL_Sensor *) s;
+				SDL_SensorID id = SDL_SensorGetInstanceID(sensor);
+
+				if (e.sensor.which == id)
+				{
+					// Found sensor
+					const char *sensorType;
+					if (!sensor::Sensor::getConstant(sensor::sdl::Sensor::convert(SDL_SensorGetType(sensor)), sensorType))
+						sensorType = "unknown";
+
+					vargs.emplace_back(sensorType, strlen(sensorType));
+					// Both accelerometer and gyroscope only pass up to 3 values.
+					// https://github.com/libsdl-org/SDL/blob/SDL2/include/SDL_sensor.h#L81-L127
+					vargs.emplace_back(e.sensor.data[0]);
+					vargs.emplace_back(e.sensor.data[1]);
+					vargs.emplace_back(e.sensor.data[2]);
+					msg = new Message("sensorupdated", vargs);
+
+					break;
+				}
+			}
+		}
+		break;
 	default:
 		break;
 	}
@@ -564,6 +581,27 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			msg = new Message("joystickremoved", vargs);
 		}
 		break;
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	case SDL_CONTROLLERSENSORUPDATE:
+		stick = joymodule->getJoystickFromID(e.csensor.which);
+		if (stick)
+		{
+			using Sensor = love::sensor::Sensor;
+
+			const char *sensorName;
+			Sensor::SensorType sensorType = love::sensor::sdl::Sensor::convert((SDL_SensorType) e.csensor.sensor);
+			if (!Sensor::getConstant(sensorType, sensorName))
+				sensorName = "unknown";
+
+			vargs.emplace_back(joysticktype, stick);
+			vargs.emplace_back(sensorName, strlen(sensorName));
+			vargs.emplace_back(e.csensor.data[0]);
+			vargs.emplace_back(e.csensor.data[1]);
+			vargs.emplace_back(e.csensor.data[2]);
+			msg = new Message("joysticksensorupdated", vargs);
+		}
+		break;
+#endif // SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
 	default:
 		break;
 	}
