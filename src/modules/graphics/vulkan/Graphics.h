@@ -70,23 +70,23 @@ struct RenderPassConfiguration
 		bool resolve = false;
 	} staticData;
 
-    bool operator==(const RenderPassConfiguration &conf) const
+	bool operator==(const RenderPassConfiguration &conf) const
 	{
 		return colorAttachments == conf.colorAttachments && 
 			(memcmp(&staticData, &conf.staticData, sizeof(StaticRenderPassConfiguration)) == 0);
-    }
+	}
 };
 
 struct RenderPassConfigurationHasher
 {
-    size_t operator()(const RenderPassConfiguration &configuration) const
+	size_t operator()(const RenderPassConfiguration &configuration) const
 	{
 		size_t hashes[] = { 
 			XXH32(configuration.colorAttachments.data(), configuration.colorAttachments.size() * sizeof(VkFormat), 0),
 			XXH32(&configuration.staticData, sizeof(configuration.staticData), 0),
 		};
 		return XXH32(hashes, sizeof(hashes), 0);
-    }
+	}
 };
 
 struct FramebufferConfiguration
@@ -126,7 +126,8 @@ struct FramebufferConfigurationHasher
 
 struct OptionalInstanceExtensions
 {
-    bool physicalDeviceProperties2 = false;
+	// VK_KHR_get_physical_device_properties2
+	bool physicalDeviceProperties2 = false;
 };
 
 struct OptionalDeviceFeatures
@@ -155,7 +156,7 @@ struct OptionalDeviceFeatures
 
 struct GraphicsPipelineConfiguration
 {
-    VkRenderPass renderPass;
+	VkRenderPass renderPass;
 	VertexAttributes vertexAttributes;
 	Shader *shader = nullptr;
 	bool wireFrame;
@@ -328,10 +329,10 @@ private:
 	void createScreenshotCallbackBuffers();
 	void createDefaultRenderPass();
 	void createDefaultFramebuffers();
-    VkFramebuffer createFramebuffer(FramebufferConfiguration &configuration);
-    VkFramebuffer getFramebuffer(FramebufferConfiguration &configuration);
+	VkFramebuffer createFramebuffer(FramebufferConfiguration &configuration);
+	VkFramebuffer getFramebuffer(FramebufferConfiguration &configuration);
 	void createDefaultShaders();
-    VkRenderPass createRenderPass(RenderPassConfiguration &configuration);
+	VkRenderPass createRenderPass(RenderPassConfiguration &configuration);
 	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration &configuration);
 	void createColorResources();
 	VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -376,7 +377,7 @@ private:
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
-    VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+	VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 	VkSurfaceTransformFlagBitsKHR preTransform = {};
 	Matrix4 displayRotation;
 	std::vector<VkImage> swapChainImages;
@@ -392,7 +393,7 @@ private:
 	VmaAllocation depthImageAllocation = VK_NULL_HANDLE;
 	VkRenderPass defaultRenderPass = VK_NULL_HANDLE;
 	std::vector<VkFramebuffer> defaultFramebuffers;
-    std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
+	std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
 	std::unordered_map<VkRenderPass, bool> renderPassUsages;
@@ -401,7 +402,7 @@ private:
 	std::unordered_map<uint64, VkSampler> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers;
-	Shader* computeShader = nullptr;
+	Shader *computeShader = nullptr;
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;

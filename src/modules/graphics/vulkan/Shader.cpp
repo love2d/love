@@ -340,7 +340,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		uniformWrite.dstArrayElement = 0;
 		uniformWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uniformWrite.descriptorCount = 1;
-		uniformWrite.pBufferInfo = &bufferInfo;			
+		uniformWrite.pBufferInfo = &bufferInfo;
 
 		vkUpdateDescriptorSets(device, 1, &uniformWrite, 0, nullptr);
 

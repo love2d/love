@@ -1316,7 +1316,7 @@ bool Graphics::checkValidationSupport()
 	{
 		bool layerFound = false;
 
-		for (const auto& layerProperties : availableLayers)
+		for (const auto &layerProperties : availableLayers)
 		{
 			if (strcmp(layerName, layerProperties.layerName) == 0)
 			{
@@ -1754,7 +1754,7 @@ VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurface
 	// TODO: turn off GammaCorrect if a sRGB format can't be found?
 	if (isGammaCorrect())
 	{
-		for (const auto& availableFormat : availableFormats)
+		for (const auto &availableFormat : availableFormats)
 			// fixme: what if this format and colorspace is not available?
 			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 				return availableFormat;
@@ -1969,7 +1969,7 @@ VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration &configuratio
 {
 	std::vector<VkImageView> attachments;
 
-	for (const auto& colorView : configuration.colorViews)
+	for (const auto &colorView : configuration.colorViews)
 		attachments.push_back(colorView);
 
 	if (configuration.staticData.depthView)
@@ -2323,7 +2323,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 
 	// fixme: hasSRGBtexture
 	RenderPassConfiguration renderPassConfiguration{};
-	for (const auto& color : rts.colors)
+	for (const auto &color : rts.colors)
 		renderPassConfiguration.colorAttachments.push_back({ 
 			Vulkan::getTextureFormat(color.texture->getPixelFormat(), isPixelFormatSRGB(color.texture->getPixelFormat())).internalFormat,
 			false, 

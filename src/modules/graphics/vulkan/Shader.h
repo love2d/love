@@ -102,7 +102,7 @@ private:
 		size_t baseoff, 
 		const std::string &basename);
 	void initDescriptorSet();
-	void updateUniform(const UniformInfo* info, int count, bool internal);
+	void updateUniform(const UniformInfo *info, int count, bool internal);
 
 	VkDescriptorSet allocateDescriptorSet();
 
