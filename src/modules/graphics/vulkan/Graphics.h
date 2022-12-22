@@ -299,6 +299,8 @@ public:
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	const OptionalDeviceFeatures &getEnabledOptionalDeviceExtensions() const;
 	VkSampleCountFlagBits getMsaaCount(int requestedMsaa) const;
+	void setVsync(int vsync);
+	int getVsync() const;
 
 protected:
 	graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
@@ -365,6 +367,7 @@ private:
 	void endRenderPass();
 	VkSampler createSampler(const SamplerState &sampler);
 	void cleanupUnusedObjects();
+	void requestSwapchainRecreation();
 
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -407,12 +410,13 @@ private:
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;
 	std::vector<VkFence> imagesInFlight;
+	int vsync = 1;
 	VkDeviceSize minUniformBufferOffsetAlignment = 0;
 	bool imageRequested = false;
 	uint32_t frameCounter = 0;
 	size_t currentFrame = 0;
 	uint32_t imageIndex = 0;
-	bool framebufferResized = false;
+	bool swapChainRecreationRequested = false;
 	bool transitionColorDepthLayouts = false;
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;
 	StrongRef<love::graphics::Texture> defaultTexture;

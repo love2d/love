@@ -436,9 +436,9 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || swapChainRecreationRequested)
 	{
-		framebufferResized = false;
+		swapChainRecreationRequested = false;
 		recreateSwapChain();
 	}
 	else if (result != VK_SUCCESS)
@@ -463,6 +463,9 @@ void Graphics::present(void *screenshotCallbackdata)
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
 {
+	if (swapChain != VK_NULL_HANDLE && (pixelWidth != this->pixelWidth || pixelHeight != this->pixelHeight || width != this->width || height != this->height))
+		requestSwapchainRecreation();
+
 	this->width = width;
 	this->height = height;
 	this->pixelWidth = pixelwidth;
@@ -1772,8 +1775,6 @@ VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurface
 
 VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
 {
-	int vsync = Vulkan::getVsync();
-
 	const auto begin = availablePresentModes.begin();
 	const auto end = availablePresentModes.end();
 
@@ -2295,30 +2296,10 @@ void Graphics::setDefaultRenderPass()
 	renderPassState.msaa = msaaSamples;
 	renderPassState.numColorAttachments = 1;
 	renderPassState.transitionImages.clear();
-
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = renderPassState.width;
-	viewport.height = renderPassState.height;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
 }
 
 void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
 {
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(pixelw);
-	viewport.height = static_cast<float>(pixelh);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
-
 	auto currentCommandBuffer = commandBuffers.at(currentFrame);
 
 	// fixme: hasSRGBtexture
@@ -2372,6 +2353,16 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 void Graphics::startRenderPass()
 {
 	renderPassState.active = true;
+
+	VkViewport viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = renderPassState.width;
+	viewport.height = renderPassState.height;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
 
 	if (renderPassState.useConfigurations)
 	{
@@ -2483,6 +2474,14 @@ void Graphics::cleanupUnusedObjects()
 	eraseUnusedObjects(renderPasses, renderPassUsages, vkDestroyRenderPass, device);
 	eraseUnusedObjects(framebuffers, framebufferUsages, vkDestroyFramebuffer, device);
 	eraseUnusedObjects(graphicsPipelines, pipelineUsages, vkDestroyPipeline, device);
+}
+
+void Graphics::requestSwapchainRecreation()
+{
+	if (swapChain != VK_NULL_HANDLE)
+	{
+		swapChainRecreationRequested = true;
+	}
 }
 
 void Graphics::setComputeShader(Shader *shader)
@@ -2705,6 +2704,21 @@ VkSampleCountFlagBits Graphics::getMsaaCount(int requestedMsaa) const
 		return VK_SAMPLE_COUNT_2_BIT;
 	else
 		return VK_SAMPLE_COUNT_1_BIT;
+}
+
+void Graphics::setVsync(int vsync)
+{
+	if (vsync != this->vsync)
+	{
+		this->vsync = vsync;
+
+		requestSwapchainRecreation();
+	}
+}
+
+int Graphics::getVsync() const
+{
+	return vsync;
 }
 
 void Graphics::createColorResources()
@@ -2947,6 +2961,8 @@ void Graphics::cleanupSwapChain()
 		vkDestroyImageView(device, swapChainImageView, nullptr);
 	swapChainImageViews.clear();
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
+
+	swapChain = VK_NULL_HANDLE;
 }
 
 void Graphics::recreateSwapChain()
