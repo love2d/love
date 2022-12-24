@@ -358,7 +358,7 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 		}
 	}
 
-	endRecordingGraphicsCommands(present);
+	endRecordingGraphicsCommands();
 
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
 		vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
@@ -410,7 +410,7 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 			callbacks.clear();
 		}
 
-		startRecordingGraphicsCommands(false);
+		startRecordingGraphicsCommands();
 	}
 }
 
@@ -1103,7 +1103,7 @@ void Graphics::beginFrame()
 		cleanUpFn();
 	cleanUpFunctions.at(currentFrame).clear();
 
-	startRecordingGraphicsCommands(true);
+	startRecordingGraphicsCommands();
 
 	Vulkan::cmdTransitionImageLayout(
 		commandBuffers.at(currentFrame),
@@ -1134,7 +1134,7 @@ void Graphics::beginFrame()
 	usedShadersInFrame.clear();
 }
 
-void Graphics::startRecordingGraphicsCommands(bool newFrame)
+void Graphics::startRecordingGraphicsCommands()
 {
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1149,22 +1149,12 @@ void Graphics::startRecordingGraphicsCommands(bool newFrame)
 	setDefaultRenderPass();
 }
 
-void Graphics::endRecordingGraphicsCommands(bool present) {
+void Graphics::endRecordingGraphicsCommands() {
 	if (renderPassState.active)
 		endRenderPass();
 
 	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS)
 		throw love::Exception("failed to record command buffer");
-}
-
-uint32_t Graphics::getNumImagesInFlight() const
-{
-	return MAX_FRAMES_IN_FLIGHT;
-}
-
-uint32_t Graphics::getFrameIndex() const
-{
-	return static_cast<uint32_t>(currentFrame);
 }
 
 const VkDeviceSize Graphics::getMinUniformBufferOffsetAlignment() const
@@ -2263,7 +2253,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		}
 	}
 
-	if (usesConstantVertexColor(attributes))
+	if (!usesConstantVertexColor(attributes))
 	{
 		bufferVector.push_back((VkBuffer)defaultConstantColor->getHandle());
 		offsets.push_back((VkDeviceSize)0);

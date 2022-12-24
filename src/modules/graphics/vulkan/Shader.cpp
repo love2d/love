@@ -196,7 +196,7 @@ bool Shader::loadVolatile()
 	createPipelineLayout();
 	createDescriptorPoolSizes();
 	createStreamBuffers();
-	descriptorSetsVector.resize(vgfx->getNumImagesInFlight());
+	descriptorSetsVector.resize(MAX_FRAMES_IN_FLIGHT);
 	currentFrame = 0;
 	currentUsedUniformStreamBuffersCount = 0;
 	currentUsedDescriptorSetsCount = 0;
@@ -274,10 +274,11 @@ VkPipeline Shader::getComputePipeline() const
 	return computePipeline;
 }
 
-void Shader::newFrame(uint32_t frameIndex)
+void Shader::newFrame()
 {
-	currentFrame = frameIndex;
+	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
+	updatedUniforms.clear();
 	currentUsedUniformStreamBuffersCount = 0;
 	currentUsedDescriptorSetsCount = 0;
 
@@ -295,12 +296,10 @@ void Shader::newFrame(uint32_t frameIndex)
 	else
 		streamBuffers.at(0)->nextFrame();
 
-	if (currentUsedDescriptorSetsCount >= static_cast<uint32_t>(descriptorSetsVector.at(currentFrame).size()))
+	if (descriptorSetsVector.at(currentFrame).size() == 0)
 		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
 
-	currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
-
-	initDescriptorSet();
+	currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(0);
 }
 
 void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBindPoint bindPoint)
@@ -336,7 +335,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		VkWriteDescriptorSet uniformWrite{};
 		uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		uniformWrite.dstSet = currentDescriptorSet;
-		uniformWrite.dstBinding = uniformLocation;
+		uniformWrite.dstBinding = localUniformLocation;
 		uniformWrite.dstArrayElement = 0;
 		uniformWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uniformWrite.descriptorCount = 1;
@@ -345,6 +344,8 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		vkUpdateDescriptorSets(device, 1, &uniformWrite, 0, nullptr);
 
 		currentUsedUniformStreamBuffersCount++;
+
+		updatedUniforms.insert(localUniformLocation);
 	}
 
 	static const std::vector<BuiltinUniform> builtinUniformTextures = {
@@ -365,16 +366,26 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 			imageInfo.imageView = (VkImageView)texture->getRenderTargetHandle();
 			imageInfo.sampler = (VkSampler)texture->getSamplerHandle();
 
+			auto location = builtinUniformInfo[builtin]->location;
+
 			VkWriteDescriptorSet textureWrite{};
 			textureWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			textureWrite.dstSet = currentDescriptorSet;
-			textureWrite.dstBinding = builtinUniformInfo[builtin]->location;
+			textureWrite.dstBinding = location;
 			textureWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			textureWrite.descriptorCount = 1;
 			textureWrite.pImageInfo = &imageInfo;
 
 			vkUpdateDescriptorSets(device, 1, &textureWrite, 0, nullptr);
+
+			updatedUniforms.insert(location);
 		}
+	}
+
+	for (const auto &u : uniformInfos)
+	{
+		if (updatedUniforms.find(u.second.location) == updatedUniforms.end())
+			updateUniform(&u.second, u.second.count);
 	}
 
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
@@ -385,8 +396,6 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
 
 	currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
-
-	initDescriptorSet();
 }
 
 Shader::~Shader()
@@ -399,7 +408,7 @@ void Shader::attach()
 	auto &usedShadersInFrame = vgfx->getUsedShadersInFrame();
 	if (usedShadersInFrame.find(this) == usedShadersInFrame.end())
 	{
-		newFrame(vgfx->getFrameIndex());
+		newFrame();
 		usedShadersInFrame.insert(this);
 	}
 
@@ -532,6 +541,8 @@ void Shader::updateUniform(const UniformInfo* info, int count, bool internal)
 
 		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
 	}
+
+	updatedUniforms.insert(info->location);
 }
 
 void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures, int count)
@@ -544,6 +555,8 @@ void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures,
 		if (oldTexture)
 			oldTexture->release();
 	}
+
+	updateUniform(info, count);
 }
 
 void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
@@ -556,6 +569,8 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 		if (oldBuffer)
 			oldBuffer->release();
 	}
+
+	updateUniform(info, count);
 }
 
 void Shader::calculateUniformBufferSizeAligned()
@@ -566,13 +581,6 @@ void Shader::calculateUniformBufferSizeAligned()
 		static_cast<float>(size) / static_cast<float>(minAlignment)
 	));
 	uniformBufferSizeAligned = factor * minAlignment;
-}
-
-void Shader::initDescriptorSet()
-{
-	for (const auto &entry : uniformInfos)
-		if (Vulkan::getDescriptorType(entry.second.baseType) != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-			updateUniform(&entry.second, entry.second.count, true);
 }
 
 void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::SPIRType &type, size_t baseoff, const std::string &basename)
@@ -776,7 +784,7 @@ void Shader::compileShaders()
 				auto defaultUniformBlockSize = comp.get_declared_struct_size(type);
 				localUniformStagingData.resize(defaultUniformBlockSize);
 				localUniformData.resize(defaultUniformBlockSize);
-				uniformLocation = comp.get_decoration(resource.id, spv::DecorationBinding);
+				localUniformLocation = comp.get_decoration(resource.id, spv::DecorationBinding);
 
 				memset(localUniformStagingData.data(), 0, defaultUniformBlockSize);
 				memset(localUniformData.data(), 0, defaultUniformBlockSize);
@@ -956,7 +964,7 @@ void Shader::createDescriptorSetLayout()
 	if (!localUniformStagingData.empty())
 	{
 		VkDescriptorSetLayoutBinding uniformBinding{};
-		uniformBinding.binding = uniformLocation;
+		uniformBinding.binding = localUniformLocation;
 		uniformBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uniformBinding.descriptorCount = 1;
 		uniformBinding.stageFlags = stageFlags;

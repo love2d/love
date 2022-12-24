@@ -289,8 +289,6 @@ public:
 	void queueCleanUp(std::function<void()> cleanUp);
 	void addReadbackCallback(std::function<void()> callback);
 	void submitGpuCommands(bool present, void *screenshotCallbackData = nullptr);
-	uint32_t getNumImagesInFlight() const;
-	uint32_t getFrameIndex() const;
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	graphics::Texture *getDefaultTexture() const;
 	VkSampler getCachedSampler(const SamplerState &sampler);
@@ -349,8 +347,8 @@ private:
 	void recreateSwapChain();
 	void initDynamicState();
 	void beginFrame();
-	void startRecordingGraphicsCommands(bool newFrame);
-	void endRecordingGraphicsCommands(bool present);
+	void startRecordingGraphicsCommands();
+	void endRecordingGraphicsCommands();
 	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration);
 	bool usesConstantVertexColor(const VertexAttributes &attribs);
 	void createVulkanVertexFormat(
