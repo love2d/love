@@ -396,6 +396,8 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
 
 	currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
+
+	updatedUniforms.clear();
 }
 
 Shader::~Shader()
@@ -472,6 +474,9 @@ void Shader::updateUniform(const UniformInfo* info, int count, bool internal)
 		{
 			auto vkTexture = dynamic_cast<Texture*>(info->textures[i]);
 
+			if (vkTexture == nullptr)
+				throw love::Exception("uniform variable %s is not set.", info->name.c_str());
+
 			VkDescriptorImageInfo imageInfo{};
 
 			imageInfo.imageLayout = vkTexture->getImageLayout();
@@ -510,6 +515,9 @@ void Shader::updateUniform(const UniformInfo* info, int count, bool internal)
 
 		for (int i = 0; i < info->count; i++)
 		{
+			if (info->buffers[i] == nullptr)
+				throw love::Exception("uniform variable %s is not set.", info->name.c_str());
+
 			VkDescriptorBufferInfo bufferInfo{};
 			bufferInfo.buffer = (VkBuffer)info->buffers[i]->getHandle();;
 			bufferInfo.offset = 0;
@@ -535,7 +543,12 @@ void Shader::updateUniform(const UniformInfo* info, int count, bool internal)
 		std::vector<VkBufferView> bufferViews;
 
 		for (int i = 0; i < info->count; i++)
+		{
+			if (info->buffers[i] == nullptr)
+				throw love::Exception("uniform variable %s is not set.", info->name.c_str());
+
 			bufferViews.push_back((VkBufferView)info->buffers[i]->getTexelBufferHandle());
+		}
 
 		write.pTexelBufferView = bufferViews.data();
 
