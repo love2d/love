@@ -33,6 +33,7 @@
 #include "common/Vector.h"
 
 #include "font/Rasterizer.h"
+#include "font/TextShaper.h"
 #include "Texture.h"
 #include "vertex.h"
 #include "Volatile.h"
@@ -64,30 +65,6 @@ public:
 		ALIGN_MAX_ENUM
 	};
 
-	struct ColoredString
-	{
-		std::string str;
-		Colorf color;
-	};
-
-	struct IndexedColor
-	{
-		Colorf color;
-		int index;
-	};
-
-	struct ColoredCodepoints
-	{
-		std::vector<uint32> cps;
-		std::vector<IndexedColor> colors;
-	};
-
-	struct TextInfo
-	{
-		int width;
-		int height;
-	};
-
 	// Used to determine when to change textures in the generated vertex array.
 	struct DrawCommand
 	{
@@ -100,20 +77,17 @@ public:
 
 	virtual ~Font();
 
-	std::vector<DrawCommand> generateVertices(const ColoredCodepoints &codepoints, const Colorf &constantColor, std::vector<GlyphVertex> &vertices,
-	                                          float extra_spacing = 0.0f, Vector2 offset = {}, TextInfo *info = nullptr);
+	std::vector<DrawCommand> generateVertices(const love::font::ColoredCodepoints &codepoints, Range range, const Colorf &constantColor, std::vector<GlyphVertex> &vertices,
+	                                          float extra_spacing = 0.0f, Vector2 offset = {}, love::font::TextShaper::TextInfo *info = nullptr);
 
-	std::vector<DrawCommand> generateVerticesFormatted(const ColoredCodepoints &text, const Colorf &constantColor, float wrap, AlignMode align,
-	                                                   std::vector<GlyphVertex> &vertices, TextInfo *info = nullptr);
-
-	static void getCodepointsFromString(const std::string &str, Codepoints &codepoints);
-	static void getCodepointsFromString(const std::vector<ColoredString> &strs, ColoredCodepoints &codepoints);
+	std::vector<DrawCommand> generateVerticesFormatted(const love::font::ColoredCodepoints &text, const Colorf &constantColor, float wrap, AlignMode align,
+	                                                   std::vector<GlyphVertex> &vertices, love::font::TextShaper::TextInfo *info = nullptr);
 
 	/**
 	 * Draws the specified text.
 	 **/
-	void print(graphics::Graphics *gfx, const std::vector<ColoredString> &text, const Matrix4 &m, const Colorf &constantColor);
-	void printf(graphics::Graphics *gfx, const std::vector<ColoredString> &text, float wrap, AlignMode align, const Matrix4 &m, const Colorf &constantColor);
+	void print(graphics::Graphics *gfx, const std::vector<love::font::ColoredString> &text, const Matrix4 &m, const Colorf &constantColor);
+	void printf(graphics::Graphics *gfx, const std::vector<love::font::ColoredString> &text, float wrap, AlignMode align, const Matrix4 &m, const Colorf &constantColor);
 
 	/**
 	 * Returns the height of the font.
@@ -141,8 +115,8 @@ public:
 	 * @param max_width Optional output of the maximum width
 	 * Returns a vector with the lines.
 	 **/
-	void getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *line_widths = nullptr);
-	void getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<ColoredCodepoints> &lines, std::vector<int> *line_widths = nullptr);
+	void getWrap(const std::vector<love::font::ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *line_widths = nullptr);
+	void getWrap(const love::font::ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &ranges, std::vector<int> *line_widths = nullptr);
 
 	/**
 	 * Sets the line height (which should be a number to multiply the font size by,
@@ -191,7 +165,6 @@ private:
 	struct Glyph
 	{
 		Texture *texture;
-		int spacing;
 		GlyphVertex vertices[4];
 	};
 
@@ -204,26 +177,20 @@ private:
 	void createTexture();
 
 	TextureSize getNextTextureSize() const;
-	love::font::GlyphData *getRasterizerGlyphData(uint32 glyph, float &dpiscale);
-	const Glyph &addGlyph(uint32 glyph);
-	const Glyph &findGlyph(uint32 glyph);
+	love::font::GlyphData *getRasterizerGlyphData(love::font::TextShaper::GlyphIndex glyphindex, float &dpiscale);
+	const Glyph &addGlyph(love::font::TextShaper::GlyphIndex glyphindex);
+	const Glyph &findGlyph(love::font::TextShaper::GlyphIndex glyphindex);
 	void printv(Graphics *gfx, const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
 
-	std::vector<StrongRef<love::font::Rasterizer>> rasterizers;
-
-	int height;
-	float lineHeight;
+	StrongRef<love::font::TextShaper> shaper;
 
 	int textureWidth;
 	int textureHeight;
 
-	std::vector<StrongRef<love::graphics::Texture>> textures;
+	std::vector<StrongRef<Texture>> textures;
 
-	// maps glyphs to glyph texture information
-	std::unordered_map<uint32, Glyph> glyphs;
-
-	// map of left/right glyph pairs to horizontal kerning.
-	std::unordered_map<uint64, float> kerning;
+	// maps packed glyph index values to glyph texture information
+	std::unordered_map<uint64, Glyph> glyphs;
 
 	PixelFormat pixelFormat;
 

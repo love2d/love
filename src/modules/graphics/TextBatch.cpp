@@ -30,7 +30,7 @@ namespace graphics
 
 love::Type TextBatch::type("TextBatch", &Drawable::type);
 
-TextBatch::TextBatch(Font *font, const std::vector<Font::ColoredString> &text)
+TextBatch::TextBatch(Font *font, const std::vector<love::font::ColoredString> &text)
 	: font(font)
 	, vertexAttributes(Font::vertexFormat, 0)
 	, vertexData(nullptr)
@@ -112,13 +112,13 @@ void TextBatch::addTextData(const TextData &t)
 	std::vector<Font::GlyphVertex> vertices;
 	std::vector<Font::DrawCommand> newcommands;
 
-	Font::TextInfo textinfo;
+	love::font::TextShaper::TextInfo textinfo;
 
 	Colorf constantcolor = Colorf(1.0f, 1.0f, 1.0f, 1.0f);
 
 	// We only have formatted text if the align mode is valid.
 	if (t.align == Font::ALIGN_MAX_ENUM)
-		newcommands = font->generateVertices(t.codepoints, constantcolor, vertices, 0.0f, Vector2(0.0f, 0.0f), &textinfo);
+		newcommands = font->generateVertices(t.codepoints, Range(), constantcolor, vertices, 0.0f, Vector2(0.0f, 0.0f), &textinfo);
 	else
 		newcommands = font->generateVerticesFormatted(t.codepoints, constantcolor, t.wrap, t.align, vertices, &textinfo);
 
@@ -172,31 +172,31 @@ void TextBatch::addTextData(const TextData &t)
 		regenerateVertices();
 }
 
-void TextBatch::set(const std::vector<Font::ColoredString> &text)
+void TextBatch::set(const std::vector<love::font::ColoredString> &text)
 {
 	return set(text, -1.0f, Font::ALIGN_MAX_ENUM);
 }
 
-void TextBatch::set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align)
+void TextBatch::set(const std::vector<love::font::ColoredString> &text, float wrap, Font::AlignMode align)
 {
 	if (text.empty() || (text.size() == 1 && text[0].str.empty()))
 		return clear();
 
-	Font::ColoredCodepoints codepoints;
-	Font::getCodepointsFromString(text, codepoints);
+	love::font::ColoredCodepoints codepoints;
+	love::font::getCodepointsFromString(text, codepoints);
 
 	addTextData({codepoints, wrap, align, {}, false, false, Matrix4()});
 }
 
-int TextBatch::add(const std::vector<Font::ColoredString> &text, const Matrix4 &m)
+int TextBatch::add(const std::vector<love::font::ColoredString> &text, const Matrix4 &m)
 {
 	return addf(text, -1.0f, Font::ALIGN_MAX_ENUM, m);
 }
 
-int TextBatch::addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, const Matrix4 &m)
+int TextBatch::addf(const std::vector<love::font::ColoredString> &text, float wrap, Font::AlignMode align, const Matrix4 &m)
 {
-	Font::ColoredCodepoints codepoints;
-	Font::getCodepointsFromString(text, codepoints);
+	love::font::ColoredCodepoints codepoints;
+	love::font::getCodepointsFromString(text, codepoints);
 
 	addTextData({codepoints, wrap, align, {}, true, true, m});
 

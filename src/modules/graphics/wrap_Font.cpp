@@ -30,9 +30,9 @@ namespace love
 namespace graphics
 {
 
-void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredString> &strings)
+void luax_checkcoloredstring(lua_State *L, int idx, std::vector<love::font::ColoredString> &strings)
 {
-	Font::ColoredString coloredstr;
+	love::font::ColoredString coloredstr;
 	coloredstr.color = Colorf(1.0f, 1.0f, 1.0f, 1.0f);
 
 	if (lua_istable(L, idx))
@@ -103,7 +103,7 @@ int w_Font_getWrap(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
 
-	std::vector<Font::ColoredString> text;
+	std::vector<love::font::ColoredString> text;
 	luax_checkcoloredstring(L, 2, text);
 
 	float wrap = (float) luaL_checknumber(L, 3);

@@ -460,7 +460,7 @@ public:
 	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferDataUsage usage);
 	Mesh *newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode);
 
-	TextBatch *newTextBatch(Font *font, const std::vector<Font::ColoredString> &text = {});
+	TextBatch *newTextBatch(Font *font, const std::vector<love::font::ColoredString> &text = {});
 
 	data::ByteData *readbackBuffer(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);
 	GraphicsReadback *readbackBufferAsync(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);
@@ -702,14 +702,14 @@ public:
 	/**
 	 * Draws text at the specified coordinates
 	 **/
-	void print(const std::vector<Font::ColoredString> &str, const Matrix4 &m);
-	void print(const std::vector<Font::ColoredString> &str, Font *font, const Matrix4 &m);
+	void print(const std::vector<love::font::ColoredString> &str, const Matrix4 &m);
+	void print(const std::vector<love::font::ColoredString> &str, Font *font, const Matrix4 &m);
 
 	/**
 	 * Draws formatted text on screen at the specified coordinates.
 	 **/
-	void printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m);
-	void printf(const std::vector<Font::ColoredString> &str, Font *font, float wrap, Font::AlignMode align, const Matrix4 &m);
+	void printf(const std::vector<love::font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m);
+	void printf(const std::vector<love::font::ColoredString> &str, Font *font, float wrap, Font::AlignMode align, const Matrix4 &m);
 
 	/**
 	 * Draws a series of points at the specified positions.

@@ -21,8 +21,6 @@
 #include "Font.h"
 #include "font/GlyphData.h"
 
-#include "libraries/utf8/utf8.h"
-
 #include "common/math.h"
 #include "common/Matrix.h"
 #include "Graphics.h"
@@ -42,15 +40,23 @@ static inline uint16 normToUint16(double n)
 	return (uint16) (n * LOVE_UINT16_MAX);
 }
 
+static inline uint64 packGlyphIndex(love::font::TextShaper::GlyphIndex glyphindex)
+{
+	return ((uint64)glyphindex.rasterizerIndex << 32) | (uint64)glyphindex.index;
+}
+
+static inline love::font::TextShaper::GlyphIndex unpackGlyphIndex(uint64 packedindex)
+{
+	return {(int) (packedindex & 0xFFFFFFFF), (int) (packedindex >> 32)};
+}
+
 love::Type Font::type("Font", &Object::type);
 int Font::fontCount = 0;
 
 const CommonFormat Font::vertexFormat = CommonFormat::XYf_STus_RGBAub;
 
 Font::Font(love::font::Rasterizer *r, const SamplerState &s)
-	: rasterizers({r})
-	, height(r->getHeight())
-	, lineHeight(1)
+	: shaper(r->newTextShaper(), Acquire::NORETAIN)
 	, textureWidth(128)
 	, textureHeight(128)
 	, samplerState()
@@ -66,7 +72,7 @@ Font::Font(love::font::Rasterizer *r, const SamplerState &s)
 	// largest texture size if no rough match is found.
 	while (true)
 	{
-		if ((height * 0.8) * height * 30 <= textureWidth * textureHeight)
+		if ((shaper->getHeight() * 0.8) * shaper->getHeight() * 30 <= textureWidth * textureHeight)
 			break;
 
 		TextureSize nextsize = getNextTextureSize();
@@ -86,7 +92,8 @@ Font::Font(love::font::Rasterizer *r, const SamplerState &s)
 	if (pixelFormat == PIXELFORMAT_LA8_UNORM && !gfx->isPixelFormatSupported(pixelFormat, PIXELFORMATUSAGEFLAGS_SAMPLE))
 		pixelFormat = PIXELFORMAT_RGBA8_UNORM;
 
-	if (!r->hasGlyph(9)) // No tab character in the Rasterizer.
+	uint32 tab = '\t';
+	if (!r->hasGlyph(tab)) // No tab character in the Rasterizer.
 		useSpacesAsTab = true;
 
 	loadVolatile();
@@ -170,7 +177,7 @@ void Font::createTexture()
 		// and transparent black otherwise.
 		std::vector<uint8> emptydata(datasize, 0);
 
-		if (rasterizers[0]->getDataType() == font::Rasterizer::DATA_TRUETYPE)
+		if (shaper->getRasterizers()[0]->getDataType() == font::Rasterizer::DATA_TRUETYPE)
 		{
 			if (pixelFormat == PIXELFORMAT_LA8_UNORM)
 			{
@@ -204,15 +211,15 @@ void Font::createTexture()
 	{
 		textureCacheID++;
 
-		std::vector<uint32> glyphstoadd;
+		std::vector<love::font::TextShaper::GlyphIndex> glyphstoadd;
 
 		for (const auto &glyphpair : glyphs)
-			glyphstoadd.push_back(glyphpair.first);
+			glyphstoadd.push_back(unpackGlyphIndex(glyphpair.first));
 
 		glyphs.clear();
 		
-		for (uint32 g : glyphstoadd)
-			addGlyph(g);
+		for (auto glyphindex : glyphstoadd)
+			addGlyph(glyphindex);
 	}
 }
 
@@ -222,12 +229,14 @@ void Font::unloadVolatile()
 	textures.clear();
 }
 
-love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph, float &dpiscale)
+love::font::GlyphData *Font::getRasterizerGlyphData(love::font::TextShaper::GlyphIndex glyphindex, float &dpiscale)
 {
-	// Use spaces for the tab 'glyph'.
-	if (glyph == 9 && useSpacesAsTab)
+	const auto &r = shaper->getRasterizers()[glyphindex.rasterizerIndex];
+
+	// Use spaces for the tab 'glyph'. FIXME
+	if (/*glyph == '\t' &&*/ false && useSpacesAsTab)
 	{
-		love::font::GlyphData *spacegd = rasterizers[0]->getGlyphData(32);
+		love::font::GlyphData *spacegd = r->getGlyphData(32);
 		PixelFormat fmt = spacegd->getFormat();
 
 		love::font::GlyphMetrics gm = {};
@@ -237,27 +246,18 @@ love::font::GlyphData *Font::getRasterizerGlyphData(uint32 glyph, float &dpiscal
 
 		spacegd->release();
 
-		dpiscale = rasterizers[0]->getDPIScale();
-		return new love::font::GlyphData(glyph, gm, fmt);
+		dpiscale = r->getDPIScale();
+		return new love::font::GlyphData('\t', gm, fmt);
 	}
 
-	for (const StrongRef<love::font::Rasterizer> &r : rasterizers)
-	{
-		if (r->hasGlyph(glyph))
-		{
-			dpiscale = r->getDPIScale();
-			return r->getGlyphData(glyph);
-		}
-	}
-
-	dpiscale = rasterizers[0]->getDPIScale();
-	return rasterizers[0]->getGlyphData(glyph);
+	dpiscale = r->getDPIScale();
+	return r->getGlyphDataForIndex(glyphindex.index);
 }
 
-const Font::Glyph &Font::addGlyph(uint32 glyph)
+const Font::Glyph &Font::addGlyph(love::font::TextShaper::GlyphIndex glyphindex)
 {
 	float glyphdpiscale = getDPIScale();
-	StrongRef<love::font::GlyphData> gd(getRasterizerGlyphData(glyph, glyphdpiscale), Acquire::NORETAIN);
+	StrongRef<love::font::GlyphData> gd(getRasterizerGlyphData(glyphindex, glyphdpiscale), Acquire::NORETAIN);
 
 	int w = gd->getWidth();
 	int h = gd->getHeight();
@@ -279,15 +279,13 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 
 			// Makes sure the above code for checking if the glyph can fit at
 			// the current position in the texture is run again for this glyph.
-			return addGlyph(glyph);
+			return addGlyph(glyphindex);
 		}
 	}
 
 	Glyph g;
 
-	g.texture = 0;
-	g.spacing = floorf(gd->getAdvance() / glyphdpiscale + 0.5f);
-
+	g.texture = nullptr;
 	memset(g.vertices, 0, sizeof(GlyphVertex) * 4);
 
 	// Don't waste space for empty glyphs.
@@ -357,151 +355,77 @@ const Font::Glyph &Font::addGlyph(uint32 glyph)
 		rowHeight = std::max(rowHeight, h + TEXTURE_PADDING);
 	}
 
-	glyphs[glyph] = g;
-	return glyphs[glyph];
+	uint64 packedindex = packGlyphIndex(glyphindex);
+	glyphs[packedindex] = g;
+	return glyphs[packedindex];
 }
 
-const Font::Glyph &Font::findGlyph(uint32 glyph)
+const Font::Glyph &Font::findGlyph(love::font::TextShaper::GlyphIndex glyphindex)
 {
-	const auto it = glyphs.find(glyph);
+	uint64 packedindex = packGlyphIndex(glyphindex);
+	const auto it = glyphs.find(packedindex);
 
 	if (it != glyphs.end())
 		return it->second;
 
-	return addGlyph(glyph);
+	return addGlyph(glyphindex);
 }
 
 float Font::getKerning(uint32 leftglyph, uint32 rightglyph)
 {
-	uint64 packedglyphs = ((uint64) leftglyph << 32) | (uint64) rightglyph;
-
-	const auto it = kerning.find(packedglyphs);
-	if (it != kerning.end())
-		return it->second;
-
-	float k = floorf(rasterizers[0]->getKerning(leftglyph, rightglyph) / dpiScale + 0.5f);
-
-	for (const auto &r : rasterizers)
-	{
-		if (r->hasGlyph(leftglyph) && r->hasGlyph(rightglyph))
-		{
-			k = floorf(r->getKerning(leftglyph, rightglyph) / r->getDPIScale() + 0.5f);
-			break;
-		}
-	}
-
-	kerning[packedglyphs] = k;
-	return k;
+	return shaper->getKerning(leftglyph, rightglyph);
 }
 
 float Font::getKerning(const std::string &leftchar, const std::string &rightchar)
 {
-	uint32 left = 0;
-	uint32 right = 0;
-
-	try
-	{
-		left = utf8::peek_next(leftchar.begin(), leftchar.end());
-		right = utf8::peek_next(rightchar.begin(), rightchar.end());
-	}
-	catch (utf8::exception &e)
-	{
-		throw love::Exception("UTF-8 decoding error: %s", e.what());
-	}
-
-	return getKerning(left, right);
-}
-
-void Font::getCodepointsFromString(const std::string &text, Codepoints &codepoints)
-{
-	codepoints.reserve(text.size());
-
-	try
-	{
-		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
-		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
-
-		while (i != end)
-		{
-			uint32 g = *i++;
-			codepoints.push_back(g);
-		}
-	}
-	catch (utf8::exception &e)
-	{
-		throw love::Exception("UTF-8 decoding error: %s", e.what());
-	}
-}
-
-void Font::getCodepointsFromString(const std::vector<ColoredString> &strs, ColoredCodepoints &codepoints)
-{
-	if (strs.empty())
-		return;
-
-	codepoints.cps.reserve(strs[0].str.size());
-
-	for (const ColoredString &cstr : strs)
-	{
-		// No need to add the color if the string is empty anyway, and the code
-		// further on assumes no two colors share the same starting position.
-		if (cstr.str.size() == 0)
-			continue;
-
-		IndexedColor c = {cstr.color, (int) codepoints.cps.size()};
-		codepoints.colors.push_back(c);
-
-		getCodepointsFromString(cstr.str, codepoints.cps);
-	}
-
-	if (codepoints.colors.size() == 1)
-	{
-		IndexedColor c = codepoints.colors[0];
-
-		if (c.index == 0 && c.color == Colorf(1.0f, 1.0f, 1.0f, 1.0f))
-			codepoints.colors.pop_back();
-	}
+	return shaper->getKerning(leftchar, rightchar);
 }
 
 float Font::getHeight() const
 {
-	return (float) floorf(height / dpiScale + 0.5f);
+	return shaper->getHeight();
 }
 
-std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &codepoints, const Colorf &constantcolor, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector2 offset, TextInfo *info)
+std::vector<Font::DrawCommand> Font::generateVertices(const love::font::ColoredCodepoints &codepoints, Range range, const Colorf &constantcolor, std::vector<GlyphVertex> &vertices, float extra_spacing, Vector2 offset, love::font::TextShaper::TextInfo *info)
 {
-	// Spacing counter and newline handling.
-	float dx = offset.x;
-	float dy = offset.y;
+	std::vector<love::font::TextShaper::GlyphPosition> glyphpositions;
+	std::vector<love::font::IndexedColor> colors;
+	shaper->computeGlyphPositions(codepoints, range, offset, extra_spacing, &glyphpositions, &colors, info);
 
-	float heightoffset = 0.0f;
+	size_t vertstartsize = vertices.size();
+	vertices.reserve(vertstartsize + glyphpositions.size() * 4);
 
-	if (rasterizers[0]->getDataType() == font::Rasterizer::DATA_TRUETYPE)
-		heightoffset = getBaseline();
+	Colorf linearconstantcolor = gammaCorrectColor(constantcolor);
+	Color32 curcolor = toColor32(constantcolor);
 
-	int maxwidth = 0;
+	int curcolori = 0;
+	int ncolors = (int)colors.size();
 
 	// Keeps track of when we need to switch textures in our vertex array.
 	std::vector<DrawCommand> commands;
 
-	// Pre-allocate space for the maximum possible number of vertices.
-	size_t vertstartsize = vertices.size();
-	vertices.reserve(vertstartsize + codepoints.cps.size() * 4);
-
-	uint32 prevglyph = 0;
-
-	Colorf linearconstantcolor = gammaCorrectColor(constantcolor);
-
-	Color32 curcolor = toColor32(constantcolor);
-	int curcolori = -1;
-	int ncolors = (int) codepoints.colors.size();
-
-	for (int i = 0; i < (int) codepoints.cps.size(); i++)
+	for (int i = 0; i < (int) glyphpositions.size(); i++)
 	{
-		uint32 g = codepoints.cps[i];
+		const auto &info = glyphpositions[i];
 
-		if (curcolori + 1 < ncolors && codepoints.colors[curcolori + 1].index == i)
+		uint32 cacheid = textureCacheID;
+
+		const Glyph &glyph = findGlyph(info.glyphIndex);
+
+		// If findGlyph invalidates the texture cache, restart the loop.
+		if (cacheid != textureCacheID)
 		{
-			Colorf c = codepoints.colors[++curcolori].color;
+			i = -1; // The next iteration will increment this to 0.
+			commands.clear();
+			vertices.resize(vertstartsize);
+			curcolori = 0;
+			curcolor = toColor32(constantcolor);
+			continue;
+		}
+
+		if (curcolori < ncolors && colors[curcolori].index == i)
+		{
+			Colorf c = colors[curcolori].color;
 
 			c.r = std::min(std::max(c.r, 0.0f), 1.0f);
 			c.g = std::min(std::max(c.g, 0.0f), 1.0f);
@@ -513,45 +437,8 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			unGammaCorrectColor(c);
 
 			curcolor = toColor32(c);
+			curcolori++;
 		}
-
-		if (g == '\n')
-		{
-			if (dx > maxwidth)
-				maxwidth = (int) dx;
-
-			// Wrap newline, but do not print it.
-			dy += floorf(getHeight() * getLineHeight() + 0.5f);
-			dx = offset.x;
-			prevglyph = 0;
-			continue;
-		}
-
-		// Ignore carriage returns
-		if (g == '\r')
-			continue;
-
-		uint32 cacheid = textureCacheID;
-
-		const Glyph &glyph = findGlyph(g);
-
-		// If findGlyph invalidates the texture cache, re-start the loop.
-		if (cacheid != textureCacheID)
-		{
-			i = -1; // The next iteration will increment this to 0.
-			maxwidth = 0;
-			dx = offset.x;
-			dy = offset.y;
-			commands.clear();
-			vertices.resize(vertstartsize);
-			prevglyph = 0;
-			curcolori = -1;
-			curcolor = toColor32(constantcolor);
-			continue;
-		}
-
-		// Add kerning to the current horizontal offset.
-		dx += getKerning(prevglyph, g);
 
 		if (glyph.texture != nullptr)
 		{
@@ -559,8 +446,8 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			for (int j = 0; j < 4; j++)
 			{
 				vertices.push_back(glyph.vertices[j]);
-				vertices.back().x += dx;
-				vertices.back().y += dy + heightoffset;
+				vertices.back().x += info.position.x;
+				vertices.back().y += info.position.y;
 				vertices.back().color = curcolor;
 			}
 
@@ -569,7 +456,7 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 			{
 				// Add a new draw command if the texture has changed.
 				DrawCommand cmd;
-				cmd.startvertex = (int) vertices.size() - 4;
+				cmd.startvertex = (int)vertices.size() - 4;
 				cmd.vertexcount = 0;
 				cmd.texture = glyph.texture;
 				commands.push_back(cmd);
@@ -577,15 +464,6 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 
 			commands.back().vertexcount += 4;
 		}
-
-		// Advance the x position for the next glyph.
-		dx += glyph.spacing;
-
-		// Account for extra spacing given to space characters.
-		if (g == ' ' && extra_spacing != 0.0f)
-			dx = floorf(dx + extra_spacing);
-
-		prevglyph = g;
 	}
 
 	const auto drawsort = [](const DrawCommand &a, const DrawCommand &b) -> bool
@@ -599,19 +477,10 @@ std::vector<Font::DrawCommand> Font::generateVertices(const ColoredCodepoints &c
 
 	std::sort(commands.begin(), commands.end(), drawsort);
 
-	if (dx > maxwidth)
-		maxwidth = (int) dx;
-
-	if (info != nullptr)
-	{
-		info->width = maxwidth - offset.x;
-		info->height = (int) dy + (dx > 0.0f ? floorf(getHeight() * getLineHeight() + 0.5f) : 0) - offset.y;
-	}
-
 	return commands;
 }
 
-std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCodepoints &text, const Colorf &constantcolor, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, TextInfo *info)
+std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const love::font::ColoredCodepoints &text, const Colorf &constantcolor, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, love::font::TextShaper::TextInfo *info)
 {
 	wrap = std::max(wrap, 0.0f);
 
@@ -620,17 +489,22 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCode
 	std::vector<DrawCommand> drawcommands;
 	vertices.reserve(text.cps.size() * 4);
 
+	std::vector<Range> ranges;
 	std::vector<int> widths;
-	std::vector<ColoredCodepoints> lines;
-
-	getWrap(text, wrap, lines, &widths);
+	shaper->getWrap(text, wrap, ranges, &widths);
 
 	float y = 0.0f;
 	float maxwidth = 0.0f;
 
-	for (int i = 0; i < (int) lines.size(); i++)
+	for (int i = 0; i < (int)ranges.size(); i++)
 	{
-		const auto &line = lines[i];
+		const auto& range = ranges[i];
+
+		if (!range.isValid())
+		{
+			y += getHeight() * getLineHeight();
+			continue;
+		}
 
 		float width = (float) widths[i];
 		love::Vector2 offset(0.0f, floorf(y));
@@ -648,7 +522,9 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCode
 				break;
 			case ALIGN_JUSTIFY:
 			{
-				float numspaces = (float) std::count(line.cps.begin(), line.cps.end(), ' ');
+				auto start = text.cps.begin() + range.getOffset();
+				auto end = start + range.getSize();
+				float numspaces = std::count(start, end, ' ');
 				if (width < wrap && numspaces >= 1)
 					extraspacing = (wrap - width) / numspaces;
 				else
@@ -660,7 +536,7 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const ColoredCode
 				break;
 		}
 
-		std::vector<DrawCommand> newcommands = generateVertices(line, constantcolor, vertices, extraspacing, offset);
+		std::vector<DrawCommand> newcommands = generateVertices(text, range, constantcolor, vertices, extraspacing, offset);
 
 		if (!newcommands.empty())
 		{
@@ -724,21 +600,21 @@ void Font::printv(graphics::Graphics *gfx, const Matrix4 &t, const std::vector<D
 	}
 }
 
-void Font::print(graphics::Graphics *gfx, const std::vector<ColoredString> &text, const Matrix4 &m, const Colorf &constantcolor)
+void Font::print(graphics::Graphics *gfx, const std::vector<love::font::ColoredString> &text, const Matrix4 &m, const Colorf &constantcolor)
 {
-	ColoredCodepoints codepoints;
-	getCodepointsFromString(text, codepoints);
+	love::font::ColoredCodepoints codepoints;
+	love::font::getCodepointsFromString(text, codepoints);
 
 	std::vector<GlyphVertex> vertices;
-	std::vector<DrawCommand> drawcommands = generateVertices(codepoints, constantcolor, vertices);
+	std::vector<DrawCommand> drawcommands = generateVertices(codepoints, Range(), constantcolor, vertices);
 
 	printv(gfx, m, drawcommands, vertices);
 }
 
-void Font::printf(graphics::Graphics *gfx, const std::vector<ColoredString> &text, float wrap, AlignMode align, const Matrix4 &m, const Colorf &constantcolor)
+void Font::printf(graphics::Graphics *gfx, const std::vector<love::font::ColoredString> &text, float wrap, AlignMode align, const Matrix4 &m, const Colorf &constantcolor)
 {
-	ColoredCodepoints codepoints;
-	getCodepointsFromString(text, codepoints);
+	love::font::ColoredCodepoints codepoints;
+	love::font::getCodepointsFromString(text, codepoints);
 
 	std::vector<GlyphVertex> vertices;
 	std::vector<DrawCommand> drawcommands = generateVerticesFormatted(codepoints, constantcolor, wrap, align, vertices);
@@ -748,241 +624,32 @@ void Font::printf(graphics::Graphics *gfx, const std::vector<ColoredString> &tex
 
 int Font::getWidth(const std::string &str)
 {
-	if (str.size() == 0) return 0;
-
-	std::istringstream iss(str);
-	std::string line;
-	int max_width = 0;
-
-	while (getline(iss, line, '\n'))
-	{
-		int width = 0;
-		uint32 prevglyph = 0;
-		try
-		{
-			utf8::iterator<std::string::const_iterator> i(line.begin(), line.begin(), line.end());
-			utf8::iterator<std::string::const_iterator> end(line.end(), line.begin(), line.end());
-
-			while (i != end)
-			{
-				uint32 c = *i++;
-
-				// Ignore carriage returns
-				if (c == '\r')
-					continue;
-
-				const Glyph &g = findGlyph(c);
-				width += g.spacing + getKerning(prevglyph, c);
-
-				prevglyph = c;
-			}
-		}
-		catch (utf8::exception &e)
-		{
-			throw love::Exception("UTF-8 decoding error: %s", e.what());
-		}
-
-		max_width = std::max(max_width, width);
-	}
-
-	return max_width;
+	return shaper->getWidth(str);
 }
 
 int Font::getWidth(uint32 glyph)
 {
-	const Glyph &g = findGlyph(glyph);
-	return g.spacing;
+	return shaper->getGlyphAdvance(glyph);
 }
 
-void Font::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<ColoredCodepoints> &lines, std::vector<int> *linewidths)
+void Font::getWrap(const love::font::ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &ranges, std::vector<int> *linewidths)
 {
-	// Per-line info.
-	float width = 0.0f;
-	float widthbeforelastspace = 0.0f;
-	float widthoftrailingspace = 0.0f;
-	uint32 prevglyph = 0;
-
-	int lastspaceindex = -1;
-
-	// Keeping the indexed colors "in sync" is a bit tricky, since we split
-	// things up and we might skip some glyphs but we don't want to skip any
-	// color which starts at those indices.
-	Colorf curcolor(1.0f, 1.0f, 1.0f, 1.0f);
-	bool addcurcolor = false;
-	int curcolori = -1;
-	int endcolori = (int) codepoints.colors.size() - 1;
-
-	// A wrapped line of text.
-	ColoredCodepoints wline;
-
-	int i = 0;
-	while (i < (int) codepoints.cps.size())
-	{
-		uint32 c = codepoints.cps[i];
-
-		// Determine the current color before doing anything else, to make sure
-		// it's still applied to future glyphs even if this one is skipped.
-		if (curcolori < endcolori && codepoints.colors[curcolori + 1].index == i)
-		{
-			curcolor = codepoints.colors[curcolori + 1].color;
-			curcolori++;
-			addcurcolor = true;
-		}
-
-		// Split text at newlines.
-		if (c == '\n')
-		{
-			lines.push_back(wline);
-
-			// Ignore the width of any trailing spaces, for individual lines.
-			if (linewidths)
-				linewidths->push_back(width - widthoftrailingspace);
-
-			// Make sure the new line keeps any color that was set previously.
-			addcurcolor = true;
-
-			width = widthbeforelastspace = widthoftrailingspace = 0.0f;
-			prevglyph = 0; // Reset kerning information.
-			lastspaceindex = -1;
-			wline.cps.clear();
-			wline.colors.clear();
-			i++;
-
-			continue;
-		}
-
-		// Ignore carriage returns
-		if (c == '\r')
-		{
-			i++;
-			continue;
-		}
-
-		const Glyph &g = findGlyph(c);
-		float charwidth = g.spacing + getKerning(prevglyph, c);
-		float newwidth = width + charwidth;
-
-		// Wrap the line if it exceeds the wrap limit. Don't wrap yet if we're
-		// processing a newline character, though.
-		if (c != ' ' && newwidth > wraplimit)
-		{
-			// If this is the first character in the line and it exceeds the
-			// limit, skip it completely.
-			if (wline.cps.empty())
-				i++;
-			else if (lastspaceindex != -1)
-			{
-				// 'Rewind' to the last seen space, if the line has one.
-				// FIXME: This could be more efficient...
-				while (!wline.cps.empty() && wline.cps.back() != ' ')
-					wline.cps.pop_back();
-
-				while (!wline.colors.empty() && wline.colors.back().index >= (int) wline.cps.size())
-					wline.colors.pop_back();
-
-				// Also 'rewind' to the color that the last character is using.
-				for (int colori = curcolori; colori >= 0; colori--)
-				{
-					if (codepoints.colors[colori].index <= lastspaceindex)
-					{
-						curcolor = codepoints.colors[colori].color;
-						curcolori = colori;
-						break;
-					}
-				}
-
-				// Ignore the width of trailing spaces in wrapped lines.
-				width = widthbeforelastspace;
-
-				i = lastspaceindex;
-				i++; // Start the next line after the space.
-			}
-
-			lines.push_back(wline);
-
-			if (linewidths)
-				linewidths->push_back(width);
-
-			addcurcolor = true;
-
-			prevglyph = 0;
-			width = widthbeforelastspace = widthoftrailingspace = 0.0f;
-			wline.cps.clear();
-			wline.colors.clear();
-			lastspaceindex = -1;
-
-			continue;
-		}
-
-		if (prevglyph != ' ' && c == ' ')
-			widthbeforelastspace = width;
-
-		width = newwidth;
-		prevglyph = c;
-
-		if (addcurcolor)
-		{
-			wline.colors.push_back({curcolor, (int) wline.cps.size()});
-			addcurcolor = false;
-		}
-
-		wline.cps.push_back(c);
-
-		// Keep track of the last seen space, so we can "rewind" to it when
-		// wrapping.
-		if (c == ' ')
-		{
-			lastspaceindex = i;
-			widthoftrailingspace += charwidth;
-		}
-		else if (c != '\n')
-			widthoftrailingspace = 0.0f;
-
-		i++;
-	}
-
-	// Push the last line.
-	lines.push_back(wline);
-
-	// Ignore the width of any trailing spaces, for individual lines.
-	if (linewidths)
-		linewidths->push_back(width - widthoftrailingspace);
+	shaper->getWrap(codepoints, wraplimit, ranges, linewidths);
 }
 
-void Font::getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths)
+void Font::getWrap(const std::vector<love::font::ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths)
 {
-	ColoredCodepoints cps;
-	getCodepointsFromString(text, cps);
-
-	std::vector<ColoredCodepoints> codepointlines;
-	getWrap(cps, wraplimit, codepointlines, linewidths);
-
-	std::string line;
-
-	for (const ColoredCodepoints &codepoints : codepointlines)
-	{
-		line.clear();
-		line.reserve(codepoints.cps.size());
-
-		for (uint32 codepoint : codepoints.cps)
-		{
-			char character[5] = {'\0'};
-			char *end = utf8::unchecked::append(codepoint, character);
-			line.append(character, end - character);
-		}
-
-		lines.push_back(line);
-	}
+	shaper->getWrap(text, wraplimit, lines, linewidths);
 }
 
 void Font::setLineHeight(float height)
 {
-	lineHeight = height;
+	shaper->setLineHeight(height);
 }
 
 float Font::getLineHeight() const
 {
-	return lineHeight;
+	return shaper->getLineHeight();
 }
 
 void Font::setSamplerState(const SamplerState &s)
@@ -1002,75 +669,44 @@ const SamplerState &Font::getSamplerState() const
 
 int Font::getAscent() const
 {
-	return floorf(rasterizers[0]->getAscent() / dpiScale + 0.5f);
+	return shaper->getAscent();
 }
 
 int Font::getDescent() const
 {
-	return floorf(rasterizers[0]->getDescent() / dpiScale + 0.5f);
+	return shaper->getDescent();
 }
 
 float Font::getBaseline() const
 {
-	float ascent = getAscent();
-	if (ascent != 0.0f)
-		return ascent;
-	else if (rasterizers[0]->getDataType() == font::Rasterizer::DATA_TRUETYPE)
-		return floorf(getHeight() / 1.25f + 0.5f); // 1.25 is magic line height for true type fonts
-	else
-		return 0.0f;
+	return shaper->getBaseline();
 }
 
 bool Font::hasGlyph(uint32 glyph) const
 {
-	for (const StrongRef<love::font::Rasterizer> &r : rasterizers)
-	{
-		if (r->hasGlyph(glyph))
-			return true;
-	}
-
-	return false;
+	return shaper->hasGlyph(glyph);
 }
 
 bool Font::hasGlyphs(const std::string &text) const
 {
-	if (text.size() == 0)
-		return false;
-
-	try
-	{
-		utf8::iterator<std::string::const_iterator> i(text.begin(), text.begin(), text.end());
-		utf8::iterator<std::string::const_iterator> end(text.end(), text.begin(), text.end());
-		
-		while (i != end)
-		{
-			uint32 codepoint = *i++;
-			
-			if (!hasGlyph(codepoint))
-				return false;
-		}
-	}
-	catch (utf8::exception &e)
-	{
-		throw love::Exception("UTF-8 decoding error: %s", e.what());
-	}
-
-	return true;
+	return shaper->hasGlyphs(text);
 }
 
 void Font::setFallbacks(const std::vector<Font *> &fallbacks)
 {
-	for (const Font *f : fallbacks)
-	{
-		if (f->rasterizers[0]->getDataType() != this->rasterizers[0]->getDataType())
-			throw love::Exception("Font fallbacks must be of the same font type.");
-	}
+	std::vector<love::font::Rasterizer*> rasterizerfallbacks;
+	for (const Font* f : fallbacks)
+		rasterizerfallbacks.push_back(f->shaper->getRasterizers()[0]);
 
-	rasterizers.resize(1);
+	shaper->setFallbacks(rasterizerfallbacks);
 
-	// NOTE: this won't invalidate already-rasterized glyphs.
-	for (const Font *f : fallbacks)
-		rasterizers.push_back(f->rasterizers[0]);
+	// Invalidate existing textures.
+	textureCacheID++;
+	glyphs.clear();
+	while (textures.size() > 1)
+		textures.pop_back();
+
+	rowHeight = textureX = textureY = TEXTURE_PADDING;
 }
 
 float Font::getDPIScale() const
