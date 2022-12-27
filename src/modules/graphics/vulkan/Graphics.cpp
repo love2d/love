@@ -2702,6 +2702,11 @@ void Graphics::setVsync(int vsync)
 	{
 		this->vsync = vsync;
 
+		// With the extension VK_EXT_swapchain_maintenance1 a swapchain recreation might not be needed
+		// https://github.com/KhronosGroup/Vulkan-Docs/blob/main/proposals/VK_EXT_swapchain_maintenance1.adoc
+		// However, there are not any drivers that support it, yet.
+		// Reevaluate again in the future.
+
 		requestSwapchainRecreation();
 	}
 }
