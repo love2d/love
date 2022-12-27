@@ -24,13 +24,10 @@
 // Platform stuff.
 #if defined(WIN32) || defined(_WIN32)
 #	define LOVE_WINDOWS 1
-	// If _USING_V110_SDK71_ is defined it means we are using the xp toolset.
-#	if defined(_MSC_VER) && (_MSC_VER >= 1700) && !_USING_V110_SDK71_
-#		include <winapifamily.h>
-#		if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) && !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-#			define LOVE_WINDOWS_UWP 1
-#			define LOVE_NO_MODPLUG 1
-#		endif
+#	include <winapifamily.h>
+#	if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) && !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#		define LOVE_WINDOWS_UWP 1
+#		define LOVE_NO_MODPLUG 1
 #	endif
 #endif
 #if defined(linux) || defined(__linux) || defined(__linux__)

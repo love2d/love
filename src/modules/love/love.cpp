@@ -33,12 +33,6 @@
 
 #ifdef LOVE_WINDOWS
 #include <windows.h>
-
-#if defined(_MSC_VER) && (_MSC_VER < 1900)
-// VS 2013 and earlier doesn't have snprintf
-#define snprintf sprintf_s
-#endif // defined(_MSC_VER) && (_MSC_VER < 1900)
-
 #endif // LOVE_WINDOWS
 
 #ifdef LOVE_ANDROID

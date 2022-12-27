@@ -35,13 +35,6 @@
 #include <cmath>
 #include <sstream>
 
-// VS2013 doesn't support alignof
-#if defined(_MSC_VER) && _MSC_VER <= 1800
-#define LOVE_ALIGNOF(x) __alignof(x)
-#else
-#define LOVE_ALIGNOF(x) alignof(x)
-#endif
-
 namespace love
 {
 
