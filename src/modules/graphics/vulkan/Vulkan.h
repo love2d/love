@@ -58,9 +58,6 @@ public:
 	static uint32_t getNumShaderSwitches();
 	static void resetShaderSwitches();
 
-	static void setVsync(int vsync);
-	static int getVsync();
-
 	static VkFormat getVulkanVertexFormat(DataFormat format);
 	static TextureFormat getTextureFormat(PixelFormat, bool sRGB);
 	static std::string getVendorName(uint32_t vendorId);

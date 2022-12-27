@@ -1100,8 +1100,11 @@ void Window::setVSync(int vsync)
 	}
 
 #ifdef LOVE_GRAPHICS_VULKAN
-	// TODO: this doesn't update the swap-chain, but it should.
-	love::graphics::vulkan::Vulkan::setVsync(vsync);
+	if (windowRenderer == love::graphics::RENDERER_VULKAN)
+	{
+		auto vgfx = dynamic_cast<love::graphics::vulkan::Graphics*>(graphics.get());
+		vgfx->setVsync(vsync);
+	}
 #endif
 
 #if defined(LOVE_GRAPHICS_METAL) && defined(LOVE_MACOS)
@@ -1132,7 +1135,10 @@ int Window::getVSync() const
 
 #ifdef LOVE_GRAPHICS_VULKAN
 	if (windowRenderer == love::graphics::RENDERER_VULKAN)
-		return love::graphics::vulkan::Vulkan::getVsync();
+	{
+		auto vgfx = dynamic_cast<love::graphics::vulkan::Graphics*>(graphics.get());
+		return vgfx->getVsync();
+	}
 #endif
 
 	return 0;

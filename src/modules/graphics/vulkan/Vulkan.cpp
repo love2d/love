@@ -31,7 +31,6 @@ namespace vulkan
 {
 
 static uint32_t numShaderSwitches;
-static int vsync = 1;
 
 void Vulkan::shaderSwitch()
 {
@@ -46,16 +45,6 @@ uint32_t Vulkan::getNumShaderSwitches()
 void Vulkan::resetShaderSwitches()
 {
 	numShaderSwitches = 0;
-}
-
-void Vulkan::setVsync(int value)
-{
-	vsync = value;
-}
-
-int Vulkan::getVsync()
-{
-	return vsync;
 }
 
 VkFormat Vulkan::getVulkanVertexFormat(DataFormat format)
