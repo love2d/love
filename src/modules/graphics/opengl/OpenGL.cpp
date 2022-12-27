@@ -2420,8 +2420,7 @@ const char *OpenGL::errorString(GLenum errorcode)
 
 	static char text[64] = {};
 
-	memset(text, 0, sizeof(text));
-	sprintf(text, "0x%x", errorcode);
+	snprintf(text, sizeof(text), "0x%x", errorcode);
 
 	return text;
 }
@@ -2450,8 +2449,7 @@ const char *OpenGL::framebufferStatusString(GLenum status)
 
 	static char text[64] = {};
 
-	memset(text, 0, sizeof(text));
-	sprintf(text, "0x%x", status);
+	snprintf(text, sizeof(text), "0x%x", status);
 
 	return text;
 }
