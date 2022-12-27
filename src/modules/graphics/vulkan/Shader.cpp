@@ -234,8 +234,7 @@ void Shader::unloadVolatile()
 		}
 	}
 
-	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	gfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout, descriptorPools = descriptorPools, computePipeline = computePipeline](){
+	vgfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout, descriptorPools = descriptorPools, computePipeline = computePipeline](){
 		for (const auto pool : descriptorPools)
 			vkDestroyDescriptorPool(device, pool, nullptr);
 		for (const auto shaderModule : shaderModules)
