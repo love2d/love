@@ -30,7 +30,7 @@ namespace love
 namespace font
 {
 
-void getCodepointsFromString(const std::string& text, std::vector<uint32>& codepoints)
+void getCodepointsFromString(const std::string &text, std::vector<uint32> &codepoints)
 {
 	codepoints.reserve(text.size());
 
@@ -45,20 +45,20 @@ void getCodepointsFromString(const std::string& text, std::vector<uint32>& codep
 			codepoints.push_back(g);
 		}
 	}
-	catch (utf8::exception& e)
+	catch (utf8::exception &e)
 	{
 		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
 }
 
-void getCodepointsFromString(const std::vector<ColoredString>& strs, ColoredCodepoints& codepoints)
+void getCodepointsFromString(const std::vector<ColoredString> &strs, ColoredCodepoints &codepoints)
 {
 	if (strs.empty())
 		return;
 
 	codepoints.cps.reserve(strs[0].str.size());
 
-	for (const ColoredString& cstr : strs)
+	for (const ColoredString &cstr : strs)
 	{
 		// No need to add the color if the string is empty anyway, and the code
 		// further on assumes no two colors share the same starting position.
@@ -87,7 +87,10 @@ TextShaper::TextShaper(Rasterizer *rasterizer)
 	, dpiScales{rasterizer->getDPIScale()}
 	, height(floorf(rasterizer->getHeight() / rasterizer->getDPIScale() + 0.5f))
 	, lineHeight(1)
+	, useSpacesForTab(false)
 {
+	if (!rasterizer->hasGlyph('\t'))
+		useSpacesForTab = true;
 }
 
 TextShaper::~TextShaper()
@@ -141,7 +144,7 @@ bool TextShaper::hasGlyph(uint32 glyph) const
 	return false;
 }
 
-bool TextShaper::hasGlyphs(const std::string& text) const
+bool TextShaper::hasGlyphs(const std::string &text) const
 {
 	if (text.size() == 0)
 		return false;
@@ -178,7 +181,7 @@ float TextShaper::getKerning(uint32 leftglyph, uint32 rightglyph)
 	float k = 0.0f;
 	bool found = false;
 
-	for (const auto& r : rasterizers)
+	for (const auto &r : rasterizers)
 	{
 		if (r->hasGlyph(leftglyph) && r->hasGlyph(rightglyph))
 		{
@@ -195,7 +198,7 @@ float TextShaper::getKerning(uint32 leftglyph, uint32 rightglyph)
 	return k;
 }
 
-float TextShaper::getKerning(const std::string& leftchar, const std::string& rightchar)
+float TextShaper::getKerning(const std::string &leftchar, const std::string &rightchar)
 {
 	uint32 left = 0;
 	uint32 right = 0;
@@ -215,8 +218,6 @@ float TextShaper::getKerning(const std::string& leftchar, const std::string& rig
 
 int TextShaper::getGlyphAdvance(uint32 glyph, GlyphIndex *glyphindex)
 {
-	// TODO: use spaces for tab
-
 	const auto it = glyphAdvances.find(glyph);
 	if (it != glyphAdvances.end())
 	{
@@ -226,10 +227,14 @@ int TextShaper::getGlyphAdvance(uint32 glyph, GlyphIndex *glyphindex)
 	}
 
 	int rasterizeri = 0;
+	uint32 realglyph = glyph;
+
+	if (glyph == '\t' && isUsingSpacesForTab())
+		realglyph = ' ';
 
 	for (size_t i = 0; i < rasterizers.size(); i++)
 	{
-		if (rasterizers[i]->hasGlyph(glyph))
+		if (rasterizers[i]->hasGlyph(realglyph))
 		{
 			rasterizeri = (int) i;
 			break;
@@ -237,9 +242,12 @@ int TextShaper::getGlyphAdvance(uint32 glyph, GlyphIndex *glyphindex)
 	}
 
 	const auto &r = rasterizers[rasterizeri];
-	int advance = floorf(r->getGlyphSpacing(glyph) / r->getDPIScale() + 0.5f);
+	int advance = floorf(r->getGlyphSpacing(realglyph) / r->getDPIScale() + 0.5f);
 
-	GlyphIndex glyphi = {r->getGlyphIndex(glyph), rasterizeri};
+	if (glyph == '\t' && realglyph == ' ')
+		advance *= SPACES_PER_TAB;
+
+	GlyphIndex glyphi = {r->getGlyphIndex(realglyph), rasterizeri};
 
 	glyphAdvances[glyph] = std::make_pair(advance, glyphi);
 	if (glyphindex)
@@ -260,7 +268,7 @@ int TextShaper::getWidth(const std::string &str)
 	return info.width;
 }
 
-static size_t findNewline(const ColoredCodepoints& codepoints, size_t start)
+static size_t findNewline(const ColoredCodepoints &codepoints, size_t start)
 {
 	for (size_t i = start; i < codepoints.cps.size(); i++)
 	{
@@ -273,7 +281,7 @@ static size_t findNewline(const ColoredCodepoints& codepoints, size_t start)
 	return codepoints.cps.size();
 }
 
-void TextShaper::getWrap(const ColoredCodepoints& codepoints, float wraplimit, std::vector<Range>& lineranges, std::vector<int>* linewidths)
+void TextShaper::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &lineranges, std::vector<int> *linewidths)
 {
 	size_t nextnewline = findNewline(codepoints, 0);
 
@@ -317,7 +325,7 @@ void TextShaper::getWrap(const ColoredCodepoints& codepoints, float wraplimit, s
 	}
 }
 
-void TextShaper::getWrap(const std::vector<ColoredString>& text, float wraplimit, std::vector<std::string>& lines, std::vector<int>* linewidths)
+void TextShaper::getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths)
 {
 	ColoredCodepoints cps;
 	getCodepointsFromString(text, cps);
@@ -327,7 +335,7 @@ void TextShaper::getWrap(const std::vector<ColoredString>& text, float wraplimit
 
 	std::string line;
 
-	for (const auto& range : codepointranges)
+	for (const auto &range : codepointranges)
 	{
 		line.clear();
 
@@ -347,9 +355,9 @@ void TextShaper::getWrap(const std::vector<ColoredString>& text, float wraplimit
 	}
 }
 
-void TextShaper::setFallbacks(const std::vector<Rasterizer*>& fallbacks)
+void TextShaper::setFallbacks(const std::vector<Rasterizer*> &fallbacks)
 {
-	for (Rasterizer* r : fallbacks)
+	for (Rasterizer *r : fallbacks)
 	{
 		if (r->getDataType() != rasterizers[0]->getDataType())
 			throw love::Exception("Font fallbacks must be of the same font type.");
@@ -362,7 +370,7 @@ void TextShaper::setFallbacks(const std::vector<Rasterizer*>& fallbacks)
 	rasterizers.resize(1);
 	dpiScales.resize(1);
 
-	for (Rasterizer* r : fallbacks)
+	for (Rasterizer *r : fallbacks)
 	{
 		rasterizers.push_back(r);
 		dpiScales.push_back(r->getDPIScale());

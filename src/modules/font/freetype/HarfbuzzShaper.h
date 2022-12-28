@@ -26,6 +26,7 @@
 extern "C"
 {
 typedef struct hb_font_t hb_font_t;
+typedef struct hb_buffer_t hb_buffer_t;
 }
 
 namespace love
@@ -50,7 +51,14 @@ public:
 
 private:
 
+	void updateSpacesForTabInfo();
+
 	std::vector<hb_font_t *> hbFonts;
+	std::vector<hb_buffer_t *> hbBuffers;
+
+	GlyphIndex spaceGlyphIndex;
+	int tabSpacesAdvanceX;
+	int tabSpacesAdvanceY;
 
 }; // HarfbuzzShaper
 

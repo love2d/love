@@ -167,7 +167,7 @@ int GenericShaper::computeWordWrapIndex(const ColoredCodepoints& codepoints, Ran
 		float newwidth = w + getKerning(prevglyph, g) + getGlyphAdvance(g);
 
 		// Only wrap when there's a non-space character.
-		if (newwidth > wraplimit && g != ' ')
+		if (newwidth > wraplimit && !isWhitespace(g))
 		{
 			// Rewind to the last seen space when wrapping.
 			if (lastspaceindex != -1)
@@ -179,10 +179,10 @@ int GenericShaper::computeWordWrapIndex(const ColoredCodepoints& codepoints, Ran
 		}
 
 		// Don't count trailing spaces in the output width.
-		if (g == ' ')
+		if (isWhitespace(g))
 		{
 			lastspaceindex = i;
-			if (prevglyph != ' ')
+			if (!isWhitespace(prevglyph))
 				widthbeforelastspace = w;
 		}
 		else

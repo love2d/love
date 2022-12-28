@@ -36,30 +36,70 @@ namespace freetype
 
 HarfbuzzShaper::HarfbuzzShaper(TrueTypeRasterizer *rasterizer)
 	: TextShaper(rasterizer)
+	, spaceGlyphIndex()
+	, tabSpacesAdvanceX(0)
+	, tabSpacesAdvanceY(0)
 {
 	hbFonts.push_back(hb_ft_font_create_referenced((FT_Face)rasterizer->getHandle()));
+	hbBuffers.push_back(hb_buffer_create());
 
 	if (hbFonts[0] == nullptr || hbFonts[0] == hb_font_get_empty())
-		throw love::Exception("");
+		throw love::Exception("Could not create Harfbuzz font object.");
+
+	if (hbBuffers[0] == nullptr || hbBuffers[0] == hb_buffer_get_empty())
+		throw love::Exception("Could not create Harfbuzz buffer object.");
+
+	updateSpacesForTabInfo();
 }
 
 HarfbuzzShaper::~HarfbuzzShaper()
 {
+	for (hb_buffer_t *buffer : hbBuffers)
+		hb_buffer_destroy(buffer);
 	for (hb_font_t *font : hbFonts)
 		hb_font_destroy(font);
 }
 
-void HarfbuzzShaper::setFallbacks(const std::vector<Rasterizer*>& fallbacks)
+void HarfbuzzShaper::setFallbacks(const std::vector<Rasterizer*> &fallbacks)
 {
-	for (size_t i = 1; i < hbFonts.size(); i++)
+	for (size_t i = 1; i < rasterizers.size(); i++)
+	{
+		hb_buffer_destroy(hbBuffers[i]);
 		hb_font_destroy(hbFonts[i]);
+	}
 
 	TextShaper::setFallbacks(fallbacks);
 
 	hbFonts.resize(rasterizers.size());
+	hbBuffers.resize(rasterizers.size());
 
-	for (size_t i = 1; i < hbFonts.size(); i++)
+	for (size_t i = 1; i < rasterizers.size(); i++)
+	{
 		hbFonts[i] = hb_ft_font_create_referenced((FT_Face)rasterizers[i]->getHandle());
+		hbBuffers[i] = hb_buffer_create();
+	}
+
+	updateSpacesForTabInfo();
+}
+
+void HarfbuzzShaper::updateSpacesForTabInfo()
+{
+	if (!isUsingSpacesForTab())
+		return;
+
+	hb_codepoint_t glyphid = 0;
+	for (size_t i = 0; i < hbFonts.size(); i++)
+	{
+		hb_font_t *hbfont = hbFonts[i];
+		if (hb_font_get_glyph(hbfont, ' ', 0, &glyphid))
+		{
+			spaceGlyphIndex.index = glyphid;
+			spaceGlyphIndex.rasterizerIndex = i;
+			tabSpacesAdvanceX = hb_font_get_glyph_h_advance(hbfont, glyphid) * SPACES_PER_TAB;
+			tabSpacesAdvanceY = hb_font_get_glyph_v_advance(hbfont, glyphid) * SPACES_PER_TAB;
+			break;
+		}
+	}
 }
 
 void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, Range range, Vector2 offset, float extraspacing, std::vector<GlyphPosition> *positions, std::vector<IndexedColor> *colors, TextInfo *info)
@@ -70,18 +110,21 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 	offset.y += getBaseline();
 	Vector2 curpos = offset;
 
-	hb_buffer_t *hbbuffer = hb_buffer_create();
+	hb_buffer_t *hbbuffer = hbBuffers[0];
+	hb_buffer_reset(hbbuffer);
 
 	hb_buffer_add_codepoints(hbbuffer, codepoints.cps.data(), codepoints.cps.size(), (unsigned int) range.getOffset(), (int) range.getSize());
 
 	// TODO: Expose APIs for direction and script?
 	hb_buffer_guess_segment_properties(hbbuffer);
 
+	hb_direction_t direction = hb_buffer_get_direction(hbbuffer);
+
 	hb_shape(hbFonts[0], hbbuffer, nullptr, 0);
 
 	int glyphcount = (int) hb_buffer_get_length(hbbuffer);
-	hb_glyph_info_t* glyphinfos = hb_buffer_get_glyph_infos(hbbuffer, nullptr);
-	hb_glyph_position_t* glyphpositions = hb_buffer_get_glyph_positions(hbbuffer, nullptr);
+	hb_glyph_info_t *glyphinfos = hb_buffer_get_glyph_infos(hbbuffer, nullptr);
+	hb_glyph_position_t *glyphpositions = hb_buffer_get_glyph_positions(hbbuffer, nullptr);
 
 	if (positions)
 		positions->reserve(positions->size() + glyphcount);
@@ -93,7 +136,7 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 		for (int i = 0; i < glyphcount; i++)
 		{
 			bool adding = false;
-			if (glyphinfos[i].codepoint == 0)
+			if (glyphinfos[i].codepoint == 0 && (codepoints.cps[glyphinfos[i].cluster] != '\t' || !isUsingSpacesForTab()))
 			{
 				if (fallbackranges.empty() || fallbackranges.back().getMax() != glyphinfos[i-1].cluster)
 					fallbackranges.push_back(Range(glyphinfos[i].cluster, 1));
@@ -106,9 +149,7 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 		{
 			for (size_t rasti = 1; rasti < rasterizers.size(); rasti++)
 			{
-				hb_buffer_t* hbbuffer = hb_buffer_create();
 
-				hb_buffer_destroy(hbbuffer);
 			}
 		}
 	}
@@ -132,11 +173,10 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 	int maxwidth = (int)curpos.x;
 
 	// TODO: fallbacks
-	// TODO: use spaces for tab
 	for (int i = 0; i < glyphcount; i++)
 	{
-		const hb_glyph_info_t& info = glyphinfos[i];
-		const hb_glyph_position_t& glyphpos = glyphpositions[i];
+		const hb_glyph_info_t &info = glyphinfos[i];
+		hb_glyph_position_t &glyphpos = glyphpositions[i];
 
 		// TODO: this doesn't handle situations where the user inserted a color
 		// change in the middle of some characters that get combined into a single
@@ -166,6 +206,21 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 		if (clustercodepoint == '\r')
 			continue;
 
+		// This is a glyph index at this point, despite the name.
+		GlyphIndex gindex = { info.codepoint, 0 };
+
+		if (clustercodepoint == '\t' && isUsingSpacesForTab())
+		{
+			gindex = spaceGlyphIndex;
+
+			// This should be safe to overwrite.
+			// TODO: RTL support?
+			glyphpos.x_offset = 0;
+			glyphpos.y_offset = 0;
+			glyphpos.x_advance = HB_DIRECTION_IS_HORIZONTAL(direction) ? tabSpacesAdvanceX : 0;
+			glyphpos.y_advance = HB_DIRECTION_IS_VERTICAL(direction) ? tabSpacesAdvanceY : 0;
+		}
+
 		if (colorToAdd.hasValue && colors && positions)
 		{
 			IndexedColor c = {colorToAdd.value, positions->size()};
@@ -175,8 +230,6 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 
 		if (positions)
 		{
-			// Despite the name this is a glyph index at this point.
-			GlyphIndex gindex = { info.codepoint, 0 };
 			GlyphPosition p = { curpos, gindex };
 
 			// Harfbuzz position coordinate systems are based on the given font.
@@ -195,8 +248,6 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 			curpos.x = floorf(curpos.x + extraspacing);
 	}
 
-	hb_buffer_destroy(hbbuffer);
-
 	if (curpos.x > maxwidth)
 		maxwidth = (int)curpos.x;
 
@@ -209,23 +260,26 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 	}
 }
 
-int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints& codepoints, Range range, float wraplimit, float *width)
+int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Range range, float wraplimit, float *width)
 {
 	if (!range.isValid())
 		range = Range(0, codepoints.cps.size());
 
-	hb_buffer_t* hbbuffer = hb_buffer_create();
+	hb_buffer_t *hbbuffer = hbBuffers[0];
+	hb_buffer_reset(hbbuffer);
 
 	hb_buffer_add_codepoints(hbbuffer, codepoints.cps.data(), codepoints.cps.size(), (unsigned int)range.getOffset(), (int)range.getSize());
 
 	// TODO: Expose APIs for direction and script?
 	hb_buffer_guess_segment_properties(hbbuffer);
 
+	hb_direction_t direction = hb_buffer_get_direction(hbbuffer);
+
 	hb_shape(hbFonts[0], hbbuffer, nullptr, 0);
 
 	int glyphcount = (int)hb_buffer_get_length(hbbuffer);
-	hb_glyph_info_t* glyphinfos = hb_buffer_get_glyph_infos(hbbuffer, nullptr);
-	hb_glyph_position_t* glyphpositions = hb_buffer_get_glyph_positions(hbbuffer, nullptr);
+	hb_glyph_info_t *glyphinfos = hb_buffer_get_glyph_infos(hbbuffer, nullptr);
+	hb_glyph_position_t *glyphpositions = hb_buffer_get_glyph_positions(hbbuffer, nullptr);
 
 	float w = 0.0f;
 	float outwidth = 0.0f;
@@ -237,8 +291,8 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints& codepoints, Ra
 
 	for (int i = 0; i < glyphcount; i++)
 	{
-		const hb_glyph_info_t& info = glyphinfos[i];
-		const hb_glyph_position_t& glyphpos = glyphpositions[i];
+		const hb_glyph_info_t &info = glyphinfos[i];
+		hb_glyph_position_t &glyphpos = glyphpositions[i];
 
 		uint32 clustercodepoint = codepoints.cps[info.cluster];
 
@@ -248,10 +302,20 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints& codepoints, Ra
 			continue;
 		}
 
+		if (clustercodepoint == '\t' && isUsingSpacesForTab())
+		{
+			// This should be safe to overwrite.
+			// TODO: RTL support?
+			glyphpos.x_offset = 0;
+			glyphpos.y_offset = 0;
+			glyphpos.x_advance = HB_DIRECTION_IS_HORIZONTAL(direction) ? tabSpacesAdvanceX : 0;
+			glyphpos.y_advance = HB_DIRECTION_IS_VERTICAL(direction) ? tabSpacesAdvanceY : 0;
+		}
+
 		float newwidth = w + floorf((glyphpos.x_advance >> 6) / dpiScales[0] + 0.5f);
 
 		// Only wrap when there's a non-space character.
-		if (newwidth > wraplimit && clustercodepoint != ' ')
+		if (newwidth > wraplimit && !isWhitespace(clustercodepoint))
 		{
 			// Rewind to the last seen space when wrapping.
 			if (lastspaceindex != -1)
@@ -263,10 +327,10 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints& codepoints, Ra
 		}
 
 		// Don't count trailing spaces in the output width.
-		if (clustercodepoint == ' ')
+		if (isWhitespace(clustercodepoint))
 		{
 			lastspaceindex = info.cluster;
-			if (prevcodepoint != ' ')
+			if (!isWhitespace(prevcodepoint))
 				widthbeforelastspace = w;
 		}
 		else
@@ -276,8 +340,6 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints& codepoints, Ra
 		prevcodepoint = clustercodepoint;
 		wrapindex = info.cluster;
 	}
-
-	hb_buffer_destroy(hbbuffer);
 
 	if (width)
 		*width = outwidth;

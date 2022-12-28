@@ -81,11 +81,15 @@ public:
 		int height;
 	};
 
+	// This will be used if the Rasterizer doesn't have a tab character itself.
+	static const int SPACES_PER_TAB = 4;
+
 	static love::Type type;
 
 	virtual ~TextShaper();
 
 	const std::vector<StrongRef<Rasterizer>> &getRasterizers() const { return rasterizers; }
+	bool isUsingSpacesForTab() const { return useSpacesForTab; }
 
 	float getHeight() const;
 
@@ -128,6 +132,8 @@ protected:
 
 	TextShaper(Rasterizer *rasterizer);
 
+	static inline bool isWhitespace(uint32 codepoint) { return codepoint == ' ' || codepoint == '\t'; }
+
 	std::vector<StrongRef<Rasterizer>> rasterizers;
 	std::vector<float> dpiScales;
 
@@ -135,6 +141,8 @@ private:
 
 	int height;
 	float lineHeight;
+
+	bool useSpacesForTab;
 
 	// maps glyphs to advance and glyph+rasterizer index.
 	std::unordered_map<uint32, std::pair<int, GlyphIndex>> glyphAdvances;

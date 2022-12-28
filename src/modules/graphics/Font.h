@@ -201,8 +201,6 @@ private:
 	int textureX, textureY;
 	int rowHeight;
 
-	bool useSpacesAsTab;
-
 	// ID which is incremented when the texture cache is invalidated.
 	uint32 textureCacheID;
 
@@ -210,9 +208,6 @@ private:
 	// other glyphs), plus one pixel of transparent padding that the quads will
 	// use, for edge antialiasing.
 	static const int TEXTURE_PADDING = 2;
-
-	// This will be used if the Rasterizer doesn't have a tab character itself.
-	static const int SPACES_PER_TAB = 4;
 
 	static StringMap<AlignMode, ALIGN_MAX_ENUM>::Entry alignModeEntries[];
 	static StringMap<AlignMode, ALIGN_MAX_ENUM> alignModes;

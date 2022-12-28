@@ -61,7 +61,6 @@ Font::Font(love::font::Rasterizer *r, const SamplerState &s)
 	, textureHeight(128)
 	, samplerState()
 	, dpiScale(r->getDPIScale())
-	, useSpacesAsTab(false)
 	, textureCacheID(0)
 {
 	samplerState.minFilter = s.minFilter;
@@ -91,10 +90,6 @@ Font::Font(love::font::Rasterizer *r, const SamplerState &s)
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	if (pixelFormat == PIXELFORMAT_LA8_UNORM && !gfx->isPixelFormatSupported(pixelFormat, PIXELFORMATUSAGEFLAGS_SAMPLE))
 		pixelFormat = PIXELFORMAT_RGBA8_UNORM;
-
-	uint32 tab = '\t';
-	if (!r->hasGlyph(tab)) // No tab character in the Rasterizer.
-		useSpacesAsTab = true;
 
 	loadVolatile();
 	++fontCount;
@@ -232,24 +227,6 @@ void Font::unloadVolatile()
 love::font::GlyphData *Font::getRasterizerGlyphData(love::font::TextShaper::GlyphIndex glyphindex, float &dpiscale)
 {
 	const auto &r = shaper->getRasterizers()[glyphindex.rasterizerIndex];
-
-	// Use spaces for the tab 'glyph'. FIXME
-	if (/*glyph == '\t' &&*/ false && useSpacesAsTab)
-	{
-		love::font::GlyphData *spacegd = r->getGlyphData(32);
-		PixelFormat fmt = spacegd->getFormat();
-
-		love::font::GlyphMetrics gm = {};
-		gm.advance = spacegd->getAdvance() * SPACES_PER_TAB;
-		gm.bearingX = spacegd->getBearingX();
-		gm.bearingY = spacegd->getBearingY();
-
-		spacegd->release();
-
-		dpiscale = r->getDPIScale();
-		return new love::font::GlyphData('\t', gm, fmt);
-	}
-
 	dpiscale = r->getDPIScale();
 	return r->getGlyphDataForIndex(glyphindex.index);
 }
