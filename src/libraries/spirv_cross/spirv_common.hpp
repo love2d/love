@@ -238,16 +238,6 @@ static inline std::string convert_to_string(int64_t value, const std::string &in
 #define SPIRV_CROSS_FLT_FMT "%.32g"
 #endif
 
-// Disable sprintf and strcat warnings.
-// We cannot rely on snprintf and family existing because, ..., MSVC.
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#elif defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4996)
-#endif
-
 static inline void fixup_radix_point(char *str, char radix_point)
 {
 	// Setting locales is a very risky business in multi-threaded program,
@@ -268,7 +258,7 @@ inline std::string convert_to_string(float t, char locale_radix_point)
 	// std::to_string for floating point values is broken.
 	// Fallback to something more sane.
 	char buf[64];
-	sprintf(buf, SPIRV_CROSS_FLT_FMT, t);
+	snprintf(buf, sizeof(buf), SPIRV_CROSS_FLT_FMT, t);
 	fixup_radix_point(buf, locale_radix_point);
 
 	// Ensure that the literal is float.
@@ -282,7 +272,7 @@ inline std::string convert_to_string(double t, char locale_radix_point)
 	// std::to_string for floating point values is broken.
 	// Fallback to something more sane.
 	char buf[64];
-	sprintf(buf, SPIRV_CROSS_FLT_FMT, t);
+	snprintf(buf, sizeof(buf), SPIRV_CROSS_FLT_FMT, t);
 	fixup_radix_point(buf, locale_radix_point);
 
 	// Ensure that the literal is float.
@@ -313,12 +303,6 @@ struct ValueSaver
 	T &current;
 	T saved;
 };
-
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic pop
-#elif defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 
 struct Instruction
 {
