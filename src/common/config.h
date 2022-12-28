@@ -104,8 +104,10 @@
 #endif
 
 // DLL-stuff.
-#ifdef LOVE_WINDOWS
+#if defined(_MSC_VER)
 #	define LOVE_EXPORT __declspec(dllexport)
+#elif defined(__GNUC__) || defined(__clang__)
+#	define LOVE_EXPORT __attribute__((visibility("default")))
 #else
 #	define LOVE_EXPORT
 #endif
