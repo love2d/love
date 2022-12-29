@@ -29,6 +29,10 @@ AC_DEFUN([LOVE_MSG_ERROR],
 # C++14 support in cpp14.m4
 ACLOVE_CPP14_TEST
 
+# Add -fvisibility=hidden and -fvisibility-inlines-hidden
+CFLAGS="-fvisibility=hidden $CFLAGS"
+CPPFLAGS="-fvisibility=hidden -fvisibility-inlines-hidden $CPPFLAGS"
+
 # Allow people on OSX to use autotools, they need their platform files
 AC_ARG_ENABLE([osx],
 			  AC_HELP_STRING([--enable-osx], [Compile platform-specific files for OSX]), [], [enable_osx=no])
