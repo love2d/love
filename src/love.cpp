@@ -66,6 +66,11 @@ LOVE_EXPORT DWORD AmdPowerXpressRequestHighPerformance = 1;
 
 #include <vector>
 
+// Explicitly instantiate std::vector<std::string> to work around linker issues
+// with libc++ when symbols are hidden-by-default.
+// https://stackoverflow.com/a/48273604
+template class std::vector<std::string>;
+
 static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_argv)
 {
 	std::vector<std::string> temp_argv;
