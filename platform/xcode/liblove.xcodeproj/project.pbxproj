@@ -5194,10 +5194,6 @@
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/freetype",
-				);
 				MARKETING_VERSION = 11.4;
 				OTHER_LDFLAGS = (
 					"-undefined",
@@ -5234,10 +5230,6 @@
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/freetype",
-				);
 				MARKETING_VERSION = 11.4;
 				OTHER_LDFLAGS = (
 					"-undefined",
@@ -5275,10 +5267,6 @@
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ios/libraries/freetype",
-				);
 				MARKETING_VERSION = 11.4;
 				OTHER_LDFLAGS = (
 					"-undefined",
