@@ -283,7 +283,7 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 
 			if (colorToAdd.hasValue && colors && positions)
 			{
-				IndexedColor c = {colorToAdd.value, positions->size()};
+				IndexedColor c = {colorToAdd.value, (int) positions->size()};
 				colors->push_back(c);
 				colorToAdd.clear();
 			}
