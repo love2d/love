@@ -176,7 +176,7 @@ else()
 	if(MSVC)
 		message(FATAL_ERROR "
 It is currently only possible to build with megasource on Windows.
-Please see http://bitbucket.org/rude/megasource
+Please see https://github.com/love2d/megasource
 ")
 	endif()
 
