@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2022 LOVE Development Team
+ * Copyright (c) 2006-2023 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -81,8 +81,6 @@ Graphics::Graphics()
 		throw love::Exception("could not find vulkan");
 
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
-
-	instanceVersion = volkGetInstanceVersion();
 }
 
 Graphics::~Graphics()
@@ -360,7 +358,7 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 		}
 	}
 
-	endRecordingGraphicsCommands(present);
+	endRecordingGraphicsCommands();
 
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
 		vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
@@ -412,7 +410,7 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 			callbacks.clear();
 		}
 
-		startRecordingGraphicsCommands(false);
+		startRecordingGraphicsCommands();
 	}
 }
 
@@ -438,9 +436,9 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized)
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || swapChainRecreationRequested)
 	{
-		framebufferResized = false;
+		swapChainRecreationRequested = false;
 		recreateSwapChain();
 	}
 	else if (result != VK_SUCCESS)
@@ -465,6 +463,9 @@ void Graphics::present(void *screenshotCallbackdata)
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
 {
+	if (swapChain != VK_NULL_HANDLE && (pixelWidth != this->pixelWidth || pixelHeight != this->pixelHeight || width != this->width || height != this->height))
+		requestSwapchainRecreation();
+
 	this->width = width;
 	this->height = height;
 	this->pixelWidth = pixelwidth;
@@ -601,7 +602,7 @@ void Graphics::unSetMode()
 	renderPassUsages.clear();
 	framebufferUsages.clear();
 	pipelineUsages.clear();
-
+	
 	created = false;
 	vkDeviceWaitIdle(device);
 	Volatile::unloadAll();
@@ -675,34 +676,7 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 
 	Graphics::RendererInfo info;
 
-	if (isDebugEnabled())
-	{
-		std::stringstream ss;
-		ss << "Vulkan( ";
-		ss << renderPasses.size() << " ";
-		ss << framebuffers.size() << " ";
-		ss << graphicsPipelines.size() << " ";
-		if (optionalDeviceFeatures.extendedDynamicState)
-			ss << "eds ";
-		if (optionalDeviceFeatures.memoryRequirements2)
-			ss << "mr2 ";
-		if (optionalDeviceFeatures.dedicatedAllocation)
-			ss << "da ";
-		if (optionalDeviceFeatures.bufferDeviceAddress)
-			ss << "bda ";
-		if (optionalDeviceFeatures.memoryBudget)
-			ss << "mb ";
-		if (optionalDeviceFeatures.shaderFloatControls)
-			ss << "sfc ";
-		if (optionalDeviceFeatures.spirv14)
-			ss << "spv14 ";
-		ss << ")";
-
-		info.name = ss.str();
-	}
-	else
-		info.name = "Vulkan";
-
+	info.name = "Vulkan";
 	info.device = deviceProperties.deviceName;
 	info.vendor = Vulkan::getVendorName(deviceProperties.vendorID);
 	info.version = Vulkan::getVulkanApiVersion(deviceProperties.apiVersion);
@@ -832,11 +806,7 @@ void Graphics::setScissor(const Rect &rect)
 {
 	flushBatchedDraws();
 
-	VkRect2D scissor = computeScissor(rect,
-                                      static_cast<double>(swapChainExtent.width),
-                                      static_cast<double>(swapChainExtent.height),
-									  getCurrentDPIScale(),
-                                      preTransform);
+	VkRect2D scissor = computeScissor(rect, static_cast<double>(swapChainExtent.width), static_cast<double>(swapChainExtent.height), getCurrentDPIScale(), preTransform);
 	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 
 	states.back().scissor = true;
@@ -1133,7 +1103,7 @@ void Graphics::beginFrame()
 		cleanUpFn();
 	cleanUpFunctions.at(currentFrame).clear();
 
-	startRecordingGraphicsCommands(true);
+	startRecordingGraphicsCommands();
 
 	Vulkan::cmdTransitionImageLayout(
 		commandBuffers.at(currentFrame),
@@ -1164,7 +1134,7 @@ void Graphics::beginFrame()
 	usedShadersInFrame.clear();
 }
 
-void Graphics::startRecordingGraphicsCommands(bool newFrame)
+void Graphics::startRecordingGraphicsCommands()
 {
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1179,22 +1149,12 @@ void Graphics::startRecordingGraphicsCommands(bool newFrame)
 	setDefaultRenderPass();
 }
 
-void Graphics::endRecordingGraphicsCommands(bool present) {
+void Graphics::endRecordingGraphicsCommands() {
 	if (renderPassState.active)
 		endRenderPass();
 
 	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS)
 		throw love::Exception("failed to record command buffer");
-}
-
-uint32_t Graphics::getNumImagesInFlight() const
-{
-	return MAX_FRAMES_IN_FLIGHT;
-}
-
-uint32_t Graphics::getFrameIndex() const
-{
-	return static_cast<uint32_t>(currentFrame);
 }
 
 const VkDeviceSize Graphics::getMinUniformBufferOffsetAlignment() const
@@ -1297,7 +1257,7 @@ void Graphics::createVulkanInstance()
 	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	// get this version from somewhere else?
 	appInfo.pEngineName = "LOVE Game Framework";
 	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
-	appInfo.apiVersion = instanceVersion;
+	appInfo.apiVersion = VK_API_VERSION_1_3;
 
 	VkInstanceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -1351,7 +1311,7 @@ bool Graphics::checkValidationSupport()
 	{
 		bool layerFound = false;
 
-		for (const auto& layerProperties : availableLayers)
+		for (const auto &layerProperties : availableLayers)
 		{
 			if (strcmp(layerName, layerProperties.layerName) == 0)
 			{
@@ -1546,8 +1506,8 @@ void Graphics::createLogicalDevice()
 
 	// sanity check for dependencies.
 
-    if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
-        optionalDeviceFeatures.extendedDynamicState = false;
+	if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
+		optionalDeviceFeatures.extendedDynamicState = false;
 	if (optionalDeviceFeatures.dedicatedAllocation && !optionalDeviceFeatures.memoryRequirements2)
 		optionalDeviceFeatures.dedicatedAllocation = false;
 	if (optionalDeviceFeatures.bufferDeviceAddress && !optionalInstanceExtensions.physicalDeviceProperties2)
@@ -1606,7 +1566,7 @@ void Graphics::createLogicalDevice()
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
 		throw love::Exception("failed to create logical device");
 
-    volkLoadDevice(device);
+	volkLoadDevice(device);
 
 	vkGetDeviceQueue(device, indices.graphicsFamily.value, 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value, 0, &presentQueue);
@@ -1705,15 +1665,15 @@ void Graphics::createSwapChain()
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
 	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
-    if ((swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) ||
-        (swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR))
+	if ((swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) ||
+		(swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR))
 	{
-        uint32_t width, height;
-        width = extent.width;
-        height = extent.height;
-        extent.width = height;
-        extent.height = width;
-    }
+		uint32_t width, height;
+		width = extent.width;
+		height = extent.height;
+		extent.width = height;
+		extent.height = width;
+	}
 
 	auto currentTransform = swapChainSupport.capabilities.currentTransform;
 	constexpr float PI = 3.14159265358979323846f;
@@ -1789,7 +1749,7 @@ VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurface
 	// TODO: turn off GammaCorrect if a sRGB format can't be found?
 	if (isGammaCorrect())
 	{
-		for (const auto& availableFormat : availableFormats)
+		for (const auto &availableFormat : availableFormats)
 			// fixme: what if this format and colorspace is not available?
 			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 				return availableFormat;
@@ -1805,8 +1765,6 @@ VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurface
 
 VkPresentModeKHR Graphics::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
 {
-	int vsync = Vulkan::getVsync();
-
 	const auto begin = availablePresentModes.begin();
 	const auto end = availablePresentModes.end();
 
@@ -1871,12 +1829,12 @@ VkCompositeAlphaFlagBitsKHR Graphics::chooseCompositeAlpha(const VkSurfaceCapabi
 		return VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
 		return VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
-    else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
-        return VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
-    else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
-        return VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
-    else
-        throw love::Exception("failed to find composite alpha");
+	else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR)
+		return VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR;
+	else if (capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR)
+		return VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR;
+	else
+		throw love::Exception("failed to find composite alpha");
 }
 
 void Graphics::createImageViews()
@@ -2002,7 +1960,7 @@ VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration &configuratio
 {
 	std::vector<VkImageView> attachments;
 
-	for (const auto& colorView : configuration.colorViews)
+	for (const auto &colorView : configuration.colorViews)
 		attachments.push_back(colorView);
 
 	if (configuration.staticData.depthView)
@@ -2062,8 +2020,8 @@ void Graphics::createDefaultShaders()
 
 VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 {
-    VkSubpassDescription subPass{};
-    subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	VkSubpassDescription subPass{};
+	subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
 	std::vector<VkAttachmentDescription> attachments;
 	std::vector<VkAttachmentReference> colorAttachmentRefs;
@@ -2091,8 +2049,8 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		attachments.push_back(colorDescription);
 	}
 
-    subPass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
-    subPass.pColorAttachments = colorAttachmentRefs.data();
+	subPass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
+	subPass.pColorAttachments = colorAttachmentRefs.data();
 
 	VkAttachmentReference depthStencilAttachmentRef{};
 	if (configuration.staticData.depthAttachment.format != VK_FORMAT_UNDEFINED)
@@ -2156,20 +2114,20 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 
 	std::array<VkSubpassDependency, 2> dependencies = { dependency, readbackDependency };
 
-    VkRenderPassCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    createInfo.pAttachments = attachments.data();
-    createInfo.subpassCount = 1;
-    createInfo.pSubpasses = &subPass;
+	VkRenderPassCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	createInfo.pAttachments = attachments.data();
+	createInfo.subpassCount = 1;
+	createInfo.pSubpasses = &subPass;
 	createInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	createInfo.pDependencies = dependencies.data();
 
-    VkRenderPass renderPass;
-    if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS)
-        throw love::Exception("failed to create render pass");
+	VkRenderPass renderPass;
+	if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS)
+		throw love::Exception("failed to create render pass");
 
-    return renderPass;
+	return renderPass;
 }
 
 bool Graphics::usesConstantVertexColor(const VertexAttributes &vertexAttributes)
@@ -2261,7 +2219,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 
 	GraphicsPipelineConfiguration configuration{};
 
-    configuration.renderPass = renderPassState.beginInfo.renderPass;
+	configuration.renderPass = renderPassState.beginInfo.renderPass;
 	configuration.vertexAttributes = attributes;
 	configuration.shader = (Shader*)Shader::current;
 	configuration.wireFrame = states.back().wireframe;
@@ -2295,7 +2253,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		}
 	}
 
-	if (usesConstantVertexColor(attributes))
+	if (!usesConstantVertexColor(attributes))
 	{
 		bufferVector.push_back((VkBuffer)defaultConstantColor->getHandle());
 		offsets.push_back((VkDeviceSize)0);
@@ -2328,35 +2286,15 @@ void Graphics::setDefaultRenderPass()
 	renderPassState.msaa = msaaSamples;
 	renderPassState.numColorAttachments = 1;
 	renderPassState.transitionImages.clear();
-
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = renderPassState.width;
-	viewport.height = renderPassState.height;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
 }
 
 void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
 {
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(pixelw);
-	viewport.height = static_cast<float>(pixelh);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
-
 	auto currentCommandBuffer = commandBuffers.at(currentFrame);
 
 	// fixme: hasSRGBtexture
 	RenderPassConfiguration renderPassConfiguration{};
-	for (const auto& color : rts.colors)
+	for (const auto &color : rts.colors)
 		renderPassConfiguration.colorAttachments.push_back({ 
 			Vulkan::getTextureFormat(color.texture->getPixelFormat(), isPixelFormatSRGB(color.texture->getPixelFormat())).internalFormat,
 			false, 
@@ -2405,6 +2343,16 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 void Graphics::startRenderPass()
 {
 	renderPassState.active = true;
+
+	VkViewport viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = renderPassState.width;
+	viewport.height = renderPassState.height;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
 
 	if (renderPassState.useConfigurations)
 	{
@@ -2516,6 +2464,14 @@ void Graphics::cleanupUnusedObjects()
 	eraseUnusedObjects(renderPasses, renderPassUsages, vkDestroyRenderPass, device);
 	eraseUnusedObjects(framebuffers, framebufferUsages, vkDestroyFramebuffer, device);
 	eraseUnusedObjects(graphicsPipelines, pipelineUsages, vkDestroyPipeline, device);
+}
+
+void Graphics::requestSwapchainRecreation()
+{
+	if (swapChain != VK_NULL_HANDLE)
+	{
+		swapChainRecreationRequested = true;
+	}
 }
 
 void Graphics::setComputeShader(Shader *shader)
@@ -2688,7 +2644,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 	pipelineInfo.basePipelineIndex = -1;
-    pipelineInfo.renderPass = configuration.renderPass;
+	pipelineInfo.renderPass = configuration.renderPass;
 
 	VkPipeline graphicsPipeline;
 	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
@@ -2740,6 +2696,26 @@ VkSampleCountFlagBits Graphics::getMsaaCount(int requestedMsaa) const
 		return VK_SAMPLE_COUNT_1_BIT;
 }
 
+void Graphics::setVsync(int vsync)
+{
+	if (vsync != this->vsync)
+	{
+		this->vsync = vsync;
+
+		// With the extension VK_EXT_swapchain_maintenance1 a swapchain recreation might not be needed
+		// https://github.com/KhronosGroup/Vulkan-Docs/blob/main/proposals/VK_EXT_swapchain_maintenance1.adoc
+		// However, there are not any drivers that support it, yet.
+		// Reevaluate again in the future.
+
+		requestSwapchainRecreation();
+	}
+}
+
+int Graphics::getVsync() const
+{
+	return vsync;
+}
+
 void Graphics::createColorResources()
 {
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
@@ -2770,7 +2746,8 @@ void Graphics::createColorResources()
 		allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 		allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
-		vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &colorImage, &colorImageAllocation, nullptr);
+		if (vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &colorImage, &colorImageAllocation, nullptr))
+			throw love::Exception("failed to create color image");
 
 		VkImageViewCreateInfo imageViewInfo{};
 		imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -2787,7 +2764,8 @@ void Graphics::createColorResources()
 		imageViewInfo.subresourceRange.baseArrayLayer = 0;
 		imageViewInfo.subresourceRange.layerCount = 1;
 
-		vkCreateImageView(device, &imageViewInfo, nullptr, &colorImageView);
+		if (vkCreateImageView(device, &imageViewInfo, nullptr, &colorImageView) != VK_SUCCESS)
+			throw love::Exception("failed to create color image view");
 	}
 }
 
@@ -2838,7 +2816,8 @@ void Graphics::createDepthResources()
 	allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 	allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
-	vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &depthImage, &depthImageAllocation, nullptr);
+	if (vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &depthImage, &depthImageAllocation, nullptr) != VK_SUCCESS)
+		throw love::Exception("failed to create depth image");
 
 	VkImageViewCreateInfo imageViewInfo{};
 	imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -2857,7 +2836,8 @@ void Graphics::createDepthResources()
 	imageViewInfo.subresourceRange.baseArrayLayer = 0;
 	imageViewInfo.subresourceRange.layerCount = 1;
 
-	vkCreateImageView(device, &imageViewInfo, nullptr, &depthImageView);
+	if (vkCreateImageView(device, &imageViewInfo, nullptr, &depthImageView) != VK_SUCCESS)
+		throw love::Exception("failed to create depth image view");
 }
 
 void Graphics::createCommandPool()
@@ -2972,10 +2952,12 @@ void Graphics::cleanupSwapChain()
 	vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
 	vkDestroyImageView(device, depthImageView, nullptr);
 	vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
-    for (const auto &swapChainImageView : swapChainImageViews)
-        vkDestroyImageView(device, swapChainImageView, nullptr);
-    swapChainImageViews.clear();
+	for (const auto &swapChainImageView : swapChainImageViews)
+		vkDestroyImageView(device, swapChainImageView, nullptr);
+	swapChainImageViews.clear();
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
+
+	swapChain = VK_NULL_HANDLE;
 }
 
 void Graphics::recreateSwapChain()

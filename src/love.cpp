@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2022 LOVE Development Team
+ * Copyright (c) 2006-2023 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -65,6 +65,11 @@ LOVE_EXPORT DWORD AmdPowerXpressRequestHighPerformance = 1;
 #ifdef LOVE_LEGENDARY_APP_ARGV_HACK
 
 #include <vector>
+
+// Explicitly instantiate std::vector<std::string> to work around linker issues
+// with libc++ when symbols are hidden-by-default.
+// https://stackoverflow.com/a/48273604
+template class std::vector<std::string>;
 
 static void get_app_arguments(int argc, char **argv, int &new_argc, char **&new_argv)
 {

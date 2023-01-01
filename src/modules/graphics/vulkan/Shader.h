@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2022 LOVE Development Team
+ * Copyright (c) 2006-2023 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -35,6 +35,7 @@
 #include <memory>
 #include <unordered_map>
 #include <queue>
+#include <set>
 
 
 namespace love
@@ -63,7 +64,7 @@ public:
 
 	const VkPipelineLayout getGraphicsPipelineLayout() const;
 
-	void newFrame(uint32_t frameIndex);
+	void newFrame();
 
 	void cmdPushDescriptorSets(VkCommandBuffer, VkPipelineBindPoint);
 
@@ -101,8 +102,7 @@ private:
 		const spirv_cross::SPIRType &type, 
 		size_t baseoff, 
 		const std::string &basename);
-	void initDescriptorSet();
-	void updateUniform(const UniformInfo* info, int count, bool internal);
+	void updateUniform(const UniformInfo *info, int count, bool internal);
 
 	VkDescriptorSet allocateDescriptorSet();
 
@@ -121,6 +121,8 @@ private:
 	std::queue<VkDescriptorSet> freeDescriptorSets;
 	std::vector<std::vector<VkDescriptorSet>> descriptorSetsVector;
 
+	std::set<uint32_t> updatedUniforms;
+
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::vector<VkShaderModule> shaderModules;
 
@@ -135,7 +137,7 @@ private:
 	std::unique_ptr<StreamBuffer> uniformBufferObjectBuffer;
 	std::vector<uint8> localUniformData;
 	std::vector<uint8> localUniformStagingData;
-	uint32_t uniformLocation;
+	uint32_t localUniformLocation;
 	OptionalInt builtinUniformDataOffset;
 
 	std::unordered_map<std::string, int> attributes;

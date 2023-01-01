@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2022 LOVE Development Team
+ * Copyright (c) 2006-2023 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,13 +38,13 @@ namespace macos
  * in the main bundle (love.app.)
  * Returns an empty string if no love file is found.
  **/
-std::string getLoveInResources();
+LOVE_EXPORT std::string getLoveInResources();
 
 /**
  * Checks for drop-file events. Returns the filepath if an event occurred, or
  * an empty string otherwise.
  **/
-std::string checkDropEvents();
+LOVE_EXPORT std::string checkDropEvents();
 
 /**
  * Bounce the dock icon, if the app isn't in the foreground.

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2022 LOVE Development Team
+# Copyright (c) 2006-2023 LOVE Development Team
 #
 # This software is provided 'as-is', without any express or implied
 # warranty.  In no event will the authors be held liable for any damages
@@ -75,6 +75,10 @@ message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
 
 if(POLICY CMP0072)
 	cmake_policy(SET CMP0072 NEW)
+endif()
+
+if(POLICY CMP0063)
+	cmake_policy(SET CMP0063 NEW)
 endif()
 
 if(MEGA)
@@ -1959,6 +1963,7 @@ if(ANDROID)
 endif()
 
 add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
+set_target_properties(${LOVE_LIB_NAME} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
 target_link_libraries(${LOVE_LIB_NAME} ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
 
 if(LOVE_EXTRA_DEPENDECIES)
@@ -1976,6 +1981,7 @@ endif()
 if(NOT ANDROID)
 	add_executable(${LOVE_EXE_NAME} WIN32 src/love.cpp ${LOVE_RC})
 	target_link_libraries(${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
+	set_target_properties(${LOVE_EXE_NAME} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
 
 	if(MSVC)
 		add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})

@@ -111,13 +111,6 @@ static size_t find_peer_index(lua_State *l, ENetHost *enet_host, ENetPeer *peer)
 	return peer_index;
 }
 
-// VS2013 doesn't support alignof
-#if defined(_MSC_VER) && _MSC_VER <= 1800
-#define ENET_ALIGNOF(x) __alignof(x)
-#else
-#define ENET_ALIGNOF(x) alignof(x)
-#endif
-
 static bool supports_full_lightuserdata(lua_State *L)
 {
 	static bool checked = false;
@@ -148,7 +141,7 @@ static uintptr_t compute_peer_key(lua_State *L, ENetPeer *peer)
 	// pointers that use more than 53 bits if their alignment is guaranteed to
 	// be more than 1. For example an alignment requirement of 8 means we can
 	// shift the pointer's bits by 3.
-	const size_t minalign = std::min(ENET_ALIGNOF(ENetPeer), ENET_ALIGNOF(std::max_align_t));
+	const size_t minalign = std::min(alignof(ENetPeer), alignof(std::max_align_t));
 	uintptr_t key = (uintptr_t) peer;
 
 	if ((key & (minalign - 1)) != 0)

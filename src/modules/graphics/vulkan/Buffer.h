@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2022 LOVE Development Team
+ * Copyright (c) 2006-2023 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -42,7 +42,7 @@ class Buffer final
 	, public Volatile
 {
 public:
-	Buffer(love::graphics::Graphics *gfx, const Settings& settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength);
+	Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength);
 	virtual ~Buffer();
 
 	virtual bool loadVolatile() override;
