@@ -45,9 +45,9 @@ public:
 	HarfbuzzShaper(TrueTypeRasterizer *rasterizer);
 	virtual ~HarfbuzzShaper();
 
-	void setFallbacks(const std::vector<Rasterizer*>& fallbacks) override;
+	void setFallbacks(const std::vector<Rasterizer *> &fallbacks) override;
 	void computeGlyphPositions(const ColoredCodepoints &codepoints, Range range, Vector2 offset, float extraspacing, std::vector<GlyphPosition> *positions, std::vector<IndexedColor> *colors, TextInfo *info) override;
-	int computeWordWrapIndex(const ColoredCodepoints& codepoints, Range range, float wraplimit, float *width) override;
+	int computeWordWrapIndex(const ColoredCodepoints &codepoints, Range range, float wraplimit, float *width) override;
 
 private:
 
@@ -59,8 +59,8 @@ private:
 	};
 
 	void updateSpacesForTabInfo();
-	bool isValidGlyph(uint32 glyphindex, const std::vector<uint32>& codepoints, uint32 codepointindex);
-	void computeBufferRanges(const ColoredCodepoints& codepoints, Range range, std::vector<BufferRange> &bufferranges);
+	bool isValidGlyph(uint32 glyphindex, const std::vector<uint32> &codepoints, uint32 codepointindex);
+	void computeBufferRanges(const ColoredCodepoints &codepoints, Range range, std::vector<BufferRange> &bufferranges);
 
 	std::vector<hb_font_t *> hbFonts;
 	std::vector<hb_buffer_t *> hbBuffers;

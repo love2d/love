@@ -141,7 +141,7 @@ void GenericShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, R
 	}
 }
 
-int GenericShaper::computeWordWrapIndex(const ColoredCodepoints& codepoints, Range range, float wraplimit, float *width)
+int GenericShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Range range, float wraplimit, float *width)
 {
 	if (!range.isValid())
 		range = Range(0, codepoints.cps.size());

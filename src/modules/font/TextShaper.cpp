@@ -135,7 +135,7 @@ float TextShaper::getBaseline() const
 
 bool TextShaper::hasGlyph(uint32 glyph) const
 {
-	for (const StrongRef<Rasterizer>& r : rasterizers)
+	for (const StrongRef<Rasterizer> &r : rasterizers)
 	{
 		if (r->hasGlyph(glyph))
 			return true;
@@ -162,7 +162,7 @@ bool TextShaper::hasGlyphs(const std::string &text) const
 				return false;
 		}
 	}
-	catch (utf8::exception& e)
+	catch (utf8::exception &e)
 	{
 		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
@@ -208,7 +208,7 @@ float TextShaper::getKerning(const std::string &leftchar, const std::string &rig
 		left = utf8::peek_next(leftchar.begin(), leftchar.end());
 		right = utf8::peek_next(rightchar.begin(), rightchar.end());
 	}
-	catch (utf8::exception& e)
+	catch (utf8::exception &e)
 	{
 		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
@@ -346,7 +346,7 @@ void TextShaper::getWrap(const std::vector<ColoredString> &text, float wraplimit
 			for (size_t i = range.getMin(); i <= range.getMax(); i++)
 			{
 				char character[5] = { '\0' };
-				char* end = utf8::unchecked::append(cps.cps[i], character);
+				char *end = utf8::unchecked::append(cps.cps[i], character);
 				line.append(character, end - character);
 			}
 		}

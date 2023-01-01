@@ -36,7 +36,7 @@ public:
 	virtual ~GenericShaper();
 
 	void computeGlyphPositions(const ColoredCodepoints &codepoints, Range range, Vector2 offset, float extraspacing, std::vector<GlyphPosition> *positions, std::vector<IndexedColor> *colors, TextInfo *info) override;
-	int computeWordWrapIndex(const ColoredCodepoints& codepoints, Range range, float wraplimit, float *width) override;
+	int computeWordWrapIndex(const ColoredCodepoints &codepoints, Range range, float wraplimit, float *width) override;
 
 private:
 

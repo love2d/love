@@ -102,7 +102,7 @@ void HarfbuzzShaper::updateSpacesForTabInfo()
 	}
 }
 
-bool HarfbuzzShaper::isValidGlyph(uint32 glyphindex, const std::vector<uint32>& codepoints, uint32 codepointindex)
+bool HarfbuzzShaper::isValidGlyph(uint32 glyphindex, const std::vector<uint32> &codepoints, uint32 codepointindex)
 {
 	if (glyphindex != 0)
 		return true;
@@ -140,7 +140,7 @@ void HarfbuzzShaper::computeBufferRanges(const ColoredCodepoints &codepoints, Ra
 	// Harfbuzz doesn't have its own fallback API.
 	for (size_t rasti = 0; rasti < rasterizers.size(); rasti++)
 	{
-		hb_buffer_t* hbb = hbBuffers[rasti];
+		hb_buffer_t *hbb = hbBuffers[rasti];
 		hb_buffer_reset(hbb);
 
 		for (Range r : fallbackranges)
@@ -229,8 +229,8 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 
 		hb_buffer_t *hbbuffer = hbBuffers[bufferrange.index];
 
-		const hb_glyph_info_t* glyphinfos = hb_buffer_get_glyph_infos(hbbuffer, nullptr);
-		hb_glyph_position_t* glyphpositions = hb_buffer_get_glyph_positions(hbbuffer, nullptr);
+		const hb_glyph_info_t *glyphinfos = hb_buffer_get_glyph_infos(hbbuffer, nullptr);
+		hb_glyph_position_t *glyphpositions = hb_buffer_get_glyph_positions(hbbuffer, nullptr);
 		hb_direction_t direction = hb_buffer_get_direction(hbbuffer);
 
 		for (size_t i = bufferrange.range.first; i <= bufferrange.range.last; i++)
@@ -339,10 +339,10 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ra
 
 	for (const auto &bufferrange : bufferranges)
 	{
-		hb_buffer_t* hbbuffer = hbBuffers[bufferrange.index];
+		hb_buffer_t *hbbuffer = hbBuffers[bufferrange.index];
 
-		const hb_glyph_info_t* glyphinfos = hb_buffer_get_glyph_infos(hbbuffer, nullptr);
-		hb_glyph_position_t* glyphpositions = hb_buffer_get_glyph_positions(hbbuffer, nullptr);
+		const hb_glyph_info_t *glyphinfos = hb_buffer_get_glyph_infos(hbbuffer, nullptr);
+		hb_glyph_position_t *glyphpositions = hb_buffer_get_glyph_positions(hbbuffer, nullptr);
 		hb_direction_t direction = hb_buffer_get_direction(hbbuffer);
 
 		for (size_t i = bufferrange.range.first; i <= bufferrange.range.last; i++)

@@ -56,8 +56,8 @@ struct ColoredCodepoints
 	std::vector<IndexedColor> colors;
 };
 
-void getCodepointsFromString(const std::string& str, std::vector<uint32>& codepoints);
-void getCodepointsFromString(const std::vector<ColoredString>& strs, ColoredCodepoints& codepoints);
+void getCodepointsFromString(const std::string &str, std::vector<uint32> &codepoints);
+void getCodepointsFromString(const std::vector<ColoredString> &strs, ColoredCodepoints &codepoints);
 
 class TextShaper : public Object
 {
@@ -114,19 +114,19 @@ public:
 	bool hasGlyphs(const std::string &text) const;
 
 	float getKerning(uint32 leftglyph, uint32 rightglyph);
-	float getKerning(const std::string& leftchar, const std::string& rightchar);
+	float getKerning(const std::string &leftchar, const std::string &rightchar);
 
 	int getGlyphAdvance(uint32 glyph, GlyphIndex *glyphindex = nullptr);
 
 	int getWidth(const std::string &str);
 
-	void getWrap(const std::vector<ColoredString>& text, float wraplimit, std::vector<std::string>& lines, std::vector<int>* linewidths = nullptr);
-	void getWrap(const ColoredCodepoints& codepoints, float wraplimit, std::vector<Range> &lineranges, std::vector<int> *linewidths = nullptr);
+	void getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths = nullptr);
+	void getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &lineranges, std::vector<int> *linewidths = nullptr);
 
 	virtual void setFallbacks(const std::vector<Rasterizer *> &fallbacks);
 
 	virtual void computeGlyphPositions(const ColoredCodepoints &codepoints, Range range, Vector2 offset, float extraspacing, std::vector<GlyphPosition> *positions, std::vector<IndexedColor> *colors, TextInfo *info) = 0;
-	virtual int computeWordWrapIndex(const ColoredCodepoints& codepoints, Range range, float wraplimit, float *width) = 0;
+	virtual int computeWordWrapIndex(const ColoredCodepoints &codepoints, Range range, float wraplimit, float *width) = 0;
 
 protected:
 
