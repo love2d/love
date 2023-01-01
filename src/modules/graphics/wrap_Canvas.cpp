@@ -42,6 +42,8 @@ int w_Canvas_renderTo(lua_State *L)
 {
 	Graphics::RenderTarget rt(luax_checkcanvas(L, 1));
 
+	int args = lua_gettop(L);
+
 	int startidx = 2;
 
 	if (rt.canvas->getTextureType() != TEXTURE_2D)
@@ -67,8 +69,7 @@ int w_Canvas_renderTo(lua_State *L)
 
 		luax_catchexcept(L, [&](){ graphics->setCanvas(rt, false); });
 
-		lua_settop(L, 2); // make sure the function is on top of the stack
-		int status = lua_pcall(L, 0, 0, 0);
+		int status = lua_pcall(L, args - startidx, 0, 0);
 
 		graphics->setCanvas(oldtargets);
 
