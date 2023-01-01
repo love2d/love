@@ -120,7 +120,7 @@ public:
 
 	int getWidth(const std::string &str);
 
-	void getWrap(const std::vector<ColoredString>& text, float wraplimit, std::vector<std::string>& lines, std::vector<int>* line_widths = nullptr);
+	void getWrap(const std::vector<ColoredString>& text, float wraplimit, std::vector<std::string>& lines, std::vector<int>* linewidths = nullptr);
 	void getWrap(const ColoredCodepoints& codepoints, float wraplimit, std::vector<Range> &lineranges, std::vector<int> *linewidths = nullptr);
 
 	virtual void setFallbacks(const std::vector<Rasterizer *> &fallbacks);
