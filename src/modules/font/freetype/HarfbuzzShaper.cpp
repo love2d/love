@@ -267,7 +267,7 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 				continue;
 
 			// This is a glyph index at this point, despite the name.
-			GlyphIndex gindex = { info.codepoint, bufferrange.index };
+			GlyphIndex gindex = { (int) info.codepoint, bufferrange.index };
 
 			if (clustercodepoint == '\t' && isUsingSpacesForTab())
 			{
