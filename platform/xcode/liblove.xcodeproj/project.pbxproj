@@ -59,6 +59,7 @@
 		D9DAB92C2961F10000C64820 /* TextShaper.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DAB9272961F0FF00C64820 /* TextShaper.h */; };
 		D9DAB92D2961F10000C64820 /* TextShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9282961F10000C64820 /* TextShaper.cpp */; };
 		D9DAB92E2961F10000C64820 /* TextShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9282961F10000C64820 /* TextShaper.cpp */; };
+		D9DAB9322963CD7500C64820 /* harfbuzz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9DAB9312963CD7500C64820 /* harfbuzz.framework */; };
 		FA0A3A5F23366CE9001C269E /* floattypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0A3A5D23366CE9001C269E /* floattypes.h */; };
 		FA0A3A6023366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
 		FA0A3A6123366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
@@ -1406,6 +1407,7 @@
 		D9DAB9262961F0FF00C64820 /* GenericShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GenericShaper.cpp; sourceTree = "<group>"; };
 		D9DAB9272961F0FF00C64820 /* TextShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextShaper.h; sourceTree = "<group>"; };
 		D9DAB9282961F10000C64820 /* TextShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextShaper.cpp; sourceTree = "<group>"; };
+		D9DAB9312963CD7500C64820 /* harfbuzz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = harfbuzz.framework; path = macosx/Frameworks/harfbuzz.framework; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "liblove-macosx.plist"; path = "macosx/liblove-macosx.plist"; sourceTree = "<group>"; };
 		FA0A3A5D23366CE9001C269E /* floattypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = floattypes.h; sourceTree = "<group>"; };
 		FA0A3A5E23366CE9001C269E /* floattypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = floattypes.cpp; sourceTree = "<group>"; };
@@ -2326,6 +2328,7 @@
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
 				FADF4CC62663D0EC004F95C1 /* libz.tbd in Frameworks */,
 				FA577AC816C7513C00860150 /* ogg.framework in Frameworks */,
+				D9DAB9322963CD7500C64820 /* harfbuzz.framework in Frameworks */,
 				FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */,
 				FA577ACD16C7514C00860150 /* vorbis.framework in Frameworks */,
 			);
@@ -3387,6 +3390,7 @@
 				FA577A7916C71A1700860150 /* Cocoa.framework */,
 				FAA627CD18E7E1560080752D /* CoreServices.framework */,
 				FAD43ECB1FF312D800831BB8 /* freetype.framework */,
+				D9DAB9312963CD7500C64820 /* harfbuzz.framework */,
 				FA577A8216C71A5300860150 /* libmodplug.framework */,
 				FADF4CC52663D0EC004F95C1 /* libz.tbd */,
 				FA577A6D16C719EA00860150 /* Lua.framework */,
@@ -5746,6 +5750,7 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/harfbuzz.framework/Headers",
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
@@ -5781,6 +5786,7 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/harfbuzz.framework/Headers",
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
@@ -5817,6 +5823,7 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/harfbuzz.framework/Headers",
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
