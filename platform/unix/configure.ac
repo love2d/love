@@ -67,7 +67,10 @@ ACLOVE_DEP_PTHREAD
 
 # Conditional dependencies
 AS_VAR_IF([enable_module_audio], [yes], [ACLOVE_DEP_OPENAL], [])
-AS_VAR_IF([enable_module_font], [yes], [ACLOVE_DEP_FREETYPE2], [])
+AS_VAR_IF([enable_module_font], [yes], [
+	ACLOVE_DEP_FREETYPE2
+	ACLOVE_DEP_HARFBUZZ
+], [])
 AS_VAR_IF([enable_module_sound], [yes], [
 	ACLOVE_DEP_LIBMODPLUG
 	ACLOVE_DEP_VORBISFILE
