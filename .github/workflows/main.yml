@@ -19,7 +19,7 @@ jobs:
     - name: Checkout love-appimage-source
       uses: actions/checkout@v3
       with:
-        repository: MikuAuahDark/love-appimage-source
+        repository: love2d/love-appimage-source
         ref: 12.x
     - name: Checkout LÖVE
       uses: actions/checkout@v3
