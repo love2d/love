@@ -89,18 +89,47 @@ jobs:
         echo nofiles=ignore>> "%GITHUB_OUTPUT%"
         echo moredef=-DLOVE_EXTRA_DLLS=%CD%\angle\libEGL.dll;%CD%\angle\libGLESv2.dll>> "%GITHUB_OUTPUT%"
         exit /b 0
+    - name: Download Windows SDK Setup 10.0.20348
+      run: curl -Lo winsdksetup.exe https://go.microsoft.com/fwlink/?linkid=2164145
+    - name: Install Debugging Tools for Windows
+      id: windbg
+      run: |
+        setlocal enabledelayedexpansion
+        start /WAIT %CD%\winsdksetup.exe /features OptionId.WindowsDesktopDebuggers /q /log %CD%\log.txt
+        echo ERRORLEVEL=!ERRORLEVEL! >> %GITHUB_OUTPUT%
+    - name: Print Debugging Tools Install Log
+      if: always()
+      run: |
+        type log.txt
+        exit /b ${{ steps.windbg.outputs.ERRORLEVEL }}
+    - name: Setup Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Download source_index.py
+      run: curl -Lo source_index.py https://gist.github.com/MikuAuahDark/d9c099f5714e09a765496471c2827a55/raw/df34956052035f3473c5f01861dfb53930d06843/source_index.py
     - name: Clone Megasource
       uses: actions/checkout@v3
       with:
         path: megasource
         repository: love2d/megasource
         ref: 12.x
+    - id: megasource
+      name: Get Megasource Commit SHA
+      shell: python
+      run: |
+        import os
+        import subprocess
+        
+        result = subprocess.run("git -C megasource rev-parse HEAD".split(), check=True, capture_output=True, encoding="UTF-8")
+        commit = result.stdout.split()[0]
+        with open(os.environ["GITHUB_OUTPUT"], "w", encoding="UTF-8") as f: f.write(f"commit={commit}")
     - name: Checkout
       uses: actions/checkout@v3
       with:
         path: megasource/libs/love
     - name: Download ANGLE
-      uses: robinraju/release-downloader@v1.5
+      uses: robinraju/release-downloader@v1.7
       if: steps.vars.outputs.angle == '1'
       with:
         repository: MikuAuahDark/angle-winbuild
@@ -121,9 +150,27 @@ jobs:
         rmdir /s /q C:\Strawberry
         exit /b 0
     - name: Configure
-      run: cmake -Bbuild -Hmegasource -T v142 -A ${{ matrix.platform }} -DCMAKE_INSTALL_PREFIX=%CD%\install ${{ steps.vars.outputs.moredef }}
+      env:
+        CFLAGS: /Zi
+        CXXFLAGS: /Zi
+        LDFLAGS: /DEBUG
+      run: cmake -Bbuild -Smegasource -T v142 -A ${{ matrix.platform }} --install-prefix %CD%\install -DCMAKE_PDB_OUTPUT_DIRECTORY=%CD%\pdb ${{ steps.vars.outputs.moredef }}
     - name: Install
       run: cmake --build build --target PACKAGE --config Release -j2
+    - name: Copy LuaJIT lua51.pdb
+      run: |
+        copy /Y build\libs\LuaJIT\src\lua51.pdb pdb\Release\lua51.pdb
+        exit /b 0
+    - name: Add srcsrv to PATH
+      run: |
+        echo C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\srcsrv>>%GITHUB_PATH%
+    - name: Embed Source Index into PDBs
+      run: |
+        python source_index.py ^
+        --source %CD%\megasource\libs\love https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }} ^
+        --source %CD%\megasource https://raw.githubusercontent.com/love2d/megasource/${{ steps.megasource.outputs.commit }} ^
+        --source %CD%\build\libs\LuaJIT https://raw.githubusercontent.com/love2d/megasource/${{ steps.megasource.outputs.commit }}/libs/LuaJIT ^
+        pdb\Release\*.pdb
     - name: Artifact
       uses: actions/upload-artifact@v3
       with:
@@ -138,6 +185,11 @@ jobs:
       with:
         name: love-windows-jitmodules
         path: build/libs/LuaJIT/src/jit/*.lua
+    - name: Artifact PDB
+      uses: actions/upload-artifact@v3
+      with:
+        name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
+        path: pdb/Release/*.pdb
   macOS:
     runs-on: macos-latest
     steps:
