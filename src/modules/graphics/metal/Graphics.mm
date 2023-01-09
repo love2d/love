@@ -983,7 +983,7 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 {
 	Shader *s = (Shader *)shader;
 
-#ifdef LOVE_MACOS
+#if defined(LOVE_MACOS) || TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST
 	size_t alignment = 256;
 #else
 	size_t alignment = 16;
@@ -1053,7 +1053,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 {
 	Shader *s = (Shader *)shader;
 
-#ifdef LOVE_MACOS
+#if defined(LOVE_MACOS) || TARGET_OS_SIMULATOR || TARGET_OS_MACCATALYST
 	size_t alignment = 256;
 #else
 	size_t alignment = 16;
