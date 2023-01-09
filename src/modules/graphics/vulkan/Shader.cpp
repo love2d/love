@@ -200,6 +200,7 @@ bool Shader::loadVolatile()
 	currentFrame = 0;
 	currentUsedUniformStreamBuffersCount = 0;
 	currentUsedDescriptorSetsCount = 0;
+	newFrame();
 
 	return true;
 }
@@ -384,7 +385,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 	for (const auto &u : uniformInfos)
 	{
 		if (updatedUniforms.find(u.second.location) == updatedUniforms.end())
-			updateUniform(&u.second, u.second.count);
+			updateUniform(&u.second, u.second.count, true);
 	}
 
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
@@ -406,12 +407,7 @@ Shader::~Shader()
 
 void Shader::attach()
 {
-	auto &usedShadersInFrame = vgfx->getUsedShadersInFrame();
-	if (usedShadersInFrame.find(this) == usedShadersInFrame.end())
-	{
-		newFrame();
-		usedShadersInFrame.insert(this);
-	}
+	vgfx->markShaderUsed(this);
 
 	if (!isCompute)
 	{

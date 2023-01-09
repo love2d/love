@@ -1131,6 +1131,8 @@ void Graphics::beginFrame()
 
 	Vulkan::resetShaderSwitches();
 
+	for (const auto shader : usedShadersInFrame)
+		shader->newFrame();
 	usedShadersInFrame.clear();
 }
 
@@ -2478,9 +2480,9 @@ void Graphics::setComputeShader(Shader *shader)
 	computeShader = shader;
 }
 
-std::set<Shader*> &Graphics::getUsedShadersInFrame()
+void Graphics::markShaderUsed(Shader *shader)
 {
-	return usedShadersInFrame;
+	usedShadersInFrame.insert(shader);
 }
 
 VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)

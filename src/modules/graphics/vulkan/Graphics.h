@@ -293,7 +293,7 @@ public:
 	graphics::Texture *getDefaultTexture() const;
 	VkSampler getCachedSampler(const SamplerState &sampler);
 	void setComputeShader(Shader *computeShader);
-	std::set<Shader*> &getUsedShadersInFrame();
+	void markShaderUsed(Shader*);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	const OptionalDeviceFeatures &getEnabledOptionalDeviceExtensions() const;
 	VkSampleCountFlagBits getMsaaCount(int requestedMsaa) const;
