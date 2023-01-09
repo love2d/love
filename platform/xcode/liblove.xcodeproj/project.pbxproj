@@ -50,6 +50,7 @@
 		217DFC101D9F6D490055D849 /* url.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD41D9F6D490055D849 /* url.lua.h */; };
 		217DFC111D9F6D490055D849 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		217DFC121D9F6D490055D849 /* usocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD61D9F6D490055D849 /* usocket.h */; };
+		D923E7D3296B85B9002FF1B3 /* harfbuzz.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */; };
 		D9DAB9222961F0EE00C64820 /* HarfbuzzShaper.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DAB9202961F0EE00C64820 /* HarfbuzzShaper.h */; };
 		D9DAB9232961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */; };
 		D9DAB9242961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */; };
@@ -1401,6 +1402,7 @@
 		217DFBD41D9F6D490055D849 /* url.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = url.lua.h; sourceTree = "<group>"; };
 		217DFBD51D9F6D490055D849 /* usocket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = usocket.c; sourceTree = "<group>"; };
 		217DFBD61D9F6D490055D849 /* usocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = usocket.h; sourceTree = "<group>"; };
+		D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = harfbuzz.xcframework; path = ios/libraries/harfbuzz.xcframework; sourceTree = "<group>"; };
 		D9DAB9202961F0EE00C64820 /* HarfbuzzShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HarfbuzzShaper.h; sourceTree = "<group>"; };
 		D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HarfbuzzShaper.cpp; sourceTree = "<group>"; };
 		D9DAB9252961F0FF00C64820 /* GenericShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GenericShaper.h; sourceTree = "<group>"; };
@@ -2305,6 +2307,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FACFB751276D7E3B0089F78D /* freetype.xcframework in Frameworks */,
+				D923E7D3296B85B9002FF1B3 /* harfbuzz.xcframework in Frameworks */,
 				FA84DE7A277D4C88002674C6 /* modplug.xcframework in Frameworks */,
 				FA84DE7C277E045E002674C6 /* ogg.xcframework in Frameworks */,
 				FACFB753276D7F860089F78D /* Lua.xcframework in Frameworks */,
@@ -3558,6 +3561,7 @@
 		FA5D24A31A96D2C300C6FC8F /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */,
 				FACFB750276D7E2B0089F78D /* freetype.xcframework */,
 				FACFB752276D7F6F0089F78D /* Lua.xcframework */,
 				FA84DE79277D4C88002674C6 /* modplug.xcframework */,
