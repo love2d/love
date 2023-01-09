@@ -1264,11 +1264,10 @@ void Graphics::createVulkanInstance()
 	createInfo.pApplicationInfo = &appInfo;
 	createInfo.pNext = nullptr;
 
-	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
-	const void *handle = window->getHandle();
-
+	// GetInstanceExtensions works with a null window parameter as long as
+	// SDL_Vulkan_LoadLibrary has been called (which we do earlier).
 	unsigned int count;
-	if (SDL_Vulkan_GetInstanceExtensions((SDL_Window*)handle, &count, nullptr) != SDL_TRUE)
+	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, nullptr) != SDL_TRUE)
 		throw love::Exception("couldn't retrieve sdl vulkan extensions");
 
 	std::vector<const char*> extensions = {};
@@ -1281,7 +1280,7 @@ void Graphics::createVulkanInstance()
 	size_t additional_extension_count = extensions.size();
 	extensions.resize(additional_extension_count + count);
 
-	if (SDL_Vulkan_GetInstanceExtensions((SDL_Window*)handle, &count, extensions.data() + additional_extension_count) != SDL_TRUE)
+	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, extensions.data() + additional_extension_count) != SDL_TRUE)
 		throw love::Exception("couldn't retrieve sdl vulkan extensions");
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());

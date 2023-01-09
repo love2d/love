@@ -420,6 +420,8 @@ int w_Texture_renderTo(lua_State *L)
 {
 	Graphics::RenderTarget rt(luax_checktexture(L, 1));
 
+	int args = lua_gettop(L);
+
 	int startidx = 2;
 
 	if (rt.texture->getTextureType() != TEXTURE_2D)
@@ -455,8 +457,7 @@ int w_Texture_renderTo(lua_State *L)
 			}
 		);
 
-		lua_settop(L, 2); // make sure the function is on top of the stack
-		int status = lua_pcall(L, 0, 0, 0);
+		int status = lua_pcall(L, args - startidx, 0, 0);
 
 		graphics->setRenderTargets(oldtargets);
 
