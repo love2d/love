@@ -90,7 +90,7 @@ void Deprecations::draw(Graphics *gfx)
 	int maxcount = 4;
 	int remaining = std::max(0, total - maxcount);
 
-	std::vector<Font::ColoredString> strings;
+	std::vector<font::ColoredString> strings;
 	Colorf white(1, 1, 1, 1);
 
 	// Grab the newest deprecation notices first.

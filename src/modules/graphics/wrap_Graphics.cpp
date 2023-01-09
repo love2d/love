@@ -2112,7 +2112,7 @@ int w_newTextBatch(lua_State *L)
 		luax_catchexcept(L, [&](){ t = instance()->newTextBatch(font); });
 	else
 	{
-		std::vector<Font::ColoredString> text;
+		std::vector<love::font::ColoredString> text;
 		luax_checkcoloredstring(L, 2, text);
 
 		luax_catchexcept(L, [&](){ t = instance()->newTextBatch(font, text); });
@@ -3132,7 +3132,7 @@ int w_drawShaderVertices(lua_State *L)
 
 int w_print(lua_State *L)
 {
-	std::vector<Font::ColoredString> str;
+	std::vector<love::font::ColoredString> str;
 	luax_checkcoloredstring(L, 1, str);
 
 	if (luax_istype(L, 2, Font::type))
@@ -3157,7 +3157,7 @@ int w_print(lua_State *L)
 
 int w_printf(lua_State *L)
 {
-	std::vector<Font::ColoredString> str;
+	std::vector<love::font::ColoredString> str;
 	luax_checkcoloredstring(L, 1, str);
 
 	Font *font = nullptr;

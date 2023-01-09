@@ -103,6 +103,7 @@ if(MEGA)
 
 	set(LOVE_LINK_LIBRARIES
 		${MEGA_FREETYPE}
+		${MEGA_HARFBUZZ}
 		${MEGA_LIBOGG}
 		${MEGA_LIBVORBISFILE}
 		${MEGA_LIBVORBIS}
@@ -173,6 +174,7 @@ Please see https://github.com/love2d/megasource
 	endif()
 
 	find_package(Freetype REQUIRED)
+	find_package(harfbuzz REQUIRED)
 	find_package(ModPlug REQUIRED)
 	find_package(OpenAL REQUIRED)
 	find_package(OpenGL REQUIRED)
@@ -200,6 +202,7 @@ Please see https://github.com/love2d/megasource
 		${OPENGL_gl_LIBRARY}
 		${SDL2_LIBRARY}
 		${FREETYPE_LIBRARY}
+		${HARFBUZZ_LIBRARY}
 		${OPENAL_LIBRARY}
 		${MODPLUG_LIBRARY}
 		${THEORA_LIBRARY}
@@ -477,12 +480,16 @@ set(LOVE_SRC_MODULE_FONT_ROOT
 	src/modules/font/BMFontRasterizer.h
 	src/modules/font/Font.cpp
 	src/modules/font/Font.h
+	src/modules/font/GenericShaper.cpp
+	src/modules/font/GenericShaper.h
 	src/modules/font/GlyphData.cpp
 	src/modules/font/GlyphData.h
 	src/modules/font/ImageRasterizer.cpp
 	src/modules/font/ImageRasterizer.h
 	src/modules/font/Rasterizer.cpp
 	src/modules/font/Rasterizer.h
+	src/modules/font/TextShaper.cpp
+	src/modules/font/TextShaper.h
 	src/modules/font/TrueTypeRasterizer.cpp
 	src/modules/font/TrueTypeRasterizer.h
 	src/modules/font/wrap_Font.cpp
@@ -496,6 +503,8 @@ set(LOVE_SRC_MODULE_FONT_ROOT
 set(LOVE_SRC_MODULE_FONT_FREETYPE
 	src/modules/font/freetype/Font.cpp
 	src/modules/font/freetype/Font.h
+	src/modules/font/freetype/HarfbuzzShaper.cpp
+	src/modules/font/freetype/HarfbuzzShaper.h
 	src/modules/font/freetype/TrueTypeRasterizer.cpp
 	src/modules/font/freetype/TrueTypeRasterizer.h
 )

@@ -36,7 +36,7 @@ int w_TextBatch_set(lua_State *L)
 {
 	TextBatch *t = luax_checktextbatch(L, 1);
 
-	std::vector<Font::ColoredString> newtext;
+	std::vector<love::font::ColoredString> newtext;
 	luax_checkcoloredstring(L, 2, newtext);
 
 	luax_catchexcept(L, [&](){ t->set(newtext); });
@@ -54,7 +54,7 @@ int w_TextBatch_setf(lua_State *L)
 	if (!Font::getConstant(alignstr, align))
 		return luax_enumerror(L, "align mode", Font::getConstants(align), alignstr);
 
-	std::vector<Font::ColoredString> newtext;
+	std::vector<love::font::ColoredString> newtext;
 	luax_checkcoloredstring(L, 2, newtext);
 
 	luax_catchexcept(L, [&](){ t->set(newtext, wraplimit, align); });
@@ -68,7 +68,7 @@ int w_TextBatch_add(lua_State *L)
 
 	int index = 0;
 
-	std::vector<Font::ColoredString> text;
+	std::vector<love::font::ColoredString> text;
 	luax_checkcoloredstring(L, 2, text);
 
 	if (luax_istype(L, 3, math::Transform::type))
@@ -102,7 +102,7 @@ int w_TextBatch_addf(lua_State *L)
 
 	int index = 0;
 
-	std::vector<Font::ColoredString> text;
+	std::vector<love::font::ColoredString> text;
 	luax_checkcoloredstring(L, 2, text);
 
 	float wrap = (float) luaL_checknumber(L, 3);

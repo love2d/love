@@ -24,10 +24,6 @@
 // UTF-8
 #include "libraries/utf8/utf8.h"
 
-// stdlib
-#include <iostream>
-#include <cstddef>
-
 namespace love
 {
 namespace font

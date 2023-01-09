@@ -50,6 +50,17 @@
 		217DFC101D9F6D490055D849 /* url.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD41D9F6D490055D849 /* url.lua.h */; };
 		217DFC111D9F6D490055D849 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		217DFC121D9F6D490055D849 /* usocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD61D9F6D490055D849 /* usocket.h */; };
+		D923E7D3296B85B9002FF1B3 /* harfbuzz.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */; };
+		D9DAB9222961F0EE00C64820 /* HarfbuzzShaper.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DAB9202961F0EE00C64820 /* HarfbuzzShaper.h */; };
+		D9DAB9232961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */; };
+		D9DAB9242961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */; };
+		D9DAB9292961F10000C64820 /* GenericShaper.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DAB9252961F0FF00C64820 /* GenericShaper.h */; };
+		D9DAB92A2961F10000C64820 /* GenericShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9262961F0FF00C64820 /* GenericShaper.cpp */; };
+		D9DAB92B2961F10000C64820 /* GenericShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9262961F0FF00C64820 /* GenericShaper.cpp */; };
+		D9DAB92C2961F10000C64820 /* TextShaper.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DAB9272961F0FF00C64820 /* TextShaper.h */; };
+		D9DAB92D2961F10000C64820 /* TextShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9282961F10000C64820 /* TextShaper.cpp */; };
+		D9DAB92E2961F10000C64820 /* TextShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9282961F10000C64820 /* TextShaper.cpp */; };
+		D9DAB9322963CD7500C64820 /* harfbuzz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9DAB9312963CD7500C64820 /* harfbuzz.framework */; };
 		FA0A3A5F23366CE9001C269E /* floattypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0A3A5D23366CE9001C269E /* floattypes.h */; };
 		FA0A3A6023366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
 		FA0A3A6123366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
@@ -1391,6 +1402,14 @@
 		217DFBD41D9F6D490055D849 /* url.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = url.lua.h; sourceTree = "<group>"; };
 		217DFBD51D9F6D490055D849 /* usocket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = usocket.c; sourceTree = "<group>"; };
 		217DFBD61D9F6D490055D849 /* usocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = usocket.h; sourceTree = "<group>"; };
+		D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = harfbuzz.xcframework; path = ios/libraries/harfbuzz.xcframework; sourceTree = "<group>"; };
+		D9DAB9202961F0EE00C64820 /* HarfbuzzShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HarfbuzzShaper.h; sourceTree = "<group>"; };
+		D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HarfbuzzShaper.cpp; sourceTree = "<group>"; };
+		D9DAB9252961F0FF00C64820 /* GenericShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GenericShaper.h; sourceTree = "<group>"; };
+		D9DAB9262961F0FF00C64820 /* GenericShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GenericShaper.cpp; sourceTree = "<group>"; };
+		D9DAB9272961F0FF00C64820 /* TextShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextShaper.h; sourceTree = "<group>"; };
+		D9DAB9282961F10000C64820 /* TextShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextShaper.cpp; sourceTree = "<group>"; };
+		D9DAB9312963CD7500C64820 /* harfbuzz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = harfbuzz.framework; path = macosx/Frameworks/harfbuzz.framework; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "liblove-macosx.plist"; path = "macosx/liblove-macosx.plist"; sourceTree = "<group>"; };
 		FA0A3A5D23366CE9001C269E /* floattypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = floattypes.h; sourceTree = "<group>"; };
 		FA0A3A5E23366CE9001C269E /* floattypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = floattypes.cpp; sourceTree = "<group>"; };
@@ -2288,6 +2307,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FACFB751276D7E3B0089F78D /* freetype.xcframework in Frameworks */,
+				D923E7D3296B85B9002FF1B3 /* harfbuzz.xcframework in Frameworks */,
 				FA84DE7A277D4C88002674C6 /* modplug.xcframework in Frameworks */,
 				FA84DE7C277E045E002674C6 /* ogg.xcframework in Frameworks */,
 				FACFB753276D7F860089F78D /* Lua.xcframework in Frameworks */,
@@ -2311,6 +2331,7 @@
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
 				FADF4CC62663D0EC004F95C1 /* libz.tbd in Frameworks */,
 				FA577AC816C7513C00860150 /* ogg.framework in Frameworks */,
+				D9DAB9322963CD7500C64820 /* harfbuzz.framework in Frameworks */,
 				FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */,
 				FA577ACD16C7514C00860150 /* vorbis.framework in Frameworks */,
 			);
@@ -2810,6 +2831,8 @@
 				FA0B7B731A95902C000E1D17 /* Font.cpp */,
 				FA0B7B741A95902C000E1D17 /* Font.h */,
 				FA0B7B751A95902C000E1D17 /* freetype */,
+				D9DAB9262961F0FF00C64820 /* GenericShaper.cpp */,
+				D9DAB9252961F0FF00C64820 /* GenericShaper.h */,
 				FA0B7B7A1A95902C000E1D17 /* GlyphData.cpp */,
 				FA0B7B7B1A95902C000E1D17 /* GlyphData.h */,
 				FA0B7B7C1A95902C000E1D17 /* ImageRasterizer.cpp */,
@@ -2817,6 +2840,8 @@
 				FA522D5923FA5ED40059EE3C /* NotoSans-Regular.ttf.gzip.h */,
 				FA0B7B7E1A95902C000E1D17 /* Rasterizer.cpp */,
 				FA0B7B7F1A95902C000E1D17 /* Rasterizer.h */,
+				D9DAB9282961F10000C64820 /* TextShaper.cpp */,
+				D9DAB9272961F0FF00C64820 /* TextShaper.h */,
 				FAB2D5A81AABDD8A008224A4 /* TrueTypeRasterizer.cpp */,
 				FAB2D5A91AABDD8A008224A4 /* TrueTypeRasterizer.h */,
 				FA0B7B811A95902C000E1D17 /* wrap_Font.cpp */,
@@ -2834,6 +2859,8 @@
 			children = (
 				FA0B7B761A95902C000E1D17 /* Font.cpp */,
 				FA0B7B771A95902C000E1D17 /* Font.h */,
+				D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */,
+				D9DAB9202961F0EE00C64820 /* HarfbuzzShaper.h */,
 				FA0B7B781A95902C000E1D17 /* TrueTypeRasterizer.cpp */,
 				FA0B7B791A95902C000E1D17 /* TrueTypeRasterizer.h */,
 			);
@@ -3366,6 +3393,7 @@
 				FA577A7916C71A1700860150 /* Cocoa.framework */,
 				FAA627CD18E7E1560080752D /* CoreServices.framework */,
 				FAD43ECB1FF312D800831BB8 /* freetype.framework */,
+				D9DAB9312963CD7500C64820 /* harfbuzz.framework */,
 				FA577A8216C71A5300860150 /* libmodplug.framework */,
 				FADF4CC52663D0EC004F95C1 /* libz.tbd */,
 				FA577A6D16C719EA00860150 /* Lua.framework */,
@@ -3533,6 +3561,7 @@
 		FA5D24A31A96D2C300C6FC8F /* ios */ = {
 			isa = PBXGroup;
 			children = (
+				D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */,
 				FACFB750276D7E2B0089F78D /* freetype.xcframework */,
 				FACFB752276D7F6F0089F78D /* Lua.xcframework */,
 				FA84DE79277D4C88002674C6 /* modplug.xcframework */,
@@ -4100,6 +4129,7 @@
 				FABDA9B82552448300B5C523 /* b2_motor_joint.h in Headers */,
 				FA0B7AC11A958EA3000E1D17 /* callbacks.h in Headers */,
 				FA3C5E491F8D80CA0003C579 /* ShaderStage.h in Headers */,
+				D9DAB9292961F10000C64820 /* GenericShaper.h in Headers */,
 				FA0B7D8F1A95902C000E1D17 /* ddsHandler.h in Headers */,
 				FAB2D5AC1AABDD8A008224A4 /* TrueTypeRasterizer.h in Headers */,
 				FABDAA042552448300B5C523 /* b2_edge_shape.h in Headers */,
@@ -4137,6 +4167,7 @@
 				FA0B7EDD1A95902D000E1D17 /* Touch.h in Headers */,
 				FA0B7EDE1A95902D000E1D17 /* Touch.h in Headers */,
 				FAC7CD861FE35E95006A60C7 /* physfs.h in Headers */,
+				D9DAB92C2961F10000C64820 /* TextShaper.h in Headers */,
 				FAF6C9E523C2DE2900D7B5BC /* spirv.hpp in Headers */,
 				FA522D4F23F9FE380059EE3C /* MP3Decoder.h in Headers */,
 				217DFBEE1D9F6D490055D849 /* luasocket.h in Headers */,
@@ -4181,6 +4212,7 @@
 				FAF6C9E823C2DE2900D7B5BC /* GLSL.ext.EXT.h in Headers */,
 				FACA02F71F5E396B0084B28F /* wrap_DataModule.h in Headers */,
 				FABDA9BE2552448300B5C523 /* Box2D.h in Headers */,
+				D9DAB9222961F0EE00C64820 /* HarfbuzzShaper.h in Headers */,
 				FA56AA3A1FAFF02000A43D5F /* memory.h in Headers */,
 				FA0B7E441A95902C000E1D17 /* wrap_CircleShape.h in Headers */,
 				FA0B7EB41A95902C000E1D17 /* System.h in Headers */,
@@ -4660,6 +4692,7 @@
 				FADF540E1E3D7CDD00012CC0 /* wrap_Video.cpp in Sources */,
 				FA0B7D4C1A95902C000E1D17 /* Shader.cpp in Sources */,
 				FA0B792A1A958E3B000E1D17 /* Matrix.cpp in Sources */,
+				D9DAB92B2961F10000C64820 /* GenericShaper.cpp in Sources */,
 				FAF140981E20934C00F898D2 /* PpTokens.cpp in Sources */,
 				FAF140AA1E20934C00F898D2 /* SymbolTable.cpp in Sources */,
 				FABDA9892552448300B5C523 /* b2_contact.cpp in Sources */,
@@ -4778,6 +4811,7 @@
 				FA59A2D31C06481400328DBA /* ParticleSystem.cpp in Sources */,
 				FA0B7E131A95902C000E1D17 /* GearJoint.cpp in Sources */,
 				FABDA99B2552448300B5C523 /* b2_polygon_contact.cpp in Sources */,
+				D9DAB9242961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */,
 				FA0B7DC21A95902C000E1D17 /* wrap_Joystick.cpp in Sources */,
 				FA0B7CD41A95902C000E1D17 /* Source.cpp in Sources */,
 				FAA3A9AF1B7D465A00CED060 /* android.cpp in Sources */,
@@ -4926,6 +4960,7 @@
 				FABDA9FE2552448300B5C523 /* b2_edge_shape.cpp in Sources */,
 				FA0B7D7A1A95902C000E1D17 /* Quad.cpp in Sources */,
 				FA620A3B1AA305F6005DB4C2 /* types.cpp in Sources */,
+				D9DAB92E2961F10000C64820 /* TextShaper.cpp in Sources */,
 				FA0B7DD41A95902C000E1D17 /* BezierCurve.cpp in Sources */,
 				FA0B7E7C1A95902C000E1D17 /* wrap_World.cpp in Sources */,
 				FAF6C9F923C2DE2900D7B5BC /* doc.cpp in Sources */,
@@ -5087,6 +5122,7 @@
 				FA0B7EA31A95902C000E1D17 /* SoundData.cpp in Sources */,
 				FA0B79291A958E3B000E1D17 /* Matrix.cpp in Sources */,
 				FA8951A21AA2EDF300EC385A /* wrap_Event.cpp in Sources */,
+				D9DAB92A2961F10000C64820 /* GenericShaper.cpp in Sources */,
 				FAF140691E20934C00F898D2 /* glslang_tab.cpp in Sources */,
 				FA0B7ABF1A958EA3000E1D17 /* host.c in Sources */,
 				FA0B7D4B1A95902C000E1D17 /* Shader.cpp in Sources */,
@@ -5205,6 +5241,7 @@
 				FAF140551E20934C00F898D2 /* Link.cpp in Sources */,
 				FABDA9792552448200B5C523 /* b2_joint.cpp in Sources */,
 				FAF140841E20934C00F898D2 /* ParseHelper.cpp in Sources */,
+				D9DAB9232961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */,
 				FA0B7D7F1A95902C000E1D17 /* Volatile.cpp in Sources */,
 				FA1BA0B11E16FD0800AA2803 /* Shader.cpp in Sources */,
 				FABDA99A2552448300B5C523 /* b2_polygon_contact.cpp in Sources */,
@@ -5353,6 +5390,7 @@
 				FA0B7E881A95902C000E1D17 /* Decoder.cpp in Sources */,
 				FA0B7E3C1A95902C000E1D17 /* wrap_Body.cpp in Sources */,
 				FA0B7D791A95902C000E1D17 /* Quad.cpp in Sources */,
+				D9DAB92D2961F10000C64820 /* TextShaper.cpp in Sources */,
 				FABDA9FD2552448300B5C523 /* b2_edge_shape.cpp in Sources */,
 				FAC756F51E4F99B400B91289 /* Effect.cpp in Sources */,
 				FA620A3A1AA305F6005DB4C2 /* types.cpp in Sources */,
@@ -5716,6 +5754,7 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/harfbuzz.framework/Headers",
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
@@ -5751,6 +5790,7 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/harfbuzz.framework/Headers",
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
@@ -5787,6 +5827,7 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/freetype.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/Lua.framework/Headers",
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
+					"$(PROJECT_DIR)/macosx/Frameworks/harfbuzz.framework/Headers",
 				);
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";

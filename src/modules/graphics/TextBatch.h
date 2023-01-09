@@ -40,14 +40,14 @@ public:
 
 	static love::Type type;
 
-	TextBatch(Font *font, const std::vector<Font::ColoredString> &text = {});
+	TextBatch(Font *font, const std::vector<love::font::ColoredString> &text = {});
 	virtual ~TextBatch();
 
-	void set(const std::vector<Font::ColoredString> &text);
-	void set(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align);
+	void set(const std::vector<love::font::ColoredString> &text);
+	void set(const std::vector<love::font::ColoredString> &text, float wrap, Font::AlignMode align);
 
-	int add(const std::vector<Font::ColoredString> &text, const Matrix4 &m);
-	int addf(const std::vector<Font::ColoredString> &text, float wrap, Font::AlignMode align, const Matrix4 &m);
+	int add(const std::vector<love::font::ColoredString> &text, const Matrix4 &m);
+	int addf(const std::vector<love::font::ColoredString> &text, float wrap, Font::AlignMode align, const Matrix4 &m);
 
 	void clear();
 
@@ -71,10 +71,10 @@ private:
 
 	struct TextData
 	{
-		Font::ColoredCodepoints codepoints;
+		love::font::ColoredCodepoints codepoints;
 		float wrap;
 		Font::AlignMode align;
-		Font::TextInfo textInfo;
+		love::font::TextShaper::TextInfo textInfo;
 		bool useMatrix;
 		bool appendVertices;
 		Matrix4 matrix;
