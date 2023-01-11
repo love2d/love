@@ -963,10 +963,16 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 	resetProjection();
 
-	// Invalidate temporary depth/stencil. This could be a clear, but if the
-	// user also clears a double-clear may be slow...
+	// Clear/reset the temporary depth/stencil buffers.
+	// TODO: make this deferred somehow to avoid double clearing if the user
+	// also calls love.graphics.clear after setCanvas.
 	if (rts.depthStencil.texture == nullptr && rts.temporaryRTFlags != 0)
-		discard({}, true);
+	{
+		OptionalColorD clearcolor;
+		OptionalInt clearstencil(0);
+		OptionalDouble cleardepth(1.0);
+		clear(clearcolor, clearstencil, cleardepth);
+	}
 }
 
 void Graphics::setRenderTarget()
