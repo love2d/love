@@ -1358,7 +1358,7 @@ bool Graphics::dispatch(int x, int y, int z)
 
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)
 { @autoreleasepool {
-	endPass();
+	endPass(false);
 
 	bool isbackbuffer = rts.getFirstTarget().texture == nullptr;
 
@@ -1410,7 +1410,7 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*pixelw*/
 	dirtyRenderState = STATEBIT_ALL;
 }}
 
-void Graphics::endPass()
+void Graphics::endPass(bool presenting)
 {
 	// Make sure the encoder gets set up, if nothing else has done it yet.
 	useRenderEncoder();
@@ -1421,9 +1421,9 @@ void Graphics::endPass()
 	love::graphics::Texture *depthstencil = rts.depthStencil.texture.get();
 
 	// Discard the depth/stencil buffer if we're using an internal cached one,
-	// or if this is the backbuffer.
+	// or if we're presenting the backbuffer to the display.
 	if ((depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
-		|| !rts.getFirstTarget().texture.get())
+		|| (presenting && !rts.getFirstTarget().texture.get()))
 	{
 		attachmentStoreActions.depth = MTLStoreActionDontCare;
 		attachmentStoreActions.stencil = MTLStoreActionDontCare;
@@ -1562,7 +1562,7 @@ void Graphics::present(void *screenshotCallbackData)
 
 	// endPass calls useRenderEncoder, which makes sure activeDrawable is set
 	// when possible.
-	endPass();
+	endPass(true);
 
 	id<MTLBuffer> screenshotbuffer = nil;
 
