@@ -91,9 +91,9 @@ public:
 
 	/**
 	 * Get the current motor torque, usually in N.
-	 * @param inv_dt The inverse time step.
+	 * @param dt The time step.
 	 **/
-	float getMotorTorque(float inv_dt) const;
+	float getMotorTorque(float dt) const;
 
 	/**
 	 * Sets the response speed. Dependent of mass
