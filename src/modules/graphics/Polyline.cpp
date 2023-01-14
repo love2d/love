@@ -242,7 +242,8 @@ void BevelJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 		normals.push_back(newSegmentNormal);
 		normals.push_back(-newSegmentNormal);
 		segment = newSegment;
-		newSegmentLength = newSegmentLength;
+		segmentLength = newSegmentLength;
+		segmentNormal = newSegmentNormal;
 		return; // early out
 	}
 
