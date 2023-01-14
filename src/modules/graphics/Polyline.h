@@ -77,18 +77,18 @@ protected:
 
 	/** Calculate line boundary points.
 	 *
-	 * @param[out]    anchors Anchor points defining the core line.
-	 * @param[out]    normals Normals defining the edge of the sleeve.
-	 * @param[in,out] s       Direction of segment pq (updated to the segment qr).
-	 * @param[in,out] len_s   Length of segment pq (updated to the segment qr).
-	 * @param[in,out] ns      Normal on the segment pq (updated to the segment qr).
-	 * @param[in]     q       Current point on the line.
-	 * @param[in]     r       Next point on the line.
-	 * @param[in]     hw      Half line width (see Polyline.render()).
+	 * @param[out]    anchors       Anchor points defining the core line.
+	 * @param[out]    normals       Normals defining the edge of the sleeve.
+	 * @param[in,out] segment       Direction of segment pq (updated to the segment qr).
+	 * @param[in,out] segmentLength Length of segment pq (updated to the segment qr).
+	 * @param[in,out] segmentNormal Normal on the segment pq (updated to the segment qr).
+	 * @param[in]     pointA        Current point on the line (q).
+	 * @param[in]     pointB        Next point on the line (r).
+	 * @param[in]     halfWidth     Half line width (see Polyline.render()).
 	 */
 	virtual void renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
-	                        Vector2 &s, float &len_s, Vector2 &ns,
-	                        const Vector2 &q, const Vector2 &r, float hw) = 0;
+	                        Vector2 &segment, float &segmentLength, Vector2 &segmentNormal,
+	                        const Vector2 &pointA, const Vector2 &pointB, float halfWidth) = 0;
 
 	Vector2 *vertices;
 	Vector2 *overdraw;
