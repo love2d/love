@@ -304,6 +304,13 @@ function love.init()
 		end
 	end
 
+	-- The first couple event pumps on some systems (e.g. macOS) can take a
+	-- while. We'd rather hit that slowdown here than in event processing
+	-- within the first frames.
+	if love.event then
+		for i = 1, 2 do love.event.pump() end
+	end
+
 	-- Our first timestep, because window creation can take some time
 	if love.timer then
 		love.timer.step()
