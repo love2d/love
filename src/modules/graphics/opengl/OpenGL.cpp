@@ -154,7 +154,7 @@ bool OpenGL::initContext()
 	if (getVendor() == VENDOR_AMD)
 	{
 		bugs.clearRequiresDriverTextureStateUpdate = true;
-		if (!gl.isCoreProfile())
+		if (!gl.isCoreProfile() && !GLAD_ES_VERSION_2_0)
 			bugs.generateMipmapsRequiresTexture2DEnable = true;
 	}
 #endif
