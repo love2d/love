@@ -105,6 +105,7 @@ StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntri
 	{"display", SETTING_DISPLAY},
 	{"highdpi", SETTING_HIGHDPI},
 	{"usedpiscale", SETTING_USE_DPISCALE},
+	{"background", SETTING_BACKGROUND},
 	{"refreshrate", SETTING_REFRESHRATE},
 	{"x", SETTING_X},
 	{"y", SETTING_Y},

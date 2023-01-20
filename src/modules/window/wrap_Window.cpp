@@ -77,6 +77,7 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	settings.display = luax_intflag(L, idx, settingName(Window::SETTING_DISPLAY), settings.display+1) - 1;
 	settings.highdpi = luax_boolflag(L, idx, settingName(Window::SETTING_HIGHDPI), settings.highdpi);
 	settings.usedpiscale = luax_boolflag(L, idx, settingName(Window::SETTING_USE_DPISCALE), settings.usedpiscale);
+	settings.background = luax_boolflag(L, idx, settingName(Window::SETTING_BACKGROUND), settings.background);
 
 	lua_getfield(L, idx, settingName(Window::SETTING_VSYNC));
 	if (lua_isnumber(L, -1))
@@ -206,6 +207,9 @@ int w_getMode(lua_State *L)
 
 	luax_pushboolean(L, settings.usedpiscale);
 	lua_setfield(L, -2, settingName(Window::SETTING_USE_DPISCALE));
+
+	lua_pushboolean(L, settings.background);
+	lua_setfield(L, -2, settingName(Window::SETTING_BACKGROUND));
 
 	lua_pushnumber(L, settings.refreshrate);
 	lua_setfield(L, -2, settingName(Window::SETTING_REFRESHRATE));

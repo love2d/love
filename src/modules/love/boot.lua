@@ -148,6 +148,7 @@ function love.init()
 			centered = true,
 			highdpi = false,
 			usedpiscale = true,
+			background = false,
 		},
 		modules = {
 			data = true,
@@ -295,6 +296,7 @@ function love.init()
 			display = c.window.display,
 			highdpi = c.window.highdpi,
 			usedpiscale = c.window.usedpiscale,
+			background = c.window.background,
 			x = c.window.x,
 			y = c.window.y,
 		}), "Could not set window mode")

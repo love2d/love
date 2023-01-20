@@ -509,6 +509,9 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	close();
 
+	if(f.background)
+		SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP,"1");
+
 	if (!createWindowAndContext(x, y, width, height, sdlflags, f.msaa, f.stencil, f.depth))
 		return false;
 
@@ -524,7 +527,10 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (f.useposition || f.centered)
 		SDL_SetWindowPosition(window, x, y);
 
-	SDL_RaiseWindow(window);
+	if(f.background)
+		SDL_ShowWindow(window);
+	else
+		SDL_RaiseWindow(window);
 
 	setVSync(f.vsync);
 
@@ -607,6 +613,7 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 
 	settings.highdpi = (wflags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
 	settings.usedpiscale = newsettings.usedpiscale;
+	settings.background = newsettings.background;
 
 	// Only minimize on focus loss if the window is in exclusive-fullscreen mode
 	if (settings.fullscreen && settings.fstype == FULLSCREEN_EXCLUSIVE)

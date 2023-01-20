@@ -68,6 +68,7 @@ public:
 		SETTING_DISPLAY,
 		SETTING_HIGHDPI,
 		SETTING_USE_DPISCALE,
+		SETTING_BACKGROUND,
 		SETTING_REFRESHRATE,
 		SETTING_X,
 		SETTING_Y,
@@ -263,6 +264,7 @@ struct WindowSettings
 	int display = 0;
 	bool highdpi = false;
 	bool usedpiscale = true;
+	bool background = false;
 	double refreshrate = 0.0;
 	bool useposition = false;
 	int x = 0;
