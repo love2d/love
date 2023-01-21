@@ -316,6 +316,7 @@ private:
 	int rateDeviceSuitability(VkPhysicalDevice device);
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	void createLogicalDevice();
+	void createPipelineCache();
 	void initVMA();
 	void createSurface();
 	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -393,6 +394,7 @@ private:
 	VkImageView depthImageView = VK_NULL_HANDLE;
 	VmaAllocation depthImageAllocation = VK_NULL_HANDLE;
 	VkRenderPass defaultRenderPass = VK_NULL_HANDLE;
+	VkPipelineCache pipelineCache;
 	std::vector<VkFramebuffer> defaultFramebuffers;
 	std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;

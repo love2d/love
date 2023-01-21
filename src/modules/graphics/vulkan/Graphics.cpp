@@ -493,6 +493,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	createSurface();
 	pickPhysicalDevice();
 	createLogicalDevice();
+	createPipelineCache();
 	initVMA();
 	initCapabilities();
 	createSwapChain();
@@ -1573,6 +1574,15 @@ void Graphics::createLogicalDevice()
 	vkGetDeviceQueue(device, indices.presentFamily.value, 0, &presentQueue);
 }
 
+void Graphics::createPipelineCache()
+{
+	VkPipelineCacheCreateInfo cacheInfo{};
+	cacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+
+	if (vkCreatePipelineCache(device, &cacheInfo, nullptr, &pipelineCache) != VK_SUCCESS)
+		throw love::Exception("could not create pipeline cache");
+}
+
 void Graphics::initVMA()
 {
 	VmaAllocatorCreateInfo allocatorCreateInfo = {};
@@ -2301,11 +2311,10 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 			false, 
 			dynamic_cast<Texture*>(color.texture)->getMsaaSamples() });
 	if (rts.depthStencil.texture != nullptr)
-		if (rts.depthStencil.texture != nullptr)
-			renderPassConfiguration.staticData.depthAttachment = { 
-				Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat(), false).internalFormat,
-				false,
-				dynamic_cast<Texture*>(rts.depthStencil.texture)->getMsaaSamples() };
+		renderPassConfiguration.staticData.depthAttachment = {
+			Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat(), false).internalFormat,
+			false,
+			dynamic_cast<Texture*>(rts.depthStencil.texture)->getMsaaSamples() };
 
 	FramebufferConfiguration configuration{};
 
@@ -2648,7 +2657,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	pipelineInfo.renderPass = configuration.renderPass;
 
 	VkPipeline graphicsPipeline;
-	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+	if (vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		throw love::Exception("failed to create graphics pipeline");
 	return graphicsPipeline;
 }
@@ -2934,6 +2943,7 @@ void Graphics::cleanup()
 	graphicsPipelines.clear();
 
 	vkDestroyCommandPool(device, commandPool, nullptr);
+	vkDestroyPipelineCache(device, pipelineCache, nullptr);
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
