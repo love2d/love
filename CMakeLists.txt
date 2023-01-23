@@ -36,6 +36,11 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 set (CMAKE_CXX_STANDARD 11)
 
+option(LOVE_LIBRETRO "Use libretro API" FALSE)
+if(${LOVE_LIBRETRO})
+	add_definitions(-DLOVE_BUILD_LIBRETRO)
+endif()
+
 if(APPLE)
 	message(WARNING "CMake is not an officially supported build system for love on Apple platforms.")
 	message(WARNING "Use the prebuilt .app or the xcode project in platform/xcode/ instead.")
@@ -1715,11 +1720,19 @@ set(LOVE_3P
 
 love_disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket love_3p_physfs)
 
+# Libretro
+if(LOVE_LIBRETRO)
+set(LOVE_SRC_LIBRETRO
+	src/libretro/main.cpp
+)
+endif()
+
 #
 # liblove
 #
 set(LOVE_LIB_SRC
 	${LOVE_SRC_COMMON}
+	${LOVE_SRC_LIBRETRO}
 	# Modules
 	${LOVE_SRC_MODULE_AUDIO}
 	${LOVE_SRC_MODULE_DATA}
