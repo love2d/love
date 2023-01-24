@@ -99,7 +99,7 @@ This distribution contains code from the following projects (full license text b
 
  - dr_mp3
 	Website: https://mackron.github.io/dr_libs/
-	Source download: https://github.com/mackron/dr_libs/blob/47fdc9d/dr_mp3.h
+	Source download: https://github.com/mackron/dr_libs/blob/dd762b8/dr_mp3.h
 	License: MIT/Expat
 	Copyright 2018 David Reid
 

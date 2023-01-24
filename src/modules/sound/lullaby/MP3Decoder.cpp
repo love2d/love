@@ -144,7 +144,7 @@ MP3Decoder::MP3Decoder(Stream *stream, int bufferSize)
 		throw love::Exception("Could not find first valid mp3 header.");
 
 	// initialize mp3 handle
-	if (!drmp3_init(&mp3, onRead, onSeek, this, nullptr, nullptr))
+	if (!drmp3_init(&mp3, onRead, onSeek, this, nullptr))
 		throw love::Exception("Could not read mp3 data.");
 
 	sampleRate = mp3.sampleRate;
