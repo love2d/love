@@ -1007,6 +1007,8 @@ graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
 
 bool Graphics::dispatch(int x, int y, int z)
 {
+	usedShadersInFrame.insert(computeShader);
+
 	if (renderPassState.active)
 		endRenderPass();
 
@@ -2226,7 +2228,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	if (!renderPassState.active)
 		startRenderPass();
 
-	Shader::current->attach();
+	usedShadersInFrame.insert((dynamic_cast<Shader*>(Shader::current)));
 
 	GraphicsPipelineConfiguration configuration{};
 
@@ -2487,11 +2489,6 @@ void Graphics::requestSwapchainRecreation()
 void Graphics::setComputeShader(Shader *shader)
 {
 	computeShader = shader;
-}
-
-void Graphics::markShaderUsed(Shader *shader)
-{
-	usedShadersInFrame.insert(shader);
 }
 
 VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)

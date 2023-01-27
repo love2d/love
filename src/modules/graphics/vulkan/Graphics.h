@@ -293,7 +293,6 @@ public:
 	graphics::Texture *getDefaultTexture() const;
 	VkSampler getCachedSampler(const SamplerState &sampler);
 	void setComputeShader(Shader *computeShader);
-	void markShaderUsed(Shader*);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	const OptionalDeviceFeatures &getEnabledOptionalDeviceExtensions() const;
 	VkSampleCountFlagBits getMsaaCount(int requestedMsaa) const;
@@ -394,7 +393,7 @@ private:
 	VkImageView depthImageView = VK_NULL_HANDLE;
 	VmaAllocation depthImageAllocation = VK_NULL_HANDLE;
 	VkRenderPass defaultRenderPass = VK_NULL_HANDLE;
-	VkPipelineCache pipelineCache;
+	VkPipelineCache pipelineCache = VK_NULL_HANDLE;
 	std::vector<VkFramebuffer> defaultFramebuffers;
 	std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;

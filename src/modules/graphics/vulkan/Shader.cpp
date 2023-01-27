@@ -25,8 +25,6 @@
 #include "libraries/glslang/SPIRV/GlslangToSpv.h"
 
 
-#include <vector>
-
 namespace love
 {
 namespace graphics
@@ -473,8 +471,6 @@ Shader::~Shader()
 
 void Shader::attach()
 {
-	vgfx->markShaderUsed(this);
-
 	if (!isCompute)
 	{
 		if (Shader::current != this)
