@@ -149,7 +149,7 @@ private:
 	void initCapabilities() override;
 	void getAPIStats(int &shaderswitches) const override;
 
-	void endPass();
+	void endPass(bool presenting);
 	GLuint bindCachedFBO(const RenderTargets &targets);
 	void discard(OpenGL::FramebufferTarget target, const std::vector<bool> &colorbuffers, bool depthstencil);
 

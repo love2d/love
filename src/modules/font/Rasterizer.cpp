@@ -55,6 +55,11 @@ int Rasterizer::getDescent() const
 	return metrics.descent;
 }
 
+GlyphData *Rasterizer::getGlyphData(uint32 glyph) const
+{
+	return getGlyphDataForIndex(getGlyphIndex(glyph));
+}
+
 GlyphData *Rasterizer::getGlyphData(const std::string &text) const
 {
 	uint32 codepoint = 0;

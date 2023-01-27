@@ -758,7 +758,7 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, in
 
 	OpenGL::TempDebugGroup debuggroup("setRenderTargets");
 
-	endPass();
+	endPass(false);
 
 	bool iswindow = rts.getFirstTarget().texture == nullptr;
 	Winding vertexwinding = state.winding;
@@ -794,16 +794,18 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, in
 	}
 }
 
-void Graphics::endPass()
+void Graphics::endPass(bool presenting)
 {
 	auto &rts = states.back().renderTargets;
 	love::graphics::Texture *depthstencil = rts.depthStencil.texture.get();
 
-	// Discard the depth/stencil buffer if we're using an internal cached one.
-	if (depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
+	// Discard the depth/stencil buffer if we're using an internal cached one,
+	// or if we're presenting the backbuffer to the display.
+	if ((depthstencil == nullptr && (rts.temporaryRTFlags & (TEMPORARY_RT_DEPTH | TEMPORARY_RT_STENCIL)) != 0)
+		|| (presenting && !rts.getFirstTarget().texture.get()))
+	{
 		discard({}, true);
-	else if (!rts.getFirstTarget().texture.get())
-		discard({}, true); // Backbuffer
+	}
 
 	// Resolve MSAA buffers. MSAA is only supported for 2D render targets so we
 	// don't have to worry about resolving to slices.
@@ -1224,7 +1226,8 @@ void Graphics::present(void *screenshotCallbackData)
 	deprecations.draw(this);
 
 	flushBatchedDraws();
-	endPass();
+
+	endPass(true);
 
 	int w = getPixelWidth();
 	int h = getPixelHeight();

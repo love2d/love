@@ -207,7 +207,7 @@ private:
 	void initCapabilities() override;
 	void getAPIStats(int &shaderswitches) const override;
 
-	void endPass();
+	void endPass(bool presenting);
 
 	id<MTLDepthStencilState> getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil);
 	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, const VertexAttributes &attributes);

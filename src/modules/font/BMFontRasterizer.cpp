@@ -20,6 +20,7 @@
 
 // LOVE
 #include "BMFontRasterizer.h"
+#include "GenericShaper.h"
 #include "filesystem/Filesystem.h"
 #include "image/Image.h"
 
@@ -164,6 +165,14 @@ BMFontRasterizer::~BMFontRasterizer()
 
 void BMFontRasterizer::parseConfig(const std::string &configtext)
 {
+	{
+		BMFontCharacter nullchar = {};
+		nullchar.page = -1;
+		nullchar.glyph = 0;
+		characters.push_back(nullchar);
+		characterIndices[0] = (int)characters.size() - 1;
+	}
+
 	std::stringstream ss(configtext);
 	std::string line;
 
@@ -237,7 +246,10 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 			c.metrics.bearingY = -cline.getAttributeInt("yoffset");
 			c.metrics.advance  =  cline.getAttributeInt("xadvance");
 
-			characters[id] = c;
+			c.glyph = id;
+
+			characters.push_back(c);
+			characterIndices[id] = (int) characters.size() - 1;
 		}
 		else if (tag == "kerning")
 		{
@@ -257,13 +269,15 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 	bool guessheight = lineHeight == 0;
 
 	// Verify the glyph character attributes.
-	for (const auto &cpair : characters)
+	for (const auto &c : characters)
 	{
-		const BMFontCharacter &c = cpair.second;
+		if (c.glyph == 0)
+			continue;
+
 		int width = c.metrics.width;
 		int height = c.metrics.height;
 
-		if (!unicode && cpair.first > 127)
+		if (!unicode && c.glyph > 127)
 			throw love::Exception("Invalid BMFont character id (only unicode and ASCII are supported)");
 
 		if (c.page < 0 || images[c.page].get() == nullptr)
@@ -272,13 +286,13 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 		const image::ImageData *id = images[c.page].get();
 
 		if (!id->inside(c.x, c.y))
-			throw love::Exception("Invalid coordinates for BMFont character %u.", cpair.first);
+			throw love::Exception("Invalid coordinates for BMFont character %u.", c.glyph);
 
 		if (width > 0 && !id->inside(c.x + width - 1, c.y))
-			throw love::Exception("Invalid width %d for BMFont character %u.", width, cpair.first);
+			throw love::Exception("Invalid width %d for BMFont character %u.", width, c.glyph);
 
 		if (height > 0 && !id->inside(c.x, c.y + height - 1))
-			throw love::Exception("Invalid height %d for BMFont character %u.", height, cpair.first);
+			throw love::Exception("Invalid height %d for BMFont character %u.", height, c.glyph);
 
 		if (guessheight)
 			lineHeight = std::max(lineHeight, c.metrics.height);
@@ -292,22 +306,37 @@ int BMFontRasterizer::getLineHeight() const
 	return lineHeight;
 }
 
-GlyphData *BMFontRasterizer::getGlyphData(uint32 glyph) const
+int BMFontRasterizer::getGlyphSpacing(uint32 glyph) const
 {
-	auto it = characters.find(glyph);
+	auto it = characterIndices.find(glyph);
+	if (it == characterIndices.end())
+		return 0;
 
+	return characters[it->second].metrics.advance;
+}
+
+int BMFontRasterizer::getGlyphIndex(uint32 glyph) const
+{
+	auto it = characterIndices.find(glyph);
+	if (it == characterIndices.end())
+		return 0;
+	return it->second;
+}
+
+GlyphData *BMFontRasterizer::getGlyphDataForIndex(int index) const
+{
 	// Return an empty GlyphData if we don't have the glyph character.
-	if (it == characters.end())
-		return new GlyphData(glyph, GlyphMetrics(), PIXELFORMAT_RGBA8_UNORM);
+	if (index < 0 || index >= (int) characters.size())
+		return new GlyphData(0, GlyphMetrics(), PIXELFORMAT_RGBA8_UNORM);
 
-	const BMFontCharacter &c = it->second;
+	const BMFontCharacter& c = characters[index];
 	const auto &imagepair = images.find(c.page);
 
 	if (imagepair == images.end())
-		return new GlyphData(glyph, GlyphMetrics(), PIXELFORMAT_RGBA8_UNORM);
+		return new GlyphData(c.glyph, GlyphMetrics(), PIXELFORMAT_RGBA8_UNORM);
 
 	image::ImageData *imagedata = imagepair->second.get();
-	GlyphData *g = new GlyphData(glyph, c.metrics, PIXELFORMAT_RGBA8_UNORM);
+	GlyphData *g = new GlyphData(c.glyph, c.metrics, PIXELFORMAT_RGBA8_UNORM);
 
 	size_t pixelsize = imagedata->getPixelSize();
 
@@ -333,7 +362,7 @@ int BMFontRasterizer::getGlyphCount() const
 
 bool BMFontRasterizer::hasGlyph(uint32 glyph) const
 {
-	return characters.find(glyph) != characters.end();
+	return characterIndices.find(glyph) != characterIndices.end();
 }
 
 float BMFontRasterizer::getKerning(uint32 leftglyph, uint32 rightglyph) const
@@ -350,6 +379,11 @@ float BMFontRasterizer::getKerning(uint32 leftglyph, uint32 rightglyph) const
 Rasterizer::DataType BMFontRasterizer::getDataType() const
 {
 	return DATA_IMAGE;
+}
+
+TextShaper *BMFontRasterizer::newTextShaper()
+{
+	return new GenericShaper(this);
 }
 
 bool BMFontRasterizer::accepts(love::filesystem::FileData *fontdef)

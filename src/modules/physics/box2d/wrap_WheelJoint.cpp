@@ -97,8 +97,8 @@ int w_WheelJoint_getMaxMotorTorque(lua_State *L)
 int w_WheelJoint_getMotorTorque(lua_State *L)
 {
 	WheelJoint *t = luax_checkwheeljoint(L, 1);
-	float inv_dt = (float)luaL_checknumber(L, 2);
-	lua_pushnumber(L, t->getMotorTorque(inv_dt));
+	float dt = (float)luaL_checknumber(L, 2);
+	lua_pushnumber(L, t->getMotorTorque(dt));
 	return 1;
 }
 

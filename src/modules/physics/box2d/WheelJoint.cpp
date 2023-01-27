@@ -90,9 +90,10 @@ float WheelJoint::getMaxMotorTorque() const
 	return Physics::scaleUp(Physics::scaleUp(joint->GetMaxMotorTorque()));
 }
 
-float WheelJoint::getMotorTorque(float inv_dt) const
+float WheelJoint::getMotorTorque(float dt) const
 {
-	return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
+	float invdt = 1.0f / dt;
+	return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(invdt)));
 }
 
 void WheelJoint::setStiffness(float k)

@@ -49,26 +49,26 @@ void Polyline::render(const Vector2 *coords, size_t count, size_t size_hint, flo
 
 	// compute sleeve
 	bool is_looping = (coords[0] == coords[count - 1]);
-	Vector2 s;
+	Vector2 segment;
 	if (!is_looping) // virtual starting point at second point mirrored on first point
-		s = coords[1] - coords[0];
+		segment = coords[1] - coords[0];
 	else // virtual starting point at last vertex
-		s = coords[0] - coords[count - 2];
+		segment = coords[0] - coords[count - 2];
 
-	float len_s = s.getLength();
-	Vector2 ns = s.getNormal(halfwidth / len_s);
+	float segmentLength = segment.getLength();
+	Vector2 segmentNormal = segment.getNormal(halfwidth / segmentLength);
 
-	Vector2 q, r(coords[0]);
+	Vector2 pointA, pointB(coords[0]);
 	for (size_t i = 0; i + 1 < count; i++)
 	{
-		q = r;
-		r = coords[i + 1];
-		renderEdge(anchors, normals, s, len_s, ns, q, r, halfwidth);
+		pointA = pointB;
+		pointB = coords[i + 1];
+		renderEdge(anchors, normals, segment, segmentLength, segmentNormal, pointA, pointB, halfwidth);
 	}
 
-	q = r;
-	r = is_looping ? coords[1] : r + s;
-	renderEdge(anchors, normals, s, len_s, ns, q, r, halfwidth);
+	pointA = pointB;
+	pointB = is_looping ? coords[1] : pointB + segment;
+	renderEdge(anchors, normals, segment, segmentLength, segmentNormal, pointA, pointB, halfwidth);
 
 	vertex_count = normals.size();
 
@@ -108,8 +108,8 @@ void Polyline::render(const Vector2 *coords, size_t count, size_t size_hint, flo
 }
 
 void NoneJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
-                                Vector2 &s, float &len_s, Vector2 &ns,
-                                const Vector2 &q, const Vector2 &r, float hw)
+                                Vector2 &segment, float &segmentLength, Vector2 &segmentNormal,
+                                const Vector2 &pointA, const Vector2 &pointB, float halfWidth)
 {
 	//   ns1------ns2
 	//    |        |
@@ -117,19 +117,19 @@ void NoneJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vec
 	//    |        |
 	// (-ns1)----(-ns2)
 
-	anchors.push_back(q);
-	anchors.push_back(q);
-	normals.push_back(ns);
-	normals.push_back(-ns);
+	anchors.push_back(pointA);
+	anchors.push_back(pointA);
+	normals.push_back(segmentNormal);
+	normals.push_back(-segmentNormal);
 
-	s     = (r - q);
-	len_s = s.getLength();
-	ns    = s.getNormal(hw / len_s);
+	segment = (pointB - pointA);
+	segmentLength = segment.getLength();
+	segmentNormal = segment.getNormal(halfWidth / segmentLength);
 
-	anchors.push_back(q);
-	anchors.push_back(q);
-	normals.push_back(ns);
-	normals.push_back(-ns);
+	anchors.push_back(pointA);
+	anchors.push_back(pointA);
+	normals.push_back(segmentNormal);
+	normals.push_back(-segmentNormal);
 }
 
 
@@ -171,41 +171,41 @@ void NoneJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vec
  * the intersection points can be efficiently calculated using Cramer's rule.
  */
 void MiterJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
-                                   Vector2 &s, float &len_s, Vector2 &ns,
-                                   const Vector2 &q, const Vector2 &r, float hw)
+                                   Vector2 &segment, float &segmentLength, Vector2 &segmentNormal,
+                                   const Vector2 &pointA, const Vector2 &pointB, float halfwidth)
 {
-	Vector2 t    = (r - q);
-	float len_t = t.getLength();
-	if (len_t == 0.0f)
+	Vector2 newSegment = (pointB - pointA);
+	float newSegmentLength = newSegment.getLength();
+	if (newSegmentLength == 0.0f)
 	{
 		// degenerate segment, skip it
 		return;
 	}
 
-	Vector2 nt   = t.getNormal(hw / len_t);
+	Vector2 newSegmentNormal = newSegment.getNormal(halfwidth / newSegmentLength);
 
-	anchors.push_back(q);
-	anchors.push_back(q);
+	anchors.push_back(pointA);
+	anchors.push_back(pointA);
 
-	float det = Vector2::cross(s, t);
-	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS && Vector2::dot(s, t) > 0)
+	float det = Vector2::cross(segment, newSegment);
+	if (fabs(det) / (segmentLength * newSegmentLength) < LINES_PARALLEL_EPS && Vector2::dot(segment, newSegment) > 0)
 	{
 		// lines parallel, compute as u1 = q + ns * w/2, u2 = q - ns * w/2
-		normals.push_back(ns);
-		normals.push_back(-ns);
+		normals.push_back(segmentNormal);
+		normals.push_back(-segmentNormal);
 	}
 	else
 	{
 		// cramers rule
-		float lambda = Vector2::cross((nt - ns), t) / det;
-		Vector2 d = ns + s * lambda;
+		float lambda = Vector2::cross((newSegmentNormal - segmentNormal), newSegment) / det;
+		Vector2 d = segmentNormal + segment * lambda;
 		normals.push_back(d);
 		normals.push_back(-d);
 	}
 
-	s     = t;
-	ns    = nt;
-	len_s = len_t;
+	segment = newSegment;
+	segmentNormal = newSegmentNormal;
+	segmentLength = newSegmentLength;
 }
 
 /** Calculate line boundary points.
@@ -226,52 +226,53 @@ void MiterJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
  * uh1 = q + ns * w/2, uh2 = q + nt * w/2
  */
 void BevelJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vector2> &normals,
-                                   Vector2 &s, float &len_s, Vector2 &ns,
-                                   const Vector2 &q, const Vector2 &r, float hw)
+                                   Vector2 &segment, float &segmentLength, Vector2 &segmentNormal,
+                                   const Vector2 &pointA, const Vector2 &pointB, float halfWidth)
 {
-	Vector2 t    = (r - q);
-	float len_t = t.getLength();
+	Vector2 newSegment = (pointB - pointA);
+	float newSegmentLength = newSegment.getLength();
 
-	float det = Vector2::cross(s, t);
-	if (fabs(det) / (len_s * len_t) < LINES_PARALLEL_EPS && Vector2::dot(s, t) > 0)
+	float det = Vector2::cross(segment, newSegment);
+	if (fabs(det) / (segmentLength * newSegmentLength) < LINES_PARALLEL_EPS && Vector2::dot(segment, newSegment) > 0)
 	{
 		// lines parallel, compute as u1 = q + ns * w/2, u2 = q - ns * w/2
-		Vector2 n = t.getNormal(hw / len_t);
-		anchors.push_back(q);
-		anchors.push_back(q);
-		normals.push_back(n);
-		normals.push_back(-n);
-		s     = t;
-		len_s = len_t;
+		Vector2 newSegmentNormal = newSegment.getNormal(halfWidth / newSegmentLength);
+		anchors.push_back(pointA);
+		anchors.push_back(pointA);
+		normals.push_back(newSegmentNormal);
+		normals.push_back(-newSegmentNormal);
+		segment = newSegment;
+		segmentLength = newSegmentLength;
+		segmentNormal = newSegmentNormal;
 		return; // early out
 	}
 
 	// cramers rule
-	Vector2 nt = t.getNormal(hw / len_t);
-	float lambda = Vector2::cross((nt - ns), t) / det;
-	Vector2 d = ns + s * lambda;
+	Vector2 newSegmentNormal = newSegment.getNormal(halfWidth / newSegmentLength);
+	float lambda = Vector2::cross((newSegmentNormal - segmentNormal), newSegment) / det;
+	Vector2 d = segmentNormal + segment * lambda;
 
-	anchors.push_back(q);
-	anchors.push_back(q);
-	anchors.push_back(q);
-	anchors.push_back(q);
+	anchors.push_back(pointA);
+	anchors.push_back(pointA);
+	anchors.push_back(pointA);
+	anchors.push_back(pointA);
 	if (det > 0) // 'left' turn -> intersection on the top
 	{
 		normals.push_back(d);
-		normals.push_back(-ns);
+		normals.push_back(-segmentNormal);
 		normals.push_back(d);
-		normals.push_back(-nt);
+		normals.push_back(-newSegmentNormal);
 	}
 	else
 	{
-		normals.push_back(ns);
+		normals.push_back(segmentNormal);
 		normals.push_back(-d);
-		normals.push_back(nt);
+		normals.push_back(newSegmentNormal);
 		normals.push_back(-d);
 	}
-	s     = t;
-	len_s = len_t;
-	ns    = nt;
+	segment = newSegment;
+	segmentLength = newSegmentLength;
+	segmentNormal = newSegmentNormal;
 }
 
 void Polyline::calc_overdraw_vertex_count(bool is_looping)

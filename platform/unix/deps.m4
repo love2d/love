@@ -1,6 +1,9 @@
 AC_DEFUN([ACLOVE_DEP_FREETYPE2], [
 	PKG_CHECK_MODULES([freetype2], [freetype2], [], [LOVE_MSG_ERROR([FreeType2])])])
 
+AC_DEFUN([ACLOVE_DEP_HARFBUZZ], [
+	PKG_CHECK_MODULES([harfbuzz], [harfbuzz], [], [LOVE_MSG_ERROR([Harfbuzz])])])
+
 AC_DEFUN([ACLOVE_DEP_OPENAL], [
 	PKG_CHECK_MODULES([openal], [openal], [], [LOVE_MSG_ERROR([OpenAL])])])
 

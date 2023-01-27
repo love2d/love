@@ -21,17 +21,26 @@
 #pragma once
 
 // LOVE
-#include "common/runtime.h"
-#include "Font.h"
+#include "TextShaper.h"
 
 namespace love
 {
-namespace graphics
+namespace font
 {
 
-Font *luax_checkfont(lua_State *L, int idx);
-void luax_checkcoloredstring(lua_State *L, int idx, std::vector<love::font::ColoredString> &strings);
-extern "C" int luaopen_font(lua_State *L);
+class GenericShaper : public love::font::TextShaper
+{
+public:
 
-} // graphics
+	GenericShaper(Rasterizer *rasterizer);
+	virtual ~GenericShaper();
+
+	void computeGlyphPositions(const ColoredCodepoints &codepoints, Range range, Vector2 offset, float extraspacing, std::vector<GlyphPosition> *positions, std::vector<IndexedColor> *colors, TextInfo *info) override;
+	int computeWordWrapIndex(const ColoredCodepoints &codepoints, Range range, float wraplimit, float *width) override;
+
+private:
+
+}; // GenericShaper
+
+} // font
 } // love

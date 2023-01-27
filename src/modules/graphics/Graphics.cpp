@@ -439,7 +439,7 @@ Mesh *Graphics::newMesh(const std::vector<Mesh::BufferAttribute> &attributes, Pr
 	return new Mesh(attributes, drawmode);
 }
 
-love::graphics::TextBatch *Graphics::newTextBatch(graphics::Font *font, const std::vector<Font::ColoredString> &text)
+love::graphics::TextBatch *Graphics::newTextBatch(graphics::Font *font, const std::vector<love::font::ColoredString> &text)
 {
 	return new TextBatch(font, text);
 }
@@ -963,10 +963,16 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 	resetProjection();
 
-	// Invalidate temporary depth/stencil. This could be a clear, but if the
-	// user also clears a double-clear may be slow...
+	// Clear/reset the temporary depth/stencil buffers.
+	// TODO: make this deferred somehow to avoid double clearing if the user
+	// also calls love.graphics.clear after setCanvas.
 	if (rts.depthStencil.texture == nullptr && rts.temporaryRTFlags != 0)
-		discard({}, true);
+	{
+		OptionalColorD clearcolor;
+		OptionalInt clearstencil(0);
+		OptionalDouble cleardepth(1.0);
+		clear(clearcolor, clearstencil, cleardepth);
+	}
 }
 
 void Graphics::setRenderTarget()
@@ -1893,7 +1899,7 @@ void Graphics::drawShaderVertices(Buffer *indexbuffer, int indexcount, int insta
 	draw(cmd);
 }
 
-void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 &m)
+void Graphics::print(const std::vector<love::font::ColoredString> &str, const Matrix4 &m)
 {
 	checkSetDefaultFont();
 
@@ -1901,12 +1907,12 @@ void Graphics::print(const std::vector<Font::ColoredString> &str, const Matrix4 
 		print(str, states.back().font.get(), m);
 }
 
-void Graphics::print(const std::vector<Font::ColoredString> &str, Font *font, const Matrix4 &m)
+void Graphics::print(const std::vector<love::font::ColoredString> &str, Font *font, const Matrix4 &m)
 {
 	font->print(this, str, m, states.back().color);
 }
 
-void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m)
+void Graphics::printf(const std::vector<love::font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m)
 {
 	checkSetDefaultFont();
 
@@ -1914,7 +1920,7 @@ void Graphics::printf(const std::vector<Font::ColoredString> &str, float wrap, F
 		printf(str, states.back().font.get(), wrap, align, m);
 }
 
-void Graphics::printf(const std::vector<Font::ColoredString> &str, Font *font, float wrap, Font::AlignMode align, const Matrix4 &m)
+void Graphics::printf(const std::vector<love::font::ColoredString> &str, Font *font, float wrap, Font::AlignMode align, const Matrix4 &m)
 {
 	font->printf(this, str, wrap, align, m, states.back().color);
 }
