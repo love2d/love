@@ -144,6 +144,72 @@ static const TBuiltInResource defaultTBuiltInResource = {
 static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
 static const uint32_t DESCRIPTOR_POOL_SIZE = 1;
 
+class BindingMapper
+{
+public:
+	uint32_t operator()(spirv_cross::CompilerGLSL &comp, std::vector<uint32_t> &spirv, const std::string &name, const spirv_cross::ID &id)
+	{
+		auto it = bindingMappings.find(name);
+		if (it == bindingMappings.end())
+		{
+			auto binding = comp.get_decoration(id, spv::DecorationBinding);
+
+			if (isFreeBinding(binding))
+			{
+				bindingMappings[name] = binding;
+				return binding;
+			}
+			else
+			{
+				uint32_t freeBinding = getFreeBinding();
+
+				uint32_t binaryBindingOffset;
+				if (!comp.get_binary_offset_for_decoration(id, spv::DecorationBinding, binaryBindingOffset))
+					throw love::Exception("could not get binary offset for binding");
+
+				spirv[binaryBindingOffset] = freeBinding;
+
+				bindingMappings[name] = freeBinding;
+
+				return freeBinding;
+			}
+		}
+		else
+			return it->second;
+	};
+
+
+private:
+	uint32_t getFreeBinding() {
+		for (uint32_t i = 0;; i++)
+		{
+			bool free = true;
+			for (const auto &entry : bindingMappings)
+			{
+				if (entry.second == i)
+				{
+					free = false;
+					break;
+				}
+			}
+			if (free)
+				return i;
+		}
+	}
+
+	bool isFreeBinding(uint32_t binding) {
+		for (const auto &entry : bindingMappings)
+		{
+			if (entry.second == binding)
+				return false;
+		}
+		return true;
+	}
+
+	std::map<std::string, uint32_t> bindingMappings;
+
+};
+
 static VkShaderStageFlagBits getStageBit(ShaderStageType type)
 {
 	switch (type)
@@ -735,14 +801,16 @@ void Shader::compileShaders()
 
 	uniformInfos.clear();
 
+	BindingMapper bindingMapper;
+
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
 		auto shaderStage = (ShaderStageType)i;
 		auto glslangStage = getGlslShaderType(shaderStage);
 		auto intermediate = program->getIntermediate(glslangStage);
-		if (intermediate == nullptr) {
+
+		if (intermediate == nullptr)
 			continue;
-		}
 
 		spv::SpvBuildLogger logger;
 		glslang::SpvOptions opt;
@@ -750,31 +818,6 @@ void Shader::compileShaders()
 
 		std::vector<uint32_t> spirv;
 		GlslangToSpv(*intermediate, spirv, &logger, &opt);
-
-		std::string msgs = logger.getAllMessages();
-
-		VkShaderModuleCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		createInfo.codeSize = spirv.size() * sizeof(uint32_t);
-		createInfo.pCode = spirv.data();
-
-		auto device = vgfx->getDevice();
-
-		VkShaderModule shaderModule;
-
-		if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-			throw love::Exception("failed to create shader module");
-		}
-
-		shaderModules.push_back(shaderModule);
-
-		VkPipelineShaderStageCreateInfo shaderStageInfo{};
-		shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		shaderStageInfo.stage = getStageBit((ShaderStageType)i);
-		shaderStageInfo.module = shaderModule;
-		shaderStageInfo.pName = "main";
-
-		shaderStages.push_back(shaderStageInfo);
 
 		spirv_cross::CompilerGLSL comp(spirv);
 
@@ -792,7 +835,7 @@ void Shader::compileShaders()
 				auto defaultUniformBlockSize = comp.get_declared_struct_size(type);
 				localUniformStagingData.resize(defaultUniformBlockSize);
 				localUniformData.resize(defaultUniformBlockSize);
-				localUniformLocation = comp.get_decoration(resource.id, spv::DecorationBinding);
+				localUniformLocation = bindingMapper(comp, spirv, resource.name, resource.id);
 
 				memset(localUniformStagingData.data(), 0, defaultUniformBlockSize);
 				memset(localUniformData.data(), 0, defaultUniformBlockSize);
@@ -813,7 +856,7 @@ void Shader::compileShaders()
 			const SPIRType &imagetype = comp.get_type(basetype.image.type);
 
 			graphics::Shader::UniformInfo info;
-			info.location = comp.get_decoration(r.id, spv::DecorationBinding);
+			info.location = bindingMapper(comp, spirv, r.name, r.id);
 			info.baseType = UNIFORM_SAMPLER;
 			info.name = r.name;
 			info.count = type.array.empty() ? 1 : type.array[0];
@@ -894,7 +937,7 @@ void Shader::compileShaders()
 			if (!fillUniformReflectionData(u))
 				continue;
 
-			u.location = comp.get_decoration(r.id, spv::DecorationBinding);
+			u.location = bindingMapper(comp, spirv, r.name, r.id);
 			u.buffers = new love::graphics::Buffer *[u.count];
 
 			for (int i = 0; i < u.count; i++)
@@ -917,12 +960,10 @@ void Shader::compileShaders()
 				continue;
 
 			u.textures = new love::graphics::Texture *[u.count];
-			u.location = comp.get_decoration(r.id, spv::DecorationBinding);
+			u.location = bindingMapper(comp, spirv, r.name, r.id);
 
 			for (int i = 0; i < u.count; i++)
 				u.textures[i] = nullptr;
-
-			// some stuff missing ?
 
 			uniformInfos[u.name] = u;
 		}
@@ -936,6 +977,28 @@ void Shader::compileShaders()
 				attributes[name] = attributeLocation;
 			}
 		}
+
+		VkShaderModuleCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		createInfo.codeSize = spirv.size() * sizeof(uint32_t);
+		createInfo.pCode = spirv.data();
+
+		auto device = vgfx->getDevice();
+
+		VkShaderModule shaderModule;
+
+		if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+			throw love::Exception("failed to create shader module");
+
+		shaderModules.push_back(shaderModule);
+
+		VkPipelineShaderStageCreateInfo shaderStageInfo{};
+		shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		shaderStageInfo.stage = getStageBit((ShaderStageType)i);
+		shaderStageInfo.module = shaderModule;
+		shaderStageInfo.pName = "main";
+
+		shaderStages.push_back(shaderStageInfo);
 	}
 
 	delete program;
