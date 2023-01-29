@@ -734,9 +734,9 @@ void Shader::compileShaders()
 	using namespace glslang;
 	using namespace spirv_cross;
 
-	std::vector<TShader*> glslangShaders;
+	std::vector<std::unique_ptr<TShader>> glslangShaders;
 
-	auto program = new TProgram();
+	auto program = std::make_unique<TProgram>();
 
 	device = vgfx->getDevice();
 
@@ -753,7 +753,7 @@ void Shader::compileShaders()
 			isCompute = true;
 
 		auto glslangShaderStage = getGlslShaderType(stage);
-		auto tshader = new TShader(glslangShaderStage);
+		auto tshader = std::make_unique<TShader>(glslangShaderStage);
 
 		tshader->setEnvInput(EShSourceGlsl, glslangShaderStage, EShClientVulkan, 450);
 		tshader->setEnvClient(EShClientVulkan, EShTargetVulkan_1_2);
@@ -779,14 +779,18 @@ void Shader::compileShaders()
 
 		if (!tshader->parse(&defaultTBuiltInResource, defaultVersion, defaultProfile, forceDefault, forwardCompat, EShMsgSuppressWarnings))
 		{
-			const char *msg1 = tshader->getInfoLog();
-			const char *msg2 = tshader->getInfoDebugLog();
+			const char *stageName = "unknown";
+			ShaderStage::getConstant(stage, stageName);
 
-			throw love::Exception("error while parsing shader");
+			std::string err = "Error parsing " + std::string(stageName) + " shader:\n\n"
+				+ std::string(tshader->getInfoLog()) + "\n"
+				+ std::string(tshader->getInfoDebugLog());
+
+			throw love::Exception("%s", err.c_str());
 		}
 
-		program->addShader(tshader);
-		glslangShaders.push_back(tshader);
+		program->addShader(tshader.get());
+		glslangShaders.push_back(std::move(tshader));
 	}
 
 	if (!program->link(EShMsgDefault))
@@ -996,10 +1000,6 @@ void Shader::compileShaders()
 
 		shaderStages.push_back(shaderStageInfo);
 	}
-
-	delete program;
-	for (auto shader : glslangShaders)
-		delete shader;
 }
 
 void Shader::createDescriptorSetLayout()
