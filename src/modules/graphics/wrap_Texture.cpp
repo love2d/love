@@ -279,7 +279,7 @@ int w_Texture_getFormat(lua_State *L)
 	return 1;
 }
 
-int w_Texture_isRenderTarget(lua_State *L)
+int w_Texture_isCanvas(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
 	luax_pushboolean(L, t->isRenderTarget());
@@ -497,7 +497,7 @@ const luaL_Reg w_Texture_functions[] =
 	{ "setWrap", w_Texture_setWrap },
 	{ "getWrap", w_Texture_getWrap },
 	{ "getFormat", w_Texture_getFormat },
-	{ "isRenderTarget", w_Texture_isRenderTarget },
+	{ "isCanvas", w_Texture_isCanvas },
 	{ "isComputeWritable", w_Texture_isComputeWritable },
 	{ "isReadable", w_Texture_isReadable },
 	{ "getMipmapMode", w_Texture_getMipmapMode },
