@@ -2532,6 +2532,7 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "copybuffertotexture",      Graphics::FEATURE_COPY_BUFFER_TO_TEXTURE },
 	{ "copytexturetobuffer",      Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER },
 	{ "copyrendertargettobuffer", Graphics::FEATURE_COPY_RENDER_TARGET_TO_BUFFER },
+	{ "mipmaprange",              Graphics::FEATURE_MIPMAP_RANGE         },
 }
 STRINGMAP_CLASS_END(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)
 

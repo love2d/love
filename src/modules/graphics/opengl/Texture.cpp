@@ -264,6 +264,10 @@ void Texture::createTexture()
 	if (!isCompressed())
 		gl.rawTexStorage(texType, mipcount, format, sRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
 
+	// rawTexStorage handles this for uncompressed textures.
+	if (isCompressed() && (GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0))
+		glTexParameteri(gltype, GL_TEXTURE_MAX_LEVEL, mipcount - 1);
+
 	int w = pixelWidth;
 	int h = pixelHeight;
 	int d = depth;

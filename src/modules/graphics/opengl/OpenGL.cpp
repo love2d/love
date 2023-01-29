@@ -1388,6 +1388,12 @@ bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelform
 	GLenum gltarget = getGLTextureType(target);
 	TextureFormat fmt = convertPixelFormat(pixelformat, false, isSRGB);
 
+	// This shouldn't be needed for glTexStorage, but some drivers don't follow
+	// the spec apparently.
+	// https://stackoverflow.com/questions/13859061/does-an-immutable-texture-need-a-gl-texture-max-level
+	if (GLAD_VERSION_1_2 || GLAD_ES_VERSION_3_0)
+		glTexParameteri(gltarget, GL_TEXTURE_MAX_LEVEL, levels - 1);
+
 	if (fmt.swizzled)
 	{
 		glTexParameteri(gltarget, GL_TEXTURE_SWIZZLE_R, fmt.swizzle[0]);

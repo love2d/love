@@ -781,6 +781,11 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 	}
 	lua_pop(L, 1);
 
+	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_MIPMAP_COUNT));
+	if (!lua_isnoneornil(L, -1))
+		s.mipmapCount = (int) luaL_checkinteger(L, -1);
+	lua_pop(L, 1);
+
 	s.linear = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_LINEAR), s.linear);
 	s.msaa = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_MSAA), s.msaa);
 
