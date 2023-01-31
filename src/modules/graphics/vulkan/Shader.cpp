@@ -249,6 +249,8 @@ Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[])
 
 bool Shader::loadVolatile()
 {
+	device = vgfx->getDevice();
+
 	computePipeline = VK_NULL_HANDLE;
 
 	for (int i = 0; i < BUILTIN_MAX_ENUM; i++)
@@ -738,8 +740,6 @@ void Shader::compileShaders()
 
 	auto program = std::make_unique<TProgram>();
 
-	device = vgfx->getDevice();
-
 	const auto &enabledExtensions = vgfx->getEnabledOptionalDeviceExtensions();
 
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
@@ -982,8 +982,6 @@ void Shader::compileShaders()
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = spirv.size() * sizeof(uint32_t);
 		createInfo.pCode = spirv.data();
-
-		auto device = vgfx->getDevice();
 
 		VkShaderModule shaderModule;
 
