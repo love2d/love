@@ -567,7 +567,8 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
 	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = true;
 	capabilities.features[FEATURE_MIPMAP_RANGE] = true;
-	static_assert(FEATURE_MAX_ENUM == 18, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_INDIRECT_DRAW] = true;
+	static_assert(FEATURE_MAX_ENUM == 19, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -689,12 +690,25 @@ void Graphics::draw(const DrawCommand &cmd)
 {
 	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
-	vkCmdDraw(
-		commandBuffers.at(currentFrame),
-		static_cast<uint32_t>(cmd.vertexCount),
-		static_cast<uint32_t>(cmd.instanceCount),
-		static_cast<uint32_t>(cmd.vertexStart),
-		0);
+	if (cmd.indirectBuffer != nullptr)
+	{
+		vkCmdDrawIndirect(
+			commandBuffers.at(currentFrame),
+			(VkBuffer) cmd.indirectBuffer->getHandle(),
+			cmd.indirectBufferOffset,
+			1,
+			0);
+	}
+	else
+	{
+		vkCmdDraw(
+			commandBuffers.at(currentFrame),
+			(uint32) cmd.vertexCount,
+			(uint32) cmd.instanceCount,
+			(uint32) cmd.vertexStart,
+			0);
+	}
+
 	drawCalls++;
 }
 
@@ -704,16 +718,30 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 
 	vkCmdBindIndexBuffer(
 		commandBuffers.at(currentFrame),
-		(VkBuffer)cmd.indexBuffer->getHandle(),
-		static_cast<VkDeviceSize>(cmd.indexBufferOffset),
+		(VkBuffer) cmd.indexBuffer->getHandle(),
+		(VkDeviceSize) cmd.indexBufferOffset,
 		Vulkan::getVulkanIndexBufferType(cmd.indexType));
-	vkCmdDrawIndexed(
-		commandBuffers.at(currentFrame),
-		static_cast<uint32_t>(cmd.indexCount),
-		static_cast<uint32_t>(cmd.instanceCount),
-		0,
-		0,
-		0);
+
+	if (cmd.indirectBuffer != nullptr)
+	{
+		vkCmdDrawIndexedIndirect(
+			commandBuffers.at(currentFrame),
+			(VkBuffer) cmd.indirectBuffer->getHandle(),
+			cmd.indirectBufferOffset,
+			1,
+			0);
+	}
+	else
+	{
+		vkCmdDrawIndexed(
+			commandBuffers.at(currentFrame),
+			(uint32) cmd.indexCount,
+			(uint32) cmd.instanceCount,
+			0,
+			0,
+			0);
+	}
+
 	drawCalls++;
 }
 
@@ -1005,7 +1033,7 @@ graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
 	return new StreamBuffer(this, type, size);
 }
 
-bool Graphics::dispatch(int x, int y, int z)
+bool Graphics::dispatch(love::graphics::Shader *shader, int x, int y, int z)
 {
 	if (renderPassState.active)
 		endRenderPass();
@@ -1014,7 +1042,23 @@ bool Graphics::dispatch(int x, int y, int z)
 
 	computeShader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE);
 
-	vkCmdDispatch(commandBuffers.at(currentFrame), static_cast<uint32_t>(x), static_cast<uint32_t>(y), static_cast<uint32_t>(z));
+	// TODO: does this need any layout transitions?
+	vkCmdDispatch(commandBuffers.at(currentFrame), (uint32) x, (uint32) y, (uint32) z);
+
+	return true;
+}
+
+bool Graphics::dispatch(love::graphics::Shader *shader, love::graphics::Buffer *indirectargs, size_t argsoffset)
+{
+	if (renderPassState.active)
+		endRenderPass();
+
+	vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE, computeShader->getComputePipeline());
+
+	computeShader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE);
+
+	// TODO: does this need any layout transitions?
+	vkCmdDispatchIndirect(commandBuffers.at(currentFrame), (VkBuffer) indirectargs->getHandle(), argsoffset);
 
 	return true;
 }

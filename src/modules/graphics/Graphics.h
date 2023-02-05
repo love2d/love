@@ -165,6 +165,7 @@ public:
 		FEATURE_COPY_TEXTURE_TO_BUFFER,
 		FEATURE_COPY_RENDER_TARGET_TO_BUFFER,
 		FEATURE_MIPMAP_RANGE,
+		FEATURE_INDIRECT_DRAW,
 		FEATURE_MAX_ENUM
 	};
 
@@ -197,6 +198,13 @@ public:
 	{
 		TEMPORARY_RT_DEPTH   = (1 << 0),
 		TEMPORARY_RT_STENCIL = (1 << 1),
+	};
+
+	enum IndirectArgsType
+	{
+		INDIRECT_ARGS_DISPATCH,
+		INDIRECT_ARGS_DRAW_VERTICES,
+		INDIRECT_ARGS_DRAW_INDICES,
 	};
 
 	struct Capabilities
@@ -236,6 +244,9 @@ public:
 		int vertexCount = 0;
 		int instanceCount = 1;
 
+		Buffer *indirectBuffer = nullptr;
+		size_t indirectBufferOffset = 0;
+
 		Texture *texture = nullptr;
 
 		// TODO: This should be moved out to a state transition API?
@@ -260,6 +271,9 @@ public:
 		IndexDataType indexType = INDEX_UINT16;
 		Resource *indexBuffer;
 		size_t indexBufferOffset = 0;
+
+		Buffer *indirectBuffer = nullptr;
+		size_t indirectBufferOffset = 0;
 
 		Texture *texture = nullptr;
 
@@ -689,16 +703,20 @@ public:
 	void copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth);
 	void copyBufferToTexture(Buffer *source, Texture *dest, size_t sourceoffset, int sourcewidth, int slice, int mipmap, const Rect &rect);
 
-	void dispatchThreadgroups(Shader* shader, int x, int y, int z);
+	void dispatchThreadgroups(Shader *shader, int x, int y, int z);
+	void dispatchIndirect(Shader *shader, Buffer *indirectargs, int argsindex);
 
 	void draw(Drawable *drawable, const Matrix4 &m);
 	void draw(Texture *texture, Quad *quad, const Matrix4 &m);
 	void drawLayer(Texture *texture, int layer, const Matrix4 &m);
 	void drawLayer(Texture *texture, int layer, Quad *quad, const Matrix4 &m);
 	void drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount);
+	void drawIndirect(Mesh *mesh, const Matrix4 &m, Buffer *indirectargs, int argsindex);
 
 	void drawFromShader(PrimitiveType primtype, int vertexcount, int instancecount, Texture *maintexture);
 	void drawFromShader(Buffer *indexbuffer, int indexcount, int instancecount, int startindex, Texture *maintexture);
+	void drawFromShaderIndirect(PrimitiveType primtype, Buffer *indirectargs, int argsindex, Texture *maintexture);
+	void drawFromShaderIndirect(Buffer *indexbuffer, Buffer *indirectargs, int argsindex, Texture *maintexture);
 
 	/**
 	 * Draws text at the specified coordinates
@@ -873,6 +891,8 @@ public:
 
 	void cleanupCachedShaderStage(ShaderStageType type, const std::string &cachekey);
 
+	void validateIndirectArgsBuffer(IndirectArgsType argstype, Buffer *indirectargs, int argsindex);
+
 	template <typename T>
 	T *getScratchBuffer(size_t count)
 	{
@@ -1001,7 +1021,8 @@ protected:
 	virtual GraphicsReadback *newReadbackInternal(ReadbackMethod method, Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) = 0;
 	virtual GraphicsReadback *newReadbackInternal(ReadbackMethod method, Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty) = 0;
 
-	virtual bool dispatch(int x, int y, int z) = 0;
+	virtual bool dispatch(Shader *shader, int x, int y, int z) = 0;
+	virtual bool dispatch(Shader *shader, Buffer *indirectargs, size_t argsoffset) = 0;
 
 	virtual void setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture) = 0;
 

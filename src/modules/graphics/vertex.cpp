@@ -367,10 +367,11 @@ const char *getConstant(BuiltinVertexAttribute attrib)
 
 STRINGMAP_BEGIN(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsageName)
 {
-	{ "vertex",        BUFFERUSAGE_VERTEX         },
-	{ "index",         BUFFERUSAGE_INDEX          },
-	{ "texel",         BUFFERUSAGE_TEXEL          },
-	{ "shaderstorage", BUFFERUSAGE_SHADER_STORAGE },
+	{ "vertex",            BUFFERUSAGE_VERTEX             },
+	{ "index",             BUFFERUSAGE_INDEX              },
+	{ "texel",             BUFFERUSAGE_TEXEL              },
+	{ "shaderstorage",     BUFFERUSAGE_SHADER_STORAGE     },
+	{ "indirectarguments", BUFFERUSAGE_INDIRECT_ARGUMENTS },
 }
 STRINGMAP_END(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsageName)
 

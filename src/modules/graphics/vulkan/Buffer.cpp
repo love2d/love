@@ -37,6 +37,7 @@ static VkBufferUsageFlags getUsageBit(BufferUsage mode)
 	case BUFFERUSAGE_UNIFORM: return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	case BUFFERUSAGE_TEXEL: return VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
 	case BUFFERUSAGE_SHADER_STORAGE: return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+	case BUFFERUSAGE_INDIRECT_ARGUMENTS: return VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 	default:
 		throw love::Exception("unsupported BufferUsage mode");
 	}
@@ -56,10 +57,10 @@ static VkBufferUsageFlags getVulkanUsageFlags(BufferUsageFlags flags)
 
 Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 	: love::graphics::Buffer(gfx, settings, format, size, arraylength)
-	, usageFlags(settings.usageFlags)
-	, vgfx(dynamic_cast<Graphics*>(gfx))
 	, zeroInitialize(settings.zeroInitialize)
 	, initialData(data)
+	, vgfx(dynamic_cast<Graphics*>(gfx))
+	, usageFlags(settings.usageFlags)
 {
 	loadVolatile();
 }

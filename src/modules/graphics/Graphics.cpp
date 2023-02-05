@@ -1542,7 +1542,49 @@ void Graphics::copyBufferToTexture(Buffer *source, Texture *dest, size_t sourceo
 	dest->copyFromBuffer(source, sourceoffset, sourcewidth, size, slice, mipmap, rect);
 }
 
-void Graphics::dispatchThreadgroups(Shader* shader, int x, int y, int z)
+static const char *getIndirectArgsTypeName(Graphics::IndirectArgsType argstype)
+{
+	switch (argstype)
+	{
+		case Graphics::INDIRECT_ARGS_DISPATCH: return "Compute shader threadgroup argument data";
+		case Graphics::INDIRECT_ARGS_DRAW_VERTICES: return "Draw vertices argument data";
+		case Graphics::INDIRECT_ARGS_DRAW_INDICES: return "Draw indices argument data";
+	}
+
+	return "(Unknown argument data)";
+}
+
+void Graphics::validateIndirectArgsBuffer(IndirectArgsType argstype, Buffer *indirectargs, int argsindex)
+{
+	if (!capabilities.features[FEATURE_INDIRECT_DRAW])
+		throw love::Exception("Indirect draws and compute dispatches are not supported on this system.");
+
+	if ((indirectargs->getUsageFlags() & BUFFERUSAGEFLAG_INDIRECT_ARGUMENTS) == 0)
+		throw love::Exception("The given Buffer must be created with the indirectarguments usage flag set, to be used for indirect arguments.");
+
+	if (argsindex < 0)
+		throw love::Exception("The given indirect argument index cannot be negative.");
+
+	size_t argelements = 0;
+	if (argstype == INDIRECT_ARGS_DISPATCH)
+		argelements = 3;
+	else if (argstype == INDIRECT_ARGS_DRAW_VERTICES)
+		argelements = 4;
+	else if (argstype == INDIRECT_ARGS_DRAW_INDICES)
+		argelements = 5;
+
+	size_t totalmembers = indirectargs->getArrayLength() * indirectargs->getDataMembers().size();
+
+	if (totalmembers % argelements != 0)
+		throw love::Exception("%s requires the given indirect argument Buffer to have a multiple of %ld int or uint values.", getIndirectArgsTypeName(argstype), argelements);
+
+	size_t argsoffset = argsindex * indirectargs->getArrayStride();
+
+	if (indirectargs->getSize() < argsoffset + sizeof(uint32) * argelements)
+		throw love::Exception("The given index into the indirect argument Buffer does not fit within the Buffer's size.");
+}
+
+void Graphics::dispatchThreadgroups(Shader *shader, int x, int y, int z)
 {
 	if (!shader->hasStage(SHADERSTAGE_COMPUTE))
 		throw love::Exception("Only compute shaders can have threads dispatched.");
@@ -1562,7 +1604,28 @@ void Graphics::dispatchThreadgroups(Shader* shader, int x, int y, int z)
 	auto prevshader = Shader::current;
 	shader->attach();
 
-	bool success = dispatch(x, y, z);
+	bool success = dispatch(shader, x, y, z);
+
+	if (prevshader != nullptr)
+		prevshader->attach();
+
+	if (!success)
+		throw love::Exception("Compute shader must have resources bound to all writable texture and buffer variables.");
+}
+
+void Graphics::dispatchIndirect(Shader *shader, Buffer *indirectargs, int argsindex)
+{
+	if (!shader->hasStage(SHADERSTAGE_COMPUTE))
+		throw love::Exception("Only compute shaders can have threads dispatched.");
+
+	validateIndirectArgsBuffer(INDIRECT_ARGS_DISPATCH, indirectargs, argsindex);
+
+	flushBatchedDraws();
+
+	auto prevshader = Shader::current;
+	shader->attach();
+
+	bool success = dispatch(shader, indirectargs, argsindex * indirectargs->getArrayStride());
 
 	if (prevshader != nullptr)
 		prevshader->attach();
@@ -1819,6 +1882,11 @@ void Graphics::drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount)
 	mesh->drawInstanced(this, m, instancecount);
 }
 
+void Graphics::drawIndirect(Mesh *mesh, const Matrix4 &m, Buffer *indirectargs, int argsindex)
+{
+	mesh->drawIndirect(this, m, indirectargs, argsindex);
+}
+
 void Graphics::drawFromShader(PrimitiveType primtype, int vertexcount, int instancecount, Texture *maintexture)
 {
 	if (primtype == PRIMITIVE_TRIANGLE_FAN && vertexcount > LOVE_UINT16_MAX)
@@ -1894,6 +1962,61 @@ void Graphics::drawFromShader(Buffer *indexbuffer, int indexcount, int instancec
 	cmd.indexType = getIndexDataType(indexbuffer->getDataMember(0).decl.format);
 	cmd.indexBufferOffset = startindex * getIndexDataSize(cmd.indexType);
 
+	cmd.texture = maintexture;
+
+	draw(cmd);
+}
+
+void Graphics::drawFromShaderIndirect(PrimitiveType primtype, Buffer *indirectargs, int argsindex, Texture *maintexture)
+{
+	flushBatchedDraws();
+
+	if (primtype == PRIMITIVE_TRIANGLE_FAN)
+		throw love::Exception("The fan draw mode is not supported in indirect draws.");
+
+	if (Shader::isDefaultActive() || !Shader::current)
+		throw love::Exception("drawFromShaderIndirect can only be used with a custom shader.");
+
+	validateIndirectArgsBuffer(INDIRECT_ARGS_DRAW_VERTICES, indirectargs, argsindex);
+
+	Shader::current->validateDrawState(primtype, maintexture);
+
+	VertexAttributes attributes;
+	BufferBindings buffers;
+
+	DrawCommand cmd(&attributes, &buffers);
+
+	cmd.primitiveType = primtype;
+	cmd.indirectBuffer = indirectargs;
+	cmd.indirectBufferOffset = argsindex * indirectargs->getArrayStride();
+	cmd.texture = maintexture;
+
+	draw(cmd);
+}
+
+void Graphics::drawFromShaderIndirect(Buffer *indexbuffer, Buffer *indirectargs, int argsindex, Texture *maintexture)
+{
+	flushBatchedDraws();
+
+	if (!(indexbuffer->getUsageFlags() & BUFFERUSAGEFLAG_INDEX))
+		throw love::Exception("The buffer passed to the indexed variant of drawFromShaderIndirect must be an index buffer.");
+
+	if (Shader::isDefaultActive() || !Shader::current)
+		throw love::Exception("drawFromShaderIndirect can only be used with a custom shader.");
+
+	validateIndirectArgsBuffer(INDIRECT_ARGS_DRAW_INDICES, indirectargs, argsindex);
+
+	Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, maintexture);
+
+	VertexAttributes attributes;
+	BufferBindings buffers;
+
+	DrawIndexedCommand cmd(&attributes, &buffers, indexbuffer);
+
+	cmd.primitiveType = PRIMITIVE_TRIANGLES;
+	cmd.indexType = getIndexDataType(indexbuffer->getDataMember(0).decl.format);
+	cmd.indirectBuffer = indirectargs;
+	cmd.indexBufferOffset = argsindex * indirectargs->getArrayStride();
 	cmd.texture = maintexture;
 
 	draw(cmd);
@@ -2533,6 +2656,7 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "copytexturetobuffer",      Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER },
 	{ "copyrendertargettobuffer", Graphics::FEATURE_COPY_RENDER_TARGET_TO_BUFFER },
 	{ "mipmaprange",              Graphics::FEATURE_MIPMAP_RANGE         },
+	{ "indirectdraw",             Graphics::FEATURE_INDIRECT_DRAW        },
 }
 STRINGMAP_CLASS_END(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)
 

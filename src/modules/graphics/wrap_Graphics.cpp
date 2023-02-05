@@ -3099,6 +3099,20 @@ int w_drawInstanced(lua_State *L)
 	return 0;
 }
 
+int w_drawIndirect(lua_State *L)
+{
+	Mesh *t = luax_checkmesh(L, 1);
+	Buffer *argsbuffer = luax_checkbuffer(L, 2);
+	int argsindex = (int) luaL_checkinteger(L, 3) - 1;
+
+	luax_checkstandardtransform(L, 4, [&](const Matrix4 &m)
+	{
+		luax_catchexcept(L, [&]() { instance()->drawIndirect(t, m, argsbuffer, argsindex); });
+	});
+
+	return 0;
+}
+
 int w_drawFromShader(lua_State *L)
 {
 	if (luax_istype(L, 1, Buffer::type))
@@ -3131,6 +3145,40 @@ int w_drawFromShader(lua_State *L)
 			tex = luax_checktexture(L, 4);
 
 		luax_catchexcept(L, [&]() { instance()->drawFromShader(primtype, vertexcount, instancecount, tex); });
+	}
+	return 0;
+}
+
+int w_drawFromShaderIndirect(lua_State *L)
+{
+	if (luax_istype(L, 1, Buffer::type))
+	{
+		// Indexed drawing.
+		Buffer *t = luax_checkbuffer(L, 1);
+		Buffer *argsbuffer = luax_checkbuffer(L, 2);
+		int argsindex = (int) luaL_optinteger(L, 3, 1) - 1;
+
+		Texture *tex = nullptr;
+		if (!lua_isnoneornil(L, 4))
+			tex = luax_checktexture(L, 4);
+
+		luax_catchexcept(L, [&]() { instance()->drawFromShaderIndirect(t, argsbuffer, argsindex, tex); });
+	}
+	else
+	{
+		const char *primstr = luaL_checkstring(L, 1);
+		PrimitiveType primtype = PRIMITIVE_TRIANGLES;
+		if (!getConstant(primstr, primtype))
+			return luax_enumerror(L, "primitive type", getConstants(primtype), primstr);
+
+		Buffer *argsbuffer = luax_checkbuffer(L, 2);
+		int argsindex = (int) luaL_optinteger(L, 3, 1) - 1;
+
+		Texture *tex = nullptr;
+		if (!lua_isnoneornil(L, 4))
+			tex = luax_checktexture(L, 4);
+
+		luax_catchexcept(L, [&]() { instance()->drawFromShaderIndirect(primtype, argsbuffer, argsindex, tex); });
 	}
 	return 0;
 }
@@ -3529,6 +3577,15 @@ int w_dispatchThreadgroups(lua_State* L)
 	return 0;
 }
 
+int w_dispatchIndirect(lua_State *L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+	Buffer *argsbuffer = luax_checkbuffer(L, 2);
+	int argsindex = (int) luaL_optinteger(L, 3, 1) - 1;
+	luax_catchexcept(L, [&]() { instance()->dispatchIndirect(shader, argsbuffer, argsindex); });
+	return 0;
+}
+
 int w_copyBuffer(lua_State *L)
 {
 	Buffer *source = luax_checkbuffer(L, 1);
@@ -3844,12 +3901,15 @@ static const luaL_Reg functions[] =
 	{ "draw", w_draw },
 	{ "drawLayer", w_drawLayer },
 	{ "drawInstanced", w_drawInstanced },
+	{ "drawIndirect", w_drawIndirect },
 	{ "drawFromShader", w_drawFromShader },
+	{ "drawFromShaderIndirect", w_drawFromShaderIndirect },
 
 	{ "print", w_print },
 	{ "printf", w_printf },
 
 	{ "dispatchThreadgroups", w_dispatchThreadgroups },
+	{ "dispatchIndirect", w_dispatchIndirect },
 
 	{ "copyBuffer", w_copyBuffer },
 	{ "copyBufferToTexture", w_copyBufferToTexture },

@@ -304,7 +304,8 @@ protected:
 	graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	graphics::Shader *newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
 	graphics::StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) override;
-	bool dispatch(int x, int y, int z) override;
+	bool dispatch(love::graphics::Shader *shader, int x, int y, int z) override;
+	bool dispatch(love::graphics::Shader *shader, love::graphics::Buffer *indirectargs, size_t argsoffset) override;
 	void initCapabilities() override;
 	void getAPIStats(int &shaderswitches) const override;
 	void setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture) override;

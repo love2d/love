@@ -78,8 +78,10 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 		mapUsage = BUFFERUSAGE_VERTEX;
 	else if (usageFlags & BUFFERUSAGEFLAG_INDEX)
 		mapUsage = BUFFERUSAGE_INDEX;
-	else  if (usageFlags & BUFFERUSAGEFLAG_SHADER_STORAGE)
+	else if (usageFlags & BUFFERUSAGEFLAG_SHADER_STORAGE)
 		mapUsage = BUFFERUSAGE_SHADER_STORAGE;
+	else if (usageFlags & BUFFERUSAGEFLAG_INDIRECT_ARGUMENTS)
+		mapUsage = BUFFERUSAGE_INDIRECT_ARGUMENTS;
 
 	target = OpenGL::getGLBufferType(mapUsage);
 

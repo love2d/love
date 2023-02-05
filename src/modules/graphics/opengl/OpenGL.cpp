@@ -667,6 +667,7 @@ GLenum OpenGL::getGLBufferType(BufferUsage usage)
 		case BUFFERUSAGE_INDEX: return GL_ELEMENT_ARRAY_BUFFER;
 		case BUFFERUSAGE_TEXEL: return GL_TEXTURE_BUFFER;
 		case BUFFERUSAGE_SHADER_STORAGE: return GL_SHADER_STORAGE_BUFFER;
+		case BUFFERUSAGE_INDIRECT_ARGUMENTS: return GL_DRAW_INDIRECT_BUFFER;
 		case BUFFERUSAGE_MAX_ENUM: return GL_ZERO;
 	}
 
@@ -1491,6 +1492,8 @@ bool OpenGL::isBufferUsageSupported(BufferUsage usage) const
 		return GLAD_VERSION_3_1 || GLAD_ES_VERSION_3_2;
 	case BUFFERUSAGE_SHADER_STORAGE:
 		return (GLAD_VERSION_4_3 && isCoreProfile()) || GLAD_ES_VERSION_3_1;
+	case BUFFERUSAGE_INDIRECT_ARGUMENTS:
+		return (GLAD_VERSION_4_0 && isCoreProfile()) || GLAD_ES_VERSION_3_1;
 	case BUFFERUSAGE_MAX_ENUM:
 		return false;
 	}
