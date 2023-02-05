@@ -55,7 +55,7 @@ Released: N/A
 * Added Compute Shader support via new 'computemain' shader entry point.
 * Added love.graphics.dispatchThreadgroups for running compute shaders.
 * Added Shader:hasStage.
-* Added love.graphics.drawShaderVertices.
+* Added love.graphics.drawFromShader.
 * Added love.graphics.getQuadIndexBuffer.
 * Added variants of love.graphics.applyTransform and replaceTransform which accept x,y,angle,sx,sy,ox,oy parameters.
 * Added APIs to override the default orthographic projection: love.graphics.setOrthoProjection, setPerspectiveProjection, and resetProjection.

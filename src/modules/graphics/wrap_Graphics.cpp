@@ -3099,7 +3099,7 @@ int w_drawInstanced(lua_State *L)
 	return 0;
 }
 
-int w_drawShaderVertices(lua_State *L)
+int w_drawFromShader(lua_State *L)
 {
 	if (luax_istype(L, 1, Buffer::type))
 	{
@@ -3114,7 +3114,7 @@ int w_drawShaderVertices(lua_State *L)
 		if (!lua_isnoneornil(L, 5))
 			tex = luax_checktexture(L, 5);
 
-		luax_catchexcept(L, [&]() { instance()->drawShaderVertices(t, indexcount, instancecount, indexstart, tex); });
+		luax_catchexcept(L, [&]() { instance()->drawFromShader(t, indexcount, instancecount, indexstart, tex); });
 	}
 	else
 	{
@@ -3130,7 +3130,7 @@ int w_drawShaderVertices(lua_State *L)
 		if (!lua_isnoneornil(L, 4))
 			tex = luax_checktexture(L, 4);
 
-		luax_catchexcept(L, [&]() { instance()->drawShaderVertices(primtype, vertexcount, instancecount, tex); });
+		luax_catchexcept(L, [&]() { instance()->drawFromShader(primtype, vertexcount, instancecount, tex); });
 	}
 	return 0;
 }
@@ -3844,7 +3844,7 @@ static const luaL_Reg functions[] =
 	{ "draw", w_draw },
 	{ "drawLayer", w_drawLayer },
 	{ "drawInstanced", w_drawInstanced },
-	{ "drawShaderVertices", w_drawShaderVertices },
+	{ "drawFromShader", w_drawFromShader },
 
 	{ "print", w_print },
 	{ "printf", w_printf },

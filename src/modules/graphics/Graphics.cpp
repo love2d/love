@@ -1819,29 +1819,29 @@ void Graphics::drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount)
 	mesh->drawInstanced(this, m, instancecount);
 }
 
-void Graphics::drawShaderVertices(PrimitiveType primtype, int vertexcount, int instancecount, Texture *maintexture)
+void Graphics::drawFromShader(PrimitiveType primtype, int vertexcount, int instancecount, Texture *maintexture)
 {
 	if (primtype == PRIMITIVE_TRIANGLE_FAN && vertexcount > LOVE_UINT16_MAX)
-		throw love::Exception("drawShaderVertices cannot draw more than %d vertices when the 'fan' draw mode is used.", LOVE_UINT16_MAX);
+		throw love::Exception("drawFromShader cannot draw more than %d vertices when the 'fan' draw mode is used.", LOVE_UINT16_MAX);
 
 	// Emulated triangle fan via an index buffer.
 	if (primtype == PRIMITIVE_TRIANGLE_FAN && getFanIndexBuffer())
 	{
 		int indexcount = getIndexCount(TRIANGLEINDEX_FAN, vertexcount);
-		drawShaderVertices(getFanIndexBuffer(), indexcount, instancecount, 0, maintexture);
+		drawFromShader(getFanIndexBuffer(), indexcount, instancecount, 0, maintexture);
 		return;
 	}
 
 	flushBatchedDraws();
 
 	if (!capabilities.features[FEATURE_GLSL3])
-		throw love::Exception("drawShaderVertices is not supported on this system (GLSL3 support is required.)");
+		throw love::Exception("drawFromShader is not supported on this system (GLSL3 support is required.)");
 
 	if (Shader::isDefaultActive() || !Shader::current)
-		throw love::Exception("drawShaderVertices can only be used with a custom shader.");
+		throw love::Exception("drawFromShader can only be used with a custom shader.");
 
 	if (vertexcount < 0 || instancecount < 0)
-		throw love::Exception("drawShaderVertices vertex and instance count parameters must not be negative.");
+		throw love::Exception("drawFromShader vertex and instance count parameters must not be negative.");
 
 	Shader::current->validateDrawState(primtype, maintexture);
 
@@ -1858,27 +1858,27 @@ void Graphics::drawShaderVertices(PrimitiveType primtype, int vertexcount, int i
 	draw(cmd);
 }
 
-void Graphics::drawShaderVertices(Buffer *indexbuffer, int indexcount, int instancecount, int startindex, Texture *maintexture)
+void Graphics::drawFromShader(Buffer *indexbuffer, int indexcount, int instancecount, int startindex, Texture *maintexture)
 {
 	flushBatchedDraws();
 
 	if (!capabilities.features[FEATURE_GLSL3])
-		throw love::Exception("drawShaderVertices is not supported on this system (GLSL3 support is required.)");
+		throw love::Exception("drawFromShader is not supported on this system (GLSL3 support is required.)");
 
 	if (!(indexbuffer->getUsageFlags() & BUFFERUSAGEFLAG_INDEX))
-		throw love::Exception("The buffer passed to drawShaderVertices must be an index buffer.");
+		throw love::Exception("The buffer passed to drawFromShader must be an index buffer.");
 
 	if (startindex < 0)
-		throw love::Exception("drawShaderVertices startindex parameter must not be negative.");
+		throw love::Exception("drawFromShader startindex parameter must not be negative.");
 
 	if (indexcount < 0 || instancecount < 0)
-		throw love::Exception("drawShaderVertices index and instance count parameters must not be negative.");
+		throw love::Exception("drawFromShader index and instance count parameters must not be negative.");
 
 	if ((size_t)(startindex + indexcount) > indexbuffer->getArrayLength() * indexbuffer->getDataMembers().size())
-		throw love::Exception("drawShaderVertices startindex and index count parameters do not fit in the given index buffer.");
+		throw love::Exception("drawFromShader startindex and index count parameters do not fit in the given index buffer.");
 
 	if (Shader::isDefaultActive() || !Shader::current)
-		throw love::Exception("drawShaderVertices can only be used with a custom shader.");
+		throw love::Exception("drawFromShader can only be used with a custom shader.");
 
 	Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, maintexture);
 
