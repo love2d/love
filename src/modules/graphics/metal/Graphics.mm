@@ -1204,10 +1204,19 @@ void Graphics::draw(const DrawCommand &cmd)
 
 	setVertexBuffers(encoder, Shader::current, cmd.buffers, renderBindings);
 
-	[encoder drawPrimitives:getMTLPrimitiveType(cmd.primitiveType)
-				vertexStart:cmd.vertexStart
-				vertexCount:cmd.vertexCount
-			  instanceCount:cmd.instanceCount];
+	if (cmd.indirectBuffer != nullptr)
+	{
+		[encoder drawPrimitives:getMTLPrimitiveType(cmd.primitiveType)
+				 indirectBuffer:getMTLBuffer(cmd.indirectBuffer)
+		   indirectBufferOffset:cmd.indirectBufferOffset];
+	}
+	else
+	{
+		[encoder drawPrimitives:getMTLPrimitiveType(cmd.primitiveType)
+					vertexStart:cmd.vertexStart
+					vertexCount:cmd.vertexCount
+				  instanceCount:cmd.instanceCount];
+	}
 
 	++drawCalls;
 }}
@@ -1229,12 +1238,24 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 
 	auto indexType = cmd.indexType == INDEX_UINT32 ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16;
 
-	[encoder drawIndexedPrimitives:getMTLPrimitiveType(cmd.primitiveType)
-						indexCount:cmd.indexCount
-						 indexType:indexType
-					   indexBuffer:getMTLBuffer(cmd.indexBuffer)
-				 indexBufferOffset:cmd.indexBufferOffset
-					 instanceCount:cmd.instanceCount];
+	if (cmd.indirectBuffer != nullptr)
+	{
+		[encoder drawIndexedPrimitives:getMTLPrimitiveType(cmd.primitiveType)
+							 indexType:indexType
+						   indexBuffer:getMTLBuffer(cmd.indexBuffer)
+					 indexBufferOffset:cmd.indexBufferOffset
+						indirectBuffer:getMTLBuffer(cmd.indirectBuffer)
+				  indirectBufferOffset:cmd.indexBufferOffset];
+	}
+	else
+	{
+		[encoder drawIndexedPrimitives:getMTLPrimitiveType(cmd.primitiveType)
+							indexCount:cmd.indexCount
+							 indexType:indexType
+						   indexBuffer:getMTLBuffer(cmd.indexBuffer)
+					 indexBufferOffset:cmd.indexBufferOffset
+						 instanceCount:cmd.instanceCount];
+	}
 
 	++drawCalls;
 }}
@@ -1330,10 +1351,9 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	}
 }}
 
-bool Graphics::dispatch(int x, int y, int z)
+bool Graphics::dispatch(love::graphics::Shader *s, int x, int y, int z)
 { @autoreleasepool {
-	// Set by higher level code before calling dispatch(x, y, z).
-	auto shader = (Shader *) Shader::current;
+	auto shader = (Shader *) s;
 
 	int tX, tY, tZ;
 	shader->getLocalThreadgroupSize(&tX, &tY, &tZ);
@@ -1355,6 +1375,32 @@ bool Graphics::dispatch(int x, int y, int z)
 
 	return true;
 }}
+
+bool Graphics::dispatch(love::graphics::Shader *s, love::graphics::Buffer *indirectargs, size_t argsoffset)
+{
+	auto shader = (Shader *) s;
+
+	int tX, tY, tZ;
+	shader->getLocalThreadgroupSize(&tX, &tY, &tZ);
+
+	id<MTLComputePipelineState> pipeline = shader->getComputePipeline();
+	if (pipeline == nil)
+		return false;
+
+	id<MTLComputeCommandEncoder> computeEncoder = useComputeEncoder();
+
+	if (!applyShaderUniforms(computeEncoder, shader))
+		return false;
+
+	// TODO: track this state?
+	[computeEncoder setComputePipelineState:pipeline];
+
+	[computeEncoder dispatchThreadgroupsWithIndirectBuffer:getMTLBuffer(indirectargs)
+									  indirectBufferOffset:argsoffset
+									 threadsPerThreadgroup:MTLSizeMake(tX, tY, tZ)];
+
+	return true;
+}
 
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*pixelw*/, int /*pixelh*/, bool /*hasSRGBtexture*/)
 { @autoreleasepool {
@@ -2172,7 +2218,14 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = true;
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
 	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = true;
-	static_assert(FEATURE_MAX_ENUM == 17, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_MIPMAP_RANGE] = true;
+
+	if (families.mac[1] || families.macCatalyst[1] || families.apple[3])
+		capabilities.features[FEATURE_INDIRECT_DRAW] = true;
+	else
+		capabilities.features[FEATURE_INDIRECT_DRAW] = false;
+	
+	static_assert(FEATURE_MAX_ENUM == 19, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;

@@ -180,6 +180,9 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	, samplerState()
 	, graphicsMemorySize(0)
 {
+	const auto &caps = gfx->getCapabilities();
+	int requestedMipmapCount = settings.mipmapCount;
+
 	if (slices != nullptr && slices->getMipmapCount() > 0 && slices->getSliceCount() > 0)
 	{
 		texType = slices->getTextureType();
@@ -189,7 +192,14 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 
 		int dataMipmaps = 1;
 		if (slices->validate() && slices->getMipmapCount() > 1)
+		{
 			dataMipmaps = slices->getMipmapCount();
+
+			if (requestedMipmapCount > 0)
+				requestedMipmapCount = std::min(requestedMipmapCount, dataMipmaps);
+			else
+				requestedMipmapCount = dataMipmaps;
+		}
 
 		love::image::ImageDataBase *slice = slices->get(0, 0);
 
@@ -231,7 +241,17 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 		mipmapsMode = MIPMAPS_MANUAL;
 
 	if (mipmapsMode != MIPMAPS_NONE)
-		mipmapCount = getTotalMipmapCount(pixelWidth, pixelHeight, depth);
+	{
+		int totalMipmapCount = getTotalMipmapCount(pixelWidth, pixelHeight, depth);
+
+		if (requestedMipmapCount > 0)
+			mipmapCount = std::min(totalMipmapCount, requestedMipmapCount);
+		else
+			mipmapCount = totalMipmapCount;
+
+		if (mipmapCount != totalMipmapCount && !caps.features[Graphics::FEATURE_MIPMAP_RANGE])
+			throw love::Exception("Custom mipmap ranges for a texture are not supported on this system (%d mipmap levels are required but only %d levels were provided.)", totalMipmapCount, mipmapCount);
+	}
 
 	const char *miperr = nullptr;
 	if (mipmapsMode == MIPMAPS_AUTO && !supportsGenerateMipmaps(miperr))
@@ -288,7 +308,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 		throw love::Exception("The %s%s pixel format is not supported%s on this system.", fstr, readablestr, rtstr);
 	}
 
-	if (!gfx->getCapabilities().textureTypes[texType])
+	if (!caps.textureTypes[texType])
 	{
 		const char *textypestr = "unknown";
 		Texture::getConstant(texType, textypestr);
@@ -864,13 +884,7 @@ bool Texture::Slices::validate() const
 
 	int w = firstdata->getWidth();
 	int h = firstdata->getHeight();
-	int depth = textureType == TEXTURE_VOLUME ? slicecount : 1;
 	PixelFormat format = firstdata->getFormat();
-
-	int expectedmips = Texture::getTotalMipmapCount(w, h, depth);
-
-	if (mipcount != expectedmips && mipcount != 1)
-		throw love::Exception("Texture does not have all required mipmap levels (expected %d, got %d)", expectedmips, mipcount);
 
 	if (textureType == TEXTURE_CUBE && w != h)
 		throw love::Exception("Cube textures must have equal widths and heights for each cube face.");
@@ -947,6 +961,7 @@ static StringMap<Texture::SettingType, Texture::SETTING_MAX_ENUM>::Entry setting
 	{ "height",       Texture::SETTING_HEIGHT        },
 	{ "layers",       Texture::SETTING_LAYERS        },
 	{ "mipmaps",      Texture::SETTING_MIPMAPS       },
+	{ "mipmapcount",  Texture::SETTING_MIPMAP_COUNT  },
 	{ "format",       Texture::SETTING_FORMAT        },
 	{ "linear",       Texture::SETTING_LINEAR        },
 	{ "type",         Texture::SETTING_TYPE          },

@@ -52,6 +52,7 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	bool vertexbuffer = usageFlags & BUFFERUSAGEFLAG_VERTEX;
 	bool texelbuffer = usageFlags & BUFFERUSAGEFLAG_TEXEL;
 	bool storagebuffer = usageFlags & BUFFERUSAGEFLAG_SHADER_STORAGE;
+	bool indirectbuffer = usageFlags & BUFFERUSAGEFLAG_INDIRECT_ARGUMENTS;
 
 	if (texelbuffer && !caps.features[Graphics::FEATURE_TEXEL_BUFFER])
 		throw love::Exception("Texel buffers are not supported on this system.");
@@ -62,8 +63,11 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	if (storagebuffer && dataUsage == BUFFERDATAUSAGE_STREAM)
 		throw love::Exception("Buffers created with 'stream' data usage cannot be used as a shader storage buffer.");
 
-	if (dataUsage == BUFFERDATAUSAGE_READBACK && (indexbuffer || vertexbuffer || texelbuffer || storagebuffer))
-		throw love::Exception("Buffers created with 'readback' data usage cannot be index, vertex, texel, or shaderstorage buffer types.");
+	if (indirectbuffer && !caps.features[Graphics::FEATURE_INDIRECT_DRAW])
+		throw love::Exception("Indirect argument buffers are not supported on this system.");
+
+	if (dataUsage == BUFFERDATAUSAGE_READBACK && (indexbuffer || vertexbuffer || texelbuffer || storagebuffer || indirectbuffer))
+		throw love::Exception("Buffers created with 'readback' data usage cannot be index, vertex, texel, shaderstorage, or indirectarguments buffer types.");
 
 	size_t offset = 0;
 	size_t stride = 0;
@@ -182,6 +186,18 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 			if (memberoffset != offset && (indexbuffer || vertexbuffer || texelbuffer))
 				throw love::Exception("Cannot create Buffer:\nInternal alignment of member '%s' is preventing Buffer from being created as both a shader storage buffer and other buffer types\nMember byte offset needed for shader storage buffer: %d\nMember byte offset needed for other buffer types: %d",
 					member.decl.name.c_str(), memberoffset, offset);
+		}
+
+		if (indirectbuffer)
+		{
+			if (info.isMatrix || info.components != 1
+				|| (info.baseType != DATA_BASETYPE_UINT && info.baseType != DATA_BASETYPE_INT))
+			{
+				throw love::Exception("Indirect argument buffers must use single-component int or uint types.");
+			}
+
+			if (bufferformat.size() > 5)
+				throw love::Exception("Indirect argument buffers only support up to 5 values per array element.");
 		}
 
 		member.offset = memberoffset;

@@ -505,7 +505,6 @@ void Graphics::setActive(bool enable)
 
 static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarriers, GLbitfield &postDispatchBarriers)
 {
-	// TODO: handle indirect argument buffer types, when those are added.
 	for (auto buffer : shader->getActiveWritableStorageBuffers())
 	{
 		if (buffer == nullptr)
@@ -520,6 +519,10 @@ static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarri
 			preDispatchBarriers |= GL_SHADER_STORAGE_BARRIER_BIT;
 			postDispatchBarriers |= GL_SHADER_STORAGE_BARRIER_BIT;
 		}
+
+		// TODO: does this need a pre dispatch barrier too?
+		if (usage & BUFFERUSAGEFLAG_INDIRECT_ARGUMENTS)
+			postDispatchBarriers |= GL_COMMAND_BARRIER_BIT;
 
 		if (usage & BUFFERUSAGEFLAG_TEXEL)
 			postDispatchBarriers |= GL_TEXTURE_FETCH_BARRIER_BIT;
@@ -554,10 +557,9 @@ static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarri
 	return true;
 }
 
-bool Graphics::dispatch(int x, int y, int z)
+bool Graphics::dispatch(love::graphics::Shader *s, int x, int y, int z)
 {
-	// Set by higher level code before calling dispatch(x, y, z).
-	auto shader = (Shader *) Shader::current;
+	auto shader = (Shader *) s;
 
 	GLbitfield preDispatchBarriers = 0;
 	GLbitfield postDispatchBarriers = 0;
@@ -584,6 +586,33 @@ bool Graphics::dispatch(int x, int y, int z)
 	return true;
 }
 
+bool Graphics::dispatch(love::graphics::Shader *s, love::graphics::Buffer *indirectargs, size_t argsoffset)
+{
+	auto shader = (Shader *) s;
+
+	GLbitfield preDispatchBarriers = 0;
+	GLbitfield postDispatchBarriers = 0;
+
+	if (!computeDispatchBarriers(shader, preDispatchBarriers, postDispatchBarriers))
+		return false;
+
+	if (preDispatchBarriers != 0)
+		glMemoryBarrier(preDispatchBarriers);
+
+	// Note: OpenGL has separate bind points for draw versus dispatch indirect
+	// buffers. Our gl.bindBuffer wrapper uses the draw bind point, so we can't
+	// use it here.
+	glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, (GLuint)indirectargs->getHandle());
+	glDispatchComputeIndirect(argsoffset);
+
+	// Not as (theoretically) efficient as issuing the barrier right before
+	// they're used later, but much less complicated.
+	if (postDispatchBarriers != 0)
+		glMemoryBarrier(postDispatchBarriers);
+
+	return true;
+}
+
 void Graphics::draw(const DrawCommand &cmd)
 {
 	gl.prepareDraw(this);
@@ -593,7 +622,12 @@ void Graphics::draw(const DrawCommand &cmd)
 
 	GLenum glprimitivetype = OpenGL::getGLPrimitiveType(cmd.primitiveType);
 
-	if (cmd.instanceCount > 1)
+	if (cmd.indirectBuffer != nullptr)
+	{
+		gl.bindBuffer(BUFFERUSAGE_INDIRECT_ARGUMENTS, (GLuint) cmd.indirectBuffer->getHandle());
+		glDrawArraysIndirect(glprimitivetype, BUFFER_OFFSET(cmd.indirectBufferOffset));
+	}
+	else if (cmd.instanceCount > 1)
 		glDrawArraysInstanced(glprimitivetype, cmd.vertexStart, cmd.vertexCount, cmd.instanceCount);
 	else
 		glDrawArrays(glprimitivetype, cmd.vertexStart, cmd.vertexCount);
@@ -614,7 +648,14 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 
 	gl.bindBuffer(BUFFERUSAGE_INDEX, cmd.indexBuffer->getHandle());
 
-	if (cmd.instanceCount > 1)
+	if (cmd.indirectBuffer != nullptr)
+	{
+		// Note: OpenGL doesn't support indirect indexed draws with a non-zero
+		// index buffer offset.
+		gl.bindBuffer(BUFFERUSAGE_INDIRECT_ARGUMENTS, (GLuint) cmd.indirectBuffer->getHandle());
+		glDrawElementsIndirect(glprimitivetype, gldatatype, BUFFER_OFFSET(cmd.indirectBufferOffset));
+	}
+	else if (cmd.instanceCount > 1)
 		glDrawElementsInstanced(glprimitivetype, cmd.indexCount, gldatatype, gloffset, cmd.instanceCount);
 	else
 		glDrawElements(glprimitivetype, cmd.indexCount, gldatatype, gloffset);
@@ -1661,7 +1702,9 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = gl.isCopyBufferToTextureSupported();
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = gl.isCopyTextureToBufferSupported();
 	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = gl.isCopyRenderTargetToBufferSupported();
-	static_assert(FEATURE_MAX_ENUM == 17, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_MIPMAP_RANGE] = GLAD_VERSION_1_2 || GLAD_ES_VERSION_3_0;
+	capabilities.features[FEATURE_INDIRECT_DRAW] = capabilities.features[FEATURE_GLSL4];
+	static_assert(FEATURE_MAX_ENUM == 19, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();

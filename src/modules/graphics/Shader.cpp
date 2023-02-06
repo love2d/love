@@ -22,6 +22,7 @@
 #include "Shader.h"
 #include "Graphics.h"
 #include "math/MathModule.h"
+#include "common/Range.h"
 
 // glslang
 #include "libraries/glslang/glslang/Public/ShaderLang.h"
@@ -133,6 +134,10 @@ static const char global_functions[] = R"(
 		precision lowp samplerCubeShadow;
 		precision lowp sampler2DArrayShadow;
 	#endif
+#endif
+
+#if __VERSION__ >= 430 || (defined(GL_ES) && __VERSION__ >= 310)
+	layout (std430) buffer;
 #endif
 
 #if __VERSION__ >= 130 && !defined(LOVE_GLSL1_ON_GLSL3)
@@ -425,6 +430,111 @@ static const Version versions[] =
 	{ "#version 430 core", "#version 320 es" },
 };
 
+enum CommentType
+{
+	COMMENT_NONE,
+	COMMENT_LINE,
+	COMMENT_BLOCK,
+};
+
+static void parseComments(const std::string &src, std::vector<Range> &comments)
+{
+	CommentType commenttype = COMMENT_NONE;
+	Range comment;
+
+	const char *srcbytes = src.data();
+	size_t len = src.length();
+
+	for (size_t i = 0; i < len; i++)
+	{
+		char curchar = srcbytes[i];
+
+		if (commenttype == COMMENT_NONE)
+		{
+			if (curchar == '/' && i + 1 < len)
+			{
+				char nextchar = srcbytes[i + 1];
+				if (nextchar == '/')
+				{
+					commenttype = COMMENT_LINE;
+					comment = Range(i, 1);
+				}
+				else if (nextchar == '*')
+				{
+					commenttype = COMMENT_BLOCK;
+					comment = Range(i, 1);
+				}
+			}
+		}
+		else if (commenttype == COMMENT_LINE)
+		{
+			if (curchar == '\n')
+			{
+				commenttype = COMMENT_NONE;
+				comment.last = i;
+				comments.push_back(comment);
+			}
+		}
+		else if (commenttype == COMMENT_BLOCK)
+		{
+			if (curchar == '/' && i > 0 && srcbytes[i - 1] == '*')
+			{
+				commenttype = COMMENT_NONE;
+				comment.last = i;
+				comments.push_back(comment);
+			}
+		}
+	}
+
+	if (commenttype == COMMENT_LINE)
+	{
+		comment.last = len - 1;
+		comments.push_back(comment);
+	}
+}
+
+static bool inComment(size_t i, const std::vector<Range> &comments)
+{
+	Range r(i, 1);
+
+	for (const Range &comment : comments)
+	{
+		if (comment.contains(r))
+			return true;
+	}
+
+	return false;
+}
+
+static bool textSearch(const std::string &src, const std::string &str, const std::vector<Range> &comments)
+{
+	size_t start = 0;
+	size_t found = std::string::npos;
+
+	while ((found = src.find(str, start)) != std::string::npos)
+	{
+		if (!inComment(found, comments))
+			return true;
+		start = found + str.size();
+	}
+
+	return false;
+}
+
+static bool regexSearch(const std::string &src, const std::string &rstr, const std::vector<Range> &comments)
+{
+	std::regex r(rstr);
+
+	for (auto it = std::sregex_iterator(src.begin(), src.end(), r); it != std::sregex_iterator(); it++)
+	{
+		const std::smatch &m = *it;
+		if (!inComment(m.position(), comments))
+			return true;
+	}
+
+	return false;
+}
+
 static Shader::Language getTargetLanguage(const std::string &src)
 {
 	std::regex r("^\\s*#pragma language (\\w+)");
@@ -435,33 +545,30 @@ static Shader::Language getTargetLanguage(const std::string &src)
 	return lang;
 }
 
-static Shader::EntryPoint getVertexEntryPoint(const std::string &src)
+static Shader::EntryPoint getVertexEntryPoint(const std::string &src, const std::vector<Range> &comments)
 {
-	std::smatch m;
-
-	if (std::regex_search(src, m, std::regex("void\\s+vertexmain\\s*\\(")))
+	if (regexSearch(src, "void\\s+vertexmain\\s*\\(", comments))
 		return Shader::ENTRYPOINT_RAW;
 
-	if (std::regex_search(src, m, std::regex("vec4\\s+position\\s*\\(")))
+	if (regexSearch(src, "vec4\\s+position\\s*\\(", comments))
 		return Shader::ENTRYPOINT_HIGHLEVEL;
 
 	return Shader::ENTRYPOINT_NONE;
 }
 
-static Shader::EntryPoint getPixelEntryPoint(const std::string &src, bool &mrt)
+static Shader::EntryPoint getPixelEntryPoint(const std::string &src, const std::vector<Range> &comments, bool &mrt)
 {
 	mrt = false;
-	std::smatch m;
 
-	if (std::regex_search(src, m, std::regex("void\\s+pixelmain\\s*\\(")))
+	if (regexSearch(src, "void\\s+pixelmain\\s*\\(", comments))
 		return Shader::ENTRYPOINT_RAW;
 
-	if (std::regex_search(src, m, std::regex("vec4\\s+effect\\s*\\(")))
+	if (regexSearch(src, "vec4\\s+effect\\s*\\(", comments))
 		return Shader::ENTRYPOINT_HIGHLEVEL;
 
-	if (std::regex_search(src, m, std::regex("void\\s+effect\\s*\\(")))
+	if (regexSearch(src, "void\\s+effect\\s*\\(", comments))
 	{
-		if (src.find("love_RenderTargets") != std::string::npos || src.find("love_Canvases") != std::string::npos)
+		if (textSearch(src, "love_RenderTargets", comments) || textSearch(src, "love_Canvases", comments))
 			mrt = true;
 		return Shader::ENTRYPOINT_CUSTOM;
 	}
@@ -469,10 +576,9 @@ static Shader::EntryPoint getPixelEntryPoint(const std::string &src, bool &mrt)
 	return Shader::ENTRYPOINT_NONE;
 }
 
-static Shader::EntryPoint getComputeEntryPoint(const std::string &src) {
-	std::smatch m;
-
-	if (std::regex_search(src, m, std::regex("void\\s+computemain\\s*\\(")))
+static Shader::EntryPoint getComputeEntryPoint(const std::string &src, const std::vector<Range> &comments)
+{
+	if (regexSearch(src, "void\\s+computemain\\s*\\(", comments))
 		return Shader::ENTRYPOINT_RAW;
 
 	return Shader::ENTRYPOINT_NONE;
@@ -489,11 +595,14 @@ Shader *Shader::standardShaders[Shader::STANDARD_MAX_ENUM] = {nullptr};
 
 Shader::SourceInfo Shader::getSourceInfo(const std::string &src)
 {
+	std::vector<Range> comments;
+	glsl::parseComments(src, comments);
+
 	SourceInfo info = {};
 	info.language = glsl::getTargetLanguage(src);
-	info.stages[SHADERSTAGE_VERTEX] = glsl::getVertexEntryPoint(src);
-	info.stages[SHADERSTAGE_PIXEL] = glsl::getPixelEntryPoint(src, info.usesMRT);
-	info.stages[SHADERSTAGE_COMPUTE] = glsl::getComputeEntryPoint(src);
+	info.stages[SHADERSTAGE_VERTEX] = glsl::getVertexEntryPoint(src, comments);
+	info.stages[SHADERSTAGE_PIXEL] = glsl::getPixelEntryPoint(src, comments, info.usesMRT);
+	info.stages[SHADERSTAGE_COMPUTE] = glsl::getComputeEntryPoint(src, comments);
 	if (info.stages[SHADERSTAGE_COMPUTE])
 		info.language = LANGUAGE_GLSL4;
 	return info;

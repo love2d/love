@@ -70,7 +70,8 @@ public:
 
 	void setActive(bool active) override;
 
-	bool dispatch(int x, int y, int z) override;
+	bool dispatch(love::graphics::Shader *shader, int x, int y, int z) override;
+	bool dispatch(love::graphics::Shader *shader, love::graphics::Buffer *indirectargs, size_t argsoffset) override;
 
 	void draw(const DrawCommand &cmd) override;
 	void draw(const DrawIndexedCommand &cmd) override;
