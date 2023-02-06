@@ -46,6 +46,7 @@ Joystick::Joystick(int id)
 	: joyhandle(nullptr)
 	, controller(nullptr)
 	, haptic(nullptr)
+	, joystickType(JOYSTICK_TYPE_UNKNOWN)
 	, instanceid(-1)
 	, id(id)
 	, vibration()
@@ -96,6 +97,40 @@ bool Joystick::open(int deviceindex)
 
 		if (joyname)
 			name = joyname;
+
+		switch (SDL_JoystickGetType(joyhandle))
+		{
+		case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
+			joystickType = JOYSTICK_TYPE_GAMEPAD;
+			break;
+		case SDL_JOYSTICK_TYPE_WHEEL:
+			joystickType = JOYSTICK_TYPE_WHEEL;
+			break;
+		case SDL_JOYSTICK_TYPE_ARCADE_STICK:
+			joystickType = JOYSTICK_TYPE_ARCADE_STICK;
+			break;
+		case SDL_JOYSTICK_TYPE_FLIGHT_STICK:
+			joystickType = JOYSTICK_TYPE_FLIGHT_STICK;
+			break;
+		case SDL_JOYSTICK_TYPE_DANCE_PAD:
+			joystickType = JOYSTICK_TYPE_DANCE_PAD;
+			break;
+		case SDL_JOYSTICK_TYPE_GUITAR:
+			joystickType = JOYSTICK_TYPE_GUITAR;
+			break;
+		case SDL_JOYSTICK_TYPE_DRUM_KIT:
+			joystickType = JOYSTICK_TYPE_DRUM_KIT;
+			break;
+		case SDL_JOYSTICK_TYPE_ARCADE_PAD:
+			joystickType = JOYSTICK_TYPE_ARCADE_PAD;
+			break;
+		case SDL_JOYSTICK_TYPE_THROTTLE:
+			joystickType = JOYSTICK_TYPE_THROTTLE;
+			break;
+		default:
+			joystickType = JOYSTICK_TYPE_UNKNOWN;
+			break;
+		}
 	}
 
 	return isConnected();
@@ -127,6 +162,11 @@ bool Joystick::isConnected() const
 const char *Joystick::getName() const
 {
 	return name.c_str();
+}
+
+Joystick::JoystickType Joystick::getJoystickType() const
+{
+	return joystickType;
 }
 
 int Joystick::getAxisCount() const

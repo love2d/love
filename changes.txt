@@ -25,6 +25,7 @@ Released: N/A
 * Added love.audio.getPlaybackDevice, love.audio.getPlaybackDevices, and love.audio.setPlaybackDevice.
 * Added love.keyboard.isModifierActive.
 * Added Joystick:setPlayerIndex and Joystick:getPlayerIndex.
+* Added Joystick:getJoystickType.
 * Added Joystick:getGamepadType.
 * Added Joystick:hasSensor.
 * Added Joystick:isSensorEnabled and Joystick:setSensorEnabled.
