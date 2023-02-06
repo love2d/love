@@ -136,6 +136,10 @@ static const char global_functions[] = R"(
 	#endif
 #endif
 
+#if __VERSION__ >= 430 || (defined(GL_ES) && __VERSION__ >= 310)
+	layout (std430) buffer;
+#endif
+
 #if __VERSION__ >= 130 && !defined(LOVE_GLSL1_ON_GLSL3)
 	#define Texel texture
 #else
