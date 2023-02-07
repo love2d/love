@@ -96,7 +96,7 @@ Released: N/A
 * Changed audio file decoding to choose the most appropriate decoder based on file contents instead of the file extension.
 * Changed Videos to stream audio from the file instead of loading all the video file into memory for use with audio decoding.
 * Changed love.filesystem.exists to no longer be deprecated.
-* Changed RevoluteJoint:getMotorTorque and MotorJoint:getMotorTorque to take 'dt' as a parameter instead of 'inverse_dt'.
+* Changed RevoluteJoint:getMotorTorque and WheelJoint:getMotorTorque to take 'dt' as a parameter instead of 'inverse_dt'.
 * Changed love.math.perlinNoise and simplexNoise to use higher precision numbers for its internal calculations.
 * Changed t.accelerometerjoystick startup flag in love.conf to unset by default.
 
