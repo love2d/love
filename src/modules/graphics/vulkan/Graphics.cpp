@@ -261,7 +261,7 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 		if (depth.hasValue)
 		{
-			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			renderPassState.clearColors[colors.size()].depthStencil.depth = depth.value;
 		}
 
