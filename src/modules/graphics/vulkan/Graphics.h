@@ -157,9 +157,6 @@ struct OptionalDeviceExtensions
 	// VK_KHR_dedicated_allocation
 	bool dedicatedAllocation = false;
 
-	// VK_KHR_buffer_device_address
-	bool bufferDeviceAddress = false;
-
 	// VK_EXT_memory_budget
 	bool memoryBudget = false;
 

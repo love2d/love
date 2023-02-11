@@ -1562,8 +1562,6 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 		if (strcmp(extension.extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.dedicatedAllocation = true;
 		if (strcmp(extension.extensionName, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) == 0)
-			optionalDeviceExtensions.bufferDeviceAddress = true;
-		if (strcmp(extension.extensionName, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.memoryBudget = true;
 		if (strcmp(extension.extensionName, VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.shaderFloatControls = true;
@@ -1601,8 +1599,6 @@ void Graphics::createLogicalDevice()
 		optionalDeviceExtensions.extendedDynamicState = false;
 	if (optionalDeviceExtensions.dedicatedAllocation && !optionalDeviceExtensions.memoryRequirements2)
 		optionalDeviceExtensions.dedicatedAllocation = false;
-	if (optionalDeviceExtensions.bufferDeviceAddress && !optionalInstanceExtensions.physicalDeviceProperties2)
-		optionalDeviceExtensions.bufferDeviceAddress = false;
 	if (optionalDeviceExtensions.memoryBudget && !optionalInstanceExtensions.physicalDeviceProperties2)
 		optionalDeviceExtensions.memoryBudget = false;
 	if (optionalDeviceExtensions.spirv14 && !optionalDeviceExtensions.shaderFloatControls)
@@ -1627,8 +1623,6 @@ void Graphics::createLogicalDevice()
 		enabledExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
 	if (optionalDeviceExtensions.dedicatedAllocation)
 		enabledExtensions.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
-	if (optionalDeviceExtensions.bufferDeviceAddress)
-		enabledExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
 	if (optionalDeviceExtensions.memoryBudget)
 		enabledExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
 	if (optionalDeviceExtensions.shaderFloatControls)
