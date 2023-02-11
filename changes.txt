@@ -112,6 +112,8 @@ Released: N/A
 * Deprecated love.graphics.setNewFont (use love.graphics.newFont and love.graphics.setFont instead).
 * Deprecated love.graphics.newText (renamed to love.graphics.newTextBatch).
 * Deprecated love.graphics.getImageFormats and love.graphics.getCanvasFormats (replaced by getTextureFormats).
+* Deprecated love.graphics.stencil (replaced by love.graphics.setStencilMode).
+* Deprecated love.graphics.setStencilTest and love.graphics.getStencilTest (replaced by love.graphics.setStencilMode and getStencilMode).
 * Deprecated t.window.highdpi in love.conf and the highdpi flag of love.window.setMode (replaced by t.highdpi in love.conf).
 * Deprecated t.accelerometerjoystick in love.conf (replaced by love.sensor module).
 * Deprecated the variants of Mesh:attachAttribute and SpriteBatch:attachAttribute which accept a Mesh (replaced by variants which accept a Buffer).
@@ -119,8 +121,6 @@ Released: N/A
 
 * Removed the variant of SpriteBatch:setColor() which turns off all previously set colors.
 * Removed the no-argument variant of love.graphics.setColorMask.
-* Removed love.graphics.stencil (replaced by love.graphics.setStencilMode).
-* Removed love.graphics.setStencilTest and getStencilTest (replaced by love.graphics.setStencilMode and getStencilMode).
 
 * Fixed BezierCurve:render adding collinear points in some situations.
 * Fixed line rendering when the line has duplicate points.

@@ -24,8 +24,10 @@ misrepresented as being the original software.
 
 local table_concat = table.concat
 local ipairs = ipairs
+local pcall = pcall
+local graphics = love.graphics
 
-function love.graphics.newVideo(file, settings)
+function graphics.newVideo(file, settings)
 	settings = settings == nil and {} or settings
 	if type(settings) ~= "table" then error("bad argument #2 to newVideo (expected table)", 2) end
 
@@ -50,7 +52,48 @@ function love.graphics.newVideo(file, settings)
 	return video
 end
 
-function love.graphics._transformGLSLErrorMessages(message)
+function graphics.stencil(func, action, value, keepvalues)
+	love.markDeprecated(2, "love.graphics.stencil", "function", "replaced", "love.graphics.setStencilMode")
+
+	if not keepvalues then
+		graphics.clear(false, true, false)
+	end
+
+	if value == nil then value = 1 end
+
+	graphics.setStencilMode(action, "always", value)
+
+	local mr, mg, mb, ma = graphics.getColorMask()
+	graphics.setColorMask(false)
+
+	local success, err = pcall(func)
+
+	graphics.setColorMask(mr, mg, mb, ma)
+	graphics.setStencilMode()
+
+	if not success then
+		error(err, 2)
+	end
+end
+
+function graphics.setStencilTest(mode, value)
+	love.markDeprecated(2, "love.graphics.setStencilTest", "function", "replaced", "love.graphics.setStencilMode")
+
+	if mode ~= nil then
+		graphics.setStencilMode("keep", mode, value)
+	else
+		graphics.setStencilMode()
+	end
+end
+
+function graphics.getStencilTest()
+	love.markDeprecated(2, "love.graphics.getStencilTest", "function", "replaced", "love.graphics.getStencilMode")
+
+	local action, mode, value = graphics.getStencilMode()
+	return mode, value
+end
+
+function graphics._transformGLSLErrorMessages(message)
 	local shadertype = message:match("Cannot compile (%a+) shader code")
 	local compiling = shadertype ~= nil
 	if not shadertype then
