@@ -26,6 +26,8 @@
 #include "common/pixelformat.h"
 #include "CompressedSlice.h"
 
+#include <vector>
+
 namespace love
 {
 namespace image

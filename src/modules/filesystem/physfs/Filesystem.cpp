@@ -35,6 +35,7 @@
 // Using this instead of boost::filesystem which totally
 // cramped our style.
 #ifdef LOVE_WINDOWS
+#	define WIN32_LEAN_AND_MEAN
 #	include <windows.h>
 #	include <direct.h>
 #	include <initguid.h>

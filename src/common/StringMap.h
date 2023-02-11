@@ -21,8 +21,6 @@
 #ifndef LOVE_STRING_MAP_H
 #define LOVE_STRING_MAP_H
 
-#include "Exception.h"
-
 #include <string>
 #include <vector>
 

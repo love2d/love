@@ -23,6 +23,7 @@
 // Module
 #include "Body.h"
 #include "World.h"
+#include "common/Exception.h"
 
 namespace love
 {

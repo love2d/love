@@ -19,6 +19,7 @@
  **/
 
 #include "CompressedImageData.h"
+#include "common/Exception.h"
 
 namespace love
 {

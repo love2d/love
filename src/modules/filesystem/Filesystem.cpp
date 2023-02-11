@@ -30,6 +30,7 @@
 #include "common/apple.h"
 #include <unistd.h>
 #elif defined(LOVE_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <fileapi.h>
 #include "common/utf8.h"

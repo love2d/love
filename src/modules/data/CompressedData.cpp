@@ -20,6 +20,7 @@
 
 // LOVE
 #include "CompressedData.h"
+#include "common/Exception.h"
 
 namespace love
 {
