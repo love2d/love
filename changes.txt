@@ -4,6 +4,7 @@ LOVE 12.0 [N/A]
 Released: N/A
 
 * Added support for launching a specific .lua file as the main file.
+* Added basic usage instructions printed to the console when '--help' is used as a command-line parameter, and when the no-game screen is run.
 * Added love.parsedGameArguments and love.rawGameArguments tables, in the main thread.
 * Added love.markDeprecated.
 * Added HTTPS Lua module.
@@ -24,10 +25,10 @@ Released: N/A
 * Added love.audio.getPlaybackDevice, love.audio.getPlaybackDevices, and love.audio.setPlaybackDevice.
 * Added love.keyboard.isModifierActive.
 * Added Joystick:setPlayerIndex and Joystick:getPlayerIndex.
+* Added Joystick:getJoystickType.
 * Added Joystick:getGamepadType.
 * Added Joystick:hasSensor.
-* Added Joystick:isSensorEnabled.
-* Added Joystick:setSensorEnabled.
+* Added Joystick:isSensorEnabled and Joystick:setSensorEnabled.
 * Added Joystick:getSensorData.
 * Added new Gamepad API buttons: "misc1", "paddle1", "paddle2", "paddle3", "paddle4". and "touchpad".
 * Added World:getFixturesInArea().
@@ -41,21 +42,28 @@ Released: N/A
 * Added per-shader opt in support for the GLSL 4.30 (desktop) and GLSL ES 3.20 (mobile) shading languages, via #pragma language glsl4.
 * Added compile options table parameter to love.graphics.newShader. Allows setting #define values via newShader.
 * Added love.graphics.newTexture. newImage and newCanvas still exist as convenience constructor functions.
+* Added optional 'mipmapcount' field to the settings table in newTexture/newImage/newCanvas.
+* Added optional 'computewrite' boolean field to the settings table in newTexture/newImage/newCanvas.
 * Added love.graphics.getTextureFormats, which replaces getImageFormats and getCanvasFormats.
+* Added Texture:isCanvas and Texture:isComputeWritable.
+* Added Texture:isFormatLinear, Texture:getMSAA, Texture:generateMipmaps, Texture:replacePixels, and Texture:renderTo (moved from old Canvas and Image subclasses).
 * Added integer pixel formats for Textures and ImageData.
-* Added Graphics Buffer objects, including vertex, index, texel, and shader storage buffers.
+* Added Graphics Buffer objects, including vertex, index, texel, shader storage, and indirect draw/dispatch argument buffers.
 * Added love.graphics.copyBuffer, copyBufferToTexture, and copyTextureToBuffer.
 * Added APIs for interacting with the Buffer objects owned by Meshes.
 * Added Mesh:getAttachedAttributes.
+* Added an optional start array index parameter to Mesh:attachAttribute.
 * Added integer buffer data formats.
 * Added love.graphics.readbackTexture and love.graphics.readbackTextureAsync (replaces Texture:newImageData).
 * Added love.graphics.readbackBuffer and love.graphics.readbackBufferAsync.
 * Added 'readback' buffer data usage enum, useful for advanced memory optimization when using love.graphics.readbackBuffer.
 * Added new lower level 'vertexmain' and 'pixelmain' shader entry points.
-* Added Compute Shader support via new 'computemain' shader entry point.
-* Added love.graphics.dispatchThreadgroups for running compute shaders.
+* Added Compute Shader support via love.graphics.newComputeShader and a new 'computemain' shader entry point.
+* Added love.graphics.dispatchThreadgroups and love.graphics.dispatchIndirect for running compute shaders.
 * Added Shader:hasStage.
 * Added love.graphics.drawFromShader.
+* Added love.graphics.drawFromShaderIndirect.
+* Added love.graphics.drawIndirect.
 * Added love.graphics.getQuadIndexBuffer.
 * Added variants of love.graphics.applyTransform and replaceTransform which accept x,y,angle,sx,sy,ox,oy parameters.
 * Added APIs to override the default orthographic projection: love.graphics.setOrthoProjection, setPerspectiveProjection, and resetProjection.
@@ -64,27 +72,37 @@ Released: N/A
 * Added love.graphics.setStencilMode and getStencilMode. Replaces love.graphics.stencil as well as setStencilTest.
 * Added a variant of love.graphics.setColorMask which accepts a single boolean.
 * Added new 'clampone' wrap mode.
+* Added 'clampone', 'texelbuffer', 'indexbuffer32bit', 'mipmaprange', and 'indirectdraw' graphics feature enums.
+* Added 'copybuffer', 'copybuffertotexture', 'copytexturetobuffer', and 'copyrendertargettobuffer' graphics feature enums.
+* Added initial support for right-to-left (RTL) text when using TrueType and OpenType fonts.
 * Added a variant of Font:getWidth which takes a codepoint number argument.
+* Added love.graphics.newTextBatch (renamed from love.graphics.newText).
 * Added love.sensor module.
 * Added love.sensorupdated callback.
 * Added love.joysticksensorupdated callback.
 
+* Changed love.filesystem.exists to no longer be deprecated.
 * Changed the default font from Vera size 12 to Noto Sans size 13.
+* Changed TrueType and OpenType font handling to have improved kerning and character combining support.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
 * Changed Images to no longer hold onto a CPU copy of their pixel data after creation.
 * Changed love.graphics.newImage to error instead of loading a placeholder texture, when the image dimensions are too large for the system.
+* Changed love.graphics.newImage to allow creating a mipmapped texture with less than the full mipmap range, instead of erroring.
 * Changed love.graphics.newMesh to no longer default to the "fan" Mesh draw mode.
 * Changed the behaviour of Meshes to no longer allow a vertex map or index buffer when the "fan" mesh draw mode is used.
 * Changed love.window.setMode to no longer clear the contents of Canvases or otherwise recreate OpenGL resources.
 * Changed love.graphics.points to require 'love_PointSize' to be set in the vertex shader, if a custom shader is used.
+* Changed love.graphics.setCanvas to always clear auto-generated temporary depth and stencil buffers when they're used.
+* Changed shader code parsing to ignore shader entry point functions inside comments.
 * Changed audio file decoding to choose the most appropriate decoder based on file contents instead of the file extension.
 * Changed Videos to stream audio from the file instead of loading all the video file into memory for use with audio decoding.
 * Changed love.filesystem.exists to no longer be deprecated.
-* Changed RevoluteJoint:getMotorTorque to take 'dt' as a parameter instead of 'inverse_dt'.
+* Changed RevoluteJoint:getMotorTorque and WheelJoint:getMotorTorque to take 'dt' as a parameter instead of 'inverse_dt'.
 * Changed love.math.perlinNoise and simplexNoise to use higher precision numbers for its internal calculations.
 * Changed t.accelerometerjoystick startup flag in love.conf to unset by default.
 
 * Renamed 'display' field to 'displayindex' in love.window.setMode/updateMode/getMode and love.conf.
+* Renamed love.graphics Text objects to TextBatch.
 
 * Updated Box2D from 2.3 to 2.4.1.
 * Updated LuaSocket from 3.0-rc1 to 3.1.0.
@@ -92,7 +110,11 @@ Released: N/A
 * Deprecated usage of slashes instead of dots for module separators in require.
 * Deprecated love.filesystem.newFile (replaced by openFile).
 * Deprecated love.math.noise (replaced by perlinNoise and simplexNoise).
+* Deprecated love.graphics.setNewFont (use love.graphics.newFont and love.graphics.setFont instead).
+* Deprecated love.graphics.newText (renamed to love.graphics.newTextBatch).
 * Deprecated love.graphics.getImageFormats and love.graphics.getCanvasFormats (replaced by getTextureFormats).
+* Deprecated love.graphics.stencil (replaced by love.graphics.setStencilMode).
+* Deprecated love.graphics.setStencilTest and love.graphics.getStencilTest (replaced by love.graphics.setStencilMode and getStencilMode).
 * Deprecated t.window.highdpi in love.conf and the highdpi flag of love.window.setMode (replaced by t.highdpi in love.conf).
 * Deprecated t.accelerometerjoystick in love.conf (replaced by love.sensor module).
 * Deprecated the variants of Mesh:attachAttribute and SpriteBatch:attachAttribute which accept a Mesh (replaced by variants which accept a Buffer).
@@ -100,8 +122,21 @@ Released: N/A
 
 * Removed the variant of SpriteBatch:setColor() which turns off all previously set colors.
 * Removed the no-argument variant of love.graphics.setColorMask.
-* Removed love.graphics.stencil (replaced by love.graphics.setStencilMode).
-* Removed love.graphics.setStencilTest and getStencilTest (replaced by love.graphics.setStencilMode and getStencilMode).
+* Removed functions deprecated in LOVE 11:
+	* Removed love.audio.getSourceCount (renamed to love.audio.getActiveSourceCount).
+	* Removed Source:getChannels (renamed to Source:getChannelCount).
+	* Removed Decoder:getChannels (renamed to Decoder:getChannelCount).
+	* Removed love.filesystem.isDirectory (replaced by love.filesystem.getInfo).
+	* Removed love.filesystem.isFile (replaced by love.filesystem.getInfo).
+	* Removed love.filesystem.isSymlink (replaced by love.filesystem.getInfo).
+	* Removed love.filesystem.getLastModified (replaced by love.filesystem.getInfo).
+	* Removed love.filesystem.getSize (replaced by love.filesystem.getInfo).
+	* Removed ParticleSystem:setAreaSpread and ParticleSystem:getAreaSpread (renamed to ParticleSystem:setEmissionArea and getEmissionArea).
+	* Removed love.math.compress and love.math.decompress (replaced by love.data.compress and love.data.decompress).
+	* Removed World:getBodyList, World:getJointList, and World:getContactList (renamed to World:getBodies, World:getJoints, and World:getContacts).
+	* Removed Body:getFixtureList, Body:getJointList, and Body:getContactList (renamed to Body:getFixtures, Body:getJoints, and Body:getContacts).
+	* Removed PrismaticJoint:hasLimitsEnabled (renamed to PrismaticJoint:areLimitsEnabled).
+	* Removed RevoluteJoint:hasLimitsEnabled (renamed to RevoluteJoint:areLimitsEnabled).
 
 * Fixed BezierCurve:render adding collinear points in some situations.
 * Fixed line rendering when the line has duplicate points.

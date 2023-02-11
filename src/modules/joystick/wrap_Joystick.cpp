@@ -86,6 +86,15 @@ int w_Joystick_getDeviceInfo(lua_State *L)
 	return 3;
 }
 
+int w_Joystick_getJoystickType(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char* str = "unknown";
+	Joystick::getConstant(j->getJoystickType(), str);
+	lua_pushstring(L, str);
+	return 1;
+}
+
 int w_Joystick_getAxisCount(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
@@ -448,6 +457,7 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "getID", w_Joystick_getID },
 	{ "getGUID", w_Joystick_getGUID },
 	{ "getDeviceInfo", w_Joystick_getDeviceInfo },
+	{ "getJoystickType", w_Joystick_getJoystickType },
 	{ "getAxisCount", w_Joystick_getAxisCount },
 	{ "getButtonCount", w_Joystick_getButtonCount },
 	{ "getHatCount", w_Joystick_getHatCount },

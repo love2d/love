@@ -51,6 +51,8 @@ public:
 
 	const char *getName() const override;
 
+	JoystickType getJoystickType() const override;
+
 	int getAxisCount() const override;
 	int getButtonCount() const override;
 	int getHatCount() const override;
@@ -112,6 +114,8 @@ private:
 	SDL_Joystick *joyhandle;
 	SDL_GameController *controller;
 	SDL_Haptic *haptic;
+
+	JoystickType joystickType;
 
 	SDL_JoystickID instanceid;
 	std::string pguid;

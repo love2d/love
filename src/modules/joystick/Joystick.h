@@ -59,6 +59,21 @@ public:
 		HAT_MAX_ENUM = 16
 	};
 
+	enum JoystickType
+	{
+		JOYSTICK_TYPE_UNKNOWN,
+		JOYSTICK_TYPE_GAMEPAD,
+		JOYSTICK_TYPE_WHEEL,
+		JOYSTICK_TYPE_ARCADE_STICK,
+		JOYSTICK_TYPE_FLIGHT_STICK,
+		JOYSTICK_TYPE_DANCE_PAD,
+		JOYSTICK_TYPE_GUITAR,
+		JOYSTICK_TYPE_DRUM_KIT,
+		JOYSTICK_TYPE_ARCADE_PAD,
+		JOYSTICK_TYPE_THROTTLE,
+		JOYSTICK_TYPE_MAX_ENUM
+	};
+
 	enum GamepadType
 	{
 		GAMEPAD_TYPE_UNKNOWN,
@@ -164,6 +179,8 @@ public:
 
 	virtual const char *getName() const = 0;
 
+	virtual JoystickType getJoystickType() const = 0;
+
 	virtual int getAxisCount() const = 0;
 	virtual int getButtonCount() const = 0;
 	virtual int getHatCount() const = 0;
@@ -207,6 +224,7 @@ public:
 	virtual std::vector<float> getSensorData(Sensor::SensorType type) const = 0;
 
 	STRINGMAP_CLASS_DECLARE(Hat);
+	STRINGMAP_CLASS_DECLARE(JoystickType);
 	STRINGMAP_CLASS_DECLARE(GamepadType);
 	STRINGMAP_CLASS_DECLARE(GamepadAxis);
 	STRINGMAP_CLASS_DECLARE(GamepadButton);

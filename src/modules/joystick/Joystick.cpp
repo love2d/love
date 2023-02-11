@@ -56,6 +56,21 @@ STRINGMAP_CLASS_BEGIN(Joystick, Joystick::Hat, Joystick::HAT_MAX_ENUM, hat)
 }
 STRINGMAP_CLASS_END(Joystick, Joystick::Hat, Joystick::HAT_MAX_ENUM, hat)
 
+STRINGMAP_CLASS_BEGIN(Joystick, Joystick::JoystickType, Joystick::JOYSTICK_TYPE_MAX_ENUM, joystickType)
+{
+	{ "unknown",     Joystick::JOYSTICK_TYPE_UNKNOWN      },
+	{ "gamepad",     Joystick::JOYSTICK_TYPE_GAMEPAD      },
+	{ "wheel",       Joystick::JOYSTICK_TYPE_WHEEL        },
+	{ "arcadestick", Joystick::JOYSTICK_TYPE_ARCADE_STICK },
+	{ "flightstick", Joystick::JOYSTICK_TYPE_FLIGHT_STICK },
+	{ "dancepad",    Joystick::JOYSTICK_TYPE_DANCE_PAD    },
+	{ "guitar",      Joystick::JOYSTICK_TYPE_GUITAR       },
+	{ "drumkit",     Joystick::JOYSTICK_TYPE_DRUM_KIT     },
+	{ "arcadepad",   Joystick::JOYSTICK_TYPE_ARCADE_PAD   },
+	{ "throttle",    Joystick::JOYSTICK_TYPE_THROTTLE     },
+}
+STRINGMAP_CLASS_END(Joystick, Joystick::JoystickType, Joystick::JOYSTICK_TYPE_MAX_ENUM, joystickType)
+
 STRINGMAP_CLASS_BEGIN(Joystick, Joystick::GamepadType, Joystick::GAMEPAD_TYPE_MAX_ENUM, gamepadType)
 {
 	{ "unknown",      Joystick::GAMEPAD_TYPE_UNKNOWN             },
