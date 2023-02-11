@@ -81,6 +81,7 @@ Released: N/A
 * Added love.sensorupdated callback.
 * Added love.joysticksensorupdated callback.
 
+* Changed love.filesystem.exists to no longer be deprecated.
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed TrueType and OpenType font handling to have improved kerning and character combining support.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
@@ -121,6 +122,21 @@ Released: N/A
 
 * Removed the variant of SpriteBatch:setColor() which turns off all previously set colors.
 * Removed the no-argument variant of love.graphics.setColorMask.
+* Removed functions deprecated in LOVE 11:
+	* Removed love.audio.getSourceCount (renamed to love.audio.getActiveSourceCount).
+	* Removed Source:getChannels (renamed to Source:getChannelCount).
+	* Removed Decoder:getChannels (renamed to Decoder:getChannelCount).
+	* Removed love.filesystem.isDirectory (replaced by love.filesystem.getInfo).
+	* Removed love.filesystem.isFile (replaced by love.filesystem.getInfo).
+	* Removed love.filesystem.isSymlink (replaced by love.filesystem.getInfo).
+	* Removed love.filesystem.getLastModified (replaced by love.filesystem.getInfo).
+	* Removed love.filesystem.getSize (replaced by love.filesystem.getInfo).
+	* Removed ParticleSystem:setAreaSpread and ParticleSystem:getAreaSpread (renamed to ParticleSystem:setEmissionArea and getEmissionArea).
+	* Removed love.math.compress and love.math.decompress (replaced by love.data.compress and love.data.decompress).
+	* Removed World:getBodyList, World:getJointList, and World:getContactList (renamed to World:getBodies, World:getJoints, and World:getContacts).
+	* Removed Body:getFixtureList, Body:getJointList, and Body:getContactList (renamed to Body:getFixtures, Body:getJoints, and Body:getContacts).
+	* Removed PrismaticJoint:hasLimitsEnabled (renamed to PrismaticJoint:areLimitsEnabled).
+	* Removed RevoluteJoint:hasLimitsEnabled (renamed to RevoluteJoint:areLimitsEnabled).
 
 * Fixed BezierCurve:render adding collinear points in some situations.
 * Fixed line rendering when the line has duplicate points.
