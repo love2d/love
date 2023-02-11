@@ -22,6 +22,7 @@
 
 // LOVE
 #include "CoreAudioDecoder.h"
+#include "common/Exception.h"
 
 // C++
 #include <vector>
