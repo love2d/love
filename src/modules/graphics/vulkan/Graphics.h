@@ -98,7 +98,7 @@ struct RenderPassConfigurationHasher
 	size_t operator()(const RenderPassConfiguration &configuration) const
 	{
 		size_t hashes[] = { 
-			XXH32(configuration.colorAttachments.data(), configuration.colorAttachments.size() * sizeof(VkFormat), 0),
+			XXH32(configuration.colorAttachments.data(), configuration.colorAttachments.size() * sizeof(ColorAttachment), 0),
 			XXH32(&configuration.staticData, sizeof(configuration.staticData), 0),
 		};
 		return XXH32(hashes, sizeof(hashes), 0);
