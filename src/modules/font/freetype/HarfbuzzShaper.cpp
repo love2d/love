@@ -118,6 +118,9 @@ void HarfbuzzShaper::computeBufferRanges(const ColoredCodepoints &codepoints, Ra
 {
 	bufferranges.clear();
 
+	if (codepoints.cps.size() == 0)
+		return;
+
 	// Less computation for the typical case (no fallback fonts).
 	if (rasterizers.size() == 1)
 	{
@@ -195,7 +198,7 @@ void HarfbuzzShaper::computeBufferRanges(const ColoredCodepoints &codepoints, Ra
 
 void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, Range range, Vector2 offset, float extraspacing, std::vector<GlyphPosition> *positions, std::vector<IndexedColor> *colors, TextInfo *info)
 {
-	if (!range.isValid())
+	if (!range.isValid() && !codepoints.cps.empty())
 		range = Range(0, codepoints.cps.size());
 
 	offset.y += getBaseline();
