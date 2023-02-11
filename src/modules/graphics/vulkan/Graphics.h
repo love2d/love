@@ -46,27 +46,43 @@ namespace graphics
 namespace vulkan
 {
 
-struct RenderPassAttachment
+struct ColorAttachment
 {
 	VkFormat format = VK_FORMAT_UNDEFINED;
-	bool discard = true;
+	VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
-	bool operator==(const RenderPassAttachment &attachment) const
+	bool operator==(const ColorAttachment&attachment) const
 	{
 		return format == attachment.format && 
-			discard == attachment.discard && 
+			loadOp == attachment.loadOp &&
+			msaaSamples == attachment.msaaSamples;
+	}
+};
+
+struct DepthStencilAttachment
+{
+	VkFormat format = VK_FORMAT_UNDEFINED;
+	VkAttachmentLoadOp depthLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	VkAttachmentLoadOp stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+
+	bool operator==(const DepthStencilAttachment &attachment) const
+	{
+		return format == attachment.format &&
+			depthLoadOp == attachment.depthLoadOp &&
+			stencilLoadOp == attachment.stencilLoadOp &&
 			msaaSamples == attachment.msaaSamples;
 	}
 };
 
 struct RenderPassConfiguration
 {
-	std::vector<RenderPassAttachment> colorAttachments;
+	std::vector<ColorAttachment> colorAttachments;
 
 	struct StaticRenderPassConfiguration
 	{
-		RenderPassAttachment depthAttachment;
+		DepthStencilAttachment depthStencilAttachment;
 		bool resolve = false;
 	} staticData;
 
@@ -216,6 +232,7 @@ struct RenderpassState
 {
 	bool active = false;
 	VkRenderPassBeginInfo beginInfo{};
+	bool isWindow = false;
 	bool useConfigurations = false;
 	RenderPassConfiguration renderPassConfiguration{};
 	FramebufferConfiguration framebufferConfiguration{};
@@ -225,6 +242,12 @@ struct RenderpassState
 	float width = 0.0f;
 	float height = 0.0f;
 	VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT;
+	std::vector<VkClearValue> clearColors;
+
+	bool windowClearRequested = false;
+	OptionalColorD mainWindowClearColorValue;
+	OptionalDouble mainWindowClearDepthValue;
+	OptionalInt mainWindowClearStencilValue;
 };
 
 struct ScreenshotReadbackBuffer
