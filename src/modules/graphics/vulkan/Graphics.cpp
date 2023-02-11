@@ -252,23 +252,23 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 			if (colors[i].hasValue)
 			{
 				renderPassState.renderPassConfiguration.colorAttachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				renderPassState.clearColors[i].color.float32[0] = colors[i].value.r;
-				renderPassState.clearColors[i].color.float32[1] = colors[i].value.g;
-				renderPassState.clearColors[i].color.float32[2] = colors[i].value.b;
-				renderPassState.clearColors[i].color.float32[3] = colors[i].value.a;
+				renderPassState.clearColors[i].color.float32[0] = static_cast<float>(colors[i].value.r);
+				renderPassState.clearColors[i].color.float32[1] = static_cast<float>(colors[i].value.g);
+				renderPassState.clearColors[i].color.float32[2] = static_cast<float>(colors[i].value.b);
+				renderPassState.clearColors[i].color.float32[3] = static_cast<float>(colors[i].value.a);
 			}
 		}
 
 		if (depth.hasValue)
 		{
 			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[colors.size()].depthStencil.depth = depth.value;
+			renderPassState.clearColors[colors.size()].depthStencil.depth = static_cast<float>(depth.value);
 		}
 
 		if (stencil.hasValue)
 		{
 			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[colors.size()].depthStencil.stencil = stencil.value;
+			renderPassState.clearColors[colors.size()].depthStencil.stencil = static_cast<uint32_t>(stencil.value);
 		}
 
 		startRenderPass();
@@ -686,7 +686,7 @@ void Graphics::setFrontFaceWinding(Winding winding)
 
 	states.back().winding = winding;
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 		vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame),
 			Vulkan::getFrontFace(winding));
@@ -923,7 +923,7 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, readmask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, value);
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 		vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FRONT_AND_BACK,
@@ -941,7 +941,7 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 {
 	flushBatchedDraws();
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 	{
 		vkCmdSetDepthCompareOpEXT(
 			commandBuffers.at(currentFrame), Vulkan::getCompareOp(compare));
@@ -1144,7 +1144,7 @@ void Graphics::initDynamicState()
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.readMask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.value);
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 	{
 		 vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
@@ -1321,9 +1321,9 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	return data;
 }
 
-const OptionalDeviceFeatures &Graphics::getEnabledOptionalDeviceExtensions() const
+const OptionalDeviceExtensions&Graphics::getEnabledOptionalDeviceExtensions() const
 {
-	return optionalDeviceFeatures;
+	return optionalDeviceExtensions;
 }
 
 static void checkOptionalInstanceExtensions(OptionalInstanceExtensions &ext)
@@ -1550,7 +1550,7 @@ QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device)
 	return indices;
 }
 
-static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, OptionalDeviceFeatures &optionalDeviceFeatures)
+static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, OptionalDeviceExtensions &optionalDeviceExtensions)
 {
 	uint32_t extensionCount;
 	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
@@ -1561,19 +1561,19 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 	for (const auto &extension : availableExtensions)
 	{
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.extendedDynamicState = true;
+			optionalDeviceExtensions.extendedDynamicState = true;
 		if (strcmp(extension.extensionName, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.memoryRequirements2 = true;
+			optionalDeviceExtensions.memoryRequirements2 = true;
 		if (strcmp(extension.extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.dedicatedAllocation = true;
+			optionalDeviceExtensions.dedicatedAllocation = true;
 		if (strcmp(extension.extensionName, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.bufferDeviceAddress = true;
+			optionalDeviceExtensions.bufferDeviceAddress = true;
 		if (strcmp(extension.extensionName, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.memoryBudget = true;
+			optionalDeviceExtensions.memoryBudget = true;
 		if (strcmp(extension.extensionName, VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.shaderFloatControls = true;
+			optionalDeviceExtensions.shaderFloatControls = true;
 		if (strcmp(extension.extensionName, VK_KHR_SPIRV_1_4_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.spirv14 = true;
+			optionalDeviceExtensions.spirv14 = true;
 	}
 }
 
@@ -1598,22 +1598,22 @@ void Graphics::createLogicalDevice()
 		queueCreateInfos.push_back(queueCreateInfo);
 	}
 
-	findOptionalDeviceExtensions(physicalDevice, optionalDeviceFeatures);
+	findOptionalDeviceExtensions(physicalDevice, optionalDeviceExtensions);
 
 	// sanity check for dependencies.
 
-	if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
-		optionalDeviceFeatures.extendedDynamicState = false;
-	if (optionalDeviceFeatures.dedicatedAllocation && !optionalDeviceFeatures.memoryRequirements2)
-		optionalDeviceFeatures.dedicatedAllocation = false;
-	if (optionalDeviceFeatures.bufferDeviceAddress && !optionalInstanceExtensions.physicalDeviceProperties2)
-		optionalDeviceFeatures.bufferDeviceAddress = false;
-	if (optionalDeviceFeatures.memoryBudget && !optionalInstanceExtensions.physicalDeviceProperties2)
-		optionalDeviceFeatures.memoryBudget = false;
-	if (optionalDeviceFeatures.spirv14 && !optionalDeviceFeatures.shaderFloatControls)
-		optionalDeviceFeatures.spirv14 = false;
-	if (optionalDeviceFeatures.spirv14 && deviceApiVersion < VK_API_VERSION_1_1)
-		optionalDeviceFeatures.spirv14 = false;
+	if (optionalDeviceExtensions.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
+		optionalDeviceExtensions.extendedDynamicState = false;
+	if (optionalDeviceExtensions.dedicatedAllocation && !optionalDeviceExtensions.memoryRequirements2)
+		optionalDeviceExtensions.dedicatedAllocation = false;
+	if (optionalDeviceExtensions.bufferDeviceAddress && !optionalInstanceExtensions.physicalDeviceProperties2)
+		optionalDeviceExtensions.bufferDeviceAddress = false;
+	if (optionalDeviceExtensions.memoryBudget && !optionalInstanceExtensions.physicalDeviceProperties2)
+		optionalDeviceExtensions.memoryBudget = false;
+	if (optionalDeviceExtensions.spirv14 && !optionalDeviceExtensions.shaderFloatControls)
+		optionalDeviceExtensions.spirv14 = false;
+	if (optionalDeviceExtensions.spirv14 && deviceApiVersion < VK_API_VERSION_1_1)
+		optionalDeviceExtensions.spirv14 = false;
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
@@ -1626,19 +1626,19 @@ void Graphics::createLogicalDevice()
 	createInfo.pEnabledFeatures = &deviceFeatures;
 
 	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
-	if (optionalDeviceFeatures.memoryRequirements2)
+	if (optionalDeviceExtensions.memoryRequirements2)
 		enabledExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
-	if (optionalDeviceFeatures.dedicatedAllocation)
+	if (optionalDeviceExtensions.dedicatedAllocation)
 		enabledExtensions.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
-	if (optionalDeviceFeatures.bufferDeviceAddress)
+	if (optionalDeviceExtensions.bufferDeviceAddress)
 		enabledExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
-	if (optionalDeviceFeatures.memoryBudget)
+	if (optionalDeviceExtensions.memoryBudget)
 		enabledExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
-	if (optionalDeviceFeatures.shaderFloatControls)
+	if (optionalDeviceExtensions.shaderFloatControls)
 		enabledExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
-	if (optionalDeviceFeatures.spirv14)
+	if (optionalDeviceExtensions.spirv14)
 		enabledExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
 	if (deviceApiVersion >= VK_API_VERSION_1_1)
 		enabledExtensions.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
@@ -1654,7 +1654,7 @@ void Graphics::createLogicalDevice()
 
 	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures{};
 	extendedDynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
-	extendedDynamicStateFeatures.extendedDynamicState = Vulkan::getBool(optionalDeviceFeatures.extendedDynamicState);
+	extendedDynamicStateFeatures.extendedDynamicState = Vulkan::getBool(optionalDeviceExtensions.extendedDynamicState);
 	extendedDynamicStateFeatures.pNext = nullptr;
 
 	createInfo.pNext = &extendedDynamicStateFeatures;
@@ -1718,9 +1718,9 @@ void Graphics::initVMA()
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
 	allocatorCreateInfo.flags |= VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
-	if (optionalDeviceFeatures.dedicatedAllocation)
+	if (optionalDeviceExtensions.dedicatedAllocation)
 		allocatorCreateInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
-	if (optionalDeviceFeatures.memoryBudget)
+	if (optionalDeviceExtensions.memoryBudget)
 		allocatorCreateInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 
 	if (vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator) != VK_SUCCESS)
@@ -2325,7 +2325,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	configuration.numColorAttachments = renderPassState.numColorAttachments;
 	configuration.primitiveType = primitiveType;
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 		vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
 	else
 	{
@@ -2452,7 +2452,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
 	configuration.staticData.height = static_cast<uint32_t>(pixelh);
 
-	uint32_t numClearValues = rts.colors.size() + 1;
+	uint32_t numClearValues = static_cast<uint32_t>(rts.colors.size() + 1);
 	renderPassState.clearColors.resize(numClearValues);
 
 	renderPassState.beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -2667,7 +2667,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = Vulkan::getPolygonMode(configuration.wireFrame);
 	rasterizer.lineWidth = 1.0f;
-	if (!optionalDeviceFeatures.extendedDynamicState)
+	if (!optionalDeviceExtensions.extendedDynamicState)
 	{
 		rasterizer.cullMode = Vulkan::getCullMode(configuration.dynamicState.cullmode);
 		rasterizer.frontFace = Vulkan::getFrontFace(configuration.dynamicState.winding);
@@ -2686,7 +2686,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	VkPipelineDepthStencilStateCreateInfo depthStencil{};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencil.depthTestEnable = VK_TRUE;
-	if (!optionalDeviceFeatures.extendedDynamicState)
+	if (!optionalDeviceExtensions.extendedDynamicState)
 	{
 		depthStencil.depthWriteEnable = Vulkan::getBool(configuration.dynamicState.depthState.write);
 		depthStencil.depthCompareOp = Vulkan::getCompareOp(configuration.dynamicState.depthState.compare);
@@ -2697,7 +2697,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 
 	depthStencil.stencilTestEnable = VK_TRUE;
 
-	if (!optionalDeviceFeatures.extendedDynamicState)
+	if (!optionalDeviceExtensions.extendedDynamicState)
 	{
 		depthStencil.front.failOp = VK_STENCIL_OP_KEEP;
 		depthStencil.front.passOp = Vulkan::getStencilOp(configuration.dynamicState.stencilAction);
@@ -2737,7 +2737,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 
 	std::vector<VkDynamicState> dynamicStates;
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 		dynamicStates = {
 			VK_DYNAMIC_STATE_SCISSOR,
 			VK_DYNAMIC_STATE_VIEWPORT,

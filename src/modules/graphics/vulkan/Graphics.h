@@ -146,7 +146,7 @@ struct OptionalInstanceExtensions
 	bool physicalDeviceProperties2 = false;
 };
 
-struct OptionalDeviceFeatures
+struct OptionalDeviceExtensions
 {
 	// VK_EXT_extended_dynamic_state
 	bool extendedDynamicState = false;
@@ -317,7 +317,7 @@ public:
 	VkSampler getCachedSampler(const SamplerState &sampler);
 	void setComputeShader(Shader *computeShader);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
-	const OptionalDeviceFeatures &getEnabledOptionalDeviceExtensions() const;
+	const OptionalDeviceExtensions &getEnabledOptionalDeviceExtensions() const;
 	VkSampleCountFlagBits getMsaaCount(int requestedMsaa) const;
 	void setVsync(int vsync);
 	int getVsync() const;
@@ -398,7 +398,7 @@ private:
 	int requestedMsaa = 0;
 	VkDevice device = VK_NULL_HANDLE; 
 	OptionalInstanceExtensions optionalInstanceExtensions;
-	OptionalDeviceFeatures optionalDeviceFeatures;
+	OptionalDeviceExtensions optionalDeviceExtensions;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
