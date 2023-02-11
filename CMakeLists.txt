@@ -174,7 +174,7 @@ Please see https://github.com/love2d/megasource
 	endif()
 
 	find_package(Freetype REQUIRED)
-	find_package(harfbuzz REQUIRED)
+	find_package(Harfbuzz REQUIRED)
 	find_package(ModPlug REQUIRED)
 	find_package(OpenAL REQUIRED)
 	find_package(OpenGL REQUIRED)
@@ -190,6 +190,7 @@ Please see https://github.com/love2d/megasource
 	set(LOVE_INCLUDE_DIRS
 		${SDL2_INCLUDE_DIR}
 		${FREETYPE_INCLUDE_DIRS}
+		${HARFBUZZ_INCLUDE_DIR}
 		${VORBIS_INCLUDE_DIR}
 		${OPENAL_INCLUDE_DIR}
 		${ZLIB_INCLUDE_DIRS}
