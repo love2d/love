@@ -525,16 +525,37 @@ bool Mesh::getDrawRange(int &start, int &count) const
 
 void Mesh::draw(Graphics *gfx, const love::Matrix4 &m)
 {
-	drawInstanced(gfx, m, 1);
+	drawInternal(gfx, m, 1, nullptr, 0);
 }
 
 void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 {
-	if (vertexCount <= 0 || instancecount <= 0)
+	drawInternal(gfx, m, instancecount, nullptr, 0);
+}
+
+void Mesh::drawIndirect(Graphics *gfx, const Matrix4 &m, Buffer *indirectargs, int argsindex)
+{
+	drawInternal(gfx, m, 0, indirectargs, argsindex);
+}
+
+void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buffer *indirectargs, int argsindex)
+{
+	if (vertexCount <= 0 || (instancecount <= 0 && indirectargs == nullptr))
 		return;
 
 	if (instancecount > 1 && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
 		throw love::Exception("Instancing is not supported on this system.");
+
+	if (indirectargs != nullptr)
+	{
+		if (primitiveType == PRIMITIVE_TRIANGLE_FAN)
+			throw love::Exception("The fan draw mode is not supported in indirect draws.");
+
+		if (useIndexBuffer && indexBuffer != nullptr)
+			gfx->validateIndirectArgsBuffer(Graphics::INDIRECT_ARGS_DRAW_INDICES, indirectargs, argsindex);
+		else
+			gfx->validateIndirectArgsBuffer(Graphics::INDIRECT_ARGS_DRAW_VERTICES, indirectargs, argsindex);
+	}
 
 	// Some graphics backends don't natively support triangle fans. So we'd
 	// have to emulate them with triangles plus an index buffer... which doesn't
@@ -616,7 +637,7 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		}
 	}
 
-	if (indexbuffer != nullptr && indexcount > 0)
+	if (indexbuffer != nullptr && (indexcount > 0 || indirectargs != nullptr))
 	{
 		Range r(0, indexcount);
 		if (range.isValid())
@@ -633,10 +654,13 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		cmd.indexBufferOffset = r.getOffset() * indexbuffer->getArrayStride();
 		cmd.indexCount = (int) r.getSize();
 
+		cmd.indirectBuffer = indirectargs;
+		cmd.indirectBufferOffset = argsindex * (indirectargs != nullptr ? indirectargs->getArrayStride() : 0);
+
 		if (cmd.indexCount > 0)
 			gfx->draw(cmd);
 	}
-	else if (vertexCount > 0)
+	else if (vertexCount > 0 || indirectargs != nullptr)
 	{
 		Range r(0, vertexCount);
 		if (range.isValid())
@@ -650,6 +674,9 @@ void Mesh::drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount)
 		cmd.instanceCount = instancecount;
 		cmd.texture = texture;
 		cmd.cullMode = gfx->getMeshCullMode();
+
+		cmd.indirectBuffer = indirectargs;
+		cmd.indirectBufferOffset = argsindex * (indirectargs != nullptr ? indirectargs->getArrayStride() : 0);
 
 		if (cmd.vertexCount > 0)
 			gfx->draw(cmd);

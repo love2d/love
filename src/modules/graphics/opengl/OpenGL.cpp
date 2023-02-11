@@ -667,6 +667,7 @@ GLenum OpenGL::getGLBufferType(BufferUsage usage)
 		case BUFFERUSAGE_INDEX: return GL_ELEMENT_ARRAY_BUFFER;
 		case BUFFERUSAGE_TEXEL: return GL_TEXTURE_BUFFER;
 		case BUFFERUSAGE_SHADER_STORAGE: return GL_SHADER_STORAGE_BUFFER;
+		case BUFFERUSAGE_INDIRECT_ARGUMENTS: return GL_DRAW_INDIRECT_BUFFER;
 		case BUFFERUSAGE_MAX_ENUM: return GL_ZERO;
 	}
 
@@ -1388,6 +1389,12 @@ bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelform
 	GLenum gltarget = getGLTextureType(target);
 	TextureFormat fmt = convertPixelFormat(pixelformat, false, isSRGB);
 
+	// This shouldn't be needed for glTexStorage, but some drivers don't follow
+	// the spec apparently.
+	// https://stackoverflow.com/questions/13859061/does-an-immutable-texture-need-a-gl-texture-max-level
+	if (GLAD_VERSION_1_2 || GLAD_ES_VERSION_3_0)
+		glTexParameteri(gltarget, GL_TEXTURE_MAX_LEVEL, levels - 1);
+
 	if (fmt.swizzled)
 	{
 		glTexParameteri(gltarget, GL_TEXTURE_SWIZZLE_R, fmt.swizzle[0]);
@@ -1485,6 +1492,8 @@ bool OpenGL::isBufferUsageSupported(BufferUsage usage) const
 		return GLAD_VERSION_3_1 || GLAD_ES_VERSION_3_2;
 	case BUFFERUSAGE_SHADER_STORAGE:
 		return (GLAD_VERSION_4_3 && isCoreProfile()) || GLAD_ES_VERSION_3_1;
+	case BUFFERUSAGE_INDIRECT_ARGUMENTS:
+		return (GLAD_VERSION_4_0 && isCoreProfile()) || GLAD_ES_VERSION_3_1;
 	case BUFFERUSAGE_MAX_ENUM:
 		return false;
 	}

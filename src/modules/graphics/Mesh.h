@@ -176,6 +176,7 @@ public:
 	void draw(Graphics *gfx, const Matrix4 &m) override;
 
 	void drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount);
+	void drawIndirect(Graphics *gfx, const Matrix4 &m, Buffer *indirectargs, int argsindex);
 
 	static std::vector<Buffer::DataDeclaration> getDefaultVertexFormat();
 
@@ -185,6 +186,8 @@ private:
 
 	void setupAttachedAttributes();
 	int getAttachedAttributeIndex(const std::string &name) const;
+
+	void drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buffer *indirectargs, int argsindex);
 
 	std::vector<Buffer::DataMember> vertexFormat;
 

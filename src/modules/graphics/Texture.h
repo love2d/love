@@ -166,6 +166,7 @@ public:
 		SETTING_HEIGHT,
 		SETTING_LAYERS,
 		SETTING_MIPMAPS,
+		SETTING_MIPMAP_COUNT,
 		SETTING_FORMAT,
 		SETTING_LINEAR,
 		SETTING_TYPE,
@@ -185,6 +186,7 @@ public:
 		int layers = 1; // depth for 3D textures
 		TextureType type = TEXTURE_2D;
 		MipmapsMode mipmaps = MIPMAPS_NONE;
+		int mipmapCount = 0; // only used when > 0.
 		PixelFormat format = PIXELFORMAT_NORMAL;
 		bool linear = false;
 		float dpiScale = 1.0f;
