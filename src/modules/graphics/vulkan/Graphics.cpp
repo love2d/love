@@ -276,7 +276,7 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 	if (renderPassState.active)
 		endRenderPass();
 
-	auto & renderPassConfiguration = renderPassState.renderPassConfiguration;
+	auto &renderPassConfiguration = renderPassState.renderPassConfiguration;
 
 	for (size_t i = 0; i < colorbuffers.size(); i++)
 	{
@@ -1316,7 +1316,7 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	return data;
 }
 
-const OptionalDeviceExtensions&Graphics::getEnabledOptionalDeviceExtensions() const
+const OptionalDeviceExtensions &Graphics::getEnabledOptionalDeviceExtensions() const
 {
 	return optionalDeviceExtensions;
 }
@@ -2181,6 +2181,24 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 	return renderPass;
 }
 
+
+VkRenderPass Graphics::getRenderPass(RenderPassConfiguration& configuration)
+{
+	VkRenderPass renderPass;
+	auto it = renderPasses.find(configuration);
+	if (it != renderPasses.end())
+		renderPass = it->second;
+	else
+	{
+		renderPass = createRenderPass(configuration);
+		renderPasses[configuration] = renderPass;
+	}
+
+	renderPassUsages[renderPass] = true;
+
+	return renderPass;
+}
+
 bool Graphics::usesConstantVertexColor(const VertexAttributes &vertexAttributes)
 {
 	return !!(vertexAttributes.enableBits & (1u << ATTRIB_COLOR));
@@ -2446,23 +2464,10 @@ void Graphics::startRenderPass()
 
 	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
 
-	auto &renderPassConfiguration = renderPassState.renderPassConfiguration;
-	VkRenderPass renderPass;
-	auto it = renderPasses.find(renderPassConfiguration);
-	if (it != renderPasses.end())
-		renderPass = it->second;
-	else
-	{
-		renderPass = createRenderPass(renderPassConfiguration);
-		renderPasses[renderPassConfiguration] = renderPass;
-	}
-	renderPassState.beginInfo.renderPass = renderPass;
+	renderPassState.beginInfo.renderPass = getRenderPass(renderPassState.renderPassConfiguration);
 
-	renderPassUsages[renderPass] = true;
-
-	auto &framebufferConfiguration = renderPassState.framebufferConfiguration;
-	framebufferConfiguration.staticData.renderPass = renderPass;
-	renderPassState.beginInfo.framebuffer = getFramebuffer(framebufferConfiguration);
+	renderPassState.framebufferConfiguration.staticData.renderPass = renderPassState.beginInfo.renderPass;
+	renderPassState.beginInfo.framebuffer = getFramebuffer(renderPassState.framebufferConfiguration);
 
 	for (const auto &image : renderPassState.transitionImages)
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -2478,6 +2483,12 @@ void Graphics::endRenderPass()
 
 	for (const auto &image : renderPassState.transitionImages)
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	for (auto &colorAttachment : renderPassState.renderPassConfiguration.colorAttachments)
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+
+	renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 }
 
 VkSampler Graphics::createSampler(const SamplerState &samplerState)

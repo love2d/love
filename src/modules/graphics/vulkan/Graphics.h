@@ -351,6 +351,7 @@ private:
 	VkFramebuffer getFramebuffer(FramebufferConfiguration &configuration);
 	void createDefaultShaders();
 	VkRenderPass createRenderPass(RenderPassConfiguration &configuration);
+	VkRenderPass getRenderPass(RenderPassConfiguration& configuration);
 	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration &configuration);
 	void createColorResources();
 	VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
