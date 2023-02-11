@@ -233,7 +233,6 @@ struct RenderpassState
 	bool active = false;
 	VkRenderPassBeginInfo beginInfo{};
 	bool isWindow = false;
-	bool useConfigurations = false;
 	RenderPassConfiguration renderPassConfiguration{};
 	FramebufferConfiguration framebufferConfiguration{};
 	VkPipeline pipeline = VK_NULL_HANDLE;
@@ -351,8 +350,6 @@ private:
 	void createSwapChain();
 	void createImageViews();
 	void createScreenshotCallbackBuffers();
-	void createDefaultRenderPass();
-	void createDefaultFramebuffers();
 	VkFramebuffer createFramebuffer(FramebufferConfiguration &configuration);
 	VkFramebuffer getFramebuffer(FramebufferConfiguration &configuration);
 	void createDefaultShaders();
@@ -416,9 +413,7 @@ private:
 	VkImage depthImage = VK_NULL_HANDLE;
 	VkImageView depthImageView = VK_NULL_HANDLE;
 	VmaAllocation depthImageAllocation = VK_NULL_HANDLE;
-	VkRenderPass defaultRenderPass = VK_NULL_HANDLE;
 	VkPipelineCache pipelineCache = VK_NULL_HANDLE;
-	std::vector<VkFramebuffer> defaultFramebuffers;
 	std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;

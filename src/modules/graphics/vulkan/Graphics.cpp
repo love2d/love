@@ -156,8 +156,6 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 	}
 	else
 	{
-		renderPassState.useConfigurations = true;
-
 		if (color.hasValue)
 		{
 			renderPassState.renderPassConfiguration.colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -245,8 +243,6 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 	}
 	else
 	{
-		renderPassState.useConfigurations = true;
-
 		for (size_t i = 0; i < colors.size(); i++)
 		{
 			if (colors[i].hasValue)
@@ -280,7 +276,6 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 	if (renderPassState.active)
 		endRenderPass();
 
-	renderPassState.useConfigurations = true;
 	auto & renderPassConfiguration = renderPassState.renderPassConfiguration;
 
 	for (size_t i = 0; i < colorbuffers.size(); i++)
@@ -550,8 +545,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	createColorResources();
 	createDepthResources();
 	transitionColorDepthLayouts = true;
-	createDefaultRenderPass();
-	createDefaultFramebuffers();
 	createCommandPool();
 	createCommandBuffers();
 
@@ -1100,6 +1093,8 @@ bool Graphics::dispatch(love::graphics::Shader *shader, int x, int y, int z)
 
 bool Graphics::dispatch(love::graphics::Shader *shader, love::graphics::Buffer *indirectargs, size_t argsoffset)
 {
+	usedShadersInFrame.insert(computeShader);
+
 	if (renderPassState.active)
 		endRenderPass();
 
@@ -2027,40 +2022,6 @@ void Graphics::createScreenshotCallbackBuffers()
 	}
 }
 
-void Graphics::createDefaultRenderPass()
-{
-	RenderPassConfiguration renderPassConfiguration{};
-	renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples });
-	renderPassConfiguration.staticData.depthStencilAttachment = { findDepthFormat(), VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples };
-	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
-		renderPassConfiguration.staticData.resolve = false;
-	else
-		renderPassConfiguration.staticData.resolve = true;
-	defaultRenderPass = createRenderPass(renderPassConfiguration);
-}
-
-void Graphics::createDefaultFramebuffers()
-{
-	defaultFramebuffers.clear();
-
-	for (const auto view : swapChainImageViews)
-	{
-		FramebufferConfiguration configuration{};
-		configuration.staticData.renderPass = defaultRenderPass;
-		configuration.staticData.width = swapChainExtent.width;
-		configuration.staticData.height = swapChainExtent.height;
-		configuration.staticData.depthView = depthImageView;
-		if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
-			configuration.colorViews.push_back(view);
-		else
-		{
-			configuration.colorViews.push_back(colorImageView);
-			configuration.staticData.resolveView = view;
-		}
-		defaultFramebuffers.push_back(createFramebuffer(configuration));
-	}
-}
-
 VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration &configuration)
 {
 	std::vector<VkImageView> attachments;
@@ -2372,15 +2333,14 @@ void Graphics::setDefaultRenderPass()
 	renderPassState.clearColors.resize(numClearValues);
 
 	renderPassState.beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassState.beginInfo.renderPass = defaultRenderPass;
-	renderPassState.beginInfo.framebuffer = defaultFramebuffers[imageIndex];
+	renderPassState.beginInfo.renderPass = VK_NULL_HANDLE;
+	renderPassState.beginInfo.framebuffer = VK_NULL_HANDLE;
 	renderPassState.beginInfo.renderArea.offset = { 0, 0 };
 	renderPassState.beginInfo.renderArea.extent = swapChainExtent;
 	renderPassState.beginInfo.clearValueCount = numClearValues;
 	renderPassState.beginInfo.pClearValues = renderPassState.clearColors.data();
 
 	renderPassState.isWindow = true;
-	renderPassState.useConfigurations = false;
 	renderPassState.pipeline = VK_NULL_HANDLE;
 	renderPassState.width = static_cast<float>(swapChainExtent.width);
 	renderPassState.height = static_cast<float>(swapChainExtent.height);
@@ -2465,7 +2425,6 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	renderPassState.beginInfo.pClearValues = renderPassState.clearColors.data();
 
 	renderPassState.isWindow = false;
-	renderPassState.useConfigurations = true;
 	renderPassState.renderPassConfiguration = renderPassConfiguration;
 	renderPassState.framebufferConfiguration = configuration;
 	renderPassState.pipeline = VK_NULL_HANDLE;
@@ -2493,26 +2452,23 @@ void Graphics::startRenderPass()
 
 	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
 
-	if (renderPassState.useConfigurations)
+	auto &renderPassConfiguration = renderPassState.renderPassConfiguration;
+	VkRenderPass renderPass;
+	auto it = renderPasses.find(renderPassConfiguration);
+	if (it != renderPasses.end())
+		renderPass = it->second;
+	else
 	{
-		auto &renderPassConfiguration = renderPassState.renderPassConfiguration;
-		VkRenderPass renderPass;
-		auto it = renderPasses.find(renderPassConfiguration);
-		if (it != renderPasses.end())
-			renderPass = it->second;
-		else
-		{
-			renderPass = createRenderPass(renderPassConfiguration);
-			renderPasses[renderPassConfiguration] = renderPass;
-		}
-		renderPassState.beginInfo.renderPass = renderPass;
-
-		renderPassUsages[renderPass] = true;
-
-		auto &framebufferConfiguration = renderPassState.framebufferConfiguration;
-		framebufferConfiguration.staticData.renderPass = renderPass;
-		renderPassState.beginInfo.framebuffer = getFramebuffer(framebufferConfiguration);
+		renderPass = createRenderPass(renderPassConfiguration);
+		renderPasses[renderPassConfiguration] = renderPass;
 	}
+	renderPassState.beginInfo.renderPass = renderPass;
+
+	renderPassUsages[renderPass] = true;
+
+	auto &framebufferConfiguration = renderPassState.framebufferConfiguration;
+	framebufferConfiguration.staticData.renderPass = renderPass;
+	renderPassState.beginInfo.framebuffer = getFramebuffer(framebufferConfiguration);
 
 	for (const auto &image : renderPassState.transitionImages)
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -3080,9 +3036,6 @@ void Graphics::cleanupSwapChain()
 		vmaDestroyBuffer(vmaAllocator, readbackBuffer.buffer, readbackBuffer.allocation);
 		vmaDestroyImage(vmaAllocator, readbackBuffer.image, readbackBuffer.imageAllocation);
 	}
-	for (const auto &framebuffer : defaultFramebuffers)
-		vkDestroyFramebuffer(device, framebuffer, nullptr);
-	vkDestroyRenderPass(device, defaultRenderPass, nullptr);
 	vkDestroyImageView(device, colorImageView, nullptr);
 	vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
 	vkDestroyImageView(device, depthImageView, nullptr);
@@ -3106,8 +3059,6 @@ void Graphics::recreateSwapChain()
 	createScreenshotCallbackBuffers();
 	createColorResources();
 	createDepthResources();
-	createDefaultRenderPass();
-	createDefaultFramebuffers();
 
 	transitionColorDepthLayouts = true;
 }
