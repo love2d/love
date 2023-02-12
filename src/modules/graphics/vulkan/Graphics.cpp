@@ -2182,7 +2182,7 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 }
 
 
-VkRenderPass Graphics::getRenderPass(RenderPassConfiguration& configuration)
+VkRenderPass Graphics::getRenderPass(RenderPassConfiguration &configuration)
 {
 	VkRenderPass renderPass;
 	auto it = renderPasses.find(configuration);

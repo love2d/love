@@ -52,7 +52,7 @@ struct ColorAttachment
 	VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
-	bool operator==(const ColorAttachment&attachment) const
+	bool operator==(const ColorAttachment &attachment) const
 	{
 		return format == attachment.format && 
 			loadOp == attachment.loadOp &&
@@ -351,7 +351,7 @@ private:
 	VkFramebuffer getFramebuffer(FramebufferConfiguration &configuration);
 	void createDefaultShaders();
 	VkRenderPass createRenderPass(RenderPassConfiguration &configuration);
-	VkRenderPass getRenderPass(RenderPassConfiguration& configuration);
+	VkRenderPass getRenderPass(RenderPassConfiguration &configuration);
 	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration &configuration);
 	void createColorResources();
 	VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
