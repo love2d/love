@@ -19,6 +19,7 @@
  **/
 
 #include "wrap_Data.h"
+#include "common/int.h"
 
 // Put the Lua code directly into a raw string literal.
 static const char data_lua[] =
@@ -38,7 +39,18 @@ Data *luax_checkdata(lua_State *L, int idx)
 int w_Data_getString(lua_State *L)
 {
 	Data *t = luax_checkdata(L, 1);
-	lua_pushlstring(L, (const char *) t->getData(), t->getSize());
+	int64 offset = (int64) luaL_optnumber(L, 2, 0);
+
+	int64 size = lua_isnoneornil(L, 3)
+		? ((int64) t->getSize() - offset)
+		: (int64) luaL_checknumber(L, 3);
+
+	if (offset < 0 || offset + size > (int64) t->getSize())
+		return luaL_error(L, "The given offset and size parameters don't fit within the Data's size.");
+
+	auto data = (const char *) t->getData() + offset;
+
+	lua_pushlstring(L, data, size);
 	return 1;
 }
 
