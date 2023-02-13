@@ -45,6 +45,9 @@ int w_Data_getString(lua_State *L)
 		? ((int64) t->getSize() - offset)
 		: (int64) luaL_checknumber(L, 3);
 
+	if (size <= 0)
+		return luaL_error(L, "Invalid size parameter (must be greater than 0)");
+
 	if (offset < 0 || offset + size > (int64) t->getSize())
 		return luaL_error(L, "The given offset and size parameters don't fit within the Data's size.");
 
