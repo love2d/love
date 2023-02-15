@@ -110,66 +110,10 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 
 	flushBatchedDraws();
 
-	if (!renderPassState.active)
-		startRenderPass();
-
-	VkClearAttachment attachment{};
-
-	if (color.hasValue)
-	{
-		Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
-		gammaCorrectColor(cf);
-
-		attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		attachment.clearValue.color.float32[0] = static_cast<float>(cf.r);
-		attachment.clearValue.color.float32[1] = static_cast<float>(cf.g);
-		attachment.clearValue.color.float32[2] = static_cast<float>(cf.b);
-		attachment.clearValue.color.float32[3] = static_cast<float>(cf.a);
-	}
-
-	VkClearAttachment depthStencilAttachment{};
-
-	if (stencil.hasValue)
-	{
-		depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-		depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
-	}
-	if (depth.hasValue)
-	{
-		depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
-		depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
-	}
-
-	std::array<VkClearAttachment, 2> attachments = {
-		attachment,
-		depthStencilAttachment
-	};
-
-	VkClearRect rect{};
-	rect.layerCount = 1;
-	rect.rect.extent.width = static_cast<uint32_t>(renderPassState.width);
-	rect.rect.extent.height = static_cast<uint32_t>(renderPassState.height);
-
-	vkCmdClearAttachments(
-		commandBuffers[currentFrame], 
-		static_cast<uint32_t>(attachments.size()), attachments.data(),
-		1, &rect);
-}
-
-void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
-{
-	if (colors.empty() && !stencil.hasValue && !depth.hasValue)
-		return;
-
-	flushBatchedDraws();
-
-	if (!renderPassState.active)
-		startRenderPass();
-
-	std::vector<VkClearAttachment> attachments;
-	for (const auto &color : colors)
+	if (renderPassState.active)
 	{
 		VkClearAttachment attachment{};
+
 		if (color.hasValue)
 		{
 			Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
@@ -181,33 +125,159 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 			attachment.clearValue.color.float32[2] = static_cast<float>(cf.b);
 			attachment.clearValue.color.float32[3] = static_cast<float>(cf.a);
 		}
-		attachments.push_back(attachment);
+
+		VkClearAttachment depthStencilAttachment{};
+
+		if (stencil.hasValue)
+		{
+			depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+			depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+		}
+		if (depth.hasValue)
+		{
+			depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+			depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
+		}
+
+		std::array<VkClearAttachment, 2> attachments = {
+			attachment,
+			depthStencilAttachment
+		};
+
+		VkClearRect rect{};
+		rect.layerCount = 1;
+		rect.rect.extent.width = static_cast<uint32_t>(renderPassState.width);
+		rect.rect.extent.height = static_cast<uint32_t>(renderPassState.height);
+
+		vkCmdClearAttachments(
+			commandBuffers[currentFrame], 
+			static_cast<uint32_t>(attachments.size()), attachments.data(),
+			1, &rect);
 	}
-
-	VkClearAttachment depthStencilAttachment{};
-
-	if (stencil.hasValue)
+	else
 	{
-		depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-		depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+		if (color.hasValue)
+		{
+			renderPassState.renderPassConfiguration.colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+
+			Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
+			gammaCorrectColor(cf);
+
+			renderPassState.clearColors[0].color.float32[0] = static_cast<float>(cf.r);
+			renderPassState.clearColors[0].color.float32[1] = static_cast<float>(cf.g);
+			renderPassState.clearColors[0].color.float32[2] = static_cast<float>(cf.b);
+			renderPassState.clearColors[0].color.float32[3] = static_cast<float>(cf.a);
+		}
+
+		if (depth.hasValue)
+		{
+			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			renderPassState.clearColors[1].depthStencil.depth = static_cast<float>(depth.value);
+		}
+
+		if (stencil.hasValue)
+		{
+			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			renderPassState.clearColors[1].depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+		}
+
+		if (renderPassState.isWindow)
+		{
+			renderPassState.windowClearRequested = true;
+			renderPassState.mainWindowClearColorValue = color;
+			renderPassState.mainWindowClearDepthValue = depth;
+			renderPassState.mainWindowClearStencilValue = stencil;
+		}
+		else
+			startRenderPass();
 	}
-	if (depth.hasValue)
+}
+
+void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
+{
+	if (colors.empty() && !stencil.hasValue && !depth.hasValue)
+		return;
+
+	flushBatchedDraws();
+
+	if (renderPassState.active)
 	{
-		depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
-		depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
+		std::vector<VkClearAttachment> attachments;
+		for (const auto &color : colors)
+		{
+			VkClearAttachment attachment{};
+			if (color.hasValue)
+			{
+				Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
+				gammaCorrectColor(cf);
+
+				attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				attachment.clearValue.color.float32[0] = static_cast<float>(cf.r);
+				attachment.clearValue.color.float32[1] = static_cast<float>(cf.g);
+				attachment.clearValue.color.float32[2] = static_cast<float>(cf.b);
+				attachment.clearValue.color.float32[3] = static_cast<float>(cf.a);
+			}
+			attachments.push_back(attachment);
+		}
+
+		VkClearAttachment depthStencilAttachment{};
+
+		if (stencil.hasValue)
+		{
+			depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+		}
+		if (depth.hasValue)
+		{
+			depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+			depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
+		}
+
+		attachments.push_back(depthStencilAttachment);
+
+		VkClearRect rect{};
+		rect.layerCount = 1;
+		rect.rect.extent.width = static_cast<uint32_t>(renderPassState.width);
+		rect.rect.extent.height = static_cast<uint32_t>(renderPassState.height);
+
+		vkCmdClearAttachments(
+			commandBuffers[currentFrame],
+			static_cast<uint32_t>(attachments.size()), attachments.data(),
+			1, &rect);
 	}
+	else
+	{
+		for (size_t i = 0; i < colors.size(); i++)
+		{
+			if (colors[i].hasValue)
+			{
+				renderPassState.renderPassConfiguration.colorAttachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 
-	attachments.push_back(depthStencilAttachment);
+				auto &color = colors[i];
+				Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
+				gammaCorrectColor(cf);
 
-	VkClearRect rect{};
-	rect.layerCount = 1;
-	rect.rect.extent.width = static_cast<uint32_t>(renderPassState.width);
-	rect.rect.extent.height = static_cast<uint32_t>(renderPassState.height);
+				renderPassState.clearColors[i].color.float32[0] = static_cast<float>(cf.r);
+				renderPassState.clearColors[i].color.float32[1] = static_cast<float>(cf.g);
+				renderPassState.clearColors[i].color.float32[2] = static_cast<float>(cf.b);
+				renderPassState.clearColors[i].color.float32[3] = static_cast<float>(cf.a);
+			}
+		}
 
-	vkCmdClearAttachments(
-		commandBuffers[currentFrame],
-		static_cast<uint32_t>(attachments.size()), attachments.data(),
-		1, &rect);
+		if (depth.hasValue)
+		{
+			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			renderPassState.clearColors[colors.size()].depthStencil.depth = static_cast<float>(depth.value);
+		}
+
+		if (stencil.hasValue)
+		{
+			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			renderPassState.clearColors[colors.size()].depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+		}
+
+		startRenderPass();
+	}
 }
 
 void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
@@ -215,40 +285,18 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 	if (renderPassState.active)
 		endRenderPass();
 
-	if (renderPassState.useConfigurations)
-	{
-		auto & renderPassConfiguration = renderPassState.renderPassConfiguration;
+	auto &renderPassConfiguration = renderPassState.renderPassConfiguration;
 
-		for (size_t i = 0; i < colorbuffers.size(); i++)
-			renderPassConfiguration.colorAttachments[i].discard = colorbuffers[i];
-		renderPassConfiguration.staticData.depthAttachment.discard = depthstencil;
+	for (size_t i = 0; i < colorbuffers.size(); i++)
+	{
+		if (colorbuffers[i])
+			renderPassConfiguration.colorAttachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	}
-	else
+
+	if (depthstencil)
 	{
-		RenderPassConfiguration renderPassConfiguration{};
-		renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, colorbuffers[0], msaaSamples });
-		renderPassConfiguration.staticData.depthAttachment = { findDepthFormat(), depthstencil, msaaSamples };
-		if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
-			renderPassConfiguration.staticData.resolve = false;
-		else
-			renderPassConfiguration.staticData.resolve = true;
-
-		FramebufferConfiguration framebufferConfiguration{};
-		framebufferConfiguration.staticData.depthView = depthImageView;
-		if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
-		{
-			framebufferConfiguration.colorViews.push_back(swapChainImageViews.at(imageIndex));
-			framebufferConfiguration.staticData.resolveView = VK_NULL_HANDLE;
-		}
-		else
-		{
-			framebufferConfiguration.colorViews.push_back(colorImageView);
-			framebufferConfiguration.staticData.resolveView = swapChainImageViews.at(imageIndex);
-		}
-
-		renderPassState.useConfigurations = true;
-		renderPassState.renderPassConfiguration = renderPassConfiguration;
-		renderPassState.framebufferConfiguration = framebufferConfiguration;
+		renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	}
 
 	startRenderPass();
@@ -422,6 +470,9 @@ void Graphics::present(void *screenshotCallbackdata)
 	if (isRenderTargetActive())
 		throw love::Exception("present cannot be called while a render target is active.");
 
+	if (!renderPassState.active && renderPassState.windowClearRequested)
+		startRenderPass();
+
 	deprecations.draw(this);
 
 	submitGpuCommands(true, screenshotCallbackdata);
@@ -493,6 +544,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	createSurface();
 	pickPhysicalDevice();
 	createLogicalDevice();
+	createPipelineCache();
 	initVMA();
 	initCapabilities();
 	createSwapChain();
@@ -502,8 +554,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	createColorResources();
 	createDepthResources();
 	transitionColorDepthLayouts = true;
-	createDefaultRenderPass();
-	createDefaultFramebuffers();
 	createCommandPool();
 	createCommandBuffers();
 
@@ -580,9 +630,9 @@ void Graphics::initCapabilities()
 	capabilities.limits[LIMIT_CUBE_TEXTURE_SIZE] = properties.limits.maxImageDimensionCube;
 	capabilities.limits[LIMIT_TEXEL_BUFFER_SIZE] = properties.limits.maxTexelBufferElements;
 	capabilities.limits[LIMIT_SHADER_STORAGE_BUFFER_SIZE] = properties.limits.maxStorageBufferRange;
-	capabilities.limits[LIMIT_THREADGROUPS_X] = properties.limits.maxComputeWorkGroupSize[0];
-	capabilities.limits[LIMIT_THREADGROUPS_Y] = properties.limits.maxComputeWorkGroupSize[1];
-	capabilities.limits[LIMIT_THREADGROUPS_Z] = properties.limits.maxComputeWorkGroupSize[2];
+	capabilities.limits[LIMIT_THREADGROUPS_X] = properties.limits.maxComputeWorkGroupCount[0];
+	capabilities.limits[LIMIT_THREADGROUPS_Y] = properties.limits.maxComputeWorkGroupCount[1];
+	capabilities.limits[LIMIT_THREADGROUPS_Z] = properties.limits.maxComputeWorkGroupCount[2];
 	capabilities.limits[LIMIT_RENDER_TARGETS] = properties.limits.maxColorAttachments;
 	capabilities.limits[LIMIT_TEXTURE_MSAA] = static_cast<double>(getMsaaCount(64));
 	capabilities.limits[LIMIT_ANISOTROPY] = properties.limits.maxSamplerAnisotropy;
@@ -638,7 +688,7 @@ void Graphics::setFrontFaceWinding(Winding winding)
 
 	states.back().winding = winding;
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 		vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame),
 			Vulkan::getFrontFace(winding));
@@ -875,7 +925,7 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, readmask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, value);
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 		vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FRONT_AND_BACK,
@@ -893,7 +943,7 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 {
 	flushBatchedDraws();
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 	{
 		vkCmdSetDepthCompareOpEXT(
 			commandBuffers.at(currentFrame), Vulkan::getCompareOp(compare));
@@ -1035,6 +1085,8 @@ graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
 
 bool Graphics::dispatch(love::graphics::Shader *shader, int x, int y, int z)
 {
+	usedShadersInFrame.insert(computeShader);
+
 	if (renderPassState.active)
 		endRenderPass();
 
@@ -1050,6 +1102,8 @@ bool Graphics::dispatch(love::graphics::Shader *shader, int x, int y, int z)
 
 bool Graphics::dispatch(love::graphics::Shader *shader, love::graphics::Buffer *indirectargs, size_t argsoffset)
 {
+	usedShadersInFrame.insert(computeShader);
+
 	if (renderPassState.active)
 		endRenderPass();
 
@@ -1094,7 +1148,7 @@ void Graphics::initDynamicState()
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.readMask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.value);
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 	{
 		 vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
@@ -1176,6 +1230,8 @@ void Graphics::beginFrame()
 
 	Vulkan::resetShaderSwitches();
 
+	for (const auto shader : usedShadersInFrame)
+		shader->newFrame();
 	usedShadersInFrame.clear();
 }
 
@@ -1269,9 +1325,9 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	return data;
 }
 
-const OptionalDeviceFeatures &Graphics::getEnabledOptionalDeviceExtensions() const
+const OptionalDeviceExtensions &Graphics::getEnabledOptionalDeviceExtensions() const
 {
-	return optionalDeviceFeatures;
+	return optionalDeviceExtensions;
 }
 
 static void checkOptionalInstanceExtensions(OptionalInstanceExtensions &ext)
@@ -1401,6 +1457,7 @@ void Graphics::pickPhysicalDevice()
 	deviceApiVersion = properties.apiVersion;
 
 	msaaSamples = getMsaaCount(requestedMsaa);
+	depthStencilFormat = findDepthFormat();
 }
 
 bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device)
@@ -1498,7 +1555,7 @@ QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device)
 	return indices;
 }
 
-static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, OptionalDeviceFeatures &optionalDeviceFeatures)
+static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, OptionalDeviceExtensions &optionalDeviceExtensions)
 {
 	uint32_t extensionCount;
 	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
@@ -1509,19 +1566,17 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 	for (const auto &extension : availableExtensions)
 	{
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.extendedDynamicState = true;
+			optionalDeviceExtensions.extendedDynamicState = true;
 		if (strcmp(extension.extensionName, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.memoryRequirements2 = true;
+			optionalDeviceExtensions.memoryRequirements2 = true;
 		if (strcmp(extension.extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.dedicatedAllocation = true;
+			optionalDeviceExtensions.dedicatedAllocation = true;
 		if (strcmp(extension.extensionName, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.bufferDeviceAddress = true;
-		if (strcmp(extension.extensionName, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.memoryBudget = true;
+			optionalDeviceExtensions.memoryBudget = true;
 		if (strcmp(extension.extensionName, VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.shaderFloatControls = true;
+			optionalDeviceExtensions.shaderFloatControls = true;
 		if (strcmp(extension.extensionName, VK_KHR_SPIRV_1_4_EXTENSION_NAME) == 0)
-			optionalDeviceFeatures.spirv14 = true;
+			optionalDeviceExtensions.spirv14 = true;
 	}
 }
 
@@ -1546,22 +1601,20 @@ void Graphics::createLogicalDevice()
 		queueCreateInfos.push_back(queueCreateInfo);
 	}
 
-	findOptionalDeviceExtensions(physicalDevice, optionalDeviceFeatures);
+	findOptionalDeviceExtensions(physicalDevice, optionalDeviceExtensions);
 
 	// sanity check for dependencies.
 
-	if (optionalDeviceFeatures.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
-		optionalDeviceFeatures.extendedDynamicState = false;
-	if (optionalDeviceFeatures.dedicatedAllocation && !optionalDeviceFeatures.memoryRequirements2)
-		optionalDeviceFeatures.dedicatedAllocation = false;
-	if (optionalDeviceFeatures.bufferDeviceAddress && !optionalInstanceExtensions.physicalDeviceProperties2)
-		optionalDeviceFeatures.bufferDeviceAddress = false;
-	if (optionalDeviceFeatures.memoryBudget && !optionalInstanceExtensions.physicalDeviceProperties2)
-		optionalDeviceFeatures.memoryBudget = false;
-	if (optionalDeviceFeatures.spirv14 && !optionalDeviceFeatures.shaderFloatControls)
-		optionalDeviceFeatures.spirv14 = false;
-	if (optionalDeviceFeatures.spirv14 && deviceApiVersion < VK_API_VERSION_1_1)
-		optionalDeviceFeatures.spirv14 = false;
+	if (optionalDeviceExtensions.extendedDynamicState && !optionalInstanceExtensions.physicalDeviceProperties2)
+		optionalDeviceExtensions.extendedDynamicState = false;
+	if (optionalDeviceExtensions.dedicatedAllocation && !optionalDeviceExtensions.memoryRequirements2)
+		optionalDeviceExtensions.dedicatedAllocation = false;
+	if (optionalDeviceExtensions.memoryBudget && !optionalInstanceExtensions.physicalDeviceProperties2)
+		optionalDeviceExtensions.memoryBudget = false;
+	if (optionalDeviceExtensions.spirv14 && !optionalDeviceExtensions.shaderFloatControls)
+		optionalDeviceExtensions.spirv14 = false;
+	if (optionalDeviceExtensions.spirv14 && deviceApiVersion < VK_API_VERSION_1_1)
+		optionalDeviceExtensions.spirv14 = false;
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
@@ -1574,19 +1627,17 @@ void Graphics::createLogicalDevice()
 	createInfo.pEnabledFeatures = &deviceFeatures;
 
 	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
-	if (optionalDeviceFeatures.memoryRequirements2)
+	if (optionalDeviceExtensions.memoryRequirements2)
 		enabledExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
-	if (optionalDeviceFeatures.dedicatedAllocation)
+	if (optionalDeviceExtensions.dedicatedAllocation)
 		enabledExtensions.push_back(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME);
-	if (optionalDeviceFeatures.bufferDeviceAddress)
-		enabledExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
-	if (optionalDeviceFeatures.memoryBudget)
+	if (optionalDeviceExtensions.memoryBudget)
 		enabledExtensions.push_back(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME);
-	if (optionalDeviceFeatures.shaderFloatControls)
+	if (optionalDeviceExtensions.shaderFloatControls)
 		enabledExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
-	if (optionalDeviceFeatures.spirv14)
+	if (optionalDeviceExtensions.spirv14)
 		enabledExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
 	if (deviceApiVersion >= VK_API_VERSION_1_1)
 		enabledExtensions.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
@@ -1602,7 +1653,7 @@ void Graphics::createLogicalDevice()
 
 	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures{};
 	extendedDynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
-	extendedDynamicStateFeatures.extendedDynamicState = Vulkan::getBool(optionalDeviceFeatures.extendedDynamicState);
+	extendedDynamicStateFeatures.extendedDynamicState = Vulkan::getBool(optionalDeviceExtensions.extendedDynamicState);
 	extendedDynamicStateFeatures.pNext = nullptr;
 
 	createInfo.pNext = &extendedDynamicStateFeatures;
@@ -1614,6 +1665,15 @@ void Graphics::createLogicalDevice()
 
 	vkGetDeviceQueue(device, indices.graphicsFamily.value, 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value, 0, &presentQueue);
+}
+
+void Graphics::createPipelineCache()
+{
+	VkPipelineCacheCreateInfo cacheInfo{};
+	cacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+
+	if (vkCreatePipelineCache(device, &cacheInfo, nullptr, &pipelineCache) != VK_SUCCESS)
+		throw love::Exception("could not create pipeline cache");
 }
 
 void Graphics::initVMA()
@@ -1657,9 +1717,9 @@ void Graphics::initVMA()
 	allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
 	allocatorCreateInfo.flags |= VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
-	if (optionalDeviceFeatures.dedicatedAllocation)
+	if (optionalDeviceExtensions.dedicatedAllocation)
 		allocatorCreateInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
-	if (optionalDeviceFeatures.memoryBudget)
+	if (optionalDeviceExtensions.memoryBudget)
 		allocatorCreateInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 
 	if (vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator) != VK_SUCCESS)
@@ -1966,40 +2026,6 @@ void Graphics::createScreenshotCallbackBuffers()
 	}
 }
 
-void Graphics::createDefaultRenderPass()
-{
-	RenderPassConfiguration renderPassConfiguration{};
-	renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, false, msaaSamples });
-	renderPassConfiguration.staticData.depthAttachment = { findDepthFormat(), false, msaaSamples };
-	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
-		renderPassConfiguration.staticData.resolve = false;
-	else
-		renderPassConfiguration.staticData.resolve = true;
-	defaultRenderPass = createRenderPass(renderPassConfiguration);
-}
-
-void Graphics::createDefaultFramebuffers()
-{
-	defaultFramebuffers.clear();
-
-	for (const auto view : swapChainImageViews)
-	{
-		FramebufferConfiguration configuration{};
-		configuration.staticData.renderPass = defaultRenderPass;
-		configuration.staticData.width = swapChainExtent.width;
-		configuration.staticData.height = swapChainExtent.height;
-		configuration.staticData.depthView = depthImageView;
-		if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
-			configuration.colorViews.push_back(view);
-		else
-		{
-			configuration.colorViews.push_back(colorImageView);
-			configuration.staticData.resolveView = view;
-		}
-		defaultFramebuffers.push_back(createFramebuffer(configuration));
-	}
-}
-
 VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration &configuration)
 {
 	std::vector<VkImageView> attachments;
@@ -2081,10 +2107,7 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		VkAttachmentDescription colorDescription{};
 		colorDescription.format = colorAttachment.format;
 		colorDescription.samples = colorAttachment.msaaSamples;
-		if (colorAttachment.discard)
-			colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		else
-			colorDescription.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+		colorDescription.loadOp = colorAttachment.loadOp;
 		colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -2097,24 +2120,18 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 	subPass.pColorAttachments = colorAttachmentRefs.data();
 
 	VkAttachmentReference depthStencilAttachmentRef{};
-	if (configuration.staticData.depthAttachment.format != VK_FORMAT_UNDEFINED)
+	if (configuration.staticData.depthStencilAttachment.format != VK_FORMAT_UNDEFINED)
 	{
 		depthStencilAttachmentRef.attachment = attachment++;
 		depthStencilAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		subPass.pDepthStencilAttachment = &depthStencilAttachmentRef;
 
 		VkAttachmentDescription depthStencilAttachment{};
-		depthStencilAttachment.format = configuration.staticData.depthAttachment.format;
-		depthStencilAttachment.samples = configuration.staticData.depthAttachment.msaaSamples;
-		if (configuration.staticData.depthAttachment.discard)
-			depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		else
-			depthStencilAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+		depthStencilAttachment.format = configuration.staticData.depthStencilAttachment.format;
+		depthStencilAttachment.samples = configuration.staticData.depthStencilAttachment.msaaSamples;
+		depthStencilAttachment.loadOp = configuration.staticData.depthStencilAttachment.depthLoadOp;
 		depthStencilAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		if (configuration.staticData.depthAttachment.discard)
-			depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		else
-			depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+		depthStencilAttachment.stencilLoadOp = configuration.staticData.depthStencilAttachment.stencilLoadOp;
 		depthStencilAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
 		depthStencilAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		depthStencilAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -2170,6 +2187,23 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 	VkRenderPass renderPass;
 	if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS)
 		throw love::Exception("failed to create render pass");
+
+	return renderPass;
+}
+
+VkRenderPass Graphics::getRenderPass(RenderPassConfiguration &configuration)
+{
+	VkRenderPass renderPass;
+	auto it = renderPasses.find(configuration);
+	if (it != renderPasses.end())
+		renderPass = it->second;
+	else
+	{
+		renderPass = createRenderPass(configuration);
+		renderPasses[configuration] = renderPass;
+	}
+
+	renderPassUsages[renderPass] = true;
 
 	return renderPass;
 }
@@ -2259,7 +2293,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	if (!renderPassState.active)
 		startRenderPass();
 
-	Shader::current->attach();
+	usedShadersInFrame.insert((dynamic_cast<Shader*>(Shader::current)));
 
 	GraphicsPipelineConfiguration configuration{};
 
@@ -2273,7 +2307,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	configuration.numColorAttachments = renderPassState.numColorAttachments;
 	configuration.primitiveType = primitiveType;
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 		vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
 	else
 	{
@@ -2316,20 +2350,54 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 
 void Graphics::setDefaultRenderPass()
 {
+	uint32_t numClearValues = 2;
+	renderPassState.clearColors.resize(numClearValues);
+
 	renderPassState.beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassState.beginInfo.renderPass = defaultRenderPass;
-	renderPassState.beginInfo.framebuffer = defaultFramebuffers[imageIndex];
+	renderPassState.beginInfo.renderPass = VK_NULL_HANDLE;
+	renderPassState.beginInfo.framebuffer = VK_NULL_HANDLE;
 	renderPassState.beginInfo.renderArea.offset = { 0, 0 };
 	renderPassState.beginInfo.renderArea.extent = swapChainExtent;
-	renderPassState.beginInfo.clearValueCount = 0;
+	renderPassState.beginInfo.clearValueCount = numClearValues;
+	renderPassState.beginInfo.pClearValues = renderPassState.clearColors.data();
 
-	renderPassState.useConfigurations = false;
+	renderPassState.isWindow = true;
 	renderPassState.pipeline = VK_NULL_HANDLE;
 	renderPassState.width = static_cast<float>(swapChainExtent.width);
 	renderPassState.height = static_cast<float>(swapChainExtent.height);
 	renderPassState.msaa = msaaSamples;
 	renderPassState.numColorAttachments = 1;
 	renderPassState.transitionImages.clear();
+
+	RenderPassConfiguration renderPassConfiguration{};
+	renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples });
+	renderPassConfiguration.staticData.depthStencilAttachment = { depthStencilFormat, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples };
+	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
+		renderPassConfiguration.staticData.resolve = false;
+	else
+		renderPassConfiguration.staticData.resolve = true;
+
+	FramebufferConfiguration framebufferConfiguration{};
+	framebufferConfiguration.staticData.depthView = depthImageView;
+	framebufferConfiguration.staticData.width = swapChainExtent.width;
+	framebufferConfiguration.staticData.height = swapChainExtent.height;
+
+	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
+	{
+		framebufferConfiguration.colorViews.push_back(swapChainImageViews.at(imageIndex));
+		framebufferConfiguration.staticData.resolveView = VK_NULL_HANDLE;
+	}
+	else
+	{
+		framebufferConfiguration.colorViews.push_back(colorImageView);
+		framebufferConfiguration.staticData.resolveView = swapChainImageViews.at(imageIndex);
+	}
+
+	renderPassState.renderPassConfiguration = std::move(renderPassConfiguration);
+	renderPassState.framebufferConfiguration = std::move(framebufferConfiguration);
+
+	if (renderPassState.windowClearRequested)
+		clear(renderPassState.mainWindowClearColorValue, renderPassState.mainWindowClearStencilValue, renderPassState.mainWindowClearDepthValue);
 }
 
 void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
@@ -2341,14 +2409,14 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	for (const auto &color : rts.colors)
 		renderPassConfiguration.colorAttachments.push_back({ 
 			Vulkan::getTextureFormat(color.texture->getPixelFormat(), isPixelFormatSRGB(color.texture->getPixelFormat())).internalFormat,
-			false, 
+			VK_ATTACHMENT_LOAD_OP_LOAD,
 			dynamic_cast<Texture*>(color.texture)->getMsaaSamples() });
 	if (rts.depthStencil.texture != nullptr)
-		if (rts.depthStencil.texture != nullptr)
-			renderPassConfiguration.staticData.depthAttachment = { 
-				Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat(), false).internalFormat,
-				false,
-				dynamic_cast<Texture*>(rts.depthStencil.texture)->getMsaaSamples() };
+		renderPassConfiguration.staticData.depthStencilAttachment = {
+			Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat(), false).internalFormat,
+			VK_ATTACHMENT_LOAD_OP_LOAD,
+			VK_ATTACHMENT_LOAD_OP_LOAD,
+			dynamic_cast<Texture*>(rts.depthStencil.texture)->getMsaaSamples() };
 
 	FramebufferConfiguration configuration{};
 
@@ -2365,15 +2433,19 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
 	configuration.staticData.height = static_cast<uint32_t>(pixelh);
 
+	uint32_t numClearValues = static_cast<uint32_t>(rts.colors.size() + 1);
+	renderPassState.clearColors.resize(numClearValues);
+
 	renderPassState.beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassState.beginInfo.renderPass = VK_NULL_HANDLE;
 	renderPassState.beginInfo.framebuffer = VK_NULL_HANDLE;
 	renderPassState.beginInfo.renderArea.offset = {0, 0};
 	renderPassState.beginInfo.renderArea.extent.width = static_cast<uint32_t>(pixelw);
 	renderPassState.beginInfo.renderArea.extent.height = static_cast<uint32_t>(pixelh);
-	renderPassState.beginInfo.clearValueCount = 0;
+	renderPassState.beginInfo.clearValueCount = numClearValues;
+	renderPassState.beginInfo.pClearValues = renderPassState.clearColors.data();
 
-	renderPassState.useConfigurations = true;
+	renderPassState.isWindow = false;
 	renderPassState.renderPassConfiguration = renderPassConfiguration;
 	renderPassState.framebufferConfiguration = configuration;
 	renderPassState.pipeline = VK_NULL_HANDLE;
@@ -2388,6 +2460,9 @@ void Graphics::startRenderPass()
 {
 	renderPassState.active = true;
 
+	if (renderPassState.isWindow && renderPassState.windowClearRequested)
+		renderPassState.windowClearRequested = false;
+
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
@@ -2398,26 +2473,10 @@ void Graphics::startRenderPass()
 
 	vkCmdSetViewport(commandBuffers.at(currentFrame), 0, 1, &viewport);
 
-	if (renderPassState.useConfigurations)
-	{
-		auto &renderPassConfiguration = renderPassState.renderPassConfiguration;
-		VkRenderPass renderPass;
-		auto it = renderPasses.find(renderPassConfiguration);
-		if (it != renderPasses.end())
-			renderPass = it->second;
-		else
-		{
-			renderPass = createRenderPass(renderPassConfiguration);
-			renderPasses[renderPassConfiguration] = renderPass;
-		}
-		renderPassState.beginInfo.renderPass = renderPass;
+	renderPassState.beginInfo.renderPass = getRenderPass(renderPassState.renderPassConfiguration);
 
-		renderPassUsages[renderPass] = true;
-
-		auto &framebufferConfiguration = renderPassState.framebufferConfiguration;
-		framebufferConfiguration.staticData.renderPass = renderPass;
-		renderPassState.beginInfo.framebuffer = getFramebuffer(framebufferConfiguration);
-	}
+	renderPassState.framebufferConfiguration.staticData.renderPass = renderPassState.beginInfo.renderPass;
+	renderPassState.beginInfo.framebuffer = getFramebuffer(renderPassState.framebufferConfiguration);
 
 	for (const auto &image : renderPassState.transitionImages)
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -2433,6 +2492,12 @@ void Graphics::endRenderPass()
 
 	for (const auto &image : renderPassState.transitionImages)
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	for (auto &colorAttachment : renderPassState.renderPassConfiguration.colorAttachments)
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+
+	renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 }
 
 VkSampler Graphics::createSampler(const SamplerState &samplerState)
@@ -2523,11 +2588,6 @@ void Graphics::setComputeShader(Shader *shader)
 	computeShader = shader;
 }
 
-std::set<Shader*> &Graphics::getUsedShadersInFrame()
-{
-	return usedShadersInFrame;
-}
-
 VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)
 {
 	auto samplerkey = samplerState.toKey();
@@ -2577,7 +2637,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = Vulkan::getPolygonMode(configuration.wireFrame);
 	rasterizer.lineWidth = 1.0f;
-	if (!optionalDeviceFeatures.extendedDynamicState)
+	if (!optionalDeviceExtensions.extendedDynamicState)
 	{
 		rasterizer.cullMode = Vulkan::getCullMode(configuration.dynamicState.cullmode);
 		rasterizer.frontFace = Vulkan::getFrontFace(configuration.dynamicState.winding);
@@ -2596,7 +2656,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	VkPipelineDepthStencilStateCreateInfo depthStencil{};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencil.depthTestEnable = VK_TRUE;
-	if (!optionalDeviceFeatures.extendedDynamicState)
+	if (!optionalDeviceExtensions.extendedDynamicState)
 	{
 		depthStencil.depthWriteEnable = Vulkan::getBool(configuration.dynamicState.depthState.write);
 		depthStencil.depthCompareOp = Vulkan::getCompareOp(configuration.dynamicState.depthState.compare);
@@ -2607,7 +2667,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 
 	depthStencil.stencilTestEnable = VK_TRUE;
 
-	if (!optionalDeviceFeatures.extendedDynamicState)
+	if (!optionalDeviceExtensions.extendedDynamicState)
 	{
 		depthStencil.front.failOp = VK_STENCIL_OP_KEEP;
 		depthStencil.front.passOp = Vulkan::getStencilOp(configuration.dynamicState.stencilAction);
@@ -2647,7 +2707,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 
 	std::vector<VkDynamicState> dynamicStates;
 
-	if (optionalDeviceFeatures.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState)
 		dynamicStates = {
 			VK_DYNAMIC_STATE_SCISSOR,
 			VK_DYNAMIC_STATE_VIEWPORT,
@@ -2691,7 +2751,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	pipelineInfo.renderPass = configuration.renderPass;
 
 	VkPipeline graphicsPipeline;
-	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
+	if (vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		throw love::Exception("failed to create graphics pipeline");
 	return graphicsPipeline;
 }
@@ -2839,12 +2899,10 @@ VkFormat Graphics::findDepthFormat()
 
 void Graphics::createDepthResources()
 {
-	VkFormat depthAttachment = findDepthFormat();
-
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.format = depthAttachment;
+	imageInfo.format = depthStencilFormat;
 	imageInfo.extent.width = swapChainExtent.width;
 	imageInfo.extent.height = swapChainExtent.height;
 	imageInfo.extent.depth = 1;
@@ -2867,7 +2925,7 @@ void Graphics::createDepthResources()
 	imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageViewInfo.image = depthImage;
 	imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	imageViewInfo.format = depthAttachment;
+	imageViewInfo.format = depthStencilFormat;
 	imageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -2977,6 +3035,7 @@ void Graphics::cleanup()
 	graphicsPipelines.clear();
 
 	vkDestroyCommandPool(device, commandPool, nullptr);
+	vkDestroyPipelineCache(device, pipelineCache, nullptr);
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
@@ -2989,9 +3048,6 @@ void Graphics::cleanupSwapChain()
 		vmaDestroyBuffer(vmaAllocator, readbackBuffer.buffer, readbackBuffer.allocation);
 		vmaDestroyImage(vmaAllocator, readbackBuffer.image, readbackBuffer.imageAllocation);
 	}
-	for (const auto &framebuffer : defaultFramebuffers)
-		vkDestroyFramebuffer(device, framebuffer, nullptr);
-	vkDestroyRenderPass(device, defaultRenderPass, nullptr);
 	vkDestroyImageView(device, colorImageView, nullptr);
 	vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
 	vkDestroyImageView(device, depthImageView, nullptr);
@@ -3015,8 +3071,6 @@ void Graphics::recreateSwapChain()
 	createScreenshotCallbackBuffers();
 	createColorResources();
 	createDepthResources();
-	createDefaultRenderPass();
-	createDefaultFramebuffers();
 
 	transitionColorDepthLayouts = true;
 }

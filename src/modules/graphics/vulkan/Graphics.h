@@ -46,27 +46,43 @@ namespace graphics
 namespace vulkan
 {
 
-struct RenderPassAttachment
+struct ColorAttachment
 {
 	VkFormat format = VK_FORMAT_UNDEFINED;
-	bool discard = true;
+	VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
-	bool operator==(const RenderPassAttachment &attachment) const
+	bool operator==(const ColorAttachment &attachment) const
 	{
 		return format == attachment.format && 
-			discard == attachment.discard && 
+			loadOp == attachment.loadOp &&
+			msaaSamples == attachment.msaaSamples;
+	}
+};
+
+struct DepthStencilAttachment
+{
+	VkFormat format = VK_FORMAT_UNDEFINED;
+	VkAttachmentLoadOp depthLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	VkAttachmentLoadOp stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+
+	bool operator==(const DepthStencilAttachment &attachment) const
+	{
+		return format == attachment.format &&
+			depthLoadOp == attachment.depthLoadOp &&
+			stencilLoadOp == attachment.stencilLoadOp &&
 			msaaSamples == attachment.msaaSamples;
 	}
 };
 
 struct RenderPassConfiguration
 {
-	std::vector<RenderPassAttachment> colorAttachments;
+	std::vector<ColorAttachment> colorAttachments;
 
 	struct StaticRenderPassConfiguration
 	{
-		RenderPassAttachment depthAttachment;
+		DepthStencilAttachment depthStencilAttachment;
 		bool resolve = false;
 	} staticData;
 
@@ -82,7 +98,7 @@ struct RenderPassConfigurationHasher
 	size_t operator()(const RenderPassConfiguration &configuration) const
 	{
 		size_t hashes[] = { 
-			XXH32(configuration.colorAttachments.data(), configuration.colorAttachments.size() * sizeof(VkFormat), 0),
+			XXH32(configuration.colorAttachments.data(), configuration.colorAttachments.size() * sizeof(ColorAttachment), 0),
 			XXH32(&configuration.staticData, sizeof(configuration.staticData), 0),
 		};
 		return XXH32(hashes, sizeof(hashes), 0);
@@ -130,7 +146,7 @@ struct OptionalInstanceExtensions
 	bool physicalDeviceProperties2 = false;
 };
 
-struct OptionalDeviceFeatures
+struct OptionalDeviceExtensions
 {
 	// VK_EXT_extended_dynamic_state
 	bool extendedDynamicState = false;
@@ -140,9 +156,6 @@ struct OptionalDeviceFeatures
 
 	// VK_KHR_dedicated_allocation
 	bool dedicatedAllocation = false;
-
-	// VK_KHR_buffer_device_address
-	bool bufferDeviceAddress = false;
 
 	// VK_EXT_memory_budget
 	bool memoryBudget = false;
@@ -216,7 +229,7 @@ struct RenderpassState
 {
 	bool active = false;
 	VkRenderPassBeginInfo beginInfo{};
-	bool useConfigurations = false;
+	bool isWindow = false;
 	RenderPassConfiguration renderPassConfiguration{};
 	FramebufferConfiguration framebufferConfiguration{};
 	VkPipeline pipeline = VK_NULL_HANDLE;
@@ -225,6 +238,12 @@ struct RenderpassState
 	float width = 0.0f;
 	float height = 0.0f;
 	VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT;
+	std::vector<VkClearValue> clearColors;
+
+	bool windowClearRequested = false;
+	OptionalColorD mainWindowClearColorValue;
+	OptionalDouble mainWindowClearDepthValue;
+	OptionalInt mainWindowClearStencilValue;
 };
 
 struct ScreenshotReadbackBuffer
@@ -293,9 +312,8 @@ public:
 	graphics::Texture *getDefaultTexture() const;
 	VkSampler getCachedSampler(const SamplerState &sampler);
 	void setComputeShader(Shader *computeShader);
-	std::set<Shader*> &getUsedShadersInFrame();
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
-	const OptionalDeviceFeatures &getEnabledOptionalDeviceExtensions() const;
+	const OptionalDeviceExtensions &getEnabledOptionalDeviceExtensions() const;
 	VkSampleCountFlagBits getMsaaCount(int requestedMsaa) const;
 	void setVsync(int vsync);
 	int getVsync() const;
@@ -317,6 +335,7 @@ private:
 	int rateDeviceSuitability(VkPhysicalDevice device);
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	void createLogicalDevice();
+	void createPipelineCache();
 	void initVMA();
 	void createSurface();
 	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -328,12 +347,11 @@ private:
 	void createSwapChain();
 	void createImageViews();
 	void createScreenshotCallbackBuffers();
-	void createDefaultRenderPass();
-	void createDefaultFramebuffers();
 	VkFramebuffer createFramebuffer(FramebufferConfiguration &configuration);
 	VkFramebuffer getFramebuffer(FramebufferConfiguration &configuration);
 	void createDefaultShaders();
 	VkRenderPass createRenderPass(RenderPassConfiguration &configuration);
+	VkRenderPass getRenderPass(RenderPassConfiguration &configuration);
 	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration &configuration);
 	void createColorResources();
 	VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -375,7 +393,7 @@ private:
 	int requestedMsaa = 0;
 	VkDevice device = VK_NULL_HANDLE; 
 	OptionalInstanceExtensions optionalInstanceExtensions;
-	OptionalDeviceFeatures optionalDeviceFeatures;
+	OptionalDeviceExtensions optionalDeviceExtensions;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
@@ -384,6 +402,7 @@ private:
 	Matrix4 displayRotation;
 	std::vector<VkImage> swapChainImages;
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
+	VkFormat depthStencilFormat = VK_FORMAT_UNDEFINED;
 	VkExtent2D swapChainExtent = VkExtent2D();
 	std::vector<VkImageView> swapChainImageViews;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -393,8 +412,7 @@ private:
 	VkImage depthImage = VK_NULL_HANDLE;
 	VkImageView depthImageView = VK_NULL_HANDLE;
 	VmaAllocation depthImageAllocation = VK_NULL_HANDLE;
-	VkRenderPass defaultRenderPass = VK_NULL_HANDLE;
-	std::vector<VkFramebuffer> defaultFramebuffers;
+	VkPipelineCache pipelineCache = VK_NULL_HANDLE;
 	std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
 	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;

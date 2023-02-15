@@ -25,8 +25,6 @@
 #include "libraries/glslang/SPIRV/GlslangToSpv.h"
 
 
-#include <vector>
-
 namespace love
 {
 namespace graphics
@@ -144,6 +142,72 @@ static const TBuiltInResource defaultTBuiltInResource = {
 static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
 static const uint32_t DESCRIPTOR_POOL_SIZE = 1;
 
+class BindingMapper
+{
+public:
+	uint32_t operator()(spirv_cross::CompilerGLSL &comp, std::vector<uint32_t> &spirv, const std::string &name, const spirv_cross::ID &id)
+	{
+		auto it = bindingMappings.find(name);
+		if (it == bindingMappings.end())
+		{
+			auto binding = comp.get_decoration(id, spv::DecorationBinding);
+
+			if (isFreeBinding(binding))
+			{
+				bindingMappings[name] = binding;
+				return binding;
+			}
+			else
+			{
+				uint32_t freeBinding = getFreeBinding();
+
+				uint32_t binaryBindingOffset;
+				if (!comp.get_binary_offset_for_decoration(id, spv::DecorationBinding, binaryBindingOffset))
+					throw love::Exception("could not get binary offset for binding");
+
+				spirv[binaryBindingOffset] = freeBinding;
+
+				bindingMappings[name] = freeBinding;
+
+				return freeBinding;
+			}
+		}
+		else
+			return it->second;
+	};
+
+
+private:
+	uint32_t getFreeBinding() {
+		for (uint32_t i = 0;; i++)
+		{
+			bool free = true;
+			for (const auto &entry : bindingMappings)
+			{
+				if (entry.second == i)
+				{
+					free = false;
+					break;
+				}
+			}
+			if (free)
+				return i;
+		}
+	}
+
+	bool isFreeBinding(uint32_t binding) {
+		for (const auto &entry : bindingMappings)
+		{
+			if (entry.second == binding)
+				return false;
+		}
+		return true;
+	}
+
+	std::map<std::string, uint32_t> bindingMappings;
+
+};
+
 static VkShaderStageFlagBits getStageBit(ShaderStageType type)
 {
 	switch (type)
@@ -185,6 +249,8 @@ Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[])
 
 bool Shader::loadVolatile()
 {
+	device = vgfx->getDevice();
+
 	computePipeline = VK_NULL_HANDLE;
 
 	for (int i = 0; i < BUILTIN_MAX_ENUM; i++)
@@ -200,6 +266,7 @@ bool Shader::loadVolatile()
 	currentFrame = 0;
 	currentUsedUniformStreamBuffersCount = 0;
 	currentUsedDescriptorSetsCount = 0;
+	newFrame();
 
 	return true;
 }
@@ -384,7 +451,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 	for (const auto &u : uniformInfos)
 	{
 		if (updatedUniforms.find(u.second.location) == updatedUniforms.end())
-			updateUniform(&u.second, u.second.count);
+			updateUniform(&u.second, u.second.count, true);
 	}
 
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
@@ -406,13 +473,6 @@ Shader::~Shader()
 
 void Shader::attach()
 {
-	auto &usedShadersInFrame = vgfx->getUsedShadersInFrame();
-	if (usedShadersInFrame.find(this) == usedShadersInFrame.end())
-	{
-		newFrame();
-		usedShadersInFrame.insert(this);
-	}
-
 	if (!isCompute)
 	{
 		if (Shader::current != this)
@@ -676,11 +736,9 @@ void Shader::compileShaders()
 	using namespace glslang;
 	using namespace spirv_cross;
 
-	std::vector<TShader*> glslangShaders;
+	std::vector<std::unique_ptr<TShader>> glslangShaders;
 
-	auto program = new TProgram();
-
-	device = vgfx->getDevice();
+	auto program = std::make_unique<TProgram>();
 
 	const auto &enabledExtensions = vgfx->getEnabledOptionalDeviceExtensions();
 
@@ -695,7 +753,7 @@ void Shader::compileShaders()
 			isCompute = true;
 
 		auto glslangShaderStage = getGlslShaderType(stage);
-		auto tshader = new TShader(glslangShaderStage);
+		auto tshader = std::make_unique<TShader>(glslangShaderStage);
 
 		tshader->setEnvInput(EShSourceGlsl, glslangShaderStage, EShClientVulkan, 450);
 		tshader->setEnvClient(EShClientVulkan, EShTargetVulkan_1_2);
@@ -721,14 +779,18 @@ void Shader::compileShaders()
 
 		if (!tshader->parse(&defaultTBuiltInResource, defaultVersion, defaultProfile, forceDefault, forwardCompat, EShMsgSuppressWarnings))
 		{
-			const char *msg1 = tshader->getInfoLog();
-			const char *msg2 = tshader->getInfoDebugLog();
+			const char *stageName = "unknown";
+			ShaderStage::getConstant(stage, stageName);
 
-			throw love::Exception("error while parsing shader");
+			std::string err = "Error parsing " + std::string(stageName) + " shader:\n\n"
+				+ std::string(tshader->getInfoLog()) + "\n"
+				+ std::string(tshader->getInfoDebugLog());
+
+			throw love::Exception("%s", err.c_str());
 		}
 
-		program->addShader(tshader);
-		glslangShaders.push_back(tshader);
+		program->addShader(tshader.get());
+		glslangShaders.push_back(std::move(tshader));
 	}
 
 	if (!program->link(EShMsgDefault))
@@ -739,14 +801,16 @@ void Shader::compileShaders()
 
 	uniformInfos.clear();
 
+	BindingMapper bindingMapper;
+
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
 		auto shaderStage = (ShaderStageType)i;
 		auto glslangStage = getGlslShaderType(shaderStage);
 		auto intermediate = program->getIntermediate(glslangStage);
-		if (intermediate == nullptr) {
+
+		if (intermediate == nullptr)
 			continue;
-		}
 
 		spv::SpvBuildLogger logger;
 		glslang::SpvOptions opt;
@@ -754,31 +818,6 @@ void Shader::compileShaders()
 
 		std::vector<uint32_t> spirv;
 		GlslangToSpv(*intermediate, spirv, &logger, &opt);
-
-		std::string msgs = logger.getAllMessages();
-
-		VkShaderModuleCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		createInfo.codeSize = spirv.size() * sizeof(uint32_t);
-		createInfo.pCode = spirv.data();
-
-		auto device = vgfx->getDevice();
-
-		VkShaderModule shaderModule;
-
-		if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-			throw love::Exception("failed to create shader module");
-		}
-
-		shaderModules.push_back(shaderModule);
-
-		VkPipelineShaderStageCreateInfo shaderStageInfo{};
-		shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		shaderStageInfo.stage = getStageBit((ShaderStageType)i);
-		shaderStageInfo.module = shaderModule;
-		shaderStageInfo.pName = "main";
-
-		shaderStages.push_back(shaderStageInfo);
 
 		spirv_cross::CompilerGLSL comp(spirv);
 
@@ -796,7 +835,7 @@ void Shader::compileShaders()
 				auto defaultUniformBlockSize = comp.get_declared_struct_size(type);
 				localUniformStagingData.resize(defaultUniformBlockSize);
 				localUniformData.resize(defaultUniformBlockSize);
-				localUniformLocation = comp.get_decoration(resource.id, spv::DecorationBinding);
+				localUniformLocation = bindingMapper(comp, spirv, resource.name, resource.id);
 
 				memset(localUniformStagingData.data(), 0, defaultUniformBlockSize);
 				memset(localUniformData.data(), 0, defaultUniformBlockSize);
@@ -817,7 +856,7 @@ void Shader::compileShaders()
 			const SPIRType &imagetype = comp.get_type(basetype.image.type);
 
 			graphics::Shader::UniformInfo info;
-			info.location = comp.get_decoration(r.id, spv::DecorationBinding);
+			info.location = bindingMapper(comp, spirv, r.name, r.id);
 			info.baseType = UNIFORM_SAMPLER;
 			info.name = r.name;
 			info.count = type.array.empty() ? 1 : type.array[0];
@@ -898,7 +937,7 @@ void Shader::compileShaders()
 			if (!fillUniformReflectionData(u))
 				continue;
 
-			u.location = comp.get_decoration(r.id, spv::DecorationBinding);
+			u.location = bindingMapper(comp, spirv, r.name, r.id);
 			u.buffers = new love::graphics::Buffer *[u.count];
 
 			for (int i = 0; i < u.count; i++)
@@ -921,12 +960,10 @@ void Shader::compileShaders()
 				continue;
 
 			u.textures = new love::graphics::Texture *[u.count];
-			u.location = comp.get_decoration(r.id, spv::DecorationBinding);
+			u.location = bindingMapper(comp, spirv, r.name, r.id);
 
 			for (int i = 0; i < u.count; i++)
 				u.textures[i] = nullptr;
-
-			// some stuff missing ?
 
 			uniformInfos[u.name] = u;
 		}
@@ -940,11 +977,27 @@ void Shader::compileShaders()
 				attributes[name] = attributeLocation;
 			}
 		}
-	}
 
-	delete program;
-	for (auto shader : glslangShaders)
-		delete shader;
+		VkShaderModuleCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		createInfo.codeSize = spirv.size() * sizeof(uint32_t);
+		createInfo.pCode = spirv.data();
+
+		VkShaderModule shaderModule;
+
+		if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+			throw love::Exception("failed to create shader module");
+
+		shaderModules.push_back(shaderModule);
+
+		VkPipelineShaderStageCreateInfo shaderStageInfo{};
+		shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+		shaderStageInfo.stage = getStageBit((ShaderStageType)i);
+		shaderStageInfo.module = shaderModule;
+		shaderStageInfo.pName = "main";
+
+		shaderStages.push_back(shaderStageInfo);
+	}
 }
 
 void Shader::createDescriptorSetLayout()
