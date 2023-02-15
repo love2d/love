@@ -78,8 +78,6 @@ bool Buffer::loadVolatile()
 	allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
 	if (dataUsage == BUFFERDATAUSAGE_READBACK)
 		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-	else if ((bufferInfo.usage | VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT) || (bufferInfo.usage | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT))
-		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
 	auto result = vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
 	if (result != VK_SUCCESS)
