@@ -159,10 +159,14 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 		if (color.hasValue)
 		{
 			renderPassState.renderPassConfiguration.colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[0].color.float32[0] = static_cast<float>(color.value.r);
-			renderPassState.clearColors[0].color.float32[1] = static_cast<float>(color.value.g);
-			renderPassState.clearColors[0].color.float32[2] = static_cast<float>(color.value.b);
-			renderPassState.clearColors[0].color.float32[3] = static_cast<float>(color.value.a);
+
+			Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
+			gammaCorrectColor(cf);
+
+			renderPassState.clearColors[0].color.float32[0] = static_cast<float>(cf.r);
+			renderPassState.clearColors[0].color.float32[1] = static_cast<float>(cf.g);
+			renderPassState.clearColors[0].color.float32[2] = static_cast<float>(cf.b);
+			renderPassState.clearColors[0].color.float32[3] = static_cast<float>(cf.a);
 		}
 
 		if (depth.hasValue)
@@ -248,10 +252,15 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 			if (colors[i].hasValue)
 			{
 				renderPassState.renderPassConfiguration.colorAttachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				renderPassState.clearColors[i].color.float32[0] = static_cast<float>(colors[i].value.r);
-				renderPassState.clearColors[i].color.float32[1] = static_cast<float>(colors[i].value.g);
-				renderPassState.clearColors[i].color.float32[2] = static_cast<float>(colors[i].value.b);
-				renderPassState.clearColors[i].color.float32[3] = static_cast<float>(colors[i].value.a);
+
+				auto &color = colors[i];
+				Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
+				gammaCorrectColor(cf);
+
+				renderPassState.clearColors[i].color.float32[0] = static_cast<float>(cf.r);
+				renderPassState.clearColors[i].color.float32[1] = static_cast<float>(cf.g);
+				renderPassState.clearColors[i].color.float32[2] = static_cast<float>(cf.b);
+				renderPassState.clearColors[i].color.float32[3] = static_cast<float>(cf.a);
 			}
 		}
 
