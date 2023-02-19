@@ -1370,6 +1370,9 @@ void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, siz
 	if (dest->isImmutable())
 		throw love::Exception("Cannot copy to an immutable buffer.");
 
+	if (sourceoffset % 4 != 0 || destoffset % 4 != 0 || size % 4 != 0)
+		throw love::Exception("Buffer copy source offset, destination offset, and size parameters must be multiples of 4 bytes.");
+
 	source->copyTo(dest, sourceoffset, destoffset, size);
 }
 
@@ -1456,6 +1459,9 @@ void Graphics::copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int
 
 	Range destrange(destoffset, size);
 
+	if (destoffset % 4 != 0 || size % 4 != 0)
+		throw love::Exception("Buffer copy destination offset and computed byte size must be multiples of 4 bytes.");
+
 	if (destrange.getMax() >= dest->getSize())
 		throw love::Exception("Buffer copy destination offset and width/height doesn't fit within the destination Buffer.");
 
@@ -1535,6 +1541,9 @@ void Graphics::copyBufferToTexture(Buffer *source, Texture *dest, size_t sourceo
 	}
 
 	Range sourcerange(sourceoffset, size);
+
+	if (sourceoffset % 4 != 0 || size % 4 != 0)
+		throw love::Exception("Buffer copy source offset and computed byte size must be multiples of 4 bytes.");
 
 	if (sourcerange.getMax() >= source->getSize())
 		throw love::Exception("Buffer copy source offset and width/height doesn't fit within the source Buffer.");
