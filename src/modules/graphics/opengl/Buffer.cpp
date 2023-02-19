@@ -89,7 +89,7 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 		ownsMemoryMap = true;
 
 	std::vector<uint8> emptydata;
-	if (settings.zeroInitialize && data == nullptr)
+	if (settings.zeroInitialize && data == nullptr && !GLAD_VERSION_4_3)
 	{
 		try
 		{
@@ -106,6 +106,12 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 	{
 		unloadVolatile();
 		throw love::Exception("Could not create buffer with %d bytes (out of VRAM?)", size);
+	}
+
+	if (settings.zeroInitialize && data == nullptr && GLAD_VERSION_4_3)
+	{
+		gl.bindBuffer(mapUsage, buffer);
+		glClearBufferData(target, GL_R8UI, GL_RED, GL_UNSIGNED_BYTE, nullptr);
 	}
 }
 
@@ -288,6 +294,36 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 	}
 
 	return true;
+}
+
+void Buffer::clear(size_t offset, size_t size)
+{
+	if (isImmutable())
+		throw love::Exception("Cannot clear an immutable Buffer.");
+	else if (isMapped())
+		throw love::Exception("Cannot clear a mapped Buffer.");
+	else if (offset + size > getSize())
+		throw love::Exception("The given offset and size parameters to clear() are not within the Buffer's size.");
+	else if (offset % 4 != 0 || size % 4 != 0)
+		throw love::Exception("clear() must be used with offset and size parameters that are multiples of 4 bytes.");
+
+	if (GLAD_VERSION_4_3)
+	{
+		gl.bindBuffer(mapUsage, buffer);
+		glClearBufferSubData(target, GL_R8UI, offset, size, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+	}
+	else
+	{
+		try
+		{
+			std::vector<uint8> emptydata(getSize());
+			fill(0, getSize(), emptydata.data());
+		}
+		catch (std::exception &)
+		{
+			throw love::Exception("Out of memory.");
+		}
+	}
 }
 
 void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)

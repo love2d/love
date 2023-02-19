@@ -132,6 +132,11 @@ public:
 	virtual bool fill(size_t offset, size_t size, const void *data) = 0;
 
 	/**
+	 * Reset the given portion of this buffer's data to 0.
+	 */
+	virtual void clear(size_t offset, size_t size) = 0;
+
+	/**
 	 * Copy a portion of this Buffer's data to another buffer, using the GPU.
 	 **/
 	virtual void copyTo(Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size) = 0;

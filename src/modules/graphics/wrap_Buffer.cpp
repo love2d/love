@@ -318,6 +318,24 @@ static int w_Buffer_setArrayData(lua_State *L)
 	return 0;
 }
 
+static int w_Buffer_clear(lua_State *L)
+{
+	Buffer *t = luax_checkbuffer(L, 1);
+	size_t offset = 0;
+	size_t size = t->getSize();
+	if (!lua_isnoneornil(L, 2))
+	{
+		lua_Number offsetp = luaL_checknumber(L, 2);
+		lua_Number sizep = luaL_checknumber(L, 3);
+		if (offsetp < 0 || sizep < 0)
+			return luaL_error(L, "Offset and size parameters cannot be negative.");
+		offset = (size_t) offsetp;
+		size = (size_t) sizep;
+	}
+	luax_catchexcept(L, [&]() { t->clear(offset, size); });
+	return 0;
+}
+
 static int w_Buffer_getElementCount(lua_State *L)
 {
 	Buffer *t = luax_checkbuffer(L, 1);
@@ -386,6 +404,7 @@ static int w_Buffer_isBufferType(lua_State *L)
 static const luaL_Reg w_Buffer_functions[] =
 {
 	{ "setArrayData", w_Buffer_setArrayData },
+	{ "clear", w_Buffer_clear },
 	{ "getElementCount", w_Buffer_getElementCount },
 	{ "getElementStride", w_Buffer_getElementStride },
 	{ "getSize", w_Buffer_getSize },

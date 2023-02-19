@@ -104,7 +104,16 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 	{
 		auto *mgfx = (Graphics *) gfx;
 		auto encoder = mgfx->useBlitEncoder();
-		[encoder fillBuffer:buffer range:NSMakeRange(0, size) value:0];
+
+		size_t clearsize = size;
+
+#ifdef LOVE_MACOS
+		// Metal limitation on macOS.
+		clearsize -= (clearsize % 4);
+#endif
+
+		if (clearsize > 0)
+			[encoder fillBuffer:buffer range:NSMakeRange(0, clearsize) value:0];
 	}
 }}
 
@@ -195,6 +204,23 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 
 	unmap(offset, size);
 	return true;
+}}
+
+void Buffer::clear(size_t offset, size_t size)
+{ @autoreleasepool {
+	if (isImmutable())
+		throw love::Exception("Cannot clear an immutable Buffer.");
+	else if (isMapped())
+		throw love::Exception("Cannot clear a mapped Buffer.");
+	else if (offset + size > getSize())
+		throw love::Exception("The given offset and size parameters to clear() are not within the Buffer's size.");
+	else if (offset % 4 != 0 || size % 4 != 0)
+		throw love::Exception("clear() must be used with offset and size parameters that are multiples of 4 bytes.");
+
+	auto gfx = Graphics::getInstance();
+	auto encoder = gfx->useBlitEncoder();
+
+	[encoder fillBuffer:buffer range:NSMakeRange(offset, size) value:0];
 }}
 
 void Buffer::copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)

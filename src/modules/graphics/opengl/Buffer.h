@@ -53,6 +53,7 @@ public:
 	void *map(MapType map, size_t offset, size_t size) override;
 	void unmap(size_t usedoffset, size_t usedsize) override;
 	bool fill(size_t offset, size_t size, const void *data) override;
+	void clear(size_t offset, size_t size) override;
 	void copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size) override;
 
 	ptrdiff_t getHandle() const override { return buffer; };
