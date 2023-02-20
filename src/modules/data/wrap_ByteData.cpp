@@ -44,8 +44,27 @@ int w_ByteData_clone(lua_State *L)
 	return 1;
 }
 
+int w_ByteData_setString(lua_State *L)
+{
+	Data *t = luax_checkdata(L, 1);
+	size_t size = 0;
+	const char *str = luaL_checklstring(L, 2, &size);
+	int64 offset = (int64)luaL_optnumber(L, 3, 0);
+
+	size = std::min(size, t->getSize());
+
+	if (size == 0)
+		return 0;
+
+	if (offset < 0 || offset + size > (int64) t->getSize())
+		return luaL_error(L, "The given string offset and size don't fit within the Data's size.");
+
+	memcpy((char *) t->getData() + (size_t) offset, str, size);
+	return 0;
+}
+
 template <typename T>
-int w_ByteData_setT(lua_State *L)
+static int w_ByteData_setT(lua_State *L)
 {
 	ByteData *t = luax_checkbytedata(L, 1);
 	int64 offset = (int64) luaL_checknumber(L, 2);
@@ -129,6 +148,7 @@ int w_ByteData_setUInt64(lua_State *L)
 static const luaL_Reg w_ByteData_functions[] =
 {
 	{ "clone", w_ByteData_clone },
+	{ "setString", w_ByteData_setString },
 	{ "setFloat", w_ByteData_setFloat },
 	{ "setDouble", w_ByteData_setDouble },
 	{ "setInt8", w_ByteData_setInt8 },
