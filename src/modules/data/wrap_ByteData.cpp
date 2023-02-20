@@ -73,7 +73,7 @@ static int w_ByteData_setT(lua_State *L)
 	int nargs = std::max(1, istable ? (int) luax_objlen(L, 3) : lua_gettop(L) - 2);
 
 	if (offset < 0 || offset + sizeof(T) * nargs > t->getSize())
-		return luaL_error(L, "");
+		return luaL_error(L, "The given offset and value parameters don't fit within the Data's size.");
 
 	auto data = (T *)((uint8 *) t->getData() + offset);
 
