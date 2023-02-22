@@ -157,7 +157,7 @@ void NoneJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vec
  *    (q + w/2 * ns) + lambda * (q - p) = (q + w/2 * nt) + mu * (r - q)   (u1)
  *    (q - w/2 * ns) + lambda * (q - p) = (q - w/2 * nt) + mu * (r - q)   (u2)
  *
- * with nt,nt being the normals on the segments s = p-q and t = q-r,
+ * with ns,nt being the normals on the segments s = p-q and t = q-r,
  *
  *    ns = perp(s) / |s|
  *    nt = perp(t) / |t|.
