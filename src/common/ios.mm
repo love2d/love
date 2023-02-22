@@ -391,10 +391,37 @@ std::string getExecutablePath()
 	}
 }
 
-void vibrate()
+void vibrate(const double intensity, const std::string &mode)
 {
 	@autoreleasepool
 	{
+		if (mode != "default" && @available(iOS 10.0, *)) {
+			// iOS 10.0 and above
+			UIImpactFeedbackGenerator *impact = nil;
+			if (mode == "light") {
+				impact = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
+			} else if (mode == "medium") {
+				impact = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+			} else if (mode == "heavy") {
+				impact = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleHeavy];
+			}
+			if (@available(iOS 13.0, *)) {
+				// iOS 13.0 and above
+				if (mode == "soft") {
+					impact = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleSoft];
+				} else if (mode == "rigid") {
+					impact = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleRigid];
+				}
+				if(impact != nil){
+					[impact impactOccurredWithIntensity:(intensity < 0 ? 0 : (intensity > 1 ? 1 : intensity))];
+					return;
+				}
+			}
+			if(impact != nil){
+				[impact impactOccurred];
+				return;
+			}
+		}
 		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 	}
 }
