@@ -157,7 +157,7 @@ void NoneJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vec
  *    (q + w/2 * ns) + lambda * (q - p) = (q + w/2 * nt) + mu * (r - q)   (u1)
  *    (q - w/2 * ns) + lambda * (q - p) = (q - w/2 * nt) + mu * (r - q)   (u2)
  *
- * with nt,nt being the normals on the segments s = p-q and t = q-r,
+ * with ns,nt being the normals on the segments s = p-q and t = q-r,
  *
  *    ns = perp(s) / |s|
  *    nt = perp(t) / |t|.
@@ -188,11 +188,26 @@ void MiterJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 	anchors.push_back(pointA);
 
 	float det = Vector2::cross(segment, newSegment);
-	if (fabs(det) / (segmentLength * newSegmentLength) < LINES_PARALLEL_EPS && Vector2::dot(segment, newSegment) > 0)
+	if (fabs(det) / (segmentLength * newSegmentLength) < LINES_PARALLEL_EPS)
 	{
 		// lines parallel, compute as u1 = q + ns * w/2, u2 = q - ns * w/2
 		normals.push_back(segmentNormal);
 		normals.push_back(-segmentNormal);
+
+		if (Vector2::dot(segment, newSegment) < 0)
+		{
+			// line reverses direction; because the normal flips, the
+			// triangle strip would twist here, so insert a zero-size
+			// quad to contain the twist
+			//  ____.___.____
+			// |    |\ /|    |
+			// p    q X q    r
+			// |____|/ \|____|
+			anchors.push_back(pointA);
+			anchors.push_back(pointA);
+			normals.push_back(-segmentNormal);
+			normals.push_back(segmentNormal);
+		}
 	}
 	else
 	{
@@ -233,14 +248,24 @@ void BevelJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 	float newSegmentLength = newSegment.getLength();
 
 	float det = Vector2::cross(segment, newSegment);
-	if (fabs(det) / (segmentLength * newSegmentLength) < LINES_PARALLEL_EPS && Vector2::dot(segment, newSegment) > 0)
+	if (fabs(det) / (segmentLength * newSegmentLength) < LINES_PARALLEL_EPS)
 	{
 		// lines parallel, compute as u1 = q + ns * w/2, u2 = q - ns * w/2
 		Vector2 newSegmentNormal = newSegment.getNormal(halfWidth / newSegmentLength);
 		anchors.push_back(pointA);
 		anchors.push_back(pointA);
-		normals.push_back(newSegmentNormal);
-		normals.push_back(-newSegmentNormal);
+		normals.push_back(segmentNormal);
+		normals.push_back(-segmentNormal);
+
+		if (Vector2::dot(segment, newSegment) < 0)
+		{
+			// line reverses direction; same as for miter
+			anchors.push_back(pointA);
+			anchors.push_back(pointA);
+			normals.push_back(-segmentNormal);
+			normals.push_back(segmentNormal);
+		}
+
 		segment = newSegment;
 		segmentLength = newSegmentLength;
 		segmentNormal = newSegmentNormal;
