@@ -11,7 +11,6 @@ Released: N/A
 * Added love.event.restart(optionalvalue). A new love.restart field will contain the value after restarting.
 * Added love.system.getPreferredLocales.
 * Added love.localechanged callback.
-* Added love.dropbegan and love.dropcompleted callbacks.
 * Added love.audiodisconnected callback.
 * Added love.filesystem.mountFullPath and love.filesystem.unmountFullPath, including opt-in mount-for-write support.
 * Added love.filesystem.mountCommonPath, unmountCommonPath, and getFullCommonPath.

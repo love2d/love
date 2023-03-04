@@ -414,12 +414,6 @@ Message *Event::convert(const SDL_Event &e)
 		}
 		SDL_free(e.drop.file);
 		break;
-	case SDL_DROPBEGIN:
-		msg = new Message("dropbegan");
-		break;
-	case SDL_DROPCOMPLETE:
-		msg = new Message("dropcompleted");
-		break;
 	case SDL_QUIT:
 	case SDL_APP_TERMINATING:
 		msg = new Message("quit");
