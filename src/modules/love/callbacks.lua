@@ -49,8 +49,8 @@ function love.createhandlers()
 		mousereleased = function (x,y,b,t,c)
 			if love.mousereleased then return love.mousereleased(x,y,b,t,c) end
 		end,
-		wheelmoved = function (x,y)
-			if love.wheelmoved then return love.wheelmoved(x,y) end
+		wheelmoved = function (x,y,px,py,dir)
+			if love.wheelmoved then return love.wheelmoved(x,y,px,py,dir) end
 		end,
 		touchpressed = function (id,x,y,dx,dy,p)
 			if love.touchpressed then return love.touchpressed(id,x,y,dx,dy,p) end

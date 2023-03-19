@@ -294,6 +294,20 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_MOUSEWHEEL:
 		vargs.emplace_back((double) e.wheel.x);
 		vargs.emplace_back((double) e.wheel.y);
+#if SDL_VERSION_ATLEAST(2, 0, 18)
+		// These values will be garbage if 2.0.18+ headers are used but a lower
+		// version of SDL is used at runtime, but other bits of code already
+		// prevent running in that situation.
+		vargs.emplace_back((double) e.wheel.preciseX);
+		vargs.emplace_back((double) e.wheel.preciseY);
+#else
+		vargs.emplace_back((double) e.wheel.x);
+		vargs.emplace_back((double) e.wheel.y);
+#endif
+
+		txt = e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? "flipped" : "standard";
+		vargs.emplace_back(txt, strlen(txt));
+
 		msg = new Message("wheelmoved", vargs);
 		break;
 	case SDL_FINGERDOWN:
