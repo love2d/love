@@ -1768,100 +1768,6 @@ int w_newBuffer(lua_State *L)
 	return 1;
 }
 
-int w_newVertexBuffer(lua_State *L)
-{
-	Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_DYNAMIC);
-	luax_optbuffersettings(L, 3, settings);
-
-	std::vector<Buffer::DataDeclaration> format;
-	luax_checkbufferformat(L, 1, format);
-
-	Buffer *b = luax_newbuffer(L, 2, settings, format);
-
-	luax_pushtype(L, b);
-	b->release();
-	return 1;
-}
-
-int w_newIndexBuffer(lua_State *L)
-{
-	Buffer::Settings settings(BUFFERUSAGEFLAG_INDEX, BUFFERDATAUSAGE_DYNAMIC);
-	luax_optbuffersettings(L, 3, settings);
-
-	size_t arraylength = 0;
-	size_t bytesize = 0;
-	DataFormat format = DATAFORMAT_UINT16;
-	Data *data = nullptr;
-	const void *initialdata = nullptr;
-
-	if (luax_istype(L, 1, Data::type))
-	{
-		data = luax_checktype<Data>(L, 1);
-		initialdata = data->getData();
-		bytesize = data->getSize();
-	}
-
-	if (lua_istable(L, 1))
-	{
-		arraylength = luax_objlen(L, 1);
-
-		// Scan array for invalid types and the max value.
-		lua_Integer maxvalue = 0;
-		for (size_t i = 0; i < arraylength; i++)
-		{
-			lua_rawgeti(L, 1, i + 1);
-			lua_Integer v = luaL_checkinteger(L, -1);
-			lua_pop(L, 1);
-			if (v < 0)
-				return luaL_argerror(L, 1, "expected positive integer values in array");
-			else
-				maxvalue = std::max(maxvalue, v);
-		}
-
-		format = getIndexDataFormat(getIndexDataTypeFromMax(maxvalue));
-	}
-	else if (data == nullptr)
-	{
-		lua_Integer len = luaL_checkinteger(L, 1);
-		if (len <= 0)
-			return luaL_argerror(L, 1, "number of elements must be greater than 0");
-		arraylength = (size_t) len;
-		settings.zeroInitialize = true;
-	}
-
-	if (data != nullptr || !lua_isnoneornil(L, 2))
-	{
-		const char *formatstr = luaL_checkstring(L, 2);
-		if (!getConstant(formatstr, format))
-			return luax_enumerror(L, "index data format", getConstants(format), formatstr);
-	}
-
-	Buffer *b = nullptr;
-	luax_catchexcept(L, [&] { b = instance()->newBuffer(settings, format, initialdata, bytesize, arraylength); });
-
-	if (lua_istable(L, 1))
-	{
-		Buffer::Mapper mapper(*b);
-		uint16 *u16data = (uint16 *) mapper.data;
-		uint32 *u32data = (uint32 *) mapper.data;
-
-		for (size_t i = 0; i < arraylength; i++)
-		{
-			lua_rawgeti(L, 1, i + 1);
-			lua_Integer v = luaL_checkinteger(L, -1);
-			lua_pop(L, 1);
-			if (format == DATAFORMAT_UINT16)
-				u16data[i] = (uint16) v;
-			else
-				u32data[i] = (uint32) v;
-		}
-	}
-
-	luax_pushtype(L, b);
-	b->release();
-	return 1;
-}
-
 static PrimitiveType luax_checkmeshdrawmode(lua_State *L, int idx)
 {
 	const char *modestr = luaL_checkstring(L, idx);
@@ -3834,8 +3740,6 @@ static const luaL_Reg functions[] =
 	{ "newShader", w_newShader },
 	{ "newComputeShader", w_newComputeShader },
 	{ "newBuffer", w_newBuffer },
-	{ "newVertexBuffer", w_newVertexBuffer },
-	{ "newIndexBuffer", w_newIndexBuffer },
 	{ "newMesh", w_newMesh },
 	{ "newTextBatch", w_newTextBatch },
 	{ "_newVideo", w_newVideo },
