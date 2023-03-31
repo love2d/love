@@ -514,7 +514,7 @@ void Graphics::present(void *screenshotCallbackdata)
 
 void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
 {
-	if (swapChain != VK_NULL_HANDLE && (pixelWidth != this->pixelWidth || pixelHeight != this->pixelHeight || width != this->width || height != this->height))
+	if (swapChain != VK_NULL_HANDLE && (pixelwidth != this->pixelWidth || pixelheight != this->pixelHeight || width != this->width || height != this->height))
 		requestSwapchainRecreation();
 
 	this->width = width;
@@ -1850,20 +1850,34 @@ void Graphics::createSwapChain()
 
 VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
 {
+	std::vector<VkFormat> formatOrder;
+
 	// TODO: turn off GammaCorrect if a sRGB format can't be found?
+	// TODO: does every platform have these formats?
 	if (isGammaCorrect())
 	{
-		for (const auto &availableFormat : availableFormats)
-			// fixme: what if this format and colorspace is not available?
-			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-				return availableFormat;
+		formatOrder = {
+				VK_FORMAT_B8G8R8A8_SRGB,
+				VK_FORMAT_R8G8B8A8_SRGB,
+		};
+	}
+	else
+	{
+		formatOrder = {
+				VK_FORMAT_B8G8R8A8_UNORM,
+				VK_FORMAT_R8G8B8A8_SNORM,
+		};
 	}
 
-	for (const auto &availableFormat : availableFormats)
-		// fixme: what if this format and colorspace is not available?
-		if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-			return availableFormat;
-
+	for (const auto format : formatOrder)
+	{
+		for (const auto &availableFormat : availableFormats)
+		{
+			if (availableFormat.format == format && availableFormat.colorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR)
+				return availableFormat;
+		}
+	}
+	
 	return availableFormats[0];
 }
 
