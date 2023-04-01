@@ -548,6 +548,12 @@ int w_restore(lua_State *)
 	return 0;
 }
 
+int w_focus(lua_State *)
+{
+	instance()->focus();
+	return 0;
+}
+
 int w_isMaximized(lua_State *L)
 {
 	luax_pushboolean(L, instance()->isMaximized());
@@ -668,6 +674,7 @@ static const luaL_Reg functions[] =
 	{ "minimize", w_minimize },
 	{ "maximize", w_maximize },
 	{ "restore", w_restore },
+	{ "focus", w_focus },
 	{ "isMaximized", w_isMaximized },
 	{ "isMinimized", w_isMinimized },
 	{ "showMessageBox", w_showMessageBox },

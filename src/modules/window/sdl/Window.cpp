@@ -1182,6 +1182,15 @@ void Window::restore()
 	}
 }
 
+void Window::focus()
+{
+	if (window != nullptr)
+	{
+		SDL_RaiseWindow(window);
+		updateSettings(settings, true);
+	}
+}
+
 bool Window::isMaximized() const
 {
 	return window != nullptr && (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED);
