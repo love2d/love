@@ -208,6 +208,8 @@ private:
 	void initCapabilities() override;
 	void getAPIStats(int &shaderswitches) const override;
 
+	void processCompletedCommandBuffers();
+
 	void endPass(bool presenting);
 
 	id<MTLDepthStencilState> getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil);
@@ -251,7 +253,7 @@ private:
 	std::map<uint64, void *> cachedSamplers;
 	std::unordered_map<uint64, void *> cachedDepthStencilStates;
 
-	std::atomic<int64> completeCommandBufferIndex;
+	std::vector<id<MTLCommandBuffer>> activeCommandBuffers;
 
 	DeviceFamilies families;
 

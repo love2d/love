@@ -408,8 +408,20 @@ Graphics::Graphics()
 Graphics::~Graphics()
 { @autoreleasepool {
 	submitCommandBuffer(SUBMIT_DONE);
-	delete uniformBuffer;
-	delete defaultAttributesBuffer;
+	processCompletedCommandBuffers();
+
+	// Wait for all active command buffers to complete before returning from
+	// the destructor.
+	for (id<MTLCommandBuffer> cmd : activeCommandBuffers)
+	{
+		if (cmd.status == MTLCommandBufferStatusNotEnqueued || cmd.status == MTLCommandBufferStatusEnqueued)
+			[cmd commit];
+
+		[cmd waitUntilCompleted];
+	}
+
+	uniformBuffer->release();
+	defaultAttributesBuffer->release();
 	passDesc = nil;
 	commandQueue = nil;
 	device = nil;
@@ -562,16 +574,20 @@ id<MTLCommandBuffer> Graphics::useCommandBuffer()
 	if (commandBuffer == nil)
 	{
 		commandBuffer = [commandQueue commandBuffer];
-
-		Graphics *pthis = this;
-		pthis->retain();
-		[commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
-			pthis->completeCommandBufferIndex.fetch_add(1, std::memory_order_relaxed);
-			pthis->release();
-		}];
+		activeCommandBuffers.push_back(commandBuffer);
 	}
 
 	return commandBuffer;
+}
+
+void Graphics::processCompletedCommandBuffers()
+{
+	for (int i = (int) activeCommandBuffers.size() - 1; i >= 0; i--)
+	{
+		auto status = activeCommandBuffers[i].status;
+		if (status == MTLCommandBufferStatusCompleted || status == MTLCommandBufferStatusError)
+			activeCommandBuffers.erase(activeCommandBuffers.begin() + i);
+	}
 }
 
 void Graphics::submitCommandBuffer(SubmitType type)
@@ -1717,6 +1733,7 @@ void Graphics::present(void *screenshotCallbackData)
 
 	updatePendingReadbacks();
 	updateTemporaryResources();
+	processCompletedCommandBuffers();
 }}
 
 int Graphics::getRequestedBackbufferMSAA() const
