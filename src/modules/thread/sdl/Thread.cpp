@@ -48,12 +48,23 @@ bool Thread::start()
 #endif
 
 	Lock l(mutex);
+
 	if (running)
 		return false;
+
 	if (thread) // Clean old handle up
 		SDL_WaitThread(thread, nullptr);
+
+	// Keep the threadable around until the thread is done with it.
+	// This is done before thread_runner executes because there can be a delay
+	// between CreateThread and the start of the thread code's execution.
+	t->retain();
+
 	thread = SDL_CreateThread(thread_runner, t->getThreadName(), this);
 	running = (thread != nullptr);
+
+	if (!running)
+		t->release(); // thread_runner is never called in this situation.
 
 	return running;
 }
@@ -80,7 +91,6 @@ bool Thread::isRunning()
 int Thread::thread_runner(void *data)
 {
 	Thread *self = (Thread *) data; // some compilers don't like 'this'
-	self->t->retain();
 
 	self->t->threadFunction();
 
@@ -89,6 +99,7 @@ int Thread::thread_runner(void *data)
 		self->running = false;
 	}
 
+	// This was retained in start().
 	self->t->release();
 	return 0;
 }
