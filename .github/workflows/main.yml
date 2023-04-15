@@ -17,11 +17,11 @@ jobs:
                                           libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
                                           libsndio-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev
     - name: Checkout love-appimage-source
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: love2d/love-appimage-source
     - name: Checkout LÖVE
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: love2d-${{ github.sha }}
     - name: Build AppImage
@@ -29,7 +29,7 @@ jobs:
     - name: Print LuaJIT branch
       run: git -C LuaJIT-v2.1 branch -v
     - name: Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: love-x86_64.AppImage
         path: love-${{ github.sha }}.AppImage
@@ -40,13 +40,13 @@ jobs:
         platform: [Win32, x64]
     steps:
     - name: Clone Megasource
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: megasource
         repository: love2d/megasource
         ref: main
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: megasource/libs/love
     - name: Configure
@@ -58,12 +58,12 @@ jobs:
       shell: cmd
       run: cmake --build build --config Release --target install -j2
     - name: Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: love-windows-${{ matrix.platform }}
         path: install
     - name: Artifact JIT Modules
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: love-windows-jitmodules-${{ matrix.platform }}
         path: build/libs/LuaJIT/src/jit/*.lua
@@ -71,9 +71,9 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Clone Dependencies
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
@@ -91,7 +91,7 @@ jobs:
       run:
         ditto -c -k --sequesterRsrc --keepParent love-macos/love.app love-macos.zip 
     - name: Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: love-macos
         path: love-macos.zip
@@ -99,9 +99,9 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Clone Dependencies
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
