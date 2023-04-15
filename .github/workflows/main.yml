@@ -33,6 +33,11 @@ jobs:
       with:
         name: love-x86_64.AppImage
         path: love-${{ github.sha }}.AppImage
+    - name: Artifact Debug Symbols
+      uses: actions/upload-artifact@v3
+      with:
+        name: love-x86_64-AppImage-debug
+        path: love-${{ github.sha }}.AppImage-debug.tar.gz
   windows-os:
     runs-on: windows-latest
     strategy:
