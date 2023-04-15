@@ -5194,7 +5194,7 @@
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
-				MARKETING_VERSION = 11.4;
+				MARKETING_VERSION = 11.5;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -5230,7 +5230,7 @@
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
-				MARKETING_VERSION = 11.4;
+				MARKETING_VERSION = 11.5;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -5267,7 +5267,7 @@
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
-				MARKETING_VERSION = 11.4;
+				MARKETING_VERSION = 11.5;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,

@@ -1,4 +1,4 @@
-version: 11.4.{build}
+version: 11.5.{build}
 
 image: Visual Studio 2013
 
