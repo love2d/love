@@ -30,6 +30,7 @@
 // C++
 #include <algorithm>
 #include <iostream>
+#include <cstdint>
 #include <cstdio>
 #include <cstddef>
 #include <cmath>
@@ -136,16 +137,25 @@ static ObjectKey luax_computeloveobjectkey(lua_State *L, love::Object *object)
 	// use more than 53 bits if their alignment is guaranteed to be more than 1.
 	// For example an alignment requirement of 8 means we can shift the
 	// pointer's bits by 3.
-	const size_t minalign = LOVE_ALIGNOF(std::max_align_t);
+#if UINTPTR_MAX == 0xffffffff
+	// https://github.com/love2d/love/issues/1916
+	// This appears to be ABI violation on 32-bit platforms. However it seems
+	// there's no reliable way to get the correct alignment pre-C++17. Consider
+	// that 32-bit still fits in 2^53 range, it's perfectly fine to assume
+	// alignment of 1.
+	constexpr size_t minalign = 1;
+#else
+	constexpr size_t minalign = LOVE_ALIGNOF(std::max_align_t);
+#endif
 	uintptr_t key = (uintptr_t) object;
 
 	if ((key & (minalign - 1)) != 0)
 	{
 		luaL_error(L, "Cannot push love object to Lua: unexpected alignment "
-				   "(pointer is %p but alignment should be %d)", object, minalign);
+				   "(pointer is %p but alignment should be %d)", object, (int) minalign);
 	}
 
-	static const size_t shift = (size_t) log2(LOVE_ALIGNOF(std::max_align_t));
+	static const size_t shift = (size_t) log2(minalign);
 
 	key >>= shift;
 
