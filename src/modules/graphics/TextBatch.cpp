@@ -255,6 +255,10 @@ void TextBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	gfx->flushBatchedDraws();
 
+	// Re-generate the text if the Font's texture cache was invalidated.
+	if (font->getTextureCacheID() != textureCacheID)
+		regenerateVertices();
+
 	if (Shader::isDefaultActive())
 		Shader::attachDefault(Shader::STANDARD_DEFAULT);
 
@@ -264,10 +268,6 @@ void TextBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	if (Shader::current)
 		Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, firsttex);
-
-	// Re-generate the text if the Font's texture cache was invalidated.
-	if (font->getTextureCacheID() != textureCacheID)
-		regenerateVertices();
 
 	int totalverts = 0;
 	for (const Font::DrawCommand &cmd : drawCommands)
