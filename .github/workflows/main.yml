@@ -24,6 +24,16 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: love2d-${{ github.sha }}
+    - name: Get Dependencies for AppImage
+      shell: python
+      env:
+        LOVE_BRANCH: ${{ github.sha }}
+      run: |
+        import os
+        for i in range(250):
+            if os.system(f"make getdeps LOVE_BRANCH={os.environ['LOVE_BRANCH']}") == 0:
+                raise SystemExit(0)
+        raise Exception("make getdeps failed")
     - name: Build AppImage
       run: make LOVE_BRANCH=${{ github.sha }}
     - name: Print LuaJIT branch
