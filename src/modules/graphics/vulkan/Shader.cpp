@@ -178,24 +178,17 @@ public:
 
 
 private:
-	uint32_t getFreeBinding() {
+	uint32_t getFreeBinding()
+	{
 		for (uint32_t i = 0;; i++)
 		{
-			bool free = true;
-			for (const auto &entry : bindingMappings)
-			{
-				if (entry.second == i)
-				{
-					free = false;
-					break;
-				}
-			}
-			if (free)
+			if (isFreeBinding(i))
 				return i;
 		}
 	}
 
-	bool isFreeBinding(uint32_t binding) {
+	bool isFreeBinding(uint32_t binding)
+	{
 		for (const auto &entry : bindingMappings)
 		{
 			if (entry.second == binding)
@@ -218,8 +211,8 @@ static VkShaderStageFlagBits getStageBit(ShaderStageType type)
 		return VK_SHADER_STAGE_FRAGMENT_BIT;
 	case SHADERSTAGE_COMPUTE:
 		return VK_SHADER_STAGE_COMPUTE_BIT;
-    default:
-	    throw love::Exception("invalid type");
+	default:
+		throw love::Exception("invalid type");
 	}
 }
 
