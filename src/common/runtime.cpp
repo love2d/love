@@ -143,9 +143,9 @@ static ObjectKey luax_computeloveobjectkey(lua_State *L, love::Object *object)
 	// there's no reliable way to get the correct alignment pre-C++17. Consider
 	// that 32-bit still fits in 2^53 range, it's perfectly fine to assume
 	// alignment of 1.
-	constexpr size_t minalign = 1;
+	const size_t minalign = 1;
 #else
-	constexpr size_t minalign = LOVE_ALIGNOF(std::max_align_t);
+	const size_t minalign = LOVE_ALIGNOF(std::max_align_t);
 #endif
 	uintptr_t key = (uintptr_t) object;
 
