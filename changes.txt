@@ -79,6 +79,7 @@ Released: N/A
 * Added love.sensor module.
 * Added love.sensorupdated callback.
 * Added love.joysticksensorupdated callback.
+* Added variant for enet peer:send and host:broadcast which accepts a pointer (light userdata) and a size.
 
 * Changed love.filesystem.exists to no longer be deprecated.
 * Changed the default font from Vera size 12 to Noto Sans size 13.

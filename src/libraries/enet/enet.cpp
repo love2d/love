@@ -234,12 +234,21 @@ static void push_event(lua_State *l, ENetEvent *event) {
 
 /**
  * Read a packet off the stack as a string
- * idx is position of string
+ * idx is position of string or lightuserdata
  */
 static ENetPacket *read_packet(lua_State *l, int idx, enet_uint8 *channel_id) {
 	size_t size;
 	int argc = lua_gettop(l);
-	const void *data = luaL_checklstring(l, idx, &size);
+	const void* data;
+
+	if (lua_islightuserdata(l, idx)) {
+		data = lua_touserdata(l, idx);
+		size = (size_t) luaL_checknumber(l, idx + 1);
+		idx++;
+	}
+	else {
+		data = luaL_checklstring(l, idx, &size);
+	}
 	ENetPacket *packet;
 
 	enet_uint32 flags = ENET_PACKET_FLAG_RELIABLE;
