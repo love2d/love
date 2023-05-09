@@ -140,6 +140,7 @@ Released: N/A
 
 * Fixed BezierCurve:render adding collinear points in some situations.
 * Fixed sound Decoders to cause a Lua error instead of hard-crashing when memory for the decoding buffer can't be allocated.
+* Fixed enum misspelling for thousandsseparator from thsousandsseparator for both keyboard and scancode enums.
 
 LOVE 11.5 [Mysterious Mysteries]
 --------------------------------

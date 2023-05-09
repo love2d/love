@@ -221,7 +221,7 @@ StringMap<Keyboard::Key, Keyboard::KEY_MAX_ENUM>::Entry Keyboard::keyEntries[] =
 	{"oper", Keyboard::KEY_OPER},
 	{"clearagain", Keyboard::KEY_CLEARAGAIN},
 
-	{"thsousandsseparator", Keyboard::KEY_THOUSANDSSEPARATOR},
+	{"thousandsseparator", Keyboard::KEY_THOUSANDSSEPARATOR},
 	{"decimalseparator", Keyboard::KEY_DECIMALSEPARATOR},
 	{"currencyunit", Keyboard::KEY_CURRENCYUNIT},
 	{"currencysubunit", Keyboard::KEY_CURRENCYSUBUNIT},
@@ -442,7 +442,7 @@ StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM>::Entry Keyboard::scan
 
 	{"kp00", SCANCODE_KP_00},
 	{"kp000", SCANCODE_KP_000},
-	{"thsousandsseparator", SCANCODE_THOUSANDSSEPARATOR},
+	{"thousandsseparator", SCANCODE_THOUSANDSSEPARATOR},
 	{"decimalseparator", SCANCODE_DECIMALSEPARATOR},
 	{"currencyunit", SCANCODE_CURRENCYUNIT},
 	{"currencysubunit", SCANCODE_CURRENCYSUBUNIT},
