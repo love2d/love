@@ -70,7 +70,7 @@ public:
 
 	void attach() override;
 
-	ptrdiff_t getHandle() const { return 0; }
+	ptrdiff_t getHandle() const override { return 0; }
 
 	std::string getWarnings() const override { return ""; }
 
