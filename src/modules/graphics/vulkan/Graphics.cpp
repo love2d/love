@@ -1173,7 +1173,6 @@ void Graphics::beginFrame()
 
 	if (frameCounter >= USAGES_POLL_INTERVAL)
 	{
-		vkDeviceWaitIdle(device);
 		cleanupUnusedObjects();
 		frameCounter = 0;
 	}
