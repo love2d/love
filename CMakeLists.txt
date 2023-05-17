@@ -477,6 +477,8 @@ set(LOVE_SRC_MODULE_FILESYSTEM_PHYSFS
 	src/modules/filesystem/physfs/File.h
 	src/modules/filesystem/physfs/Filesystem.cpp
 	src/modules/filesystem/physfs/Filesystem.h
+	src/modules/filesystem/physfs/PhysfsIo.h
+	src/modules/filesystem/physfs/PhysfsIo.cpp
 )
 
 set(LOVE_SRC_MODULE_FILESYSTEM
