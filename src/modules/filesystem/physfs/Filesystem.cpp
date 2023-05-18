@@ -37,6 +37,7 @@
 #ifdef LOVE_WINDOWS
 #	include <windows.h>
 #	include <direct.h>
+#	include "common/win32.h"
 #else
 #	include <sys/param.h>
 #	include <unistd.h>
@@ -283,6 +284,21 @@ bool Filesystem::setSource(const char *source)
 		}
 	}
 #else
+#ifdef LOVE_WINDOWS
+	auto gameInResource = love::windows::getGameInResource();
+	if (std::get<0>(gameInResource) != nullptr)
+	{
+		if (PHYSFS_mountMemory(std::get<0>(gameInResource), std::get<1>(gameInResource), nullptr, new_search_path.c_str(), nullptr, 1))
+		{
+			// Save the game source.
+			game_source = new_search_path;
+			return true;
+		}
+	}
+
+	// Fallthrough, test for traditional fusing.
+#endif
+
 	// Add the directory.
 	if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
 		return false;
