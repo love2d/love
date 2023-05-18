@@ -324,6 +324,8 @@ set(LOVE_SRC_COMMON
 	#src/common/Vector.cpp # Vector.cpp is empty.
 	src/common/Vector.h
 	src/common/version.h
+	src/common/win32.cpp
+	src/common/win32.h
 )
 
 if (APPLE)
