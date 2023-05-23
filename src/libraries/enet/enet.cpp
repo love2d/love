@@ -148,7 +148,11 @@ static uintptr_t compute_peer_key(lua_State *L, ENetPeer *peer)
 	// pointers that use more than 53 bits if their alignment is guaranteed to
 	// be more than 1. For example an alignment requirement of 8 means we can
 	// shift the pointer's bits by 3.
-	const size_t minalign = std::min(ENET_ALIGNOF(ENetPeer), ENET_ALIGNOF(std::max_align_t));
+
+	// Please see these for the reason of this ternary operator:
+	// * https://github.com/love2d/love/issues/1916
+	// * https://github.com/love2d/love/commit/4ab9a1ce8c
+	const size_t minalign = sizeof(void*) == 8 ? std::min(ENET_ALIGNOF(ENetPeer), ENET_ALIGNOF(std::max_align_t)) : 1;
 	uintptr_t key = (uintptr_t) peer;
 
 	if ((key & (minalign - 1)) != 0)
