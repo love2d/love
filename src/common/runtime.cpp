@@ -136,17 +136,12 @@ static ObjectKey luax_computeloveobjectkey(lua_State *L, love::Object *object)
 	// can store all possible integers up to 2^53. We can store pointers that
 	// use more than 53 bits if their alignment is guaranteed to be more than 1.
 	// For example an alignment requirement of 8 means we can shift the
-	// pointer's bits by 3.
-#if UINTPTR_MAX == 0xffffffff
-	// https://github.com/love2d/love/issues/1916
-	// This appears to be ABI violation on 32-bit platforms. However it seems
-	// there's no reliable way to get the correct alignment pre-C++17. Consider
-	// that 32-bit still fits in 2^53 range, it's perfectly fine to assume
-	// alignment of 1.
-	const size_t minalign = 1;
-#else
-	const size_t minalign = LOVE_ALIGNOF(std::max_align_t);
-#endif
+	// pointer's bits by 3. However, this is not always reliable on 32-bit platforms
+	// as can be seen in this bug report: https://github.com/love2d/love/issues/1916.
+	// It appears to be ABI violation. However it seems there's no reliable way to
+	// get the correct alignment pre-C++17. Consider that 32-bit pointer still fits
+	// in 2^53 range, it's perfectly fine to assume alignment of 1 there.
+	const size_t minalign = sizeof(void*) == 8 ? LOVE_ALIGNOF(std::max_align_t) : 1;
 	uintptr_t key = (uintptr_t) object;
 
 	if ((key & (minalign - 1)) != 0)
