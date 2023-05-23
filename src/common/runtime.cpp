@@ -106,6 +106,10 @@ static bool luax_isfulllightuserdatasupported(lua_State *L)
 	static bool checked = false;
 	static bool supported = false;
 
+	if (sizeof(void*) == 4)
+		// 32-bit platforms always supports full-lightuserdata.
+		return true;
+
 	if (!checked)
 	{
 		lua_pushcclosure(L, [](lua_State *L) -> int
