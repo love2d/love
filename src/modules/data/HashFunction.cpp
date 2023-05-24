@@ -455,31 +455,26 @@ public:
 		else
 			memcpy(intermediates, initial512, sizeof(intermediates));
 
-		//Do the required padding
-		uint64 paddedLength = length + 1; //Consider the appended bit
-		if (paddedLength % 128 < 112)
-			paddedLength += 112 - paddedLength % 128;
-		if (paddedLength % 128 > 112)
-			paddedLength += 240 - paddedLength % 128;
+		// Compute final padded length, accounting for the appended bit (byte) and size
+		uint64 paddedLength = extend_multiple(length + 1 + 16, 128);
 
-		uint8 *padded = new uint8[paddedLength + 16];
-		paddedLength += 8;
+		uint64 *padded = new uint64[paddedLength / 8];
 		memcpy(padded, input, length);
-		memset(padded + length, 0, paddedLength - length);
-		padded[length] = 0x80;
+		memset(((uint8*)padded) + length, 0, paddedLength - length);
+		*(((uint8*)padded) + length) = 0x80; // append bit
 
-		// Now we need the length in bits (big endian), note we only write a 64-bit int, so
+		// Append length in bits (big endian), note we only write a 64-bit int, so
 		// we have filled the first 8 bytes with zeroes
-		length *= 8;
-		for (int i = 0; i < 8; ++i, ++paddedLength)
-			padded[paddedLength] = (length >> (56 - i * 8)) & 0xFF;
+		uint64 bit_length = length * 8;
+		for (int i = 0; i < 8; ++i)
+			*(((uint8*)padded) + (paddedLength - 8 + i)) = (bit_length >> (56 - i * 8)) & 0xFF;
 
 		// Allocate our extended words
 		uint64 words[80];
 
-		for (uint64 i = 0; i < paddedLength; i += 128)
+		for (uint64 i = 0; i < paddedLength/8; i += 16)
 		{
-			uint64 *chunk = (uint64*) &padded[i];
+			uint64 *chunk = &padded[i];
 			for (int j = 0; j < 16; ++j)
 			{
 				char *c = (char*) &words[j];
