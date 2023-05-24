@@ -204,29 +204,25 @@ public:
 			0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0
 		};
 
-		//Do the required padding (MD5, SHA1 and SHA2 use the same padding)
-		uint64 paddedLength = length + 1; //Consider the appended bit
-		if (paddedLength % 64 < 56)
-			paddedLength += 56 - paddedLength % 64;
-		if (paddedLength % 64 > 56)
-			paddedLength += 120 - paddedLength % 64;
+		// Compute final padded length, accounting for the appended bit (byte) and size
+		uint64 paddedLength = extend_multiple(length + 1 + 8, 64);
 
-		uint8 *padded = new uint8[paddedLength + 8];
+		uint32 *padded = new uint32[paddedLength / 4];
 		memcpy(padded, input, length);
-		memset(padded + length, 0, paddedLength - length);
-		padded[length] = 0x80;
+		memset(((uint8*)padded) + length, 0, paddedLength - length);
+		*(((uint8*)padded) + length) = 0x80; // append bit
 
-		// Now we need the length in bits (big endian)
-		length *= 8;
-		for (int i = 0; i < 8; ++i, ++paddedLength)
-			padded[paddedLength] = (length >> (56 - i * 8)) & 0xFF;
+		// Append length in bits (big endian)
+		uint64 bit_length = length * 8;
+		for (int i = 0; i < 8; ++i)
+			*(((uint8*)padded) + (paddedLength - 8 + i)) = (bit_length >> (56 - i * 8)) & 0xFF;
 
 		// Allocate our extended words
 		uint32 words[80];
 
-		for (uint64 i = 0; i < paddedLength; i += 64)
+		for (uint64 i = 0; i < paddedLength/4; i += 16)
 		{
-			uint32 *chunk = (uint32*) &padded[i];
+			uint32 *chunk = &padded[i];
 			for (int j = 0; j < 16; j++)
 			{
 				char *c = (char*) &words[j];
