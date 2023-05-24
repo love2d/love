@@ -50,6 +50,13 @@ inline uint64 rightrot(uint64 x, uint8 amount)
 	return (x >> amount) | (x << (64 - amount));
 }
 
+// Extend the value of `a` to make it a multiple of `n`.
+inline uint64 extend_multiple(uint64 a, uint64 n)
+{
+	uint64 r = a % n;
+	return r == 0 ? a : a + (n-r);
+}
+
 /**
  * The following implementation is based on the pseudocode provided by multiple
  * authors on wikipedia: https://en.wikipedia.org/wiki/MD5
@@ -79,25 +86,22 @@ public:
 		uint32 c0 = 0x98badcfe;
 		uint32 d0 = 0x10325476;
 
-		//Do the required padding (MD5, SHA1 and SHA2 use the same padding)
-		uint64 paddedLength = length + 1; //Consider the appended bit
-		if (paddedLength % 64 < 56)
-			paddedLength += 56 - paddedLength % 64;
-		if (paddedLength % 64 > 56)
-			paddedLength += 120 - paddedLength % 64;
+		// Compute final padded length, accounting for the appended bit (byte) and size
+		uint64 paddedLength = extend_multiple(length + 1 + 8, 64);
 
-		uint8 *padded = new uint8[paddedLength + 8];
+		uint32 *padded = new uint32[paddedLength / 4];
 		memcpy(padded, input, length);
-		memset(padded + length, 0, paddedLength - length);
-		padded[length] = 0x80;
+		memset(((uint8*)padded) + length, 0, paddedLength - length);
+		*(((uint8*)padded) + length) = 0x80; // append bit
 
-		//Now we need the length in bits
-		*((uint64*) &padded[paddedLength]) = length * 8;
-		paddedLength += 8;
+		// Append length in bits
+		uint64 bit_length = length * 8;
+		memcpy(((uint8*)padded) + paddedLength - 8, &bit_length, 8);
 
-		for (uint64 i = 0; i < paddedLength; i += 64)
+		// Process chunks
+		for (uint64 i = 0; i < paddedLength/4; i += 16)
 		{
-			uint32 *chunk = (uint32*) &padded[i];
+			uint32 *chunk = &padded[i];
 
 			uint32 A = a0;
 			uint32 B = b0;
