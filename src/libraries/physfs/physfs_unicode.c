@@ -21,8 +21,8 @@
 /*
  * This may not be the best value, but it's one that isn't represented
  *  in Unicode (0x10FFFF is the largest codepoint value). We return this
- *  value from utf8codepoint() if there's bogus bits in the
- *  stream. utf8codepoint() will turn this value into something
+ *  value from __PHYSFS_utf8codepoint() if there's bogus bits in the
+ *  stream. __PHYSFS_utf8codepoint() will turn this value into something
  *  reasonable (like a question mark), for text that wants to try to recover,
  *  whereas utf8valid() will use the value to determine if a string has bad
  *  bits.
@@ -35,7 +35,7 @@
  */
 #define UNICODE_BOGUS_CHAR_CODEPOINT '?'
 
-static PHYSFS_uint32 utf8codepoint(const char **_str)
+PHYSFS_uint32 __PHYSFS_utf8codepoint(const char **_str)
 {
     const char *str = *_str;
     PHYSFS_uint32 retval = 0;
@@ -188,6 +188,11 @@ static PHYSFS_uint32 utf8codepoint(const char **_str)
     } /* else if */
 
     return UNICODE_BOGUS_CHAR_VALUE;
+} /* __PHYSFS_utf8codepoint */
+
+static inline PHYSFS_uint32 utf8codepoint(const char **_str)
+{
+    return __PHYSFS_utf8codepoint(_str);
 } /* utf8codepoint */
 
 static PHYSFS_uint32 utf16codepoint(const PHYSFS_uint16 **_str)
@@ -210,7 +215,7 @@ static PHYSFS_uint32 utf16codepoint(const PHYSFS_uint16 **_str)
         else
         {
             src++;  /* eat the other surrogate. */
-            cp = (((cp - 0xD800) << 10) | (pair - 0xDC00));
+            cp = 0x10000 + (((cp - 0xD800) << 10) | (pair - 0xDC00));
         } /* else */
     } /* else if */
 
@@ -238,7 +243,7 @@ void PHYSFS_utf8ToUcs4(const char *src, PHYSFS_uint32 *dst, PHYSFS_uint64 len)
     len -= sizeof (PHYSFS_uint32);   /* save room for null char. */
     while (len >= sizeof (PHYSFS_uint32))
     {
-        PHYSFS_uint32 cp = utf8codepoint(&src);
+        PHYSFS_uint32 cp = __PHYSFS_utf8codepoint(&src);
         if (cp == 0)
             break;
         else if (cp == UNICODE_BOGUS_CHAR_VALUE)
@@ -256,7 +261,7 @@ void PHYSFS_utf8ToUcs2(const char *src, PHYSFS_uint16 *dst, PHYSFS_uint64 len)
     len -= sizeof (PHYSFS_uint16);   /* save room for null char. */
     while (len >= sizeof (PHYSFS_uint16))
     {
-        PHYSFS_uint32 cp = utf8codepoint(&src);
+        PHYSFS_uint32 cp = __PHYSFS_utf8codepoint(&src);
         if (cp == 0)
             break;
         else if (cp == UNICODE_BOGUS_CHAR_VALUE)
@@ -278,7 +283,7 @@ void PHYSFS_utf8ToUtf16(const char *src, PHYSFS_uint16 *dst, PHYSFS_uint64 len)
     len -= sizeof (PHYSFS_uint16);   /* save room for null char. */
     while (len >= sizeof (PHYSFS_uint16))
     {
-        PHYSFS_uint32 cp = utf8codepoint(&src);
+        PHYSFS_uint32 cp = __PHYSFS_utf8codepoint(&src);
         if (cp == 0)
             break;
         else if (cp == UNICODE_BOGUS_CHAR_VALUE)

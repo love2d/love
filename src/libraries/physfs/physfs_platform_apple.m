@@ -12,6 +12,7 @@
 #ifdef PHYSFS_PLATFORM_APPLE
 
 #include <Foundation/Foundation.h>
+#include <dlfcn.h>
 
 #include "physfs_internal.h"
 
@@ -99,7 +100,7 @@ static int darwinIsWholeMedia(io_service_t service)
 } /* darwinIsWholeMedia */
 
 
-static int darwinIsMountedDisc(char *bsdName, mach_port_t masterPort)
+static int darwinIsMountedDisc(char *bsdName, mach_port_t mainPort)
 {
     int retval = 0;
     CFMutableDictionaryRef matchingDict;
@@ -107,10 +108,10 @@ static int darwinIsMountedDisc(char *bsdName, mach_port_t masterPort)
     io_iterator_t iter;
     io_service_t service;
 
-    if ((matchingDict = IOBSDNameMatching(masterPort, 0, bsdName)) == NULL)
+    if ((matchingDict = IOBSDNameMatching(mainPort, 0, bsdName)) == NULL)
         return 0;
 
-    rc = IOServiceGetMatchingServices(masterPort, matchingDict, &iter);
+    rc = IOServiceGetMatchingServices(mainPort, matchingDict, &iter);
     if ((rc != KERN_SUCCESS) || (!iter))
         return 0;
 
@@ -158,13 +159,25 @@ static int darwinIsMountedDisc(char *bsdName, mach_port_t masterPort)
 void __PHYSFS_platformDetectAvailableCDs(PHYSFS_StringCallback cb, void *data)
 {
 #if !defined(PHYSFS_NO_CDROM_SUPPORT)
+    /* macOS 12.0 changed "master" names to "main". */
+    typedef kern_return_t (*ioMainPortFn)(mach_port_t, mach_port_t *);
+    static ioMainPortFn ioMainPort = NULL;
     const char *devPrefix = "/dev/";
     const int prefixLen = strlen(devPrefix);
-    mach_port_t masterPort = 0;
+    mach_port_t mainPort = 0;
     struct statfs *mntbufp;
     int i, mounts;
 
-    if (IOMasterPort(MACH_PORT_NULL, &masterPort) != KERN_SUCCESS)
+    if (ioMainPort == NULL)
+    {
+        ioMainPort = (ioMainPortFn) dlsym(RTLD_DEFAULT, "IOMainPort");
+        if (!ioMainPort)
+            ioMainPort = (ioMainPortFn) dlsym(RTLD_DEFAULT, "IOMasterPort");
+        if (!ioMainPort)
+            return; /* oh well, no CD-ROMs for you. */
+    } /* if */
+
+    if (ioMainPort(MACH_PORT_NULL, &mainPort) != KERN_SUCCESS)
         BAIL(PHYSFS_ERR_OS_ERROR, ) /*return void*/;
 
     mounts = getmntinfo(&mntbufp, MNT_WAIT);  /* NOT THREAD SAFE! */
@@ -176,7 +189,7 @@ void __PHYSFS_platformDetectAvailableCDs(PHYSFS_StringCallback cb, void *data)
             continue;
 
         dev += prefixLen;
-        if (darwinIsMountedDisc(dev, masterPort))
+        if (darwinIsMountedDisc(dev, mainPort))
             cb(data, mnt);
     } /* for */
 #endif /* !defined(PHYSFS_NO_CDROM_SUPPORT) */

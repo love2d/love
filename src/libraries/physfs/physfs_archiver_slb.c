@@ -36,7 +36,7 @@ static int slbLoadEntries(PHYSFS_Io *io, const PHYSFS_uint32 count, void *arc)
         BAIL_IF(backslash != '\\', PHYSFS_ERR_CORRUPT, 0);
 
         /* read the rest of the buffer, 63 bytes */
-        BAIL_IF_ERRPASS(!__PHYSFS_readAll(io, &name, 63), 0);
+        BAIL_IF_ERRPASS(!__PHYSFS_readAll(io, name, 63), 0);
         name[63] = '\0'; /* in case the name lacks the null terminator */
 
         /* convert backslashes */
@@ -94,7 +94,8 @@ static void *SLB_openArchive(PHYSFS_Io *io, const char *name,
     /* seek to the table of contents */
     BAIL_IF_ERRPASS(!io->seek(io, tocPos), NULL);
 
-    unpkarc = UNPK_openArchive(io);
+    /* !!! FIXME: check case_sensitive and only_usascii params for this archive. */
+    unpkarc = UNPK_openArchive(io, 1, 0);
     BAIL_IF_ERRPASS(!unpkarc, NULL);
 
     if (!slbLoadEntries(io, count, unpkarc))

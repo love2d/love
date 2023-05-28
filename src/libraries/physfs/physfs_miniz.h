@@ -22,12 +22,14 @@ typedef unsigned long mz_ulong;
 typedef void *(*mz_alloc_func)(void *opaque, unsigned int items, unsigned int size);
 typedef void (*mz_free_func)(void *opaque, void *address);
 
+#ifndef MINIZ_LITTLE_ENDIAN /* if not defined by PHYSFS */
 #if defined(_M_IX86) || defined(_M_X64)
 /* Set MINIZ_USE_UNALIGNED_LOADS_AND_STORES to 1 if integer loads and stores to unaligned addresses are acceptable on the target platform (slightly faster). */
 #define MINIZ_USE_UNALIGNED_LOADS_AND_STORES 1
 /* Set MINIZ_LITTLE_ENDIAN to 1 if the processor is little endian. */
 #define MINIZ_LITTLE_ENDIAN 1
 #endif
+#endif /**/
 
 #if defined(_WIN64) || defined(__MINGW64__) || defined(_LP64) || defined(__LP64__)
 /* Set MINIZ_HAS_64BIT_REGISTERS to 1 if the processor has 64-bit general purpose registers (enables 64-bit bitbuffer in inflator) */
@@ -117,6 +119,8 @@ struct tinfl_decompressor_tag
 #define MZ_MAX(a,b) (((a)>(b))?(a):(b))
 #define MZ_MIN(a,b) (((a)<(b))?(a):(b))
 #define MZ_CLEAR_OBJ(obj) memset(&(obj), 0, sizeof(obj))
+#define MZ_CLEAR_ARR(obj) memset((obj), 0, sizeof(obj))
+#define MZ_CLEAR_PTR(obj) memset((obj), 0, sizeof(*obj))
 
 #if MINIZ_USE_UNALIGNED_LOADS_AND_STORES && MINIZ_LITTLE_ENDIAN
   #define MZ_READ_LE16(p) *((const mz_uint16 *)(p))
@@ -166,13 +170,17 @@ struct tinfl_decompressor_tag
     if (temp >= 0) { \
       code_len = temp >> 9; \
       if ((code_len) && (num_bits >= code_len)) \
-      break; \
+          break; \
     } else if (num_bits > TINFL_FAST_LOOKUP_BITS) { \
        code_len = TINFL_FAST_LOOKUP_BITS; \
        do { \
           temp = (pHuff)->m_tree[~temp + ((bit_buf >> code_len++) & 1)]; \
-       } while ((temp < 0) && (num_bits >= (code_len + 1))); if (temp >= 0) break; \
-    } TINFL_GET_BYTE(state_index, c); bit_buf |= (((tinfl_bit_buf_t)c) << num_bits); num_bits += 8; \
+       } while ((temp < 0) && (num_bits >= (code_len + 1))); \
+       if (temp >= 0) break; \
+    } \
+    TINFL_GET_BYTE(state_index, c); \
+    bit_buf |= (((tinfl_bit_buf_t)c) << num_bits); \
+    num_bits += 8; \
   } while (num_bits < 15);
 
 /* TINFL_HUFF_DECODE() decodes the next Huffman coded symbol. It's more complex than you would initially expect because the zlib API expects the decompressor to never read */
@@ -274,13 +282,13 @@ static tinfl_status tinfl_decompress(tinfl_decompressor *r, const mz_uint8 *pIn_
       else
       {
         for (counter = 0; counter < 3; counter++) { TINFL_GET_BITS(11, r->m_table_sizes[counter], "\05\05\04"[counter]); r->m_table_sizes[counter] += s_min_table_sizes[counter]; }
-        MZ_CLEAR_OBJ(r->m_tables[2].m_code_size); for (counter = 0; counter < r->m_table_sizes[2]; counter++) { mz_uint s; TINFL_GET_BITS(14, s, 3); r->m_tables[2].m_code_size[s_length_dezigzag[counter]] = (mz_uint8)s; }
+        MZ_CLEAR_ARR(r->m_tables[2].m_code_size); for (counter = 0; counter < r->m_table_sizes[2]; counter++) { mz_uint s; TINFL_GET_BITS(14, s, 3); r->m_tables[2].m_code_size[s_length_dezigzag[counter]] = (mz_uint8)s; }
         r->m_table_sizes[2] = 19;
       }
       for ( ; (int)r->m_type >= 0; r->m_type--)
       {
         int tree_next, tree_cur; tinfl_huff_table *pTable;
-        mz_uint i, j, used_syms, total, sym_index, next_code[17], total_syms[16]; pTable = &r->m_tables[r->m_type]; MZ_CLEAR_OBJ(total_syms); MZ_CLEAR_OBJ(pTable->m_look_up); MZ_CLEAR_OBJ(pTable->m_tree);
+        mz_uint i, j, used_syms, total, sym_index, next_code[17], total_syms[16]; pTable = &r->m_tables[r->m_type]; MZ_CLEAR_ARR(total_syms); MZ_CLEAR_ARR(pTable->m_look_up); MZ_CLEAR_ARR(pTable->m_tree);
         for (i = 0; i < r->m_table_sizes[r->m_type]; ++i) total_syms[pTable->m_code_size[i]]++;
         used_syms = 0, total = 0; next_code[0] = next_code[1] = 0;
         for (i = 1; i <= 15; ++i) { used_syms += total_syms[i]; next_code[i + 1] = (total = ((total + total_syms[i]) << 1)); }

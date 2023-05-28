@@ -251,7 +251,7 @@ static int parseVolumeDescriptor(PHYSFS_Io *io, PHYSFS_uint64 *_rootpos,
         pos += 2048;  /* each volume descriptor is 2048 bytes */
 
         BAIL_IF_ERRPASS(!__PHYSFS_readAll(io, &type, 1), 0);
-        BAIL_IF_ERRPASS(!__PHYSFS_readAll(io, &identifier, 5), 0);
+        BAIL_IF_ERRPASS(!__PHYSFS_readAll(io, identifier, 5), 0);
 
         if (memcmp(identifier, "CD001", 5) != 0)  /* maybe not an iso? */
         {
@@ -346,7 +346,8 @@ static void *ISO9660_openArchive(PHYSFS_Io *io, const char *filename,
     if (!parseVolumeDescriptor(io, &rootpos, &len, &joliet, claimed))
         return NULL;
 
-    unpkarc = UNPK_openArchive(io);
+    /* !!! FIXME: check case_sensitive and only_usascii params for this archive. */
+    unpkarc = UNPK_openArchive(io, 1, 0);
     BAIL_IF_ERRPASS(!unpkarc, NULL);
 
     if (!iso9660LoadEntries(io, joliet, "", rootpos, rootpos + len, unpkarc))

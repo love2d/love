@@ -145,7 +145,7 @@
  *   - .ISO (ISO9660 files, CD-ROM images)
  *   - .GRP (Build Engine groupfile archives)
  *   - .PAK (Quake I/II archive format)
- *   - .HOG (Descent I/II HOG file archives)
+ *   - .HOG (Descent I/II/III HOG file archives)
  *   - .MVL (Descent II movielib archives)
  *   - .WAD (DOOM engine archives)
  *   - .VDF (Gothic I/II engine archives)
@@ -225,7 +225,9 @@ extern "C" {
 
 #if defined(PHYSFS_DECL)
 /* do nothing. */
-#elif defined(_MSC_VER)
+#elif defined(PHYSFS_STATIC)
+#define PHYSFS_DECL   /**/
+#elif defined(_WIN32) || defined(__OS2__)
 #define PHYSFS_DECL __declspec(dllexport)
 #elif defined(__SUNPRO_C)
 #define PHYSFS_DECL __global
@@ -433,7 +435,7 @@ typedef struct PHYSFS_Version
 
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
 #define PHYSFS_VER_MAJOR 3
-#define PHYSFS_VER_MINOR 1
+#define PHYSFS_VER_MINOR 2
 #define PHYSFS_VER_PATCH 0
 #endif  /* DOXYGEN_SHOULD_IGNORE_THIS */
 
@@ -493,6 +495,14 @@ typedef struct PHYSFS_Version
 PHYSFS_DECL void PHYSFS_getLinkedVersion(PHYSFS_Version *ver);
 
 
+#ifdef __ANDROID__
+typedef struct PHYSFS_AndroidInit
+{
+    void *jnienv;
+    void *context;
+} PHYSFS_AndroidInit;
+#endif
+
 /**
  * \fn int PHYSFS_init(const char *argv0)
  * \brief Initialize the PhysicsFS library.
@@ -502,11 +512,22 @@ PHYSFS_DECL void PHYSFS_getLinkedVersion(PHYSFS_Version *ver);
  * This should be called prior to any attempts to change your process's
  *  current working directory.
  *
+ * \warning On Android, argv0 should be a non-NULL pointer to a
+ *          PHYSFS_AndroidInit struct. This struct must hold a valid JNIEnv *
+ *          and a JNI jobject of a Context (either the application context or
+ *          the current Activity is fine). Both are cast to a void * so we
+ *          don't need jni.h included wherever physfs.h is. PhysicsFS
+ *          uses these objects to query some system details. PhysicsFS does
+ *          not hold a reference to the JNIEnv or Context past the call to
+ *          PHYSFS_init(). If you pass a NULL here, PHYSFS_init can still
+ *          succeed, but PHYSFS_getBaseDir() and PHYSFS_getPrefDir() will be
+ *          incorrect.
+ *
  *   \param argv0 the argv[0] string passed to your program's mainline.
  *          This may be NULL on most platforms (such as ones without a
  *          standard main() function), but you should always try to pass
- *          something in here. Unix-like systems such as Linux _need_ to
- *          pass argv[0] from main() in here.
+ *          something in here. Many Unix-like systems _need_ to pass argv[0]
+ *          from main() in here. See warning about Android, too!
  *  \return nonzero on success, zero on error. Specifics of the error can be
  *          gleaned from PHYSFS_getLastError().
  *
@@ -761,6 +782,15 @@ PHYSFS_DECL char **PHYSFS_getCdRomDirs(void);
  *  be the process's current working directory.
  *
  * You should probably use the base dir in your search path.
+ *
+ * \warning On most platforms, this is a directory; on Android, this gives
+ *          you the path to the app's package (APK) file. As APK files are
+ *          just .zip files, you can mount them in PhysicsFS like regular
+ *          directories. You'll probably want to call
+ *          PHYSFS_setRoot(basedir, "/assets") after mounting to make your
+ *          app's actual data available directly without all the Android
+ *          metadata and directory offset. Note that if you passed a NULL to
+ *          PHYSFS_init(), you will not get the APK file here.
  *
  *  \return READ ONLY string of base dir in platform-dependent notation.
  *
@@ -2702,10 +2732,10 @@ typedef PHYSFS_EnumerateCallbackResult (*PHYSFS_EnumerateCallback)(void *data,
  *
  * \code
  *
- * static int printDir(void *data, const char *origdir, const char *fname)
+ * static PHYSFS_EnumerateCallbackResult printDir(void *data, const char *origdir, const char *fname)
  * {
  *     printf(" * We've got [%s] in [%s].\n", fname, origdir);
- *     return 1;  // give me more data, please.
+ *     return PHYSFS_ENUM_OK;  // give me more data, please.
  * }
  *
  * // ...

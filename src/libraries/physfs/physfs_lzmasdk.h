@@ -506,6 +506,7 @@ MY_CPU_LE_UNALIGN means that CPU is LITTLE ENDIAN and CPU supports unaligned mem
 #endif
 
 #if defined(MY_CPU_AMD64) \
+    || defined(_M_ARM64) \
     || defined(_M_IA64) \
     || defined(__AARCH64EL__) \
     || defined(__AARCH64EB__)
@@ -530,6 +531,8 @@ MY_CPU_LE_UNALIGN means that CPU is LITTLE ENDIAN and CPU supports unaligned mem
 #endif
 
 #if defined(_WIN32) && defined(_M_ARM)
+#define MY_CPU_ARM_LE
+#elif defined(_WIN64) && defined(_M_ARM64)
 #define MY_CPU_ARM_LE
 #endif
 
