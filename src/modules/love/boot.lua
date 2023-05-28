@@ -367,7 +367,8 @@ function love.init()
 			minheight = c.window.minheight,
 			borderless = c.window.borderless,
 			centered = c.window.centered,
-			display = c.window.display,
+			displayindex = c.window.displayindex,
+			display = c.window.display, -- deprecated
 			highdpi = c.window.highdpi, -- deprecated
 			usedpiscale = c.window.usedpiscale,
 			x = c.window.x,
