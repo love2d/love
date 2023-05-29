@@ -35,26 +35,31 @@ namespace physfs
 {
 
 template <typename Derived>
-struct PhysfsIo : PHYSFS_Io {
+struct PhysfsIo : PHYSFS_Io
+{
 protected:
+
 	PhysfsIo()
-		: PHYSFS_Io
-		{
-			/*.version =*/ Derived::version,
-			/*.opaque =*/ this,
-			/*.read =*/ staticRead, // may be NULL
-			/*.write =*/ staticWrite, // may be NULL
-			/*.seek =*/ staticSeek,
-			/*.tell =*/ staticTell,
-			/*.length =*/ staticLength,
-			/*.duplicate =*/ staticDuplicate,
-			/*.flush =*/ staticFlush, // may be NULL
-			/*.destroy =*/ staticDestroy,
-		}
+		: PHYSFS_Io()
 	{
+		// Direct initialization of PHYSFS_Io members in the initializer list
+		// doesn't work in VS2013.
+		this->version = Derived::version;
+		this->opaque = this;
+		this->read = staticRead; // May be null.
+		this->write = staticWrite; // May be null.
+		this->seek = staticSeek;
+		this->tell = staticTell;
+		this->length = staticLength;
+		this->duplicate = staticDuplicate;
+		this->flush = staticFlush; // May be null.
+		this->destroy = staticDestroy;
 	}
 
+	virtual ~PhysfsIo() {}
+
 private:
+
 	// Returns: number of bytes read, 0 on EOF, -1 on failure
 	static PHYSFS_sint64 staticRead(struct PHYSFS_Io* io, void* buf, PHYSFS_uint64 len)
 	{
@@ -109,7 +114,8 @@ private:
 	}
 };
 
-struct StripSuffixIo : public PhysfsIo<StripSuffixIo> {
+struct StripSuffixIo : public PhysfsIo<StripSuffixIo>
+{
 	static const uint32_t version = 0;
 
 	std::string filename;
@@ -119,7 +125,7 @@ struct StripSuffixIo : public PhysfsIo<StripSuffixIo> {
 	// because Physfs will take ownership of this object and call destroy on it later.
 	static StripSuffixIo* create(std::string f) { return new StripSuffixIo(f); }
 
-	~StripSuffixIo()
+	virtual ~StripSuffixIo()
 	{
 		if (file)
 		{
@@ -142,6 +148,7 @@ struct StripSuffixIo : public PhysfsIo<StripSuffixIo> {
 	int64_t flush();
 
 private:
+
 	StripSuffixIo(std::string f)
 		: filename(std::move(f))
 		, file(std::fopen(filename.c_str(), "rb"))
