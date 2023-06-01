@@ -125,10 +125,7 @@ const char *Filesystem::getName() const
 void Filesystem::init(const char *arg0)
 {
 #ifdef LOVE_ANDROID
-	// TODO: This should be a pointer to an initializeed PHYSFS_AndroidInit
-	// struct on android. But it's only used for PHYSFS_getBaseDir and
-	// PHYSFS_getPrefDir, which we don't use right now...
-	arg0 = nullptr;
+	arg0 = love::android::getArg0();
 #endif
 
 	if (!PHYSFS_init(arg0))

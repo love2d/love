@@ -103,6 +103,12 @@ bool checkFusedGame(void **physfsIO_Out);
 
 const char *getCRequirePath();
 
+/**
+ * Retrieve PHYSFS_AndroidInit structure.
+ * @return Pointer to PHYSFS_AndroidInit structure, casted to pointer of char.
+ */
+const char *getArg0();
+
 } // android
 } // love
 

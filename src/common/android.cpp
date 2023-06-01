@@ -804,6 +804,15 @@ const char *getCRequirePath()
 	return path;
 }
 
+const char *getArg0()
+{
+	static PHYSFS_AndroidInit androidInit = {
+		SDL_AndroidGetJNIEnv(),
+		SDL_AndroidGetActivity()
+	};
+	return (const char *) &androidInit;
+}
+
 } // android
 } // love
 
