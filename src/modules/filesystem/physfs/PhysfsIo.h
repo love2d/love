@@ -40,7 +40,7 @@ struct PhysfsIo : PHYSFS_Io
 protected:
 
 	PhysfsIo()
-		: PHYSFS_Io()
+	: PHYSFS_Io()
 	{
 		// Direct initialization of PHYSFS_Io members in the initializer list
 		// doesn't work in VS2013.
