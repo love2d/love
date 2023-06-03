@@ -155,6 +155,7 @@ void HarfbuzzShaper::computeBufferRanges(const ColoredCodepoints &codepoints, Ra
 
 		int glyphcount = (int)hb_buffer_get_length(hbb);
 		const hb_glyph_info_t *glyphinfos = hb_buffer_get_glyph_infos(hbb, nullptr);
+		hb_direction_t direction = hb_buffer_get_direction(hbb);
 
 		fallbackranges.clear();
 
@@ -162,7 +163,7 @@ void HarfbuzzShaper::computeBufferRanges(const ColoredCodepoints &codepoints, Ra
 		{
 			if (isValidGlyph(glyphinfos[i].codepoint, codepoints.cps, glyphinfos[i].cluster))
 			{
-				if (bufferranges.empty() || bufferranges.back().index != rasti || bufferranges.back().range.getMax() != i)
+				if (bufferranges.empty() || bufferranges.back().index != rasti || bufferranges.back().range.getMax() + 1 != i)
 					bufferranges.push_back({(int)rasti, (int)glyphinfos[i].cluster, Range(i, 1)});
 				else
 					bufferranges.back().range.last++;
@@ -171,14 +172,16 @@ void HarfbuzzShaper::computeBufferRanges(const ColoredCodepoints &codepoints, Ra
 			{
 				// Use the first font for remaining invalid glyphs when no
 				// fallback font supports them.
-				if (bufferranges.empty() || bufferranges.back().index != 0 || bufferranges.back().range.getMax() != i)
+				if (bufferranges.empty() || bufferranges.back().index != 0 || bufferranges.back().range.getMax() + 1 != i)
 					bufferranges.push_back({0, (int)glyphinfos[i].cluster, Range(i, 1)});
 				else
 					bufferranges.back().range.last++;
 			}
 			else
 			{
-				if (fallbackranges.empty() || fallbackranges.back().getMax() != glyphinfos[i - 1].cluster)
+				// Harfbuzz puts RTL text into the buffer in reverse order, so
+				// it'll start with the last cluster (character index).
+				if (fallbackranges.empty() || (direction == HB_DIRECTION_RTL ? fallbackranges.back().getMin() : fallbackranges.back().getMax()) != glyphinfos[i - 1].cluster)
 					fallbackranges.push_back(Range(glyphinfos[i].cluster, 1));
 				else
 					fallbackranges.back().encapsulate(glyphinfos[i].cluster);
