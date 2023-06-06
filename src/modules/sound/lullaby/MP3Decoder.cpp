@@ -30,24 +30,14 @@ namespace sound
 namespace lullaby
 {
 
-// Copied from dr_mp3 function drmp3_hdr_valid()
-static bool isMP3HeaderValid(const uint8 *h)
-{
-	return
-		// Sync bits
-		h[0] == 0xff &&
-		((h[1] & 0xF0) == 0xf0 || (h[1] & 0xFE) == 0xe2) &&
-		// Check layer
-		(DRMP3_HDR_GET_LAYER(h) != 0) &&
-		// Check bitrate
-		(DRMP3_HDR_GET_BITRATE(h) != 15) &&
-		// Check sample rate
-		(DRMP3_HDR_GET_SAMPLE_RATE(h) != 3);
-}
-
+// dr_mp3 looks too far, but it can lead to false-positive. dr_mp3 also doesn't recognize ID3.
+// Implement our own "MP3 detection" heuristics that also help dr_mp3 skip ID3 tags.
 static int64 findFirstValidHeader(Stream* stream)
 {
-	constexpr size_t LOOKUP_SIZE = 16384;
+	// Tweaking this variable has trade-off between false-positive and false-negative. Lesser value
+	// means lesser false-positive and false-negative. Larger value means more false-positive AND
+	// false-negative.
+	constexpr size_t LOOKUP_SIZE = 128;
 
 	std::vector<uint8> data(LOOKUP_SIZE);
 	uint8 header[10];
@@ -56,6 +46,14 @@ static int64 findFirstValidHeader(Stream* stream)
 	int64 offset = 0;
 
 	if (stream->read(header, 10) < 10)
+		return -1;
+
+	// Test for known audio formats which are definitely not MP3.
+	if (memcmp(header, "RIFF", 4) == 0)
+		return -1;
+	if (memcmp(header, "OggS", 4) == 0)
+		return -1;
+	if (memcmp(header, "fLaC", 4) == 0)
 		return -1;
 
 	if (memcmp(header, "TAG", 3) == 0)
@@ -93,14 +91,14 @@ static int64 findFirstValidHeader(Stream* stream)
 	// Look for mp3 data
 	for (int i = 0; i < buffer - 4; i++, offset++)
 	{
-		if (isMP3HeaderValid(dataPtr++))
+		if (drmp3_hdr_valid(dataPtr++))
 		{
 			stream->seek(offset, Stream::SEEKORIGIN_BEGIN);
 			return offset;
 		}
 	}
 
-	// No valid MP3 frame found in first 16KB data
+	// No valid MP3 frame found in first few bytes of the data.
 	return -1;
 }
 
