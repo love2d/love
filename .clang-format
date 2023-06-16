@@ -17,5 +17,3 @@ UseTab: ForIndentation
 SpaceAfterCStyleCast: true
 SpacesInCStyleCastParentheses: false
 AllowShortIfStatementsOnASingleLine: false
----
-Language: Proto
