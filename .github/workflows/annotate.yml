@@ -1,0 +1,22 @@
+# Posts inline annotations from lint checks
+# See https://github.com/trunk-io/trunk-action#getting-inline-annotations-for-fork-prs
+name: Annotate PR with lint issues
+
+on:
+  workflow_run:
+    workflows: [continuous-integration]
+    types: [completed]
+
+jobs:
+  trunk_check:
+    name: Trunk Check Annotate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Trunk Check
+        uses: trunk-io/trunk-action@v1
+        with:
+          post-annotations: true
