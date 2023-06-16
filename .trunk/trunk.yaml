@@ -19,6 +19,14 @@ lint:
     - shfmt@3.5.0
     - svgo@3.0.2
     - yamllint@1.32.0
+  ignore:
+    - linters: [clang-format]
+      paths:
+        # Only lint src/common and src/modules
+        - "**"
+        - !src/common
+        - !src/modules
+
 runtimes:
   enabled:
     - go@1.19.5
