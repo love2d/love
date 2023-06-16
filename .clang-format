@@ -1,0 +1,22 @@
+BasedOnStyle: Google
+ColumnLimit: 100
+---
+Language: Cpp
+DerivePointerAlignment: false
+BreakBeforeBraces: Allman
+PackConstructorInitializers: Never
+NamespaceIndentation: None
+BreakInheritanceList: BeforeColon
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterFunctionDeclarationName: false
+  AfterFunctionDefinitionName: false
+  AfterControlStatements: true
+IndentCaseBlocks: false
+PointerAlignment: Right
+UseTab: ForIndentation
+SpaceAfterCStyleCast: true
+SpacesInCStyleCastParentheses: false
+AllowShortIfStatementsOnASingleLine: false
+---
+Language: Proto

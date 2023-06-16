@@ -5,125 +5,132 @@ jobs:
   linux-os:
     runs-on: ubuntu-20.04
     steps:
-    - name: Update APT
-      run: sudo apt-get update
-    - name: Install Dependencies
-      run: |
-        sudo apt-get install --assume-yes build-essential git make cmake autoconf automake \
-                                          libtool pkg-config libasound2-dev libpulse-dev libaudio-dev \
-                                          libjack-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
-                                          libxfixes-dev libxi-dev libxinerama-dev libxxf86vm-dev libxss-dev \
-                                          libgl1-mesa-dev libdbus-1-dev libudev-dev libgles2-mesa-dev \
-                                          libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
-                                          libsndio-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev
-    - name: Checkout love-appimage-source
-      uses: actions/checkout@v3
-      with:
-        repository: love2d/love-appimage-source
-    - name: Checkout LÖVE
-      uses: actions/checkout@v3
-      with:
-        path: love2d-${{ github.sha }}
-    - name: Get Dependencies for AppImage
-      shell: python
-      env:
-        LOVE_BRANCH: ${{ github.sha }}
-      run: |
-        import os
-        for i in range(250):
-            if os.system(f"make getdeps LOVE_BRANCH={os.environ['LOVE_BRANCH']}") == 0:
-                raise SystemExit(0)
-        raise Exception("make getdeps failed")
-    - name: Build AppImage
-      run: make LOVE_BRANCH=${{ github.sha }}
-    - name: Print LuaJIT branch
-      run: git -C LuaJIT-v2.1 branch -v
-    - name: Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: love-x86_64.AppImage
-        path: love-${{ github.sha }}.AppImage
-    - name: Artifact Debug Symbols
-      uses: actions/upload-artifact@v3
-      with:
-        name: love-x86_64-AppImage-debug
-        path: love-${{ github.sha }}.AppImage-debug.tar.gz
+      - name: Update APT
+        run: sudo apt-get update
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install --assume-yes build-essential git make cmake autoconf automake \
+                                            libtool pkg-config libasound2-dev libpulse-dev libaudio-dev \
+                                            libjack-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+                                            libxfixes-dev libxi-dev libxinerama-dev libxxf86vm-dev libxss-dev \
+                                            libgl1-mesa-dev libdbus-1-dev libudev-dev libgles2-mesa-dev \
+                                            libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
+                                            libsndio-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev
+      - name: Checkout love-appimage-source
+        uses: actions/checkout@v3
+        with:
+          repository: love2d/love-appimage-source
+      - name: Checkout LÖVE
+        uses: actions/checkout@v3
+        with:
+          path: love2d-${{ github.sha }}
+      - name: Get Dependencies for AppImage
+        shell: python
+        env:
+          LOVE_BRANCH: ${{ github.sha }}
+        run: |
+          import os
+          for i in range(250):
+              if os.system(f"make getdeps LOVE_BRANCH={os.environ['LOVE_BRANCH']}") == 0:
+                  raise SystemExit(0)
+          raise Exception("make getdeps failed")
+      - name: Build AppImage
+        run: make LOVE_BRANCH=${{ github.sha }}
+      - name: Print LuaJIT branch
+        run: git -C LuaJIT-v2.1 branch -v
+      - name: Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: love-x86_64.AppImage
+          path: love-${{ github.sha }}.AppImage
+      - name: Artifact Debug Symbols
+        uses: actions/upload-artifact@v3
+        with:
+          name: love-x86_64-AppImage-debug
+          path: love-${{ github.sha }}.AppImage-debug.tar.gz
   windows-os:
     runs-on: windows-latest
     strategy:
       matrix:
         platform: [Win32, x64]
     steps:
-    - name: Clone Megasource
-      uses: actions/checkout@v3
-      with:
-        path: megasource
-        repository: love2d/megasource
-        ref: main
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        path: megasource/libs/love
-    - name: Configure
-      shell: cmd
-      env:
-        PLATFORM: ${{ matrix.platform }}
-      run: cmake -Bbuild -Hmegasource -T v142 -A %PLATFORM% -DCMAKE_INSTALL_PREFIX=%CD%\install
-    - name: Install
-      shell: cmd
-      run: cmake --build build --config Release --target install -j2
-    - name: Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: love-windows-${{ matrix.platform }}
-        path: install
-    - name: Artifact JIT Modules
-      uses: actions/upload-artifact@v3
-      with:
-        name: love-windows-jitmodules-${{ matrix.platform }}
-        path: build/libs/LuaJIT/src/jit/*.lua
+      - name: Clone Megasource
+        uses: actions/checkout@v3
+        with:
+          path: megasource
+          repository: love2d/megasource
+          ref: main
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: megasource/libs/love
+      - name: Configure
+        shell: cmd
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: cmake -Bbuild -Hmegasource -T v142 -A %PLATFORM% -DCMAKE_INSTALL_PREFIX=%CD%\install
+      - name: Install
+        shell: cmd
+        run: cmake --build build --config Release --target install -j2
+      - name: Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: love-windows-${{ matrix.platform }}
+          path: install
+      - name: Artifact JIT Modules
+        uses: actions/upload-artifact@v3
+        with:
+          name: love-windows-jitmodules-${{ matrix.platform }}
+          path: build/libs/LuaJIT/src/jit/*.lua
   macOS:
     runs-on: macos-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Clone Dependencies
-      uses: actions/checkout@v3
-      with:
-        path: apple-dependencies
-        repository: love2d/love-apple-dependencies
-        ref: main
-    - name: Move Dependencies
-      run:
-        mv apple-dependencies/macOS/Frameworks platform/xcode/macosx
-    - name: Build
-      run:
-        xcodebuild clean archive -project platform/xcode/love.xcodeproj -scheme love-macosx -configuration Release -archivePath love-macos.xcarchive
-    - name: Export Archive
-      run:
-        xcodebuild -exportArchive -archivePath love-macos.xcarchive -exportPath love-macos -exportOptionsPlist platform/xcode/macosx/macos-copy-app.plist
-    - name: Zip Archive
-      run:
-        ditto -c -k --sequesterRsrc --keepParent love-macos/love.app love-macos.zip 
-    - name: Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: love-macos
-        path: love-macos.zip
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Clone Dependencies
+        uses: actions/checkout@v3
+        with:
+          path: apple-dependencies
+          repository: love2d/love-apple-dependencies
+          ref: main
+      - name: Move Dependencies
+        run: mv apple-dependencies/macOS/Frameworks platform/xcode/macosx
+      - name: Build
+        run: xcodebuild clean archive -project platform/xcode/love.xcodeproj -scheme love-macosx -configuration Release -archivePath love-macos.xcarchive
+      - name: Export Archive
+        run: xcodebuild -exportArchive -archivePath love-macos.xcarchive -exportPath love-macos -exportOptionsPlist platform/xcode/macosx/macos-copy-app.plist
+      - name: Zip Archive
+        run: ditto -c -k --sequesterRsrc --keepParent love-macos/love.app love-macos.zip
+      - name: Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: love-macos
+          path: love-macos.zip
   iOS-Simulator:
     runs-on: macos-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Clone Dependencies
-      uses: actions/checkout@v3
-      with:
-        path: apple-dependencies
-        repository: love2d/love-apple-dependencies
-        ref: main
-    - name: Move Dependencies
-      run: |
-        mv apple-dependencies/iOS/libraries platform/xcode/ios
-    - name: Build
-      run:
-        xcodebuild -project platform/xcode/love.xcodeproj -scheme love-ios -configuration Release -destination 'platform=iOS Simulator,name=iPhone 11'
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Clone Dependencies
+        uses: actions/checkout@v3
+        with:
+          path: apple-dependencies
+          repository: love2d/love-apple-dependencies
+          ref: main
+      - name: Move Dependencies
+        run: |
+          mv apple-dependencies/iOS/libraries platform/xcode/ios
+      - name: Build
+        run: xcodebuild -project platform/xcode/love.xcodeproj -scheme love-ios -configuration Release -destination 'platform=iOS Simulator,name=iPhone 11'
+
+  linting:
+    runs-on: ubuntu-20.04
+    permissions:
+      checks: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Trunk Check
+        uses: trunk-io/trunk-action@v1
