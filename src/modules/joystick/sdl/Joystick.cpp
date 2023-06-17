@@ -323,7 +323,9 @@ std::string Joystick::getGamepadMappingString() const
 	// Matches SDL_GameControllerAddMappingsFromRW.
 	if (mappingstr.find_last_of(',') != mappingstr.length() - 1)
 		mappingstr += ",";
-	mappingstr += "platform:" + std::string(SDL_GetPlatform());
+
+	if (mappingstr.find("platform:") == std::string::npos)
+		mappingstr += "platform:" + std::string(SDL_GetPlatform());
 
 	return mappingstr;
 }
