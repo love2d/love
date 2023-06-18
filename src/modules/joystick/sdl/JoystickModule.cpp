@@ -470,7 +470,9 @@ std::string JoystickModule::getGamepadMappingString(const std::string &guid) con
 	// Matches SDL_GameControllerAddMappingsFromRW.
 	if (mapping.find_last_of(',') != mapping.length() - 1)
 		mapping += ",";
-	mapping += "platform:" + std::string(SDL_GetPlatform());
+
+	if (mapping.find("platform:") == std::string::npos)
+		mapping += "platform:" + std::string(SDL_GetPlatform());
 
 	return mapping;
 }
@@ -494,8 +496,10 @@ std::string JoystickModule::saveGamepadMappings()
 			mapping += ",";
 
 		// Matches SDL_GameControllerAddMappingsFromRW.
-		mapping += "platform:" + std::string(SDL_GetPlatform()) + ",\n";
-		mappings += mapping;
+		if (mapping.find("platform:") == std::string::npos)
+			mapping += "platform:" + std::string(SDL_GetPlatform()) + ",";
+
+		mappings += mapping + "\n";
 	}
 
 	return mappings;
