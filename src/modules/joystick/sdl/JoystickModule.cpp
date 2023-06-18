@@ -259,12 +259,17 @@ bool JoystickModule::setGamepadMapping(const std::string &guid, Joystick::Gamepa
 		if (endpos == std::string::npos)
 			endpos = mapstr.length() - 1;
 
-		mapstr.replace(findpos + 1, endpos - findpos + 1, insertstr);
+		mapstr.replace(findpos + 1, endpos - findpos, insertstr);
 	}
 	else
 	{
-		// Just append to the end if we don't need to replace anything.
-		mapstr += insertstr;
+		// Just append to the end (or before the platform section if that exists),
+		// if we don't need to replace anything.
+		size_t platformpos = mapstr.find("platform:");
+		if (platformpos != std::string::npos)
+			mapstr.insert(platformpos, insertstr);
+		else
+			mapstr += insertstr;
 	}
 
 	// 1 == added, 0 == updated, -1 == error.
