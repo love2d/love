@@ -229,21 +229,18 @@ void TheoraVideoStream::threadedFillBackBuffer(double dt)
 			failedSeek = true;
 		}
 
-		if (packet.granulepos > 0) {
-			th_decode_ctl(decoder, TH_DECCTL_SET_GRANPOS, &packet.granulepos, sizeof(packet.granulepos));
-		}
-
-		// TODO: Should be checking the result of th_decode_packetin
 		th_decode_ycbcr_out(decoder, bufferinfo);
 		hasFrame = true;
 
-		// Decode the current packet for the frame
 		ogg_int64_t decoderPosition;
-		th_decode_packetin(decoder, &packet, &decoderPosition);
+		do
+		{
+			if (demuxer.readPacket(packet))
+				return;
 
-		// Prepare the next packet for the next frame
-		if (demuxer.readPacket(packet))
-			return;
+			if (packet.granulepos > 0)
+				th_decode_ctl(decoder, TH_DECCTL_SET_GRANPOS, &packet.granulepos, sizeof(packet.granulepos));
+		} while (th_decode_packetin(decoder, &packet, &decoderPosition) != 0);
 
 		lastFrame = nextFrame;
 		nextFrame = th_granule_time(decoder, decoderPosition);
