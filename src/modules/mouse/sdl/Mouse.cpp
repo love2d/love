@@ -49,6 +49,13 @@ static void DPIToWindowCoords(double *x, double *y)
 		window->DPIToWindowCoords(x, y);
 }
 
+static void clampToWindow(double *x, double *y)
+{
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	if (window)
+		window->clampPositionInWindow(x, y);
+}
+
 const char *Mouse::getName() const
 {
 	return "love.mouse.sdl";
@@ -119,24 +126,16 @@ bool Mouse::isCursorSupported() const
 
 double Mouse::getX() const
 {
-	int x;
-	SDL_GetMouseState(&x, nullptr);
-
-	double dx = (double) x;
-	windowToDPICoords(&dx, nullptr);
-
-	return dx;
+	double x, y;
+	getPosition(x, y);
+	return x;
 }
 
 double Mouse::getY() const
 {
-	int y;
-	SDL_GetMouseState(nullptr, &y);
-
-	double dy = (double) y;
-	windowToDPICoords(nullptr, &dy);
-
-	return dy;
+	double x, y;
+	getPosition(x, y);
+	return y;
 }
 
 void Mouse::getPosition(double &x, double &y) const
@@ -146,6 +145,14 @@ void Mouse::getPosition(double &x, double &y) const
 
 	x = (double) mx;
 	y = (double) my;
+
+	// SDL reports mouse coordinates outside the window bounds when click-and-
+	// dragging. For compatibility we clamp instead since user code may not be
+	// able to handle out-of-bounds coordinates. SDL has a hint to turn off
+	// auto capture, but it doesn't report the mouse's position at the edge of
+	// the window if the mouse moves fast enough when it's off.
+	clampToWindow(&x, &y);
+
 	windowToDPICoords(&x, &y);
 }
 

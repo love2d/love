@@ -193,6 +193,8 @@ public:
 	virtual int getPixelWidth() const = 0;
 	virtual int getPixelHeight() const = 0;
 
+	virtual void clampPositionInWindow(double *wx, double *wy) const = 0;
+
 	// Note: window-space coordinates are not necessarily the same as
 	// density-independent units (which toPixels and fromPixels use.)
 	virtual void windowToPixelCoords(double *x, double *y) const = 0;

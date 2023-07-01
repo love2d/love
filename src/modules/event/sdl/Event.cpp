@@ -51,6 +51,13 @@ static void windowToDPICoords(double *x, double *y)
 		window->windowToDPICoords(x, y);
 }
 
+static void clampToWindow(double *x, double *y)
+{
+	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
+	if (window)
+		window->clampPositionInWindow(x, y);
+}
+
 #ifndef LOVE_MACOSX
 static void normalizedToDPICoords(double *x, double *y)
 {
@@ -253,8 +260,16 @@ Message *Event::convert(const SDL_Event &e)
 			double y = (double) e.motion.y;
 			double xrel = (double) e.motion.xrel;
 			double yrel = (double) e.motion.yrel;
+
+			// SDL reports mouse coordinates outside the window bounds when click-and-
+			// dragging. For compatibility we clamp instead since user code may not be
+			// able to handle out-of-bounds coordinates. SDL has a hint to turn off
+			// auto capture, but it doesn't report the mouse's position at the edge of
+			// the window if the mouse moves fast enough when it's off.
+			clampToWindow(&x, &y);
 			windowToDPICoords(&x, &y);
 			windowToDPICoords(&xrel, &yrel);
+
 			vargs.emplace_back(x);
 			vargs.emplace_back(y);
 			vargs.emplace_back(xrel);
@@ -280,7 +295,10 @@ Message *Event::convert(const SDL_Event &e)
 
 			double px = (double) e.button.x;
 			double py = (double) e.button.y;
+
+			clampToWindow(&px, &py);
 			windowToDPICoords(&px, &py);
+
 			vargs.emplace_back(px);
 			vargs.emplace_back(py);
 			vargs.emplace_back((double) button);

@@ -1124,6 +1124,13 @@ int Window::getPixelHeight() const
 	return pixelHeight;
 }
 
+void Window::clampPositionInWindow(double *wx, double *wy) const
+{
+	if (wx != nullptr)
+		*wx = std::min(std::max(0.0, *wx), (double) getWidth() - 1);
+	if (wy != nullptr)
+		*wy = std::min(std::max(0.0, *wy), (double) getHeight() - 1);
+}
 
 void Window::windowToPixelCoords(double *x, double *y) const
 {

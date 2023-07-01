@@ -104,6 +104,8 @@ public:
 	int getPixelWidth() const override;
 	int getPixelHeight() const override;
 
+	void clampPositionInWindow(double *wx, double *wy) const override;
+
 	void windowToPixelCoords(double *x, double *y) const override;
 	void pixelToWindowCoords(double *x, double *y) const override;
 
