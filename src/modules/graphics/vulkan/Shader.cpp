@@ -18,6 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#include "graphics/vertex.h"
 #include "Shader.h"
 #include "Graphics.h"
 
@@ -824,8 +825,8 @@ void Shader::compileShaders()
 			if (resource.name == "gl_DefaultUniformBlock")
 			{
 				const auto& type = comp.get_type(resource.base_type_id);
-				size_t uniformBufferObjectSize = comp.get_declared_struct_size(type);
-				auto defaultUniformBlockSize = comp.get_declared_struct_size(type);
+				size_t defaultUniformBlockSize = comp.get_declared_struct_size(type);
+
 				localUniformStagingData.resize(defaultUniformBlockSize);
 				localUniformData.resize(defaultUniformBlockSize);
 				localUniformLocation = bindingMapper(comp, spirv, resource.name, resource.id);
@@ -961,11 +962,25 @@ void Shader::compileShaders()
 
 		if (shaderStage == SHADERSTAGE_VERTEX)
 		{
+			int nextAttributeIndex = ATTRIB_MAX_ENUM;
+
 			for (const auto &r : shaderResources.stage_inputs)
 			{
-				const auto &name = r.name;
-				const int attributeLocation = static_cast<int>(comp.get_decoration(r.id, spv::DecorationLocation));
-				attributes[name] = attributeLocation;
+				int index;
+
+				BuiltinVertexAttribute builtinAttribute;
+				if (graphics::getConstant(r.name.c_str(), builtinAttribute))
+					index = (int)builtinAttribute;
+				else
+					index = nextAttributeIndex++;
+
+				uint32_t locationOffset;
+				if (!comp.get_binary_offset_for_decoration(r.id, spv::DecorationLocation, locationOffset))
+					throw love::Exception("could not get binary offset for location");
+
+				spirv[locationOffset] = (uint32_t)index;
+
+				attributes[r.name] = index;
 			}
 		}
 

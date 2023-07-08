@@ -2410,8 +2410,6 @@ void Graphics::setDefaultRenderPass()
 
 void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
 {
-	auto currentCommandBuffer = commandBuffers.at(currentFrame);
-
 	// fixme: hasSRGBtexture
 	RenderPassConfiguration renderPassConfiguration{};
 	for (const auto &color : rts.colors)
