@@ -559,8 +559,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 
 	beginFrame();
 
-	uint8 whiteColor[] = { 255, 255, 255, 255 };
-
 	if (batchedDrawState.vb[0] == nullptr)
 	{
 		// Initial sizes that should be good enough for most cases. It will
@@ -570,9 +568,19 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 		batchedDrawState.indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
 
+	// sometimes the VertexTexCoord is not set, so we manually adjust it to (0, 0)
+	if (defaultConstantTexCoord == nullptr)
+	{
+		float zeroTexCoord[2] = { 0.0f, 0.0f };
+		Buffer::DataDeclaration format("ConstantTexCoord", DATAFORMAT_FLOAT_VEC2);
+		Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
+		defaultConstantTexCoord = newBuffer(settings, { format }, zeroTexCoord, sizeof(zeroTexCoord), 1);
+	}
+
 	// sometimes the VertexColor is not set, so we manually adjust it to white color
 	if (defaultConstantColor == nullptr)
 	{
+		uint8 whiteColor[] = { 255, 255, 255, 255 };
 		Buffer::DataDeclaration format("ConstantColor", DATAFORMAT_UNORM8_VEC4);
 		Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
 		defaultConstantColor = newBuffer(settings, { format }, whiteColor, sizeof(whiteColor), 1);
@@ -2217,11 +2225,6 @@ VkRenderPass Graphics::getRenderPass(RenderPassConfiguration &configuration)
 	return renderPass;
 }
 
-bool Graphics::usesConstantVertexColor(const VertexAttributes &vertexAttributes)
-{
-	return !!(vertexAttributes.enableBits & (1u << ATTRIB_COLOR));
-}
-
 void Graphics::createVulkanVertexFormat(
 	VertexAttributes vertexAttributes,
 	std::vector<VkVertexInputBindingDescription> &bindingDescriptions,
@@ -2233,6 +2236,7 @@ void Graphics::createVulkanVertexFormat(
 	auto allBits = enableBits;
 
 	bool usesColor = false;
+	bool usesTexCoord = false;
 
 	uint8_t highestBufferBinding = 0;
 
@@ -2242,6 +2246,8 @@ void Graphics::createVulkanVertexFormat(
 		uint32 bit = 1u << i;
 		if (enableBits & bit)
 		{
+			if (i == ATTRIB_TEXCOORD)
+				usesTexCoord = true;
 			if (i == ATTRIB_COLOR)
 				usesColor = true;
 
@@ -2276,11 +2282,31 @@ void Graphics::createVulkanVertexFormat(
 		allBits >>= 1;
 	}
 
+	if (!usesTexCoord)
+	{
+		// FIXME: is there a case where gaps happen between buffer bindings?
+		// then this doesn't work. We might need to enable null buffers again.
+		const auto constantTexCoordBufferBinding = ++highestBufferBinding;
+
+		VkVertexInputBindingDescription bindingDescription{};
+		bindingDescription.binding = constantTexCoordBufferBinding;
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		bindingDescription.stride = 0;	// no stride, will always read the same coord multiple times.
+		bindingDescriptions.push_back(bindingDescription);
+
+		VkVertexInputAttributeDescription attributeDescription{};
+		attributeDescription.binding = constantTexCoordBufferBinding;
+		attributeDescription.location = ATTRIB_TEXCOORD;
+		attributeDescription.offset = 0;
+		attributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions.push_back(attributeDescription);
+	}
+
 	if (!usesColor)
 	{
 		// FIXME: is there a case where gaps happen between buffer bindings?
 		// then this doesn't work. We might need to enable null buffers again.
-		const auto constantColorBufferBinding = highestBufferBinding + 1;
+		const auto constantColorBufferBinding = ++highestBufferBinding;
 
 		VkVertexInputBindingDescription bindingDescription{};
 		bindingDescription.binding = constantColorBufferBinding;
@@ -2340,7 +2366,13 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		}
 	}
 
-	if (!usesConstantVertexColor(attributes))
+	if (!(attributes.enableBits & (1u << ATTRIB_TEXCOORD)))
+	{
+		bufferVector.push_back((VkBuffer)defaultConstantTexCoord->getHandle());
+		offsets.push_back((VkDeviceSize)0);
+	}
+
+	if (!(attributes.enableBits & (1u << ATTRIB_COLOR)))
 	{
 		bufferVector.push_back((VkBuffer)defaultConstantColor->getHandle());
 		offsets.push_back((VkDeviceSize)0);
