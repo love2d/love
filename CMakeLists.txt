@@ -311,7 +311,7 @@ set(LOVE_SRC_COMMON
 
 if (APPLE)
 	set(LOVE_SRC_COMMON ${LOVE_SRC_COMMON}
-		src/common/macosx.mm
+		src/common/macos.mm
 	)
 	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} objc)
 	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework CoreFoundation")
