@@ -1647,10 +1647,11 @@ void Graphics::createLogicalDevice()
 
 	VkPhysicalDeviceExtendedDynamicStateFeaturesEXT extendedDynamicStateFeatures{};
 	extendedDynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
-	extendedDynamicStateFeatures.extendedDynamicState = Vulkan::getBool(optionalDeviceExtensions.extendedDynamicState);
+	extendedDynamicStateFeatures.extendedDynamicState = VK_TRUE;
 	extendedDynamicStateFeatures.pNext = nullptr;
 
-	createInfo.pNext = &extendedDynamicStateFeatures;
+	if (optionalDeviceExtensions.extendedDynamicState)
+		createInfo.pNext = &extendedDynamicStateFeatures;
 
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
 		throw love::Exception("failed to create logical device");
