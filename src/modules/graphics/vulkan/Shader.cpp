@@ -1099,7 +1099,7 @@ void Shader::setMainTex(graphics::Texture *texture)
 	}
 }
 
-VkDescriptorPool Shader::createDescriptorPool()
+void Shader::createDescriptorPool()
 {
 	VkDescriptorPoolCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

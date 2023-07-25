@@ -98,7 +98,7 @@ private:
 	void createDescriptorPoolSizes();
 	void createStreamBuffers();
 	void buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::SPIRType &type, size_t baseoff, const std::string &basename);
-	VkDescriptorPool createDescriptorPool();
+	void createDescriptorPool();
 	VkDescriptorSet allocateDescriptorSet();
 
 	VkDeviceSize uniformBufferSizeAligned;
