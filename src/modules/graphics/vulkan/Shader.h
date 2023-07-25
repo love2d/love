@@ -102,7 +102,6 @@ private:
 		const spirv_cross::SPIRType &type, 
 		size_t baseoff, 
 		const std::string &basename);
-	void updateUniform(const UniformInfo *info, int count, bool internal);
 
 	VkDescriptorSet allocateDescriptorSet();
 
@@ -120,8 +119,6 @@ private:
 	std::vector<VkDescriptorPool> descriptorPools;
 	std::queue<VkDescriptorSet> freeDescriptorSets;
 	std::vector<std::vector<VkDescriptorSet>> descriptorSetsVector;
-
-	std::set<uint32_t> updatedUniforms;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::vector<VkShaderModule> shaderModules;

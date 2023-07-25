@@ -232,6 +232,15 @@ static EShLanguage getGlslShaderType(ShaderStageType stage)
 	}
 }
 
+static bool usesLocalUniformData(const graphics::Shader::UniformInfo* info)
+{
+	return info->baseType == graphics::Shader::UNIFORM_BOOL ||
+		info->baseType == graphics::Shader::UNIFORM_FLOAT ||
+		info->baseType == graphics::Shader::UNIFORM_INT ||
+		info->baseType == graphics::Shader::UNIFORM_MATRIX ||
+		info->baseType == graphics::Shader::UNIFORM_UINT;
+}
+
 Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[])
 	: graphics::Shader(stages)
 {
@@ -338,7 +347,6 @@ void Shader::newFrame()
 {
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
-	updatedUniforms.clear();
 	currentUsedUniformStreamBuffersCount = 0;
 	currentUsedDescriptorSetsCount = 0;
 
@@ -404,48 +412,105 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		vkUpdateDescriptorSets(device, 1, &uniformWrite, 0, nullptr);
 
 		currentUsedUniformStreamBuffersCount++;
-
-		updatedUniforms.insert(localUniformLocation);
-	}
-
-	static const std::vector<BuiltinUniform> builtinUniformTextures = {
-		BUILTIN_TEXTURE_MAIN,
-		BUILTIN_TEXTURE_VIDEO_Y,
-		BUILTIN_TEXTURE_VIDEO_CB,
-		BUILTIN_TEXTURE_VIDEO_CR,
-	};
-
-	for (const auto &builtin : builtinUniformTextures)
-	{
-		if (builtinUniformInfo[builtin] != nullptr)
-		{
-			auto texture = dynamic_cast<Texture*>(builtinUniformInfo[builtin]->textures[0]);
-
-			VkDescriptorImageInfo imageInfo{};
-			imageInfo.imageLayout = texture->getImageLayout();
-			imageInfo.imageView = (VkImageView)texture->getRenderTargetHandle();
-			imageInfo.sampler = (VkSampler)texture->getSamplerHandle();
-
-			auto location = builtinUniformInfo[builtin]->location;
-
-			VkWriteDescriptorSet textureWrite{};
-			textureWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			textureWrite.dstSet = currentDescriptorSet;
-			textureWrite.dstBinding = location;
-			textureWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			textureWrite.descriptorCount = 1;
-			textureWrite.pImageInfo = &imageInfo;
-
-			vkUpdateDescriptorSets(device, 1, &textureWrite, 0, nullptr);
-
-			updatedUniforms.insert(location);
-		}
 	}
 
 	for (const auto &u : uniformInfos)
 	{
-		if (updatedUniforms.find(u.second.location) == updatedUniforms.end())
-			updateUniform(&u.second, u.second.count, true);
+		auto &info = u.second;
+
+		if (usesLocalUniformData(&info))
+			continue;
+
+		if (info.baseType == UNIFORM_SAMPLER || info.baseType == UNIFORM_STORAGETEXTURE)
+		{
+			bool isSampler = info.baseType == UNIFORM_SAMPLER;
+
+			std::vector<VkDescriptorImageInfo> imageInfos;
+
+			for (int i = 0; i < info.count; i++)
+			{
+				auto vkTexture = dynamic_cast<Texture*>(info.textures[i]);
+
+				if (vkTexture == nullptr)
+					throw love::Exception("uniform variable %s is not set.", info.name.c_str());
+
+				VkDescriptorImageInfo imageInfo{};
+
+				imageInfo.imageLayout = vkTexture->getImageLayout();
+				imageInfo.imageView = (VkImageView)vkTexture->getRenderTargetHandle();
+				if (isSampler)
+					imageInfo.sampler = (VkSampler)vkTexture->getSamplerHandle();
+
+				imageInfos.push_back(imageInfo);
+			}
+
+			VkWriteDescriptorSet write{};
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = currentDescriptorSet;
+			write.dstBinding = info.location;
+			write.dstArrayElement = 0;
+			if (isSampler)
+				write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			else
+				write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			write.descriptorCount = static_cast<uint32_t>(info.count);
+			write.pImageInfo = imageInfos.data();
+
+			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+		}
+		if (info.baseType == UNIFORM_STORAGEBUFFER)
+		{
+			VkWriteDescriptorSet write{};
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = currentDescriptorSet;
+			write.dstBinding = info.location;
+			write.dstArrayElement = 0;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+			write.descriptorCount = info.count;
+
+			std::vector<VkDescriptorBufferInfo> bufferInfos;
+
+			for (int i = 0; i < info.count; i++)
+			{
+				if (info.buffers[i] == nullptr)
+					throw love::Exception("uniform variable %s is not set.", info.name.c_str());
+
+				VkDescriptorBufferInfo bufferInfo{};
+				bufferInfo.buffer = (VkBuffer)info.buffers[i]->getHandle();;
+				bufferInfo.offset = 0;
+				bufferInfo.range = info.buffers[i]->getSize();
+
+				bufferInfos.push_back(bufferInfo);
+			}
+
+			write.pBufferInfo = bufferInfos.data();
+
+			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+		}
+		if (info.baseType == UNIFORM_TEXELBUFFER)
+		{
+			VkWriteDescriptorSet write{};
+			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.dstSet = currentDescriptorSet;
+			write.dstBinding = info.location;
+			write.dstArrayElement = 0;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+			write.descriptorCount = info.count;
+
+			std::vector<VkBufferView> bufferViews;
+
+			for (int i = 0; i < info.count; i++)
+			{
+				if (info.buffers[i] == nullptr)
+					throw love::Exception("uniform variable %s is not set.", info.name.c_str());
+
+				bufferViews.push_back((VkBufferView)info.buffers[i]->getTexelBufferHandle());
+			}
+
+			write.pTexelBufferView = bufferViews.data();
+
+			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+		}
 	}
 
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
@@ -456,8 +521,6 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
 
 	currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
-
-	updatedUniforms.clear();
 }
 
 Shader::~Shader()
@@ -496,119 +559,13 @@ const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
 	return builtinUniformInfo[builtin];
 }
 
-static bool usesLocalUniformData(const graphics::Shader::UniformInfo *info)
-{
-	return info->baseType == graphics::Shader::UNIFORM_BOOL ||
-		info->baseType == graphics::Shader::UNIFORM_FLOAT ||
-		info->baseType == graphics::Shader::UNIFORM_INT ||
-		info->baseType == graphics::Shader::UNIFORM_MATRIX ||
-		info->baseType == graphics::Shader::UNIFORM_UINT;
-}
-
 void Shader::updateUniform(const UniformInfo *info, int count)
 {
-	updateUniform(info, count, false);
-}
-
-void Shader::updateUniform(const UniformInfo* info, int count, bool internal)
-{
-	if (!internal && current == this)
+	if (current == this)
 		Graphics::flushBatchedDrawsGlobal();
 
 	if (usesLocalUniformData(info))
 		memcpy(localUniformData.data(), localUniformStagingData.data(), localUniformStagingData.size());
-	if (info->baseType == UNIFORM_SAMPLER || info->baseType == UNIFORM_STORAGETEXTURE)
-	{
-		bool isSampler = info->baseType == UNIFORM_SAMPLER;
-
-		std::vector<VkDescriptorImageInfo> imageInfos;
-
-		for (int i = 0; i < count; i++)
-		{
-			auto vkTexture = dynamic_cast<Texture*>(info->textures[i]);
-
-			if (vkTexture == nullptr)
-				throw love::Exception("uniform variable %s is not set.", info->name.c_str());
-
-			VkDescriptorImageInfo imageInfo{};
-
-			imageInfo.imageLayout = vkTexture->getImageLayout();
-			imageInfo.imageView = (VkImageView)vkTexture->getRenderTargetHandle();
-			if (isSampler)
-				imageInfo.sampler = (VkSampler)vkTexture->getSamplerHandle();
-
-			imageInfos.push_back(imageInfo);
-		}
-
-		VkWriteDescriptorSet write{};
-		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		write.dstSet = currentDescriptorSet;
-		write.dstBinding = info->location;
-		write.dstArrayElement = 0;
-		if (isSampler)
-			write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		else
-			write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-		write.descriptorCount = static_cast<uint32_t>(count);
-		write.pImageInfo = imageInfos.data();
-
-		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-	}
-	if (info->baseType == UNIFORM_STORAGEBUFFER)
-	{
-		VkWriteDescriptorSet write{};
-		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		write.dstSet = currentDescriptorSet;
-		write.dstBinding = info->location;
-		write.dstArrayElement = 0;
-		write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		write.descriptorCount = info->count;
-
-		std::vector<VkDescriptorBufferInfo> bufferInfos;
-
-		for (int i = 0; i < info->count; i++)
-		{
-			if (info->buffers[i] == nullptr)
-				throw love::Exception("uniform variable %s is not set.", info->name.c_str());
-
-			VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = (VkBuffer)info->buffers[i]->getHandle();;
-			bufferInfo.offset = 0;
-			bufferInfo.range = info->buffers[i]->getSize();
-
-			bufferInfos.push_back(bufferInfo);
-		}
-
-		write.pBufferInfo = bufferInfos.data();
-
-		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-	}
-	if (info->baseType == UNIFORM_TEXELBUFFER)
-	{
-		VkWriteDescriptorSet write{};
-		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		write.dstSet = currentDescriptorSet;
-		write.dstBinding = info->location;
-		write.dstArrayElement = 0;
-		write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
-		write.descriptorCount = info->count;
-
-		std::vector<VkBufferView> bufferViews;
-
-		for (int i = 0; i < info->count; i++)
-		{
-			if (info->buffers[i] == nullptr)
-				throw love::Exception("uniform variable %s is not set.", info->name.c_str());
-
-			bufferViews.push_back((VkBufferView)info->buffers[i]->getTexelBufferHandle());
-		}
-
-		write.pTexelBufferView = bufferViews.data();
-
-		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-	}
-
-	updatedUniforms.insert(info->location);
 }
 
 void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures, int count)
@@ -621,8 +578,6 @@ void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures,
 		if (oldTexture)
 			oldTexture->release();
 	}
-
-	updateUniform(info, count);
 }
 
 void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
@@ -635,8 +590,6 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 		if (oldBuffer)
 			oldBuffer->release();
 	}
-
-	updateUniform(info, count);
 }
 
 void Shader::calculateUniformBufferSizeAligned()
