@@ -97,12 +97,8 @@ private:
 	void createPipelineLayout();
 	void createDescriptorPoolSizes();
 	void createStreamBuffers();
-	void buildLocalUniforms(
-		spirv_cross::Compiler &comp, 
-		const spirv_cross::SPIRType &type, 
-		size_t baseoff, 
-		const std::string &basename);
-
+	void buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::SPIRType &type, size_t baseoff, const std::string &basename);
+	VkDescriptorPool createDescriptorPool();
 	VkDescriptorSet allocateDescriptorSet();
 
 	VkDeviceSize uniformBufferSizeAligned;
@@ -117,7 +113,6 @@ private:
 	// we keep a vector of stream buffers that gets dynamically increased if more memory is needed
 	std::vector<StreamBuffer*> streamBuffers;
 	std::vector<VkDescriptorPool> descriptorPools;
-	std::queue<VkDescriptorSet> freeDescriptorSets;
 	std::vector<std::vector<VkDescriptorSet>> descriptorSetsVector;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;

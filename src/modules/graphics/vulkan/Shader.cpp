@@ -141,7 +141,7 @@ static const TBuiltInResource defaultTBuiltInResource = {
 };
 
 static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
-static const uint32_t DESCRIPTOR_POOL_SIZE = 1;
+static const uint32_t DESCRIPTOR_POOL_SIZE = 16;
 
 class BindingMapper
 {
@@ -314,9 +314,6 @@ void Shader::unloadVolatile()
 		if (computePipeline != VK_NULL_HANDLE)
 			vkDestroyPipeline(device, computePipeline, nullptr);
 	});
-
-	while (!freeDescriptorSets.empty())
-		freeDescriptorSets.pop();
 
 	for (const auto streamBuffer : streamBuffers)
 		streamBuffer->release();
@@ -1102,42 +1099,48 @@ void Shader::setMainTex(graphics::Texture *texture)
 	}
 }
 
+VkDescriptorPool Shader::createDescriptorPool()
+{
+	VkDescriptorPoolCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	createInfo.maxSets = DESCRIPTOR_POOL_SIZE;
+	createInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
+	createInfo.pPoolSizes = descriptorPoolSizes.data();
+
+	VkDescriptorPool pool;
+	if (vkCreateDescriptorPool(device, &createInfo, nullptr, &pool) != VK_SUCCESS)
+		throw love::Exception("failed to create descriptor pool");
+
+	descriptorPools.push_back(pool);
+}
+
 VkDescriptorSet Shader::allocateDescriptorSet()
 {
-	if (freeDescriptorSets.empty())
+	if (descriptorPools.empty())
+		createDescriptorPool();
+
+	while (true)
 	{
-		VkDescriptorPoolCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		createInfo.maxSets = DESCRIPTOR_POOL_SIZE;
-		createInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
-		createInfo.pPoolSizes = descriptorPoolSizes.data();
-
-		VkDescriptorPool pool;
-		if (vkCreateDescriptorPool(device, &createInfo, nullptr, &pool) != VK_SUCCESS)
-			throw love::Exception("failed to create descriptor pool");
-		descriptorPools.push_back(pool);
-
-		std::vector<VkDescriptorSetLayout> layouts(DESCRIPTOR_POOL_SIZE, descriptorSetLayout);
-
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = pool;
-		allocInfo.descriptorSetCount = DESCRIPTOR_POOL_SIZE;
-		allocInfo.pSetLayouts = layouts.data();
+		allocInfo.descriptorPool = descriptorPools.back();
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &descriptorSetLayout;
 
-		std::vector<VkDescriptorSet> descriptorSet;
-		descriptorSet.resize(DESCRIPTOR_POOL_SIZE);
-		VkResult result = vkAllocateDescriptorSets(device, &allocInfo, descriptorSet.data());
-		if (result != VK_SUCCESS)
+		VkDescriptorSet descriptorSet;
+		VkResult result = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet);
+
+		switch (result)
+		{
+		case VK_SUCCESS:
+			return descriptorSet;
+		case VK_ERROR_OUT_OF_POOL_MEMORY:
+			createDescriptorPool();
+			continue;
+		default:
 			throw love::Exception("failed to allocate descriptor set");
-
-		for (const auto ds : descriptorSet)
-			freeDescriptorSets.push(ds);
+		}
 	}
-
-	auto ds = freeDescriptorSets.front();
-	freeDescriptorSets.pop();
-	return ds;
 }
 
 } // vulkan
