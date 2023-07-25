@@ -105,6 +105,10 @@ private:
 
 	VkPipeline computePipeline;
 
+	uint32_t numTextures;
+	uint32_t numBuffers;
+	uint32_t numBufferViews;
+
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 	std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
@@ -133,8 +137,6 @@ private:
 	OptionalInt builtinUniformDataOffset;
 
 	std::unordered_map<std::string, int> attributes;
-
-	VkDescriptorSet currentDescriptorSet;
 
 	uint32_t currentFrame;
 	uint32_t currentUsedUniformStreamBuffersCount;

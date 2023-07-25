@@ -360,15 +360,26 @@ void Shader::newFrame()
 	}
 	else
 		streamBuffers.at(0)->nextFrame();
-
-	if (descriptorSetsVector.at(currentFrame).size() == 0)
-		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
-
-	currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(0);
 }
 
 void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBindPoint bindPoint)
 {
+	if (currentUsedDescriptorSetsCount >= static_cast<uint32_t>(descriptorSetsVector.at(currentFrame).size()))
+		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
+
+	VkDescriptorSet currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
+
+	std::vector<VkDescriptorBufferInfo> bufferInfos{};
+	bufferInfos.reserve(numBuffers);
+
+	std::vector<VkDescriptorImageInfo> imageInfos{};
+	imageInfos.reserve(numTextures);
+
+	std::vector<VkBufferView> bufferViews;
+	bufferViews.reserve(numBufferViews);
+
+	std::vector<VkWriteDescriptorSet> descriptorWrites;
+
 	if (!localUniformData.empty())
 	{
 		auto usedStreamBufferMemory = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
@@ -397,6 +408,8 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		bufferInfo.offset = offset;
 		bufferInfo.range = localUniformData.size();
 
+		bufferInfos.push_back(bufferInfo);
+
 		VkWriteDescriptorSet uniformWrite{};
 		uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		uniformWrite.dstSet = currentDescriptorSet;
@@ -404,9 +417,9 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		uniformWrite.dstArrayElement = 0;
 		uniformWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		uniformWrite.descriptorCount = 1;
-		uniformWrite.pBufferInfo = &bufferInfo;
+		uniformWrite.pBufferInfo = &bufferInfos[bufferInfos.size() - 1];
 
-		vkUpdateDescriptorSets(device, 1, &uniformWrite, 0, nullptr);
+		descriptorWrites.push_back(uniformWrite);
 
 		currentUsedUniformStreamBuffersCount++;
 	}
@@ -421,8 +434,6 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		if (info.baseType == UNIFORM_SAMPLER || info.baseType == UNIFORM_STORAGETEXTURE)
 		{
 			bool isSampler = info.baseType == UNIFORM_SAMPLER;
-
-			std::vector<VkDescriptorImageInfo> imageInfos;
 
 			for (int i = 0; i < info.count; i++)
 			{
@@ -451,9 +462,9 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 			else
 				write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 			write.descriptorCount = static_cast<uint32_t>(info.count);
-			write.pImageInfo = imageInfos.data();
+			write.pImageInfo = &imageInfos[imageInfos.size() - info.count];
 
-			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+			descriptorWrites.push_back(write);
 		}
 		if (info.baseType == UNIFORM_STORAGEBUFFER)
 		{
@@ -464,8 +475,6 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 			write.dstArrayElement = 0;
 			write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 			write.descriptorCount = info.count;
-
-			std::vector<VkDescriptorBufferInfo> bufferInfos;
 
 			for (int i = 0; i < info.count; i++)
 			{
@@ -480,9 +489,9 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 				bufferInfos.push_back(bufferInfo);
 			}
 
-			write.pBufferInfo = bufferInfos.data();
+			write.pBufferInfo = &bufferInfos[bufferInfos.size() - info.count];
 
-			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+			descriptorWrites.push_back(write);
 		}
 		if (info.baseType == UNIFORM_TEXELBUFFER)
 		{
@@ -494,8 +503,6 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 			write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
 			write.descriptorCount = info.count;
 
-			std::vector<VkBufferView> bufferViews;
-
 			for (int i = 0; i < info.count; i++)
 			{
 				if (info.buffers[i] == nullptr)
@@ -504,20 +511,17 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 				bufferViews.push_back((VkBufferView)info.buffers[i]->getTexelBufferHandle());
 			}
 
-			write.pTexelBufferView = bufferViews.data();
+			write.pTexelBufferView = &bufferViews[bufferViews.size() - info.count];
 
-			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+			descriptorWrites.push_back(write);
 		}
 	}
+
+	vkUpdateDescriptorSets(device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
 
 	currentUsedDescriptorSetsCount++;
-
-	if (currentUsedDescriptorSetsCount >= static_cast<uint32_t>(descriptorSetsVector.at(currentFrame).size()))
-		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
-
-	currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
 }
 
 Shader::~Shader()
@@ -953,6 +957,32 @@ void Shader::compileShaders()
 		shaderStageInfo.pName = "main";
 
 		shaderStages.push_back(shaderStageInfo);
+	}
+
+	numBuffers = 0;
+	numTextures = 0;
+	numBufferViews = 0;
+
+	if (localUniformData.size() > 0)
+		numBuffers++;
+
+	for (const auto &u : uniformInfos)
+	{
+		switch (u.second.baseType)
+		{
+		case UNIFORM_SAMPLER:
+		case UNIFORM_STORAGETEXTURE:
+			numTextures++;
+			break;
+		case UNIFORM_STORAGEBUFFER:
+			numBuffers++;
+			break;
+		case UNIFORM_TEXELBUFFER:
+			numBufferViews++;
+			break;
+		default:
+			continue;
+		}
 	}
 }
 
