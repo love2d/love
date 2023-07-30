@@ -116,8 +116,7 @@ private:
 	// we don't know how much memory we need per frame for the uniform buffer descriptors
 	// we keep a vector of stream buffers that gets dynamically increased if more memory is needed
 	std::vector<StreamBuffer*> streamBuffers;
-	std::vector<VkDescriptorPool> descriptorPools;
-	std::vector<std::vector<VkDescriptorSet>> descriptorSetsVector;
+	std::vector<std::vector<VkDescriptorPool>> descriptorPools;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::vector<VkShaderModule> shaderModules;
@@ -140,7 +139,7 @@ private:
 
 	uint32_t currentFrame;
 	uint32_t currentUsedUniformStreamBuffersCount;
-	uint32_t currentUsedDescriptorSetsCount;
+	uint32_t currentDescriptorPool;
 };
 
 }

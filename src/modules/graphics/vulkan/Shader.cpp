@@ -141,7 +141,7 @@ static const TBuiltInResource defaultTBuiltInResource = {
 };
 
 static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
-static const uint32_t DESCRIPTOR_POOL_SIZE = 16;
+static const uint32_t DESCRIPTOR_POOL_SIZE = 1000;
 
 class BindingMapper
 {
@@ -265,10 +265,9 @@ bool Shader::loadVolatile()
 	createPipelineLayout();
 	createDescriptorPoolSizes();
 	createStreamBuffers();
-	descriptorSetsVector.resize(MAX_FRAMES_IN_FLIGHT);
+	descriptorPools.resize(MAX_FRAMES_IN_FLIGHT);
 	currentFrame = 0;
 	currentUsedUniformStreamBuffersCount = 0;
-	currentUsedDescriptorSetsCount = 0;
 	newFrame();
 
 	return true;
@@ -305,8 +304,11 @@ void Shader::unloadVolatile()
 	}
 
 	vgfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout, descriptorPools = descriptorPools, computePipeline = computePipeline](){
-		for (const auto pool : descriptorPools)
-			vkDestroyDescriptorPool(device, pool, nullptr);
+		for (const auto& pools : descriptorPools)
+		{
+			for (const auto pool : pools)
+				vkDestroyDescriptorPool(device, pool, nullptr);
+		}
 		for (const auto shaderModule : shaderModules)
 			vkDestroyShaderModule(device, shaderModule, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
@@ -322,7 +324,6 @@ void Shader::unloadVolatile()
 	shaderStages.clear();
 	streamBuffers.clear();
 	descriptorPools.clear();
-	descriptorSetsVector.clear();
 }
 
 const std::vector<VkPipelineShaderStageCreateInfo> &Shader::getShaderStages() const
@@ -345,7 +346,7 @@ void Shader::newFrame()
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 	currentUsedUniformStreamBuffersCount = 0;
-	currentUsedDescriptorSetsCount = 0;
+	currentDescriptorPool = 0;
 
 	if (streamBuffers.size() > 1)
 	{
@@ -360,14 +361,14 @@ void Shader::newFrame()
 	}
 	else
 		streamBuffers.at(0)->nextFrame();
+
+	for (VkDescriptorPool pool : descriptorPools[currentFrame])
+		vkResetDescriptorPool(device, pool, 0);
 }
 
 void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBindPoint bindPoint)
 {
-	if (currentUsedDescriptorSetsCount >= static_cast<uint32_t>(descriptorSetsVector.at(currentFrame).size()))
-		descriptorSetsVector.at(currentFrame).push_back(allocateDescriptorSet());
-
-	VkDescriptorSet currentDescriptorSet = descriptorSetsVector.at(currentFrame).at(currentUsedDescriptorSetsCount);
+	VkDescriptorSet currentDescriptorSet = allocateDescriptorSet();
 
 	std::vector<VkDescriptorBufferInfo> bufferInfos{};
 	bufferInfos.reserve(numBuffers);
@@ -520,8 +521,6 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 	vkUpdateDescriptorSets(device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, pipelineLayout, 0, 1, &currentDescriptorSet, 0, nullptr);
-
-	currentUsedDescriptorSetsCount++;
 }
 
 Shader::~Shader()
@@ -597,9 +596,7 @@ void Shader::calculateUniformBufferSizeAligned()
 {
 	auto minAlignment = vgfx->getMinUniformBufferOffsetAlignment();
 	size_t size = localUniformStagingData.size();
-	auto factor = static_cast<VkDeviceSize>(std::ceil(
-		static_cast<float>(size) / static_cast<float>(minAlignment)
-	));
+	auto factor = static_cast<VkDeviceSize>(std::ceil(static_cast<float>(size) / static_cast<float>(minAlignment)));
 	uniformBufferSizeAligned = factor * minAlignment;
 }
 
@@ -1141,19 +1138,19 @@ void Shader::createDescriptorPool()
 	if (vkCreateDescriptorPool(device, &createInfo, nullptr, &pool) != VK_SUCCESS)
 		throw love::Exception("failed to create descriptor pool");
 
-	descriptorPools.push_back(pool);
+	descriptorPools[currentFrame].push_back(pool);
 }
 
 VkDescriptorSet Shader::allocateDescriptorSet()
 {
-	if (descriptorPools.empty())
+	if (descriptorPools[currentFrame].empty())
 		createDescriptorPool();
 
 	while (true)
 	{
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = descriptorPools.back();
+		allocInfo.descriptorPool = descriptorPools[currentFrame][currentDescriptorPool];
 		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &descriptorSetLayout;
 
@@ -1165,7 +1162,9 @@ VkDescriptorSet Shader::allocateDescriptorSet()
 		case VK_SUCCESS:
 			return descriptorSet;
 		case VK_ERROR_OUT_OF_POOL_MEMORY:
-			createDescriptorPool();
+			currentDescriptorPool++;
+			if (descriptorPools[currentFrame].size() <= currentDescriptorPool)
+				createDescriptorPool();
 			continue;
 		default:
 			throw love::Exception("failed to allocate descriptor set");
