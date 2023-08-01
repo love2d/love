@@ -232,7 +232,7 @@ static EShLanguage getGlslShaderType(ShaderStageType stage)
 	}
 }
 
-static bool usesLocalUniformData(const graphics::Shader::UniformInfo* info)
+static bool usesLocalUniformData(const graphics::Shader::UniformInfo *info)
 {
 	return info->baseType == graphics::Shader::UNIFORM_BOOL ||
 		info->baseType == graphics::Shader::UNIFORM_FLOAT ||
@@ -304,7 +304,7 @@ void Shader::unloadVolatile()
 	}
 
 	vgfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout, descriptorPools = descriptorPools, computePipeline = computePipeline](){
-		for (const auto& pools : descriptorPools)
+		for (const auto &pools : descriptorPools)
 		{
 			for (const auto pool : pools)
 				vkDestroyDescriptorPool(device, pool, nullptr);
@@ -370,10 +370,10 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 {
 	VkDescriptorSet currentDescriptorSet = allocateDescriptorSet();
 
-	std::vector<VkDescriptorBufferInfo> bufferInfos{};
+	std::vector<VkDescriptorBufferInfo> bufferInfos;
 	bufferInfos.reserve(numBuffers);
 
-	std::vector<VkDescriptorImageInfo> imageInfos{};
+	std::vector<VkDescriptorImageInfo> imageInfos;
 	imageInfos.reserve(numTextures);
 
 	std::vector<VkBufferView> bufferViews;
@@ -775,7 +775,7 @@ void Shader::compileShaders()
 		{
 			if (resource.name == "gl_DefaultUniformBlock")
 			{
-				const auto& type = comp.get_type(resource.base_type_id);
+				const auto &type = comp.get_type(resource.base_type_id);
 				size_t defaultUniformBlockSize = comp.get_declared_struct_size(type);
 
 				localUniformStagingData.resize(defaultUniformBlockSize);
@@ -1068,9 +1068,9 @@ void Shader::createDescriptorPoolSizes()
 	{
 		VkDescriptorPoolSize size{};
 		auto type = Vulkan::getDescriptorType(entry.second.baseType);
-		if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+		if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 			continue;
-		}
+
 		size.type = type;
 		size.descriptorCount = 1;
 		descriptorPoolSizes.push_back(size);
