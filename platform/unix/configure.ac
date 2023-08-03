@@ -31,7 +31,7 @@ ACLOVE_CPP11_TEST
 
 # Add -fvisibility=hidden and -fvisibility-inlines-hidden
 CFLAGS="-fvisibility=hidden $CFLAGS"
-CPPFLAGS="-fvisibility=hidden -fvisibility-inlines-hidden $CPPFLAGS"
+CXXFLAGS="-fvisibility=hidden -fvisibility-inlines-hidden $CXXFLAGS"
 
 # Allow people on OSX to use autotools, they need their platform files
 AC_ARG_ENABLE([osx],
