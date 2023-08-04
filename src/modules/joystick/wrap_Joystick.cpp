@@ -483,7 +483,7 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "hasSensor", w_Joystick_hasSensor },
 	{ "isSensorEnabled", w_Joystick_isSensorEnabled },
 	{ "setSensorEnabled", w_Joystick_setSensorEnabled },
-	{ "getSensorData", w_Joystick_setSensorEnabled },
+	{ "getSensorData", w_Joystick_getSensorData },
 #endif
 
 	// From wrap_JoystickModule.
