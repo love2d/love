@@ -70,7 +70,7 @@ public:
 
 	void attach() override;
 
-	ptrdiff_t getHandle() const { return 0; }
+	ptrdiff_t getHandle() const override { return 0; }
 
 	std::string getWarnings() const override { return ""; }
 
@@ -97,18 +97,17 @@ private:
 	void createPipelineLayout();
 	void createDescriptorPoolSizes();
 	void createStreamBuffers();
-	void buildLocalUniforms(
-		spirv_cross::Compiler &comp, 
-		const spirv_cross::SPIRType &type, 
-		size_t baseoff, 
-		const std::string &basename);
-	void updateUniform(const UniformInfo *info, int count, bool internal);
-
+	void buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::SPIRType &type, size_t baseoff, const std::string &basename);
+	void createDescriptorPool();
 	VkDescriptorSet allocateDescriptorSet();
 
 	VkDeviceSize uniformBufferSizeAligned;
 
 	VkPipeline computePipeline;
+
+	uint32_t numTextures;
+	uint32_t numBuffers;
+	uint32_t numBufferViews;
 
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
@@ -117,11 +116,7 @@ private:
 	// we don't know how much memory we need per frame for the uniform buffer descriptors
 	// we keep a vector of stream buffers that gets dynamically increased if more memory is needed
 	std::vector<StreamBuffer*> streamBuffers;
-	std::vector<VkDescriptorPool> descriptorPools;
-	std::queue<VkDescriptorSet> freeDescriptorSets;
-	std::vector<std::vector<VkDescriptorSet>> descriptorSetsVector;
-
-	std::set<uint32_t> updatedUniforms;
+	std::vector<std::vector<VkDescriptorPool>> descriptorPools;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::vector<VkShaderModule> shaderModules;
@@ -142,11 +137,9 @@ private:
 
 	std::unordered_map<std::string, int> attributes;
 
-	VkDescriptorSet currentDescriptorSet;
-
 	uint32_t currentFrame;
 	uint32_t currentUsedUniformStreamBuffersCount;
-	uint32_t currentUsedDescriptorSetsCount;
+	uint32_t currentDescriptorPool;
 };
 
 }

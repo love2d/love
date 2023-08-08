@@ -262,13 +262,12 @@ public:
 	Graphics();
 	~Graphics();
 
-	const char *getName() const override;
-	const VkDevice getDevice() const;
-	const VmaAllocator getVmaAllocator() const;
-
 	// implementation for virtual functions
+	const char *getName() const override;
 	love::graphics::Texture *newTexture(const love::graphics::Texture::Settings &settings, const love::graphics::Texture::Slices *data) override;
 	love::graphics::Buffer *newBuffer(const love::graphics::Buffer::Settings &settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void *data, size_t size, size_t arraylength) override;
+	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) override;
+	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty) override;
 	void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) override;
 	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
@@ -299,17 +298,15 @@ public:
 	void draw(const DrawIndexedCommand &cmd) override;
 	void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, graphics::Texture *texture) override;
 
-	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) override;
-	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty) override;
-
 	// internal functions.
 
+	const VkDevice getDevice() const;
+	const VmaAllocator getVmaAllocator() const;
 	VkCommandBuffer getCommandBufferForDataTransfer();
 	void queueCleanUp(std::function<void()> cleanUp);
 	void addReadbackCallback(std::function<void()> callback);
 	void submitGpuCommands(bool present, void *screenshotCallbackData = nullptr);
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
-	graphics::Texture *getDefaultTexture() const;
 	VkSampler getCachedSampler(const SamplerState &sampler);
 	void setComputeShader(Shader *computeShader);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
@@ -369,7 +366,6 @@ private:
 	void startRecordingGraphicsCommands();
 	void endRecordingGraphicsCommands();
 	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration);
-	bool usesConstantVertexColor(const VertexAttributes &attribs);
 	void createVulkanVertexFormat(
 		VertexAttributes vertexAttributes, 
 		std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
@@ -438,6 +434,7 @@ private:
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;
 	StrongRef<love::graphics::Texture> defaultTexture;
 	StrongRef<love::graphics::Buffer> defaultConstantColor;
+	StrongRef<love::graphics::Buffer> defaultConstantTexCoord;
 	// functions that need to be called to cleanup objects that were needed for rendering a frame.
 	// We need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
