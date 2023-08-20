@@ -261,12 +261,6 @@ char *__PHYSFS_platformCalcBaseDir(const char *argv0)
         if (sysctl(mib, 4, fullpath, &buflen, NULL, 0) != -1)
             retval = __PHYSFS_strdup(fullpath);
     }
-    #elif defined(PHYSFS_PLATFORM_SOLARIS)
-    {
-        const char *path = getexecname();
-        if ((path != NULL) && (path[0] == '/'))  /* must be absolute path... */
-            retval = __PHYSFS_strdup(path);
-    }
     #endif
 
     /* If there's a Linux-like /proc filesystem, you can get the full path to
@@ -278,6 +272,7 @@ char *__PHYSFS_platformCalcBaseDir(const char *argv0)
         retval = readSymLink("/proc/self/exe");
         if (!retval) retval = readSymLink("/proc/curproc/file");
         if (!retval) retval = readSymLink("/proc/curproc/exe");
+        if (!retval) retval = readSymLink("/proc/self/path/a.out");
         if (retval == NULL)
         {
             /* older kernels don't have /proc/self ... try PID version... */
@@ -288,6 +283,15 @@ char *__PHYSFS_platformCalcBaseDir(const char *argv0)
                 retval = readSymLink(path);
         } /* if */
     } /* if */
+
+    #if defined(PHYSFS_PLATFORM_SOLARIS)
+    if (!retval)  /* try getexecname() if /proc didn't pan out. This may not be an absolute path! */
+    {
+        const char *path = getexecname();
+        if ((path != NULL) && (path[0] == '/'))  /* must be absolute path... */
+            retval = __PHYSFS_strdup(path);
+    } /* if */
+    #endif
 
     if (retval != NULL)  /* chop off filename. */
     {

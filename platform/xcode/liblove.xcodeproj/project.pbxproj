@@ -61,6 +61,9 @@
 		D9DAB92D2961F10000C64820 /* TextShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9282961F10000C64820 /* TextShaper.cpp */; };
 		D9DAB92E2961F10000C64820 /* TextShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9282961F10000C64820 /* TextShaper.cpp */; };
 		D9DAB9322963CD7500C64820 /* harfbuzz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9DAB9312963CD7500C64820 /* harfbuzz.framework */; };
+		D943E58E2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
+		D943E58F2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
+		D943E5902A24D56000D80361 /* PhysfsIo.h in Headers */ = {isa = PBXBuildFile; fileRef = D943E58D2A24D56000D80361 /* PhysfsIo.h */; };
 		FA0A3A5F23366CE9001C269E /* floattypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0A3A5D23366CE9001C269E /* floattypes.h */; };
 		FA0A3A6023366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
 		FA0A3A6123366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
@@ -1410,6 +1413,8 @@
 		D9DAB9272961F0FF00C64820 /* TextShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextShaper.h; sourceTree = "<group>"; };
 		D9DAB9282961F10000C64820 /* TextShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextShaper.cpp; sourceTree = "<group>"; };
 		D9DAB9312963CD7500C64820 /* harfbuzz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = harfbuzz.framework; path = macosx/Frameworks/harfbuzz.framework; sourceTree = "<group>"; };
+		D943E58C2A24D56000D80361 /* PhysfsIo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PhysfsIo.cpp; sourceTree = "<group>"; };
+		D943E58D2A24D56000D80361 /* PhysfsIo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PhysfsIo.h; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "liblove-macosx.plist"; path = "macosx/liblove-macosx.plist"; sourceTree = "<group>"; };
 		FA0A3A5D23366CE9001C269E /* floattypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = floattypes.h; sourceTree = "<group>"; };
 		FA0A3A5E23366CE9001C269E /* floattypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = floattypes.cpp; sourceTree = "<group>"; };
@@ -2819,6 +2824,8 @@
 				FA0B7B651A95902C000E1D17 /* File.h */,
 				FA0B7B661A95902C000E1D17 /* Filesystem.cpp */,
 				FA0B7B671A95902C000E1D17 /* Filesystem.h */,
+				D943E58C2A24D56000D80361 /* PhysfsIo.cpp */,
+				D943E58D2A24D56000D80361 /* PhysfsIo.h */,
 			);
 			path = physfs;
 			sourceTree = "<group>";
@@ -4276,6 +4283,7 @@
 				FA0B7EEA1A95902D000E1D17 /* wrap_Window.h in Headers */,
 				FA1557C01CE90A2C00AFF582 /* tinyexr.h in Headers */,
 				FA0B7E381A95902C000E1D17 /* WheelJoint.h in Headers */,
+				D943E5902A24D56000D80361 /* PhysfsIo.h in Headers */,
 				FA0B7D851A95902C000E1D17 /* Image.h in Headers */,
 				FABDA9EA2552448300B5C523 /* b2_world_callbacks.h in Headers */,
 				FA0B7E7D1A95902C000E1D17 /* wrap_World.h in Headers */,
@@ -4770,6 +4778,7 @@
 				FA0B7E161A95902C000E1D17 /* Joint.cpp in Sources */,
 				FA0B7EE91A95902D000E1D17 /* wrap_Window.cpp in Sources */,
 				FA1583E21E196180005E603B /* wrap_Shader.cpp in Sources */,
+				D943E58F2A24D56000D80361 /* PhysfsIo.cpp in Sources */,
 				FA0B7AB91A958EA3000E1D17 /* enet.cpp in Sources */,
 				FA0B7E281A95902C000E1D17 /* PulleyJoint.cpp in Sources */,
 				FA56AA391FAFF02000A43D5F /* memory.cpp in Sources */,
@@ -5207,6 +5216,7 @@
 				FAF140A01E20934C00F898D2 /* RemoveTree.cpp in Sources */,
 				FA0B7E151A95902C000E1D17 /* Joint.cpp in Sources */,
 				FA0B7EE81A95902D000E1D17 /* wrap_Window.cpp in Sources */,
+				D943E58E2A24D56000D80361 /* PhysfsIo.cpp in Sources */,
 				FA0B7E271A95902C000E1D17 /* PulleyJoint.cpp in Sources */,
 				FA1BA0B71E17043400AA2803 /* wrap_Shader.cpp in Sources */,
 				FA0B7B301A958EA3000E1D17 /* wuff.c in Sources */,
@@ -5759,7 +5769,7 @@
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
-				MARKETING_VERSION = 11.4;
+				MARKETING_VERSION = 11.5;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -5795,7 +5805,7 @@
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
-				MARKETING_VERSION = 11.4;
+				MARKETING_VERSION = 11.5;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,
@@ -5832,7 +5842,7 @@
 				INFOPLIST_FILE = "macosx/liblove-macosx.plist";
 				LD_DYLIB_INSTALL_NAME = "@rpath/$(EXECUTABLE_PATH)";
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../../../";
-				MARKETING_VERSION = 11.4;
+				MARKETING_VERSION = 11.5;
 				OTHER_LDFLAGS = (
 					"-undefined",
 					dynamic_lookup,

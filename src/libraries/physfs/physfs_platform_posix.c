@@ -6,8 +6,6 @@
  *  This file written by Ryan C. Gordon.
  */
 
-/* !!! FIXME: check for EINTR? */
-
 #define __PHYSICSFS_INTERNAL__
 #include "physfs_platforms.h"
 
@@ -157,18 +155,40 @@ int __PHYSFS_platformMkDir(const char *path)
 } /* __PHYSFS_platformMkDir */
 
 
+#if !defined(O_CLOEXEC) && defined(FD_CLOEXEC)
+static inline void set_CLOEXEC(int fildes)
+{
+    int flags = fcntl(fildes, F_GETFD);
+    if (flags != -1) {
+        fcntl(fildes, F_SETFD, flags | FD_CLOEXEC);
+    }
+}
+#endif
+
 static void *doOpen(const char *filename, int mode)
 {
     const int appending = (mode & O_APPEND);
     int fd;
     int *retval;
+
     errno = 0;
 
     /* O_APPEND doesn't actually behave as we'd like. */
     mode &= ~O_APPEND;
 
-    fd = open(filename, mode, S_IRUSR | S_IWUSR);
+#ifdef O_CLOEXEC
+    /* Add O_CLOEXEC if defined */
+    mode |= O_CLOEXEC;
+#endif
+
+    do {
+        fd = open(filename, mode, S_IRUSR | S_IWUSR);
+    } while ((fd < 0) && (errno == EINTR));
     BAIL_IF(fd < 0, errcodeFromErrno(), NULL);
+
+#if !defined(O_CLOEXEC) && defined(FD_CLOEXEC)
+    set_CLOEXEC(fd);
+#endif
 
     if (appending)
     {
@@ -219,7 +239,9 @@ PHYSFS_sint64 __PHYSFS_platformRead(void *opaque, void *buffer,
     if (!__PHYSFS_ui64FitsAddressSpace(len))
         BAIL(PHYSFS_ERR_INVALID_ARGUMENT, -1);
 
-    rc = read(fd, buffer, (size_t) len);
+    do {
+        rc = read(fd, buffer, (size_t) len);
+    } while ((rc == -1) && (errno == EINTR));
     BAIL_IF(rc == -1, errcodeFromErrno(), -1);
     assert(rc >= 0);
     assert(rc <= len);
@@ -236,7 +258,9 @@ PHYSFS_sint64 __PHYSFS_platformWrite(void *opaque, const void *buffer,
     if (!__PHYSFS_ui64FitsAddressSpace(len))
         BAIL(PHYSFS_ERR_INVALID_ARGUMENT, -1);
 
-    rc = write(fd, (void *) buffer, (size_t) len);
+    do {
+        rc = write(fd, (void *) buffer, (size_t) len);
+    } while ((rc == -1) && (errno == EINTR));
     BAIL_IF(rc == -1, errcodeFromErrno(), rc);
     assert(rc >= 0);
     assert(rc <= len);
@@ -275,8 +299,13 @@ PHYSFS_sint64 __PHYSFS_platformFileLength(void *opaque)
 int __PHYSFS_platformFlush(void *opaque)
 {
     const int fd = *((int *) opaque);
-    if ((fcntl(fd, F_GETFL) & O_ACCMODE) != O_RDONLY)
-        BAIL_IF(fsync(fd) == -1, errcodeFromErrno(), 0);
+    int rc = -1;
+    if ((fcntl(fd, F_GETFL) & O_ACCMODE) != O_RDONLY) {
+        do {
+            rc = fsync(fd);
+        } while ((rc == -1) && (errno == EINTR));
+        BAIL_IF(rc == -1, errcodeFromErrno(), 0);
+    }
     return 1;
 } /* __PHYSFS_platformFlush */
 
@@ -284,7 +313,10 @@ int __PHYSFS_platformFlush(void *opaque)
 void __PHYSFS_platformClose(void *opaque)
 {
     const int fd = *((int *) opaque);
-    (void) close(fd);  /* we don't check this. You should have used flush! */
+    int rc = -1;
+    do {
+        rc = close(fd);  /* we don't check this. You should have used flush! */
+    } while ((rc == -1) && (errno == EINTR));
     allocator.Free(opaque);
 } /* __PHYSFS_platformClose */
 

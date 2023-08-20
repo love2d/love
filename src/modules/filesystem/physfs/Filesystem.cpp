@@ -27,6 +27,7 @@
 
 #include "Filesystem.h"
 #include "File.h"
+#include "PhysfsIo.h"
 
 // PhysFS
 #include "libraries/physfs/physfs.h"
@@ -134,6 +135,10 @@ const char *Filesystem::getName() const
 
 void Filesystem::init(const char *arg0)
 {
+#ifdef LOVE_ANDROID
+	arg0 = love::android::getArg0();
+#endif
+
 	if (!PHYSFS_init(arg0))
 		throw love::Exception("Failed to initialize filesystem: %s", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
 
@@ -156,7 +161,7 @@ bool Filesystem::isFused() const
 	return fused;
 }
 
-bool Filesystem::setIdentity(const char *ident, bool appendToPath) 
+bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 {
 	if (!PHYSFS_isInit())
 		return false;
@@ -279,7 +284,27 @@ bool Filesystem::setSource(const char *source)
 
 	// Add the directory.
 	if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
-		return false;
+	{
+		// It's possible there is additional data at the end of the fused executable,
+		// e.g. for signed windows executables (the signature).
+		// In this case let's try a little bit harder to find the zip file.
+		// This is not used by default because I assume that the physfs IOs are probably
+		// more robust and more performant, so they should be favored, if possible.
+		auto io = StripSuffixIo::create(new_search_path);
+		if (!io->determineStrippedLength())
+		{
+			delete io;
+			return false;
+		}
+		if (!PHYSFS_mountIo(io, io->filename.c_str(), nullptr, 1))
+		{
+			// If PHYSFS_mountIo fails, io->destroy(io) is not called and we have
+			// to delete ourselves.
+			delete io;
+			return false;
+		}
+		return true;
+	}
 
 	// Save the game source.
 	gameSource = new_search_path;

@@ -116,6 +116,10 @@ static bool supports_full_lightuserdata(lua_State *L)
 	static bool checked = false;
 	static bool supported = false;
 
+	if (sizeof(void*) == 4)
+		// 32-bit platforms always supports full-lightuserdata.
+		return true;
+
 	if (!checked)
 	{
 		lua_pushcclosure(L, [](lua_State* L) -> int
@@ -141,7 +145,11 @@ static uintptr_t compute_peer_key(lua_State *L, ENetPeer *peer)
 	// pointers that use more than 53 bits if their alignment is guaranteed to
 	// be more than 1. For example an alignment requirement of 8 means we can
 	// shift the pointer's bits by 3.
-	const size_t minalign = std::min(alignof(ENetPeer), alignof(std::max_align_t));
+
+	// Please see these for the reason of this ternary operator:
+	// * https://github.com/love2d/love/issues/1916
+	// * https://github.com/love2d/love/commit/4ab9a1ce8c
+	const size_t minalign = sizeof(void*) == 8 ? std::min(alignof(ENetPeer), alignof(std::max_align_t)) : 1;
 	uintptr_t key = (uintptr_t) peer;
 
 	if ((key & (minalign - 1)) != 0)
@@ -157,13 +165,16 @@ static uintptr_t compute_peer_key(lua_State *L, ENetPeer *peer)
 
 static void push_peer_key(lua_State *L, uintptr_t key)
 {
-	// If full 64-bit lightuserdata is supported, always use that. Otherwise,
-	// if the key is smaller than 2^53 (which is integer precision for double
-	// datatype), then push number. Otherwise, throw error.
+	// If full 64-bit lightuserdata is supported (or it's 32-bit platform),
+	// always use that. Otherwise, if the key is smaller than 2^53 (which is
+	// integer precision for double datatype) on 64-bit platform, then push
+	// number. Otherwise, throw error.
 	if (supports_full_lightuserdata(L))
 		lua_pushlightuserdata(L, (void*) key);
+#if UINTPTR_MAX == 0xffffffffffffffff
 	else if (key > 0x20000000000000ULL) // 2^53
 		luaL_error(L, "Cannot push enet peer to Lua: pointer value %p is too large", key);
+#endif
 	else
 		lua_pushnumber(L, (lua_Number) key);
 }

@@ -37,6 +37,7 @@
 #include <unistd.h>
 
 #include "libraries/physfs/physfs.h"
+#include "filesystem/physfs/PhysfsIo.h"
 
 namespace love
 {
@@ -324,127 +325,109 @@ static AAssetManager *getAssetManager()
 
 namespace aasset
 {
-namespace io
-{
 
-struct AssetInfo
+struct AssetInfo: public love::filesystem::physfs::PhysfsIo<AssetInfo>
 {
+	static const uint32_t version = 0;
+
 	AAssetManager *assetManager;
 	AAsset *asset;
 	char *filename;
 	size_t size;
+
+	static AssetInfo *fromAAsset(AAssetManager *assetManager, const char *filename, AAsset *asset)
+	{
+		return new AssetInfo(assetManager, filename, asset);
+	}
+
+	int64_t read(void* buf, uint64_t len) const
+	{
+		int readed = AAsset_read(asset, buf, (size_t) len);
+
+		PHYSFS_setErrorCode(readed < 0 ? PHYSFS_ERR_OS_ERROR : PHYSFS_ERR_OK);
+		return (PHYSFS_sint64) readed;
+	}
+
+	int64_t write(const void* buf, uint64_t len) const
+	{
+		LOVE_UNUSED(buf);
+		LOVE_UNUSED(len);
+
+		PHYSFS_setErrorCode(PHYSFS_ERR_READ_ONLY);
+		return -1;
+	}
+
+	int64_t seek(uint64_t offset) const
+	{
+		int64_t success = AAsset_seek64(asset, (off64_t) offset, SEEK_SET) != -1;
+
+		PHYSFS_setErrorCode(success ? PHYSFS_ERR_OK : PHYSFS_ERR_OS_ERROR);
+		return success;
+	}
+
+	int64_t tell() const
+	{
+		off64_t len = AAsset_getLength64(asset);
+		off64_t remain = AAsset_getRemainingLength64(asset);
+
+		return len - remain;
+	}
+
+	int64_t length() const
+	{
+		return AAsset_getLength64(asset);
+	}
+
+	int64_t flush() const
+	{
+		// Do nothing
+		PHYSFS_setErrorCode(PHYSFS_ERR_OK);
+		return 1;
+	}
+
+	AssetInfo *duplicate() const
+	{
+		AAsset *newAsset = AAssetManager_open(assetManager, filename, AASSET_MODE_RANDOM);
+
+		if (newAsset == nullptr)
+		{
+			PHYSFS_setErrorCode(PHYSFS_ERR_OS_ERROR);
+			return nullptr;
+		}
+
+		AAsset_seek64(asset, tell(), SEEK_SET);
+		return fromAAsset(assetManager, filename, asset);
+	}
+
+	~AssetInfo() override
+	{
+		AAsset_close(asset);
+		delete[] filename;
+	}
+
+private:
+	AssetInfo(AAssetManager *assetManager, const char *filename, AAsset *asset)
+	: assetManager(assetManager)
+	, asset(asset)
+	, size(strlen(filename) + 1)
+	{
+		this->filename = new (std::nothrow) char[size];
+		memcpy(this->filename, filename, size);
+	}
 };
 
 static std::unordered_map<std::string, PHYSFS_FileType> fileTree;
 
-PHYSFS_sint64 read(PHYSFS_Io *io, void *buf, PHYSFS_uint64 len)
-{
-	AAsset *asset = ((AssetInfo *) io->opaque)->asset;
-	int readed = AAsset_read(asset, buf, (size_t) len);
-
-	PHYSFS_setErrorCode(readed < 0 ? PHYSFS_ERR_OS_ERROR : PHYSFS_ERR_OK);
-	return (PHYSFS_sint64) readed;
-}
-
-PHYSFS_sint64 write(PHYSFS_Io *io, const void *buf, PHYSFS_uint64 len)
-{
-	LOVE_UNUSED(io);
-	LOVE_UNUSED(buf);
-	LOVE_UNUSED(len);
-
-	PHYSFS_setErrorCode(PHYSFS_ERR_READ_ONLY);
-	return -1;
-}
-
-int seek(PHYSFS_Io *io, PHYSFS_uint64 offset)
-{
-	AAsset *asset = ((AssetInfo *) io->opaque)->asset;
-	int success = AAsset_seek64(asset, (off64_t) offset, SEEK_SET) != -1;
-
-	PHYSFS_setErrorCode(success ? PHYSFS_ERR_OK : PHYSFS_ERR_OS_ERROR);
-	return success;
-}
-
-PHYSFS_sint64 tell(PHYSFS_Io *io)
-{
-	AAsset *asset = ((AssetInfo *) io->opaque)->asset;
-	off64_t len = AAsset_getLength64(asset);
-	off64_t remain = AAsset_getRemainingLength64(asset);
-
-	return len - remain;
-}
-
-PHYSFS_sint64 length(PHYSFS_Io *io)
-{
-	AAsset *asset = ((AssetInfo *) io->opaque)->asset;
-	return AAsset_getLength64(asset);
-}
-
-// Forward declaration
-PHYSFS_Io *fromAAsset(AAssetManager *assetManager, const char *filename, AAsset *asset);
-
-PHYSFS_Io *duplicate(PHYSFS_Io *io)
-{
-	AssetInfo *assetInfo = (AssetInfo *) io->opaque;
-	AAsset *asset = AAssetManager_open(assetInfo->assetManager, assetInfo->filename, AASSET_MODE_RANDOM);
-
-	if (asset == nullptr)
-	{
-		PHYSFS_setErrorCode(PHYSFS_ERR_OS_ERROR);
-		return nullptr;
-	}
-
-	AAsset_seek64(asset, tell(io), SEEK_SET);
-	return fromAAsset(assetInfo->assetManager, assetInfo->filename, asset);
-}
-
-void destroy(PHYSFS_Io *io)
-{
-	AssetInfo *assetInfo = (AssetInfo *) io->opaque;
-	AAsset_close(assetInfo->asset);
-	delete[] assetInfo->filename;
-	delete assetInfo;
-	delete io;
-}
-
-PHYSFS_Io *fromAAsset(AAssetManager *assetManager, const char *filename, AAsset *asset)
-{
-	// Create AssetInfo
-	AssetInfo *assetInfo = new (std::nothrow) AssetInfo();
-	assetInfo->assetManager = assetManager;
-	assetInfo->asset = asset;
-	assetInfo->size = strlen(filename) + 1;
-	assetInfo->filename = new (std::nothrow) char[assetInfo->size];
-	memcpy(assetInfo->filename, filename, assetInfo->size);
-
-	// Create PHYSFS_Io
-	PHYSFS_Io *io = new (std::nothrow) PHYSFS_Io();
-	io->version = 0;
-	io->opaque = assetInfo;
-	io->read = read;
-	io->write = write;
-	io->seek = seek;
-	io->tell = tell;
-	io->length = length;
-	io->duplicate = duplicate;
-	io->flush = nullptr;
-	io->destroy = destroy;
-
-	return io;
-}
-
-}
-
 void *openArchive(PHYSFS_Io *io, const char *name, int forWrite, int *claimed)
 {
-	if (io->opaque == nullptr || memcmp(io->opaque, "ASET", 4) != 0)
+	if (forWrite || io->opaque == nullptr || memcmp(io->opaque, "ASET", 4) != 0)
 		return nullptr;
 
 	// It's our archive
 	*claimed = 1;
 	AAssetManager *assetManager = getAssetManager();
 
-	if (io::fileTree.empty())
+	if (fileTree.empty())
 	{
 		// AAssetDir_getNextFileName intentionally excludes directories, so
 		// we have to use JNI that calls AssetManager.list() recursively.
@@ -460,7 +443,7 @@ void *openArchive(PHYSFS_Io *io, const char *name, int forWrite, int *claimed)
 			jstring jstr = (jstring) env->GetObjectArrayElement(list, i);
 			const char *str = env->GetStringUTFChars(jstr, nullptr);
 
-			io::fileTree[str + 1] = str[0] == 'd' ? PHYSFS_FILETYPE_DIRECTORY : PHYSFS_FILETYPE_REGULAR;
+			fileTree[str + 1] = str[0] == 'd' ? PHYSFS_FILETYPE_DIRECTORY : PHYSFS_FILETYPE_REGULAR;
 
 			env->ReleaseStringUTFChars(jstr, str);
 			env->DeleteLocalRef(jstr);
@@ -491,9 +474,9 @@ PHYSFS_EnumerateCallbackResult enumerate(
 
 	if (path[0] != 0)
 	{
-		FileTreeIterator result = io::fileTree.find(path);
+		FileTreeIterator result = fileTree.find(path);
 
-		if (result == io::fileTree.end() || result->second != PHYSFS_FILETYPE_DIRECTORY)
+		if (result == fileTree.end() || result->second != PHYSFS_FILETYPE_DIRECTORY)
 		{
 			PHYSFS_setErrorCode(PHYSFS_ERR_NOT_FOUND);
 			return PHYSFS_ENUM_ERROR;
@@ -551,7 +534,7 @@ PHYSFS_Io *openRead(void *opaque, const char *name)
 	}
 
 	PHYSFS_setErrorCode(PHYSFS_ERR_OK);
-	return io::fromAAsset(assetManager, name, file);
+	return AssetInfo::fromAAsset(assetManager, name, file);
 }
 
 PHYSFS_Io *openWriteAppend(void *opaque, const char *name)
@@ -576,11 +559,12 @@ int removeMkdir(void *opaque, const char *name)
 
 int stat(void *opaque, const char *name, PHYSFS_Stat *out)
 {
+	using FileTreeIterator = std::unordered_map<std::string, PHYSFS_FileType>::iterator;
 	LOVE_UNUSED(opaque);
 
-	auto result = io::fileTree.find(name);
+	FileTreeIterator result = fileTree.find(name);
 
-	if (result != io::fileTree.end())
+	if (result != fileTree.end())
 	{
 		out->filetype = result->second;
 		out->modtime = -1;
@@ -591,11 +575,9 @@ int stat(void *opaque, const char *name, PHYSFS_Stat *out)
 		PHYSFS_setErrorCode(PHYSFS_ERR_OK);
 		return 1;
 	}
-	else
-	{
-		PHYSFS_setErrorCode(PHYSFS_ERR_NOT_FOUND);
-		return 0;
-	}
+
+	PHYSFS_setErrorCode(PHYSFS_ERR_NOT_FOUND);
+	return 0;
 }
 
 void closeArchive(void *opaque)
@@ -705,7 +687,7 @@ bool checkFusedGame(void **physfsIO_Out)
 	asset = AAssetManager_open(assetManager, "game.love", AASSET_MODE_RANDOM);
 	if (asset)
 	{
-		io = aasset::io::fromAAsset(assetManager, "game.love", asset);
+		io = aasset::AssetInfo::fromAAsset(assetManager, "game.love", asset);
 		return true;
 	}
 
@@ -881,6 +863,15 @@ void *getIOFromFD(int fd)
 	};
 
 	return io;
+}
+
+const char *getArg0()
+{
+	static PHYSFS_AndroidInit androidInit = {
+		SDL_AndroidGetJNIEnv(),
+		SDL_AndroidGetActivity()
+	};
+	return (const char *) &androidInit;
 }
 
 } // android

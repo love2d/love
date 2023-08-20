@@ -222,7 +222,7 @@ static char *cvtPathToCorrectCase(char *buf)
         if (ptr != NULL)  /* isolate element to find (fname is the start). */
             *ptr = '\0';
 
-        rc = DosFindFirst((unsigned char *) spec, &hdir, FILE_DIRECTORY,
+        rc = DosFindFirst(spec, &hdir, FILE_DIRECTORY,
                           &fb, sizeof (fb), &count, FIL_STANDARD);
         if (rc == NO_ERROR)
         {
@@ -331,7 +331,7 @@ static int isCdRomDrive(ULONG drive)
     ULONG ul1, ul2;
     APIRET rc;
     HFILE hfile = NULLHANDLE;
-    unsigned char drivename[3] = { 0, ':', '\0' };
+    char drivename[3] = { 0, ':', '\0' };
 
     drivename[0] = 'A' + drive;
 
@@ -443,7 +443,7 @@ PHYSFS_EnumerateCallbackResult __PHYSFS_platformEnumerate(const char *dirname,
     __PHYSFS_smallFree(utf8);
     BAIL_IF_ERRPASS(!cpspec, PHYSFS_ENUM_ERROR);
 
-    rc = DosFindFirst((unsigned char *) cpspec, &hdir,
+    rc = DosFindFirst(cpspec, &hdir,
                       FILE_DIRECTORY | FILE_ARCHIVED |
                       FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM,
                       &fb, sizeof (fb), &count, FIL_STANDARD);
@@ -535,7 +535,7 @@ int __PHYSFS_platformMkDir(const char *filename)
     APIRET rc;
     char *cpstr = cvtUtf8ToCodepage(filename);
     BAIL_IF_ERRPASS(!cpstr, 0);
-    rc = DosCreateDir((unsigned char *) cpstr, NULL);
+    rc = DosCreateDir(cpstr, NULL);
     allocator.Free(cpstr);
     BAIL_IF(rc != NO_ERROR, errcodeFromAPIRET(rc), 0);
     return 1;

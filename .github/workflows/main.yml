@@ -25,6 +25,16 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: love2d-${{ github.sha }}
+    - name: Get Dependencies for AppImage
+      shell: python
+      env:
+        LOVE_BRANCH: ${{ github.sha }}
+      run: |
+        import os
+        for i in range(250):
+            if os.system(f"make getdeps LOVE_BRANCH={os.environ['LOVE_BRANCH']}") == 0:
+                raise SystemExit(0)
+        raise Exception("make getdeps failed")
     - name: Build AppImage
       run: make LOVE_BRANCH=${{ github.sha }}
     - name: Print LuaJIT branch
@@ -34,6 +44,11 @@ jobs:
       with:
         name: love-linux-x86_64.AppImage
         path: love-${{ github.sha }}.AppImage
+    - name: Artifact Debug Symbols
+      uses: actions/upload-artifact@v3
+      with:
+        name: love-x86_64-AppImage-debug
+        path: love-${{ github.sha }}.AppImage-debug.tar.gz
   windows-os:
     runs-on: windows-latest
     strategy:

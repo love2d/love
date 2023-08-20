@@ -15,6 +15,11 @@
 #include <errno.h>
 #include <time.h>
 
+#if (PHYSFS_BYTEORDER == PHYSFS_LIL_ENDIAN)
+#define MINIZ_LITTLE_ENDIAN 1
+#else
+#define MINIZ_LITTLE_ENDIAN 0
+#endif
 #include "physfs_miniz.h"
 
 /*
@@ -568,7 +573,7 @@ static PHYSFS_sint64 zip_find_end_of_central_dir(PHYSFS_Io *io, PHYSFS_sint64 *l
         {
             if (!__PHYSFS_readAll(io, buf, maxread - 4))
                 return -1;
-            memcpy(&buf[maxread - 4], &extra, sizeof (extra));
+            memcpy(&buf[maxread - 4], extra, sizeof (extra));
             totalread += maxread - 4;
         } /* if */
         else
@@ -578,7 +583,7 @@ static PHYSFS_sint64 zip_find_end_of_central_dir(PHYSFS_Io *io, PHYSFS_sint64 *l
             totalread += maxread;
         } /* else */
 
-        memcpy(&extra, buf, sizeof (extra));
+        memcpy(extra, buf, sizeof (extra));
 
         for (i = maxread - 4; i > 0; i--)
         {
@@ -833,7 +838,10 @@ static int zip_parse_local(PHYSFS_Io *io, ZIPentry *entry)
     BAIL_IF_ERRPASS(!readui32(io, &ui32), 0);
     BAIL_IF(ui32 != ZIP_LOCAL_FILE_SIG, PHYSFS_ERR_CORRUPT, 0);
     BAIL_IF_ERRPASS(!readui16(io, &ui16), 0);
-    BAIL_IF(ui16 != entry->version_needed, PHYSFS_ERR_CORRUPT, 0);
+    /* Windows Explorer might rewrite the entire central directory, setting
+       this field to 2.0/MS-DOS for all files, so favor the local version,
+       which it leaves intact if it didn't alter that specific file. */
+    entry->version_needed = ui16;
     BAIL_IF_ERRPASS(!readui16(io, &ui16), 0);  /* general bits. */
     BAIL_IF_ERRPASS(!readui16(io, &ui16), 0);
     BAIL_IF(ui16 != entry->compression_method, PHYSFS_ERR_CORRUPT, 0);
@@ -1482,7 +1490,7 @@ static void *ZIP_openArchive(PHYSFS_Io *io, const char *name,
 
     if (!zip_parse_end_of_central_dir(info, &dstart, &cdir_ofs, &count))
         goto ZIP_openarchive_failed;
-    else if (!__PHYSFS_DirTreeInit(&info->tree, sizeof (ZIPentry)))
+    else if (!__PHYSFS_DirTreeInit(&info->tree, sizeof (ZIPentry), 1, 0))
         goto ZIP_openarchive_failed;
 
     root = (ZIPentry *) info->tree.root;

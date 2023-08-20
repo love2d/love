@@ -38,7 +38,7 @@
 #include <malloc.h>
 #endif
 
-#ifdef PHYSFS_PLATFORM_SOLARIS
+#if defined(PHYSFS_PLATFORM_SOLARIS) || defined(PHYSFS_PLATFORM_LINUX)
 #include <alloca.h>
 #endif
 
@@ -69,7 +69,7 @@ extern "C" {
    All file-private symbols need to be marked "static".
    Everything shared between PhysicsFS sources needs to be in this
    file between the visibility pragma blocks. */
-#if PHYSFS_MINIMUM_GCC_VERSION(4,0) || defined(__clang__)
+#if !defined(_WIN32) && (PHYSFS_MINIMUM_GCC_VERSION(4,0) || defined(__clang__))
 #define PHYSFS_HAVE_PRAGMA_VISIBILITY 1
 #endif
 
@@ -95,6 +95,7 @@ extern const PHYSFS_Archiver __PHYSFS_Archiver_VDF;
 /* a real C99-compliant snprintf() is in Visual Studio 2015,
    but just use this everywhere for binary compatibility. */
 #if defined(_MSC_VER)
+#include <stdarg.h>
 int __PHYSFS_msvc_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap);
 int __PHYSFS_msvc_snprintf(char *outBuf, size_t size, const char *format, ...);
 #define vsnprintf __PHYSFS_msvc_vsnprintf
@@ -108,14 +109,24 @@ const void *__PHYSFS_winrtCalcPrefDir(void);
 #endif
 
 /* atomic operations. */
+/* increment/decrement operations return the final incremented/decremented value. */
 #if defined(_MSC_VER) && (_MSC_VER >= 1500)
 #include <intrin.h>
 __PHYSFS_COMPILE_TIME_ASSERT(LongEqualsInt, sizeof (int) == sizeof (long));
 #define __PHYSFS_ATOMIC_INCR(ptrval) _InterlockedIncrement((long*)(ptrval))
 #define __PHYSFS_ATOMIC_DECR(ptrval) _InterlockedDecrement((long*)(ptrval))
 #elif defined(__clang__) || (defined(__GNUC__) && (((__GNUC__ * 10000) + (__GNUC_MINOR__ * 100)) >= 40100))
-#define __PHYSFS_ATOMIC_INCR(ptrval) __sync_fetch_and_add(ptrval, 1)
-#define __PHYSFS_ATOMIC_DECR(ptrval) __sync_fetch_and_add(ptrval, -1)
+#define __PHYSFS_ATOMIC_INCR(ptrval) __sync_add_and_fetch(ptrval, 1)
+#define __PHYSFS_ATOMIC_DECR(ptrval) __sync_add_and_fetch(ptrval, -1)
+#elif defined(__WATCOMC__) && defined(__386__)
+extern __inline int _xadd_watcom(volatile int *a, int v);
+#pragma aux _xadd_watcom = \
+  "lock xadd [ecx], eax" \
+  parm [ecx] [eax] \
+  value [eax] \
+  modify exact [eax];
+#define __PHYSFS_ATOMIC_INCR(ptrval) (_xadd_watcom(ptrval, 1)+1)
+#define __PHYSFS_ATOMIC_DECR(ptrval) (_xadd_watcom(ptrval, -1)-1)
 #else
 #define PHYSFS_NEED_ATOMIC_OP_FALLBACK 1
 int __PHYSFS_ATOMIC_INCR(int *ptrval);
@@ -213,6 +224,7 @@ extern void SZIP_global_init(void);
 /* The latest supported PHYSFS_Archiver::version value. */
 #define CURRENT_PHYSFS_ARCHIVER_API_VERSION 0
 
+
 /* This byteorder stuff was lifted from SDL. https://www.libsdl.org/ */
 #define PHYSFS_LIL_ENDIAN  1234
 #define PHYSFS_BIG_ENDIAN  4321
@@ -220,11 +232,26 @@ extern void SZIP_global_init(void);
 #ifdef __linux__
 #include <endian.h>
 #define PHYSFS_BYTEORDER  __BYTE_ORDER
-#else /* __linux__ */
+#elif defined(__OpenBSD__) || defined(__DragonFly__)
+#include <endian.h>
+#define PHYSFS_BYTEORDER  BYTE_ORDER
+#elif defined(__FreeBSD__) || defined(__NetBSD__)
+#include <sys/endian.h>
+#define PHYSFS_BYTEORDER  BYTE_ORDER
+/* predefs from newer gcc and clang versions: */
+#elif defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__) && defined(__BYTE_ORDER__)
+#if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#define PHYSFS_BYTEORDER   PHYSFS_LIL_ENDIAN
+#elif (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define PHYSFS_BYTEORDER   PHYSFS_BIG_ENDIAN
+#else
+#error Unsupported endianness
+#endif /**/
+#else
 #if defined(__hppa__) || \
     defined(__m68k__) || defined(mc68000) || defined(_M_M68K) || \
-    (defined(__MIPS__) && defined(__MISPEB__)) || \
-    defined(__ppc__) || defined(__POWERPC__) || defined(_M_PPC) || \
+    (defined(__MIPS__) && defined(__MIPSEB__)) || \
+    defined(__ppc__) || defined(__POWERPC__) || defined(__powerpc__) || defined(__PPC__) || \
     defined(__sparc__)
 #define PHYSFS_BYTEORDER   PHYSFS_BIG_ENDIAN
 #else
@@ -312,7 +339,18 @@ char *__PHYSFS_strdup(const char *str);
 /*
  * Give a hash value for a C string (uses djb's xor hashing algorithm).
  */
-PHYSFS_uint32 __PHYSFS_hashString(const char *str, size_t len);
+PHYSFS_uint32 __PHYSFS_hashString(const char *str);
+
+/*
+ * Give a hash value for a C string (uses djb's xor hashing algorithm), case folding as it goes.
+ */
+PHYSFS_uint32 __PHYSFS_hashStringCaseFold(const char *str);
+
+/*
+ * Give a hash value for a C string (uses djb's xor hashing algorithm), case folding as it goes,
+ *  assuming that this is only US-ASCII chars (one byte per char, only 'A' through 'Z' need folding).
+ */
+PHYSFS_uint32 __PHYSFS_hashStringCaseFoldUSAscii(const char *str);
 
 
 /*
@@ -348,9 +386,10 @@ int __PHYSFS_readAll(PHYSFS_Io *io, void *buf, const size_t len);
 
 /* These are shared between some archivers. */
 
+/* LOTS of legacy formats that only use US ASCII, not actually UTF-8, so let them optimize here. */
+void *UNPK_openArchive(PHYSFS_Io *io, const int case_sensitive, const int only_usascii);
 void UNPK_abandonArchive(void *opaque);
 void UNPK_closeArchive(void *opaque);
-void *UNPK_openArchive(PHYSFS_Io *io);
 void *UNPK_addEntry(void *opaque, char *name, const int isdir,
                     const PHYSFS_sint64 ctime, const PHYSFS_sint64 mtime,
                     const PHYSFS_uint64 pos, const PHYSFS_uint64 len);
@@ -382,10 +421,13 @@ typedef struct __PHYSFS_DirTree
     __PHYSFS_DirTreeEntry **hash;  /* all entries hashed for fast lookup. */
     size_t hashBuckets;            /* number of buckets in hash.          */
     size_t entrylen;    /* size in bytes of entries (including subclass). */
+    int case_sensitive;  /* non-zero to treat entries as case-sensitive in DirTreeFind */
+    int only_usascii;  /* non-zero to treat paths as US ASCII only (one byte per char, only 'A' through 'Z' are considered for case folding). */
 } __PHYSFS_DirTree;
 
 
-int __PHYSFS_DirTreeInit(__PHYSFS_DirTree *dt, const size_t entrylen);
+/* LOTS of legacy formats that only use US ASCII, not actually UTF-8, so let them optimize here. */
+int __PHYSFS_DirTreeInit(__PHYSFS_DirTree *dt, const size_t entrylen, const int case_sensitive, const int only_usascii);
 void *__PHYSFS_DirTreeAdd(__PHYSFS_DirTree *dt, char *name, const int isdir);
 void *__PHYSFS_DirTreeFind(__PHYSFS_DirTree *dt, const char *path);
 PHYSFS_EnumerateCallbackResult __PHYSFS_DirTreeEnumerate(void *opaque,
@@ -714,6 +756,11 @@ int __PHYSFS_platformGrabMutex(void *mutex);
  *  use the BAIL_*MACRO* macros, either.
  */
 void __PHYSFS_platformReleaseMutex(void *mutex);
+
+
+/* !!! FIXME: move to public API? */
+PHYSFS_uint32 __PHYSFS_utf8codepoint(const char **_str);
+
 
 #if PHYSFS_HAVE_PRAGMA_VISIBILITY
 #pragma GCC visibility pop
