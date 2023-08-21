@@ -171,7 +171,7 @@ int w_File_write(lua_State *L)
 		try
 		{
 			love::Data *data = luax_totype<love::Data>(L, 2);
-			result = file->write(data, luaL_optinteger(L, 3, data->getSize()));
+			result = file->write(data->getData(), luaL_optinteger(L, 3, data->getSize()));
 		}
 		catch (love::Exception &e)
 		{
