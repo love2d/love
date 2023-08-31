@@ -8,14 +8,6 @@
 class HTTPRequest
 {
 public:
-	typedef std::function<Connection *()> ConnectionFactory;
-	HTTPRequest(ConnectionFactory factory);
-
-	HTTPSClient::Reply request(const HTTPSClient::Request &req);
-
-private:
-	ConnectionFactory factory;
-
 	struct DissectedURL
 	{
 		bool valid;
@@ -25,6 +17,14 @@ private:
 		std::string query;
 		// TODO: Auth?
 	};
+	typedef std::function<Connection *()> ConnectionFactory;
 
-	DissectedURL parseUrl(const std::string &url);
+	HTTPRequest(ConnectionFactory factory);
+
+	HTTPSClient::Reply request(const HTTPSClient::Request &req);
+
+	static DissectedURL parseUrl(const std::string &url);
+
+private:
+	ConnectionFactory factory;
 };

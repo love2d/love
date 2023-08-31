@@ -19,6 +19,9 @@
 #ifdef HTTPS_BACKEND_ANDROID
 #	include "../android/AndroidClient.h"
 #endif
+#ifdef HTTPS_BACKEND_WININET
+#	include "../windows/WinINetClient.h"
+#endif
 
 #ifdef HTTPS_BACKEND_CURL
 	static CurlClient curlclient;
@@ -35,6 +38,9 @@
 #ifdef HTTPS_BACKEND_ANDROID
 	static AndroidClient androidclient;
 #endif
+#ifdef HTTPS_BACKEND_WININET
+	static WinINetClient wininetclient;
+#endif
 
 static HTTPSClient *clients[] = {
 #ifdef HTTPS_BACKEND_CURL
@@ -42,6 +48,10 @@ static HTTPSClient *clients[] = {
 #endif
 #ifdef HTTPS_BACKEND_OPENSSL
 	&opensslclient,
+#endif
+	// WinINet must be above SChannel
+#ifdef HTTPS_BACKEND_WININET
+	&wininetclient,
 #endif
 #ifdef HTTPS_BACKEND_SCHANNEL
 	&schannelclient,

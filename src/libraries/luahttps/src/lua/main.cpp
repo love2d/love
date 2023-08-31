@@ -78,6 +78,7 @@ static int w_request(lua_State *L)
 		if (!lua_isnoneornil(L, -1))
 		{
 			req.postdata = w_checkstring(L, -1);
+			req.headers["Content-Type"] = "application/x-www-form-urlencoded";
 			defaultMethod = "POST";
 		}
 		lua_pop(L, 1);

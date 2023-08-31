@@ -50,9 +50,6 @@ HTTPSClient::Reply HTTPRequest::request(const HTTPSClient::Request &req)
 
 		request << "Host: " << info.hostname << "\r\n";
 
-		if (hasData && req.headers.count("Content-Type") == 0)
-			request << "Content-Type: application/x-www-form-urlencoded\r\n";
-
 		if (hasData)
 			request << "Content-Length: " << req.postdata.size() << "\r\n";
 

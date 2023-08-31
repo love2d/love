@@ -18,16 +18,20 @@ private:
 	static struct Curl
 	{
 		Curl();
+		~Curl();
+		void *handle;
 		bool loaded;
 
-		CURL *(*easy_init)();
-		void (*easy_cleanup)(CURL *handle);
-		CURLcode (*easy_setopt)(CURL *handle, CURLoption option, ...);
-		CURLcode (*easy_perform)(CURL *easy_handle);
-		CURLcode (*easy_getinfo)(CURL *curl, CURLINFO info, ...);
+		decltype(&curl_global_cleanup) global_cleanup;
 
-		curl_slist *(*slist_append)(curl_slist *list, const char *string);
-		void (*slist_free_all)(curl_slist *list);
+		decltype(&curl_easy_init) easy_init;
+		decltype(&curl_easy_cleanup) easy_cleanup;
+		decltype(&curl_easy_setopt) easy_setopt;
+		decltype(&curl_easy_perform) easy_perform;
+		decltype(&curl_easy_getinfo) easy_getinfo;
+
+		decltype(&curl_slist_append) slist_append;
+		decltype(&curl_slist_free_all) slist_free_all;
 	} curl;
 };
 

@@ -30,8 +30,8 @@ bool HTTPSClient::ci_string_less::operator()(const std::string &lhs, const std::
 }
 
 HTTPSClient::Request::Request(const std::string &url)
-	: url(url)
-	, method("")
+: url(url)
+, method("GET")
 {
 }
 

@@ -1619,6 +1619,8 @@ set(LOVE_SRC_3P_LUAHTTPS_LUA
 set(LOVE_SRC_3P_LUAHTTPS_WINDOWS
 	src/libraries/luahttps/src/windows/SChannelConnection.cpp
 	src/libraries/luahttps/src/windows/SChannelConnection.h
+	src/libraries/luahttps/src/windows/WinINetClient.cpp
+	src/libraries/luahttps/src/windows/WinINetClient.h
 )
 
 # These are platform-dependent but have ifdef guards to make sure they only
@@ -1638,10 +1640,17 @@ endif()
 set(LOVE_LINK_L3P_LUAHTTPS)
 if(MSVC)
 	set(LOVE_LINK_L3P_LUAHTTPS
-		${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET}
+		${LOVE_LINK_L3P_LUAHTTPS}
 		ws2_32
 		secur32
 	)
+
+	if(NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+		set(LOVE_LINK_L3P_LUAHTTPS
+			${LOVE_LINK_L3P_LUAHTTPS}
+			wininet
+		)
+	endif()
 endif()
 
 add_library(love_3p_luahttps ${LOVE_SRC_3P_LUAHTTPS})
