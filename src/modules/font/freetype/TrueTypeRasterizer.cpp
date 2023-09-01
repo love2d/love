@@ -97,6 +97,8 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	FT_Render_Mode rendermode = FT_RENDER_MODE_NORMAL;
 	if (hinting == HINTING_MONO)
 		rendermode = FT_RENDER_MODE_MONO;
+	else if (hinting == HINTING_SDF)
+		rendermode = FT_RENDER_MODE_SDF;
 
 	err = FT_Glyph_To_Bitmap(&ftglyph, rendermode, 0, 1);
 
@@ -206,6 +208,8 @@ FT_UInt TrueTypeRasterizer::hintingToLoadOption(Hinting hint)
 		return FT_LOAD_TARGET_LIGHT;
 	case HINTING_MONO:
 		return FT_LOAD_TARGET_MONO;
+	case HINTING_SDF:
+		return FT_LOAD_RENDER;
 	case HINTING_NONE:
 		return FT_LOAD_NO_HINTING;
 	}
