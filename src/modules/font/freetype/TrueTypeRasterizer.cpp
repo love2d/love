@@ -89,7 +89,9 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font glyph error: FT_Load_Glyph failed (0x%x)", err);
 
-	err = FT_Get_Glyph(face->glyph, &ftglyph);
+	FT_GlyphSlot slot = face->glyph;
+
+	err = FT_Get_Glyph(slot, &ftglyph);
 
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font glyph error: FT_Get_Glyph failed (0x%x)", err);
@@ -101,13 +103,10 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 		rendermode = FT_RENDER_MODE_SDF;
 
 	err = FT_Glyph_To_Bitmap(&ftglyph, rendermode, 0, 1);
-
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font glyph error: FT_Glyph_To_Bitmap failed (0x%x)", err);
-
 	FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph) ftglyph;
-	FT_Bitmap &bitmap = bitmap_glyph->bitmap; //just to make things easier
-
+	FT_Bitmap &bitmap = bitmap_glyph->bitmap;//just to make things easier
 	// Get metrics
 	glyphMetrics.bearingX = bitmap_glyph->left;
 	glyphMetrics.bearingY = bitmap_glyph->top;
@@ -209,7 +208,6 @@ FT_UInt TrueTypeRasterizer::hintingToLoadOption(Hinting hint)
 	case HINTING_MONO:
 		return FT_LOAD_TARGET_MONO;
 	case HINTING_SDF:
-		return FT_LOAD_RENDER;
 	case HINTING_NONE:
 		return FT_LOAD_NO_HINTING;
 	}
