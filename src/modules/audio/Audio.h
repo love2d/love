@@ -297,6 +297,21 @@ public:
 	virtual void pauseContext() = 0;
 	virtual void resumeContext() = 0;
 
+	/**
+	 * Get current playback device name.
+	 */
+	virtual std::string getPlaybackDevice() = 0;
+
+	/**
+	 * Retrieve list of available playback devices.
+	 */
+	virtual void getPlaybackDevices(std::vector<std::string> &list) = 0;
+
+	/**
+	 * Set the current playback device to specified device name.
+	 */
+	virtual void setPlaybackDevice(const char *name);
+
 private:
 
 	static StringMap<DistanceModel, DISTANCE_MAX_ENUM>::Entry distanceModelEntries[];

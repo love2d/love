@@ -22,6 +22,7 @@
 
 // LOVE
 #include "common/config.h"
+#include "common/Range.h"
 #include "graphics/Buffer.h"
 #include "graphics/Volatile.h"
 
@@ -32,6 +33,9 @@ namespace love
 {
 namespace graphics
 {
+
+class Graphics;
+
 namespace opengl
 {
 
@@ -39,39 +43,43 @@ class Buffer final : public love::graphics::Buffer, public Volatile
 {
 public:
 
-	Buffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags);
+	Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength);
 	virtual ~Buffer();
-
-	void *map() override;
-	void unmap() override;
-	void setMappedRangeModified(size_t offset, size_t size) override;
-	void fill(size_t offset, size_t size, const void *data) override;
-	ptrdiff_t getHandle() const override;
-
-	void copyTo(size_t offset, size_t size, love::graphics::Buffer *other, size_t otheroffset) override;
 
 	// Implements Volatile.
 	bool loadVolatile() override;
 	void unloadVolatile() override;
 
+	void *map(MapType map, size_t offset, size_t size) override;
+	void unmap(size_t usedoffset, size_t usedsize) override;
+	bool fill(size_t offset, size_t size, const void *data) override;
+	void clear(size_t offset, size_t size) override;
+	void copyTo(love::graphics::Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size) override;
+
+	ptrdiff_t getHandle() const override { return buffer; };
+	ptrdiff_t getTexelBufferHandle() const override { return texture; };
+
+	BufferUsage getMapUsage() const { return mapUsage; }
+
 private:
 
-	bool load(bool restore);
-	void unload();
+	bool load(const void *initialdata);
+	bool supportsOrphan() const;
 
-	void unmapStatic(size_t offset, size_t size);
-	void unmapStream();
+	BufferUsage mapUsage = BUFFERUSAGE_VERTEX;
+	GLenum target = 0;
 
-	GLenum target;
+	// The buffer object identifier. Assigned by OpenGL.
+	GLuint buffer = 0;
 
-	// The VBO identifier. Assigned by OpenGL.
-	GLuint vbo;
+	// Used for Texel Buffer types.
+	GLuint texture = 0;
 
 	// A pointer to mapped memory.
-	char *memory_map;
+	char *memoryMap = nullptr;
+	bool ownsMemoryMap = false;
 
-	size_t modified_start;
-	size_t modified_end;
+	Range mappedRange;
 
 }; // Buffer
 

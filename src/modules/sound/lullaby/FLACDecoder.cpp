@@ -22,6 +22,7 @@
 #include "FLACDecoder.h"
 
 #include <set>
+#include <algorithm>
 #include "common/Exception.h"
 
 namespace love
@@ -31,10 +32,24 @@ namespace sound
 namespace lullaby
 {
 
-FLACDecoder::FLACDecoder(Data *data, int nbufferSize)
-: Decoder(data, nbufferSize)
+static size_t onRead(void *pUserData, void *pBufferOut, size_t bytesToRead)
 {
-	flac = drflac_open_memory(data->getData(), data->getSize(), nullptr);
+	auto stream = (Stream *) pUserData;
+	int64 read = stream->read(pBufferOut, bytesToRead);
+	return std::max<int64>(0, read);
+}
+
+static drflac_bool32 onSeek(void* pUserData, int offset, drflac_seek_origin origin)
+{
+	auto stream = (Stream *) pUserData;
+	auto seekorigin = origin == drflac_seek_origin_current ? Stream::SEEKORIGIN_CURRENT : Stream::SEEKORIGIN_BEGIN;
+	return stream->seek(offset, seekorigin) ? DRFLAC_TRUE : DRFLAC_FALSE;
+}
+
+FLACDecoder::FLACDecoder(Stream *stream, int nbufferSize)
+	: Decoder(stream, nbufferSize)
+{
+	flac = drflac_open(onRead, onSeek, stream, nullptr);
 	if (flac == nullptr)
 		throw love::Exception("Could not load FLAC file");
 }
@@ -44,29 +59,10 @@ FLACDecoder::~FLACDecoder()
 	drflac_close(flac);
 }
 
-bool FLACDecoder::accepts(const std::string &ext)
-{
-	// dr_flac supports FLAC encapsulated in Ogg, but unfortunately
-	// LOVE detects .ogg extension as Vorbis. It would be a good idea
-	// to always probe in the future (see #1487 and commit ccf9e63).
-	// Please remove once it's no longer the case.
-	static const std::string supported[] =
-	{
-		"flac", "ogg", ""
-	};
-
-	for (int i = 0; !(supported[i].empty()); i++)
-	{
-		if (supported[i].compare(ext) == 0)
-			return true;
-	}
-
-	return false;
-}
-
 love::sound::Decoder *FLACDecoder::clone()
 {
-	return new FLACDecoder(data.get(), bufferSize);
+	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);
+	return new FLACDecoder(s, bufferSize);
 }
 
 int FLACDecoder::decode()

@@ -26,7 +26,7 @@
 #ifndef LOVE_NO_MODPLUG
 
 // LOVE
-#include "common/Data.h"
+#include "common/Stream.h"
 #include "sound/Decoder.h"
 
 // libmodplug
@@ -47,28 +47,28 @@ class ModPlugDecoder : public Decoder
 {
 public:
 
-	ModPlugDecoder(Data *data, int bufferSize);
+	ModPlugDecoder(Stream *stream, int bufferSize);
 	virtual ~ModPlugDecoder();
 
-	static bool accepts(const std::string &ext);
-
-	love::sound::Decoder *clone();
-	int decode();
-	bool seek(double s);
-	bool rewind();
-	bool isSeekable();
-	int getChannelCount() const;
-	int getBitDepth() const;
-	double getDuration();
+	love::sound::Decoder *clone() override;
+	int decode() override;
+	bool seek(double s) override;
+	bool rewind() override;
+	bool isSeekable() override;
+	int getChannelCount() const override;
+	int getBitDepth() const override;
+	double getDuration() override;
 
 private:
+
+	StrongRef<Data> data;
 
 	ModPlugFile *plug;
 	ModPlug_Settings settings;
 
 	double duration;
 
-}; // Decoder
+}; // ModPlugDecoder
 
 } // lullaby
 } // sound

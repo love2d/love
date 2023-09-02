@@ -43,7 +43,7 @@ ImageData::ImageData(int width, int height, PixelFormat format)
 	: ImageDataBase(format, width, height)
 {
 	if (!validPixelFormat(format))
-		throw love::Exception("Unsupported pixel format for ImageData");
+		throw love::Exception("ImageData does not support the %s pixel format.", getPixelFormatName(format));
 
 	create(width, height, format);
 
@@ -55,7 +55,7 @@ ImageData::ImageData(int width, int height, PixelFormat format, void *data, bool
 	: ImageDataBase(format, width, height)
 {
 	if (!validPixelFormat(format))
-		throw love::Exception("Unsupported pixel format for ImageData");
+		throw love::Exception("ImageData does not support the %s pixel format.", getPixelFormatName(format));
 
 	if (own)
 		this->data = (unsigned char *) data;
@@ -84,7 +84,7 @@ love::image::ImageData *ImageData::clone() const
 
 void ImageData::create(int width, int height, PixelFormat format, void *data)
 {
-	size_t datasize = width * height * getPixelFormatSize(format);
+	size_t datasize = getPixelFormatSliceSize(format, width, height);
 
 	try
 	{
@@ -140,7 +140,7 @@ void ImageData::decode(Data *data)
 			throw love::Exception("Could not decode data to ImageData: unsupported encoded format");
 	}
 
-	if (decodedimage.size != decodedimage.width * decodedimage.height * getPixelFormatSize(decodedimage.format))
+	if (decodedimage.size != getPixelFormatSliceSize(decodedimage.format, decodedimage.width, decodedimage.height))
 	{
 		decoder->freeRawPixels(decodedimage.data);
 		throw love::Exception("Could not convert image!");
@@ -196,11 +196,7 @@ love::filesystem::FileData *ImageData::encode(FormatHandler::EncodedFormat encod
 	}
 
 	if (encoder == nullptr || encodedimage.data == nullptr)
-	{
-		const char *fname = "unknown";
-		love::getConstant(format, fname);
-		throw love::Exception("No suitable image encoder for %s format.", fname);
-	}
+		throw love::Exception("No suitable image encoder for the %s pixel format.", getPixelFormatName(format));
 
 	love::filesystem::FileData *filedata = nullptr;
 
@@ -210,12 +206,12 @@ love::filesystem::FileData *ImageData::encode(FormatHandler::EncodedFormat encod
 	}
 	catch (love::Exception &)
 	{
-		encoder->freeRawPixels(encodedimage.data);
+		encoder->freeEncodedImage(encodedimage.data);
 		throw;
 	}
 
 	memcpy(filedata->getData(), encodedimage.data, encodedimage.size);
-	encoder->freeRawPixels(encodedimage.data);
+	encoder->freeEncodedImage(encodedimage.data);
 
 	if (writefile)
 	{
@@ -540,7 +536,7 @@ void ImageData::setPixel(int x, int y, const Colorf &c)
 	Pixel *p = (Pixel *) (data + ((y * width + x) * pixelsize));
 
 	if (pixelSetFunction == nullptr)
-		throw love::Exception("Unhandled pixel format %d in ImageData::setPixel", format);
+		throw love::Exception("ImageData:setPixel does not currently support the %s pixel format.", getPixelFormatName(format));
 
 	Lock lock(mutex);
 
@@ -556,7 +552,7 @@ void ImageData::getPixel(int x, int y, Colorf &c) const
 	const Pixel *p = (const Pixel *) (data + ((y * width + x) * pixelsize));
 
 	if (pixelGetFunction == nullptr)
-		throw love::Exception("Unhandled pixel format %d in ImageData::setPixel", format);
+		throw love::Exception("ImageData:getPixel does not currently support the %s pixel format.", getPixelFormatName(format));
 
 	Lock lock(mutex);
 
@@ -731,35 +727,35 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 			if (srcformat == dstformat)
 				memcpy(rowdst.u8, rowsrc.u8, srcpixelsize * sw);
 
-			else if (srcformat == PIXELFORMAT_RGBA8 && dstformat == PIXELFORMAT_RGBA16)
+			else if (srcformat == PIXELFORMAT_RGBA8_UNORM && dstformat == PIXELFORMAT_RGBA16_UNORM)
 				pasteRGBA8toRGBA16(rowsrc, rowdst, sw);
-			else if (srcformat == PIXELFORMAT_RGBA8 && dstformat == PIXELFORMAT_RGBA16F)
+			else if (srcformat == PIXELFORMAT_RGBA8_UNORM && dstformat == PIXELFORMAT_RGBA16_FLOAT)
 				pasteRGBA8toRGBA16F(rowsrc, rowdst, sw);
-			else if (srcformat == PIXELFORMAT_RGBA8 && dstformat == PIXELFORMAT_RGBA32F)
+			else if (srcformat == PIXELFORMAT_RGBA8_UNORM && dstformat == PIXELFORMAT_RGBA32_FLOAT)
 				pasteRGBA8toRGBA32F(rowsrc, rowdst, sw);
 
-			else if (srcformat == PIXELFORMAT_RGBA16 && dstformat == PIXELFORMAT_RGBA8)
+			else if (srcformat == PIXELFORMAT_RGBA16_UNORM && dstformat == PIXELFORMAT_RGBA8_UNORM)
 				pasteRGBA16toRGBA8(rowsrc, rowdst, sw);
-			else if (srcformat == PIXELFORMAT_RGBA16 && dstformat == PIXELFORMAT_RGBA16F)
+			else if (srcformat == PIXELFORMAT_RGBA16_UNORM && dstformat == PIXELFORMAT_RGBA16_FLOAT)
 				pasteRGBA16toRGBA16F(rowsrc, rowdst, sw);
-			else if (srcformat == PIXELFORMAT_RGBA16 && dstformat == PIXELFORMAT_RGBA32F)
+			else if (srcformat == PIXELFORMAT_RGBA16_UNORM && dstformat == PIXELFORMAT_RGBA32_FLOAT)
 				pasteRGBA16toRGBA32F(rowsrc, rowdst, sw);
 
-			else if (srcformat == PIXELFORMAT_RGBA16F && dstformat == PIXELFORMAT_RGBA8)
+			else if (srcformat == PIXELFORMAT_RGBA16_FLOAT && dstformat == PIXELFORMAT_RGBA8_UNORM)
 				pasteRGBA16FtoRGBA8(rowsrc, rowdst, sw);
-			else if (srcformat == PIXELFORMAT_RGBA16F && dstformat == PIXELFORMAT_RGBA16)
+			else if (srcformat == PIXELFORMAT_RGBA16_FLOAT && dstformat == PIXELFORMAT_RGBA16_UNORM)
 				pasteRGBA16FtoRGBA16(rowsrc, rowdst, sw);
-			else if (srcformat == PIXELFORMAT_RGBA16F && dstformat == PIXELFORMAT_RGBA32F)
+			else if (srcformat == PIXELFORMAT_RGBA16_FLOAT && dstformat == PIXELFORMAT_RGBA32_FLOAT)
 				pasteRGBA16FtoRGBA32F(rowsrc, rowdst, sw);
 
-			else if (srcformat == PIXELFORMAT_RGBA32F && dstformat == PIXELFORMAT_RGBA8)
+			else if (srcformat == PIXELFORMAT_RGBA32_FLOAT && dstformat == PIXELFORMAT_RGBA8_UNORM)
 				pasteRGBA32FtoRGBA8(rowsrc, rowdst, sw);
-			else if (srcformat == PIXELFORMAT_RGBA32F && dstformat == PIXELFORMAT_RGBA16)
+			else if (srcformat == PIXELFORMAT_RGBA32_FLOAT && dstformat == PIXELFORMAT_RGBA16_UNORM)
 				pasteRGBA32FtoRGBA16(rowsrc, rowdst, sw);
-			else if (srcformat == PIXELFORMAT_RGBA32F && dstformat == PIXELFORMAT_RGBA16F)
+			else if (srcformat == PIXELFORMAT_RGBA32_FLOAT && dstformat == PIXELFORMAT_RGBA16_FLOAT)
 				pasteRGBA32FtoRGBA16F(rowsrc, rowdst, sw);
 
-			else
+			else if (getfunction != nullptr && setfunction != nullptr)
 			{
 				// Slow path: convert src -> Colorf -> dst.
 				Colorf c;
@@ -771,6 +767,10 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 					setfunction(c, dstp);
 				}
 			}
+			else if (getfunction == nullptr)
+				throw love::Exception("ImageData:paste does not currently support converting from the %s pixel format.", getPixelFormatName(srcformat));
+			else
+				throw love::Exception("ImageData:paste does not currently support converting to the %s pixel format.", getPixelFormatName(dstformat));
 		}
 	}
 }
@@ -782,73 +782,35 @@ love::thread::Mutex *ImageData::getMutex() const
 
 size_t ImageData::getPixelSize() const
 {
-	return getPixelFormatSize(format);
+	return getPixelFormatBlockSize(format);
 }
 
 bool ImageData::validPixelFormat(PixelFormat format)
 {
-	switch (format)
-	{
-	case PIXELFORMAT_R8:
-	case PIXELFORMAT_RG8:
-	case PIXELFORMAT_RGBA8:
-	case PIXELFORMAT_R16:
-	case PIXELFORMAT_RG16:
-	case PIXELFORMAT_RGBA16:
-	case PIXELFORMAT_R16F:
-	case PIXELFORMAT_RG16F:
-	case PIXELFORMAT_RGBA16F:
-	case PIXELFORMAT_R32F:
-	case PIXELFORMAT_RG32F:
-	case PIXELFORMAT_RGBA32F:
-	case PIXELFORMAT_RGBA4:
-	case PIXELFORMAT_RGB5A1:
-	case PIXELFORMAT_RGB565:
-	case PIXELFORMAT_RGB10A2:
-	case PIXELFORMAT_RG11B10F:
-		return true;
-	default:
-		return false;
-	}
-}
-
-bool ImageData::canPaste(PixelFormat src, PixelFormat dst)
-{
-	if (src == dst)
-		return true;
-
-	if (!(src == PIXELFORMAT_RGBA8 || src == PIXELFORMAT_RGBA16
-		|| src == PIXELFORMAT_RGBA16F || src == PIXELFORMAT_RGBA32F))
-		return false;
-
-	if (!(dst == PIXELFORMAT_RGBA8 || dst == PIXELFORMAT_RGBA16
-		|| dst == PIXELFORMAT_RGBA16F || dst == PIXELFORMAT_RGBA32F))
-		return false;
-
-	return true;
+	return isPixelFormatColor(format) && !isPixelFormatCompressed(format);
 }
 
 ImageData::PixelSetFunction ImageData::getPixelSetFunction(PixelFormat format)
 {
 	switch (format)
 	{
-		case PIXELFORMAT_R8: return setPixelR8;
-		case PIXELFORMAT_RG8: return setPixelRG8;
-		case PIXELFORMAT_RGBA8: return setPixelRGBA8;
-		case PIXELFORMAT_R16: return setPixelR16;
-		case PIXELFORMAT_RG16: return setPixelRG16;
-		case PIXELFORMAT_RGBA16: return setPixelRGBA16;
-		case PIXELFORMAT_R16F: return setPixelR16F;
-		case PIXELFORMAT_RG16F: return setPixelRG16F;
-		case PIXELFORMAT_RGBA16F: return setPixelRGBA16F;
-		case PIXELFORMAT_R32F: return setPixelR32F;
-		case PIXELFORMAT_RG32F: return setPixelRG32F;
-		case PIXELFORMAT_RGBA32F: return setPixelRGBA32F;
-		case PIXELFORMAT_RGBA4: return setPixelRGBA4;
-		case PIXELFORMAT_RGB5A1: return setPixelRGB5A1;
-		case PIXELFORMAT_RGB565: return setPixelRGB565;
-		case PIXELFORMAT_RGB10A2: return setPixelRGB10A2;
-		case PIXELFORMAT_RG11B10F: return setPixelRG11B10F;
+		case PIXELFORMAT_R8_UNORM: return setPixelR8;
+		case PIXELFORMAT_RG8_UNORM: return setPixelRG8;
+		case PIXELFORMAT_RGBA8_UNORM: return setPixelRGBA8;
+		case PIXELFORMAT_R16_UNORM: return setPixelR16;
+		case PIXELFORMAT_RG16_UNORM: return setPixelRG16;
+		case PIXELFORMAT_RGBA16_UNORM: return setPixelRGBA16;
+		case PIXELFORMAT_R16_FLOAT: return setPixelR16F;
+		case PIXELFORMAT_RG16_FLOAT: return setPixelRG16F;
+		case PIXELFORMAT_RGBA16_FLOAT: return setPixelRGBA16F;
+		case PIXELFORMAT_R32_FLOAT: return setPixelR32F;
+		case PIXELFORMAT_RG32_FLOAT: return setPixelRG32F;
+		case PIXELFORMAT_RGBA32_FLOAT: return setPixelRGBA32F;
+		case PIXELFORMAT_RGBA4_UNORM: return setPixelRGBA4;
+		case PIXELFORMAT_RGB5A1_UNORM: return setPixelRGB5A1;
+		case PIXELFORMAT_RGB565_UNORM: return setPixelRGB565;
+		case PIXELFORMAT_RGB10A2_UNORM: return setPixelRGB10A2;
+		case PIXELFORMAT_RG11B10_FLOAT: return setPixelRG11B10F;
 		default: return nullptr;
 	}
 }
@@ -857,23 +819,23 @@ ImageData::PixelGetFunction ImageData::getPixelGetFunction(PixelFormat format)
 {
 	switch (format)
 	{
-		case PIXELFORMAT_R8: return getPixelR8;
-		case PIXELFORMAT_RG8: return getPixelRG8;
-		case PIXELFORMAT_RGBA8: return getPixelRGBA8;
-		case PIXELFORMAT_R16: return getPixelR16;
-		case PIXELFORMAT_RG16: return getPixelRG16;
-		case PIXELFORMAT_RGBA16: return getPixelRGBA16;
-		case PIXELFORMAT_R16F: return getPixelR16F;
-		case PIXELFORMAT_RG16F: return getPixelRG16F;
-		case PIXELFORMAT_RGBA16F: return getPixelRGBA16F;
-		case PIXELFORMAT_R32F: return getPixelR32F;
-		case PIXELFORMAT_RG32F: return getPixelRG32F;
-		case PIXELFORMAT_RGBA32F: return getPixelRGBA32F;
-		case PIXELFORMAT_RGBA4: return getPixelRGBA4;
-		case PIXELFORMAT_RGB5A1: return getPixelRGB5A1;
-		case PIXELFORMAT_RGB565: return getPixelRGB565;
-		case PIXELFORMAT_RGB10A2: return getPixelRGB10A2;
-		case PIXELFORMAT_RG11B10F: return getPixelRG11B10F;
+		case PIXELFORMAT_R8_UNORM: return getPixelR8;
+		case PIXELFORMAT_RG8_UNORM: return getPixelRG8;
+		case PIXELFORMAT_RGBA8_UNORM: return getPixelRGBA8;
+		case PIXELFORMAT_R16_UNORM: return getPixelR16;
+		case PIXELFORMAT_RG16_UNORM: return getPixelRG16;
+		case PIXELFORMAT_RGBA16_UNORM: return getPixelRGBA16;
+		case PIXELFORMAT_R16_FLOAT: return getPixelR16F;
+		case PIXELFORMAT_RG16_FLOAT: return getPixelRG16F;
+		case PIXELFORMAT_RGBA16_FLOAT: return getPixelRGBA16F;
+		case PIXELFORMAT_R32_FLOAT: return getPixelR32F;
+		case PIXELFORMAT_RG32_FLOAT: return getPixelRG32F;
+		case PIXELFORMAT_RGBA32_FLOAT: return getPixelRGBA32F;
+		case PIXELFORMAT_RGBA4_UNORM: return getPixelRGBA4;
+		case PIXELFORMAT_RGB5A1_UNORM: return getPixelRGB5A1;
+		case PIXELFORMAT_RGB565_UNORM: return getPixelRGB565;
+		case PIXELFORMAT_RGB10A2_UNORM: return getPixelRGB10A2;
+		case PIXELFORMAT_RG11B10_FLOAT: return getPixelRG11B10F;
 		default: return nullptr;
 	}
 }
@@ -897,6 +859,7 @@ StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM>::Entry 
 {
 	{"tga", FormatHandler::ENCODED_TGA},
 	{"png", FormatHandler::ENCODED_PNG},
+	{"exr", FormatHandler::ENCODED_EXR},
 };
 
 StringMap<FormatHandler::EncodedFormat, FormatHandler::ENCODED_MAX_ENUM> ImageData::encodedFormats(ImageData::encodedFormatEntries, sizeof(ImageData::encodedFormatEntries));

@@ -19,6 +19,7 @@
  **/
 
 #include "wrap_Data.h"
+#include "common/int.h"
 
 // Put the Lua code directly into a raw string literal.
 static const char data_lua[] =
@@ -38,7 +39,21 @@ Data *luax_checkdata(lua_State *L, int idx)
 int w_Data_getString(lua_State *L)
 {
 	Data *t = luax_checkdata(L, 1);
-	lua_pushlstring(L, (const char *) t->getData(), t->getSize());
+	int64 offset = (int64) luaL_optnumber(L, 2, 0);
+
+	int64 size = lua_isnoneornil(L, 3)
+		? ((int64) t->getSize() - offset)
+		: (int64) luaL_checknumber(L, 3);
+
+	if (size <= 0)
+		return luaL_error(L, "Invalid size parameter (must be greater than 0)");
+
+	if (offset < 0 || offset + size > (int64) t->getSize())
+		return luaL_error(L, "The given offset and size parameters don't fit within the Data's size.");
+
+	auto data = (const char *) t->getData() + offset;
+
+	lua_pushlstring(L, data, size);
 	return 1;
 }
 
@@ -63,6 +78,77 @@ int w_Data_getSize(lua_State *L)
 	return 1;
 }
 
+template <typename T>
+static int w_Data_getT(lua_State* L)
+{
+	Data* t = luax_checkdata(L, 1);
+	int64 offset = (int64)luaL_checknumber(L, 2);
+	int count = (int)luaL_optinteger(L, 3, 1);
+
+	if (count <= 0)
+		return luaL_error(L, "Invalid count parameter (must be greater than 0)");
+
+	if (offset < 0 || offset + sizeof(T) * count > t->getSize())
+		return luaL_error(L, "The given offset and count parameters don't fit within the Data's size.");
+
+	auto data = (const T*)((uint8*)t->getData() + offset);
+
+	for (int i = 0; i < count; i++)
+		lua_pushnumber(L, (lua_Number)data[i]);
+
+	return count;
+}
+
+int w_Data_getFloat(lua_State* L)
+{
+	return w_Data_getT<float>(L);
+}
+
+int w_Data_getDouble(lua_State* L)
+{
+	return w_Data_getT<double>(L);
+}
+
+int w_Data_getInt8(lua_State* L)
+{
+	return w_Data_getT<int8>(L);
+}
+
+int w_Data_getUInt8(lua_State* L)
+{
+	return w_Data_getT<uint8>(L);
+}
+
+int w_Data_getInt16(lua_State* L)
+{
+	return w_Data_getT<int16>(L);
+}
+
+int w_Data_getUInt16(lua_State* L)
+{
+	return w_Data_getT<uint16>(L);
+}
+
+int w_Data_getInt32(lua_State* L)
+{
+	return w_Data_getT<int32>(L);
+}
+
+int w_Data_getUInt32(lua_State* L)
+{
+	return w_Data_getT<uint32>(L);
+}
+
+int w_Data_getInt64(lua_State* L)
+{
+	return w_Data_getT<int64>(L);
+}
+
+int w_Data_getUInt64(lua_State* L)
+{
+	return w_Data_getT<uint64>(L);
+}
+
 // C functions in a struct, necessary for the FFI versions of Data methods.
 struct FFI_Data
 {
@@ -84,6 +170,16 @@ const luaL_Reg w_Data_functions[] =
 	{ "getPointer", w_Data_getPointer },
 	{ "getFFIPointer", w_Data_getFFIPointer },
 	{ "getSize", w_Data_getSize },
+	{ "getFloat", w_Data_getFloat },
+	{ "getDouble", w_Data_getDouble },
+	{ "getInt8", w_Data_getInt8 },
+	{ "getUInt8", w_Data_getUInt8 },
+	{ "getInt16", w_Data_getInt16 },
+	{ "getUInt16", w_Data_getUInt16 },
+	{ "getInt32", w_Data_getInt32 },
+	{ "getUInt32", w_Data_getUInt32 },
+	{ "getInt64", w_Data_getInt64 },
+	{ "getUInt64", w_Data_getUInt64 },
 	{ 0, 0 }
 };
 

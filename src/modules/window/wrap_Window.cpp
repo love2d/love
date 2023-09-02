@@ -74,9 +74,27 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	settings.minheight = luax_intflag(L, idx, settingName(Window::SETTING_MIN_HEIGHT), settings.minheight);
 	settings.borderless = luax_boolflag(L, idx, settingName(Window::SETTING_BORDERLESS), settings.borderless);
 	settings.centered = luax_boolflag(L, idx, settingName(Window::SETTING_CENTERED), settings.centered);
-	settings.display = luax_intflag(L, idx, settingName(Window::SETTING_DISPLAY), settings.display+1) - 1;
-	settings.highdpi = luax_boolflag(L, idx, settingName(Window::SETTING_HIGHDPI), settings.highdpi);
 	settings.usedpiscale = luax_boolflag(L, idx, settingName(Window::SETTING_USE_DPISCALE), settings.usedpiscale);
+
+	settings.displayindex = luax_intflag(L, idx, settingName(Window::SETTING_DISPLAYINDEX), settings.displayindex + 1) - 1;
+	lua_getfield(L, idx, settingName(Window::SETTING_DISPLAY));
+	if (!lua_isnoneornil(L, -1))
+	{
+		luax_markdeprecated(L, 1, "window.display", API_FIELD, DEPRECATED_REPLACED, "displayindex field");
+		settings.displayindex = (int) luaL_checkinteger(L, -1) - 1;
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, settingName(Window::SETTING_HIGHDPI));
+	if (!lua_isnoneornil(L, -1))
+	{
+		luax_markdeprecated(L, 1, "window.highdpi", API_FIELD, DEPRECATED_REPLACED, "t.highdpi in love.conf");
+		bool highdpi = luax_checkboolean(L, -1);
+		if (!instance()->isOpen())
+			setHighDPIAllowed(highdpi);
+
+	}
+	lua_pop(L, 1);
 
 	lua_getfield(L, idx, settingName(Window::SETTING_VSYNC));
 	if (lua_isnumber(L, -1))
@@ -198,11 +216,8 @@ int w_getMode(lua_State *L)
 	lua_setfield(L, -2, settingName(Window::SETTING_CENTERED));
 
 	// Display index is 0-based internally and 1-based in Lua.
-	lua_pushinteger(L, settings.display + 1);
-	lua_setfield(L, -2, settingName(Window::SETTING_DISPLAY));
-
-	luax_pushboolean(L, settings.highdpi);
-	lua_setfield(L, -2, settingName(Window::SETTING_HIGHDPI));
+	lua_pushinteger(L, settings.displayindex + 1);
+	lua_setfield(L, -2, settingName(Window::SETTING_DISPLAYINDEX));
 
 	luax_pushboolean(L, settings.usedpiscale);
 	lua_setfield(L, -2, settingName(Window::SETTING_USE_DPISCALE));
@@ -217,6 +232,12 @@ int w_getMode(lua_State *L)
 	lua_setfield(L, -2, settingName(Window::SETTING_Y));
 
 	return 3;
+}
+
+int w_isHighDPIAllowed(lua_State *L)
+{
+	luax_pushboolean(L, isHighDPIAllowed());
+	return 1;
 }
 
 int w_getDisplayOrientation(lua_State *L)
@@ -527,6 +548,12 @@ int w_restore(lua_State *)
 	return 0;
 }
 
+int w_focus(lua_State *)
+{
+	instance()->focus();
+	return 0;
+}
+
 int w_isMaximized(lua_State *L)
 {
 	luax_pushboolean(L, instance()->isMaximized());
@@ -618,6 +645,7 @@ static const luaL_Reg functions[] =
 	{ "setMode", w_setMode },
 	{ "updateMode", w_updateMode },
 	{ "getMode", w_getMode },
+	{ "isHighDPIAllowed", w_isHighDPIAllowed },
 	{ "getDisplayOrientation", w_getDisplayOrientation },
 	{ "getFullscreenModes", w_getFullscreenModes },
 	{ "setFullscreen", w_setFullscreen },
@@ -646,6 +674,7 @@ static const luaL_Reg functions[] =
 	{ "minimize", w_minimize },
 	{ "maximize", w_maximize },
 	{ "restore", w_restore },
+	{ "focus", w_focus },
 	{ "isMaximized", w_isMaximized },
 	{ "isMinimized", w_isMinimized },
 	{ "showMessageBox", w_showMessageBox },

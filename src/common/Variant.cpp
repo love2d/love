@@ -26,25 +26,13 @@
 namespace love
 {
 
-static Proxy *tryextractproxy(lua_State *L, int idx)
-{
-	Proxy *u = (Proxy *)lua_touserdata(L, idx);
-
-	if (u == nullptr || u->type == nullptr)
-		return nullptr;
-
-	// We could get rid of the dynamic_cast for more performance, but it would
-	// be less safe...
-	if (dynamic_cast<Object *>(u->object) != nullptr)
-		return u;
-
-	return nullptr;
-}
+Variant::Variant(Type vtype)
+	: type(vtype)
+{}
 
 Variant::Variant()
 	: type(NIL)
-{
-}
+{}
 
 Variant::Variant(bool boolean)
 	: type(BOOLEAN)
@@ -95,10 +83,10 @@ Variant::Variant(love::Type *lovetype, love::Object *object)
 }
 
 // Variant gets ownership of the vector.
-Variant::Variant(std::vector<std::pair<Variant, Variant>> *table)
+Variant::Variant(SharedTable *table)
 	: type(TABLE)
 {
-	data.table = new SharedTable(table);
+	data.table = table;
 }
 
 Variant::Variant(const Variant &v)
@@ -150,137 +138,6 @@ Variant &Variant::operator = (const Variant &v)
 	data = v.data;
 
 	return *this;
-}
-
-Variant Variant::fromLua(lua_State *L, int n, std::set<const void*> *tableSet)
-{
-	size_t len;
-	const char *str;
-	Proxy *p = nullptr;
-
-	if (n < 0) // Fix the stack position, we might modify it later
-		n += lua_gettop(L) + 1;
-
-	switch (lua_type(L, n))
-	{
-	case LUA_TBOOLEAN:
-		return Variant(luax_toboolean(L, n));
-	case LUA_TNUMBER:
-		return Variant(lua_tonumber(L, n));
-	case LUA_TSTRING:
-		str = lua_tolstring(L, n, &len);
-		return Variant(str, len);
-	case LUA_TLIGHTUSERDATA:
-		return Variant(lua_touserdata(L, n));
-	case LUA_TUSERDATA:
-		p = tryextractproxy(L, n);
-		if (p != nullptr)
-			return Variant(p->type, p->object);
-		else
-		{
-			luax_typerror(L, n, "love type");
-			return Variant();
-		}
-	case LUA_TNIL:
-		return Variant();
-	case LUA_TTABLE:
-		{
-			bool success = true;
-			std::set<const void *> topTableSet;
-			std::vector<std::pair<Variant, Variant>> *table = new std::vector<std::pair<Variant, Variant>>();
-
-			// We can use a pointer to a stack-allocated variable because it's
-			// never used after the stack-allocated variable is destroyed.
-			if (tableSet == nullptr)
-				tableSet = &topTableSet;
-
-			// Now make sure this table wasn't already serialised
-			const void *tablePointer = lua_topointer(L, n);
-			{
-				auto result = tableSet->insert(tablePointer);
-				if (!result.second) // insertion failed
-					throw love::Exception("Cycle detected in table");
-			}
-
-			size_t len = luax_objlen(L, -1);
-			if (len > 0)
-				table->reserve(len);
-
-			lua_pushnil(L);
-
-			while (lua_next(L, n))
-			{
-				table->emplace_back(fromLua(L, -2, tableSet), fromLua(L, -1, tableSet));
-				lua_pop(L, 1);
-
-				const auto &p = table->back();
-				if (p.first.getType() == UNKNOWN || p.second.getType() == UNKNOWN)
-				{
-					success = false;
-					break;
-				}
-			}
-
-			// And remove the table from the set again
-			tableSet->erase(tablePointer);
-
-			if (success)
-				return Variant(table);
-			else
-				delete table;
-		}
-		break;
-	}
-
-	Variant v;
-	v.type = UNKNOWN;
-	return v;
-}
-
-void Variant::toLua(lua_State *L) const
-{
-	switch (type)
-	{
-	case BOOLEAN:
-		lua_pushboolean(L, data.boolean);
-		break;
-	case NUMBER:
-		lua_pushnumber(L, data.number);
-		break;
-	case STRING:
-		lua_pushlstring(L, data.string->str, data.string->len);
-		break;
-	case SMALLSTRING:
-		lua_pushlstring(L, data.smallstring.str, data.smallstring.len);
-		break;
-	case LUSERDATA:
-		lua_pushlightuserdata(L, data.userdata);
-		break;
-	case LOVEOBJECT:
-		luax_pushtype(L, *data.objectproxy.type, data.objectproxy.object);
-		break;
-	case TABLE:
-	{
-		std::vector<std::pair<Variant, Variant>> *table = data.table->table;
-		int tsize = (int) table->size();
-
-		lua_createtable(L, 0, tsize);
-
-		for (int i = 0; i < tsize; ++i)
-		{
-			std::pair<Variant, Variant> &kv = (*table)[i];
-			kv.first.toLua(L);
-			kv.second.toLua(L);
-			lua_settable(L, -3);
-		}
-
-		break;
-	}
-	case NIL:
-	default:
-		lua_pushnil(L);
-		break;
-	}
 }
 
 } // love

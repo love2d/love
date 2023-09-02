@@ -121,10 +121,12 @@ int w_File_read(lua_State *L)
 		startidx = 3;
 	}
 
-	int64 size = (int64) luaL_optnumber(L, startidx, (lua_Number) File::ALL);
+	int64 size = (int64) luaL_optnumber(L, startidx, -1);
 
 	try
 	{
+		if (size < 0)
+			size = file->getSize();
 		d.set(file->read(size), Acquire::NORETAIN);
 	}
 	catch (love::Exception &e)
@@ -169,7 +171,7 @@ int w_File_write(lua_State *L)
 		try
 		{
 			love::Data *data = luax_totype<love::Data>(L, 2);
-			result = file->write(data, luaL_optinteger(L, 3, data->getSize()));
+			result = file->write(data->getData(), luaL_optinteger(L, 3, data->getSize()));
 		}
 		catch (love::Exception &e)
 		{

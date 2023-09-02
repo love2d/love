@@ -11,6 +11,8 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // General Public License for more details.
 
+// Modified by the LOVE Development Team to use double precision.
+
 /** \file
 		\brief Implements the Noise1234 class for producing Perlin noise.
 		\author Stefan Gustavson (stegu@itn.liu.se)
@@ -106,47 +108,47 @@ unsigned char Noise1234::perm[] = {151,160,137,91,90,15,
  * float SLnoise = (Noise1234::noise(x,y,z) + 1.0) * 0.5;
  */
 
-float  Noise1234::grad( int hash, float x ) {
+double  Noise1234::grad( int hash, double x ) {
     int h = hash & 15;
-    float grad = 1.0 + (h & 7);  // Gradient value 1.0, 2.0, ..., 8.0
+    double grad = 1.0 + (h & 7);   // Gradient value 1.0, 2.0, ..., 8.0
     if (h&8) grad = -grad;         // and a random sign for the gradient
     return ( grad * x );           // Multiply the gradient with the distance
 }
 
-float  Noise1234::grad( int hash, float x, float y ) {
-    int h = hash & 7;      // Convert low 3 bits of hash code
-    float u = h<4 ? x : y;  // into 8 simple gradient directions,
-    float v = h<4 ? y : x;  // and compute the dot product with (x,y).
+double  Noise1234::grad( int hash, double x, double y ) {
+    int h = hash & 7;        // Convert low 3 bits of hash code
+    double u = h<4 ? x : y;  // into 8 simple gradient directions,
+    double v = h<4 ? y : x;  // and compute the dot product with (x,y).
     return ((h&1)? -u : u) + ((h&2)? -2.0*v : 2.0*v);
 }
 
-float  Noise1234::grad( int hash, float x, float y , float z ) {
-    int h = hash & 15;     // Convert low 4 bits of hash code into 12 simple
-    float u = h<8 ? x : y; // gradient directions, and compute dot product.
-    float v = h<4 ? y : h==12||h==14 ? x : z; // Fix repeats at h = 12 to 15
+double  Noise1234::grad( int hash, double x, double y , double z ) {
+    int h = hash & 15;      // Convert low 4 bits of hash code into 12 simple
+    double u = h<8 ? x : y; // gradient directions, and compute dot product.
+    double v = h<4 ? y : h==12||h==14 ? x : z; // Fix repeats at h = 12 to 15
     return ((h&1)? -u : u) + ((h&2)? -v : v);
 }
 
-float  Noise1234::grad( int hash, float x, float y, float z, float t ) {
-    int h = hash & 31;      // Convert low 5 bits of hash code into 32 simple
-    float u = h<24 ? x : y; // gradient directions, and compute dot product.
-    float v = h<16 ? y : z;
-    float w = h<8 ? z : t;
+double  Noise1234::grad( int hash, double x, double y, double z, double t ) {
+    int h = hash & 31;       // Convert low 5 bits of hash code into 32 simple
+    double u = h<24 ? x : y; // gradient directions, and compute dot product.
+    double v = h<16 ? y : z;
+    double w = h<8 ? z : t;
     return ((h&1)? -u : u) + ((h&2)? -v : v) + ((h&4)? -w : w);
 }
 
 //---------------------------------------------------------------------
 /** 1D float Perlin noise, SL "noise()"
  */
-float Noise1234::noise( float x )
+double Noise1234::noise( double x )
 {
     int ix0, ix1;
-    float fx0, fx1;
-    float s, n0, n1;
+    double fx0, fx1;
+    double s, n0, n1;
 
     ix0 = FASTFLOOR( x ); // Integer part of x
-    fx0 = x - ix0;       // Fractional part of x
-    fx1 = fx0 - 1.0f;
+    fx0 = x - ix0;        // Fractional part of x
+    fx1 = fx0 - 1.0;
     ix1 = ( ix0+1 ) & 0xff;
     ix0 = ix0 & 0xff;    // Wrap to 0..255
 
@@ -154,52 +156,52 @@ float Noise1234::noise( float x )
 
     n0 = grad( perm[ ix0 ], fx0 );
     n1 = grad( perm[ ix1 ], fx1 );
-    return 0.188f * ( LERP( s, n0, n1 ) );
+    return 0.188 * ( LERP( s, n0, n1 ) );
 }
 
 //---------------------------------------------------------------------
 /** 1D float Perlin periodic noise, SL "pnoise()"
  */
-float Noise1234::pnoise( float x, int px )
+double Noise1234::pnoise( double x, int px )
 {
     int ix0, ix1;
-    float fx0, fx1;
-    float s, n0, n1;
+    double fx0, fx1;
+    double s, n0, n1;
 
     ix0 = FASTFLOOR( x ); // Integer part of x
-    fx0 = x - ix0;       // Fractional part of x
-    fx1 = fx0 - 1.0f;
+    fx0 = x - ix0;        // Fractional part of x
+    fx1 = fx0 - 1.0;
     ix1 = (( ix0 + 1 ) % px) & 0xff; // Wrap to 0..px-1 *and* wrap to 0..255
-    ix0 = ( ix0 % px ) & 0xff;      // (because px might be greater than 256)
+    ix0 = ( ix0 % px ) & 0xff;       // (because px might be greater than 256)
 
     s = FADE( fx0 );
 
     n0 = grad( perm[ ix0 ], fx0 );
     n1 = grad( perm[ ix1 ], fx1 );
-    return 0.188f * ( LERP( s, n0, n1 ) );
+    return 0.188 * ( LERP( s, n0, n1 ) );
 }
 
 
 //---------------------------------------------------------------------
 /** 2D float Perlin noise.
  */
-float Noise1234::noise( float x, float y )
+double Noise1234::noise( double x, double y )
 {
     int ix0, iy0, ix1, iy1;
-    float fx0, fy0, fx1, fy1;
-    float s, t, nx0, nx1, n0, n1;
+    double fx0, fy0, fx1, fy1;
+    double s, t, nx0, nx1, n0, n1;
 
     ix0 = FASTFLOOR( x ); // Integer part of x
     iy0 = FASTFLOOR( y ); // Integer part of y
     fx0 = x - ix0;        // Fractional part of x
     fy0 = y - iy0;        // Fractional part of y
-    fx1 = fx0 - 1.0f;
-    fy1 = fy0 - 1.0f;
+    fx1 = fx0 - 1.0;
+    fy1 = fy0 - 1.0;
     ix1 = (ix0 + 1) & 0xff;  // Wrap to 0..255
     iy1 = (iy0 + 1) & 0xff;
     ix0 = ix0 & 0xff;
     iy0 = iy0 & 0xff;
-    
+
     t = FADE( fy0 );
     s = FADE( fx0 );
 
@@ -211,29 +213,29 @@ float Noise1234::noise( float x, float y )
     nx1 = grad(perm[ix1 + perm[iy1]], fx1, fy1);
     n1 = LERP(t, nx0, nx1);
 
-    return 0.507f * ( LERP( s, n0, n1 ) );
+    return 0.507 * ( LERP( s, n0, n1 ) );
 }
 
 //---------------------------------------------------------------------
 /** 2D float Perlin periodic noise.
  */
-float Noise1234::pnoise( float x, float y, int px, int py )
+double Noise1234::pnoise( double x, double y, int px, int py )
 {
     int ix0, iy0, ix1, iy1;
-    float fx0, fy0, fx1, fy1;
-    float s, t, nx0, nx1, n0, n1;
+    double fx0, fy0, fx1, fy1;
+    double s, t, nx0, nx1, n0, n1;
 
     ix0 = FASTFLOOR( x ); // Integer part of x
     iy0 = FASTFLOOR( y ); // Integer part of y
     fx0 = x - ix0;        // Fractional part of x
     fy0 = y - iy0;        // Fractional part of y
-    fx1 = fx0 - 1.0f;
-    fy1 = fy0 - 1.0f;
+    fx1 = fx0 - 1.0;
+    fy1 = fy0 - 1.0;
     ix1 = (( ix0 + 1 ) % px) & 0xff;  // Wrap to 0..px-1 and wrap to 0..255
     iy1 = (( iy0 + 1 ) % py) & 0xff;  // Wrap to 0..py-1 and wrap to 0..255
     ix0 = ( ix0 % px ) & 0xff;
     iy0 = ( iy0 % py ) & 0xff;
-    
+
     t = FADE( fy0 );
     s = FADE( fx0 );
 
@@ -245,19 +247,19 @@ float Noise1234::pnoise( float x, float y, int px, int py )
     nx1 = grad(perm[ix1 + perm[iy1]], fx1, fy1);
     n1 = LERP(t, nx0, nx1);
 
-    return 0.507f * ( LERP( s, n0, n1 ) );
+    return 0.507 * ( LERP( s, n0, n1 ) );
 }
 
 
 //---------------------------------------------------------------------
 /** 3D float Perlin noise.
  */
-float Noise1234::noise( float x, float y, float z )
+double Noise1234::noise( double x, double y, double z )
 {
     int ix0, iy0, ix1, iy1, iz0, iz1;
-    float fx0, fy0, fz0, fx1, fy1, fz1;
-    float s, t, r;
-    float nxy0, nxy1, nx0, nx1, n0, n1;
+    double fx0, fy0, fz0, fx1, fy1, fz1;
+    double s, t, r;
+    double nxy0, nxy1, nx0, nx1, n0, n1;
 
     ix0 = FASTFLOOR( x ); // Integer part of x
     iy0 = FASTFLOOR( y ); // Integer part of y
@@ -265,16 +267,16 @@ float Noise1234::noise( float x, float y, float z )
     fx0 = x - ix0;        // Fractional part of x
     fy0 = y - iy0;        // Fractional part of y
     fz0 = z - iz0;        // Fractional part of z
-    fx1 = fx0 - 1.0f;
-    fy1 = fy0 - 1.0f;
-    fz1 = fz0 - 1.0f;
+    fx1 = fx0 - 1.0;
+    fy1 = fy0 - 1.0;
+    fz1 = fz0 - 1.0;
     ix1 = ( ix0 + 1 ) & 0xff; // Wrap to 0..255
     iy1 = ( iy0 + 1 ) & 0xff;
     iz1 = ( iz0 + 1 ) & 0xff;
     ix0 = ix0 & 0xff;
     iy0 = iy0 & 0xff;
     iz0 = iz0 & 0xff;
-    
+
     r = FADE( fz0 );
     t = FADE( fy0 );
     s = FADE( fx0 );
@@ -298,19 +300,19 @@ float Noise1234::noise( float x, float y, float z )
     nx1 = LERP( r, nxy0, nxy1 );
 
     n1 = LERP( t, nx0, nx1 );
-    
-    return 0.936f * ( LERP( s, n0, n1 ) );
+
+    return 0.936 * ( LERP( s, n0, n1 ) );
 }
 
 //---------------------------------------------------------------------
 /** 3D float Perlin periodic noise.
  */
-float Noise1234::pnoise( float x, float y, float z, int px, int py, int pz )
+double Noise1234::pnoise( double x, double y, double z, int px, int py, int pz )
 {
     int ix0, iy0, ix1, iy1, iz0, iz1;
-    float fx0, fy0, fz0, fx1, fy1, fz1;
-    float s, t, r;
-    float nxy0, nxy1, nx0, nx1, n0, n1;
+    double fx0, fy0, fz0, fx1, fy1, fz1;
+    double s, t, r;
+    double nxy0, nxy1, nx0, nx1, n0, n1;
 
     ix0 = FASTFLOOR( x ); // Integer part of x
     iy0 = FASTFLOOR( y ); // Integer part of y
@@ -318,16 +320,16 @@ float Noise1234::pnoise( float x, float y, float z, int px, int py, int pz )
     fx0 = x - ix0;        // Fractional part of x
     fy0 = y - iy0;        // Fractional part of y
     fz0 = z - iz0;        // Fractional part of z
-    fx1 = fx0 - 1.0f;
-    fy1 = fy0 - 1.0f;
-    fz1 = fz0 - 1.0f;
+    fx1 = fx0 - 1.0;
+    fy1 = fy0 - 1.0;
+    fz1 = fz0 - 1.0;
     ix1 = (( ix0 + 1 ) % px ) & 0xff; // Wrap to 0..px-1 and wrap to 0..255
     iy1 = (( iy0 + 1 ) % py ) & 0xff; // Wrap to 0..py-1 and wrap to 0..255
     iz1 = (( iz0 + 1 ) % pz ) & 0xff; // Wrap to 0..pz-1 and wrap to 0..255
     ix0 = ( ix0 % px ) & 0xff;
     iy0 = ( iy0 % py ) & 0xff;
     iz0 = ( iz0 % pz ) & 0xff;
-    
+
     r = FADE( fz0 );
     t = FADE( fy0 );
     s = FADE( fx0 );
@@ -351,8 +353,8 @@ float Noise1234::pnoise( float x, float y, float z, int px, int py, int pz )
     nx1 = LERP( r, nxy0, nxy1 );
 
     n1 = LERP( t, nx0, nx1 );
-    
-    return 0.936f * ( LERP( s, n0, n1 ) );
+
+    return 0.936 * ( LERP( s, n0, n1 ) );
 }
 
 
@@ -360,12 +362,12 @@ float Noise1234::pnoise( float x, float y, float z, int px, int py, int pz )
 /** 4D float Perlin noise.
  */
 
-float Noise1234::noise( float x, float y, float z, float w )
+double Noise1234::noise( double x, double y, double z, double w )
 {
     int ix0, iy0, iz0, iw0, ix1, iy1, iz1, iw1;
-    float fx0, fy0, fz0, fw0, fx1, fy1, fz1, fw1;
-    float s, t, r, q;
-    float nxyz0, nxyz1, nxy0, nxy1, nx0, nx1, n0, n1;
+    double fx0, fy0, fz0, fw0, fx1, fy1, fz1, fw1;
+    double s, t, r, q;
+    double nxyz0, nxyz1, nxy0, nxy1, nx0, nx1, n0, n1;
 
     ix0 = FASTFLOOR( x ); // Integer part of x
     iy0 = FASTFLOOR( y ); // Integer part of y
@@ -375,10 +377,10 @@ float Noise1234::noise( float x, float y, float z, float w )
     fy0 = y - iy0;        // Fractional part of y
     fz0 = z - iz0;        // Fractional part of z
     fw0 = w - iw0;        // Fractional part of w
-    fx1 = fx0 - 1.0f;
-    fy1 = fy0 - 1.0f;
-    fz1 = fz0 - 1.0f;
-    fw1 = fw0 - 1.0f;
+    fx1 = fx0 - 1.0;
+    fy1 = fy0 - 1.0;
+    fz1 = fz0 - 1.0;
+    fw1 = fw0 - 1.0;
     ix1 = ( ix0 + 1 ) & 0xff;  // Wrap to 0..255
     iy1 = ( iy0 + 1 ) & 0xff;
     iz1 = ( iz0 + 1 ) & 0xff;
@@ -396,17 +398,17 @@ float Noise1234::noise( float x, float y, float z, float w )
     nxyz0 = grad(perm[ix0 + perm[iy0 + perm[iz0 + perm[iw0]]]], fx0, fy0, fz0, fw0);
     nxyz1 = grad(perm[ix0 + perm[iy0 + perm[iz0 + perm[iw1]]]], fx0, fy0, fz0, fw1);
     nxy0 = LERP( q, nxyz0, nxyz1 );
-        
+
     nxyz0 = grad(perm[ix0 + perm[iy0 + perm[iz1 + perm[iw0]]]], fx0, fy0, fz1, fw0);
     nxyz1 = grad(perm[ix0 + perm[iy0 + perm[iz1 + perm[iw1]]]], fx0, fy0, fz1, fw1);
     nxy1 = LERP( q, nxyz0, nxyz1 );
-        
+
     nx0 = LERP ( r, nxy0, nxy1 );
 
     nxyz0 = grad(perm[ix0 + perm[iy1 + perm[iz0 + perm[iw0]]]], fx0, fy1, fz0, fw0);
     nxyz1 = grad(perm[ix0 + perm[iy1 + perm[iz0 + perm[iw1]]]], fx0, fy1, fz0, fw1);
     nxy0 = LERP( q, nxyz0, nxyz1 );
-        
+
     nxyz0 = grad(perm[ix0 + perm[iy1 + perm[iz1 + perm[iw0]]]], fx0, fy1, fz1, fw0);
     nxyz1 = grad(perm[ix0 + perm[iy1 + perm[iz1 + perm[iw1]]]], fx0, fy1, fz1, fw1);
     nxy1 = LERP( q, nxyz0, nxyz1 );
@@ -418,7 +420,7 @@ float Noise1234::noise( float x, float y, float z, float w )
     nxyz0 = grad(perm[ix1 + perm[iy0 + perm[iz0 + perm[iw0]]]], fx1, fy0, fz0, fw0);
     nxyz1 = grad(perm[ix1 + perm[iy0 + perm[iz0 + perm[iw1]]]], fx1, fy0, fz0, fw1);
     nxy0 = LERP( q, nxyz0, nxyz1 );
-        
+
     nxyz0 = grad(perm[ix1 + perm[iy0 + perm[iz1 + perm[iw0]]]], fx1, fy0, fz1, fw0);
     nxyz1 = grad(perm[ix1 + perm[iy0 + perm[iz1 + perm[iw1]]]], fx1, fy0, fz1, fw1);
     nxy1 = LERP( q, nxyz0, nxyz1 );
@@ -428,7 +430,7 @@ float Noise1234::noise( float x, float y, float z, float w )
     nxyz0 = grad(perm[ix1 + perm[iy1 + perm[iz0 + perm[iw0]]]], fx1, fy1, fz0, fw0);
     nxyz1 = grad(perm[ix1 + perm[iy1 + perm[iz0 + perm[iw1]]]], fx1, fy1, fz0, fw1);
     nxy0 = LERP( q, nxyz0, nxyz1 );
-        
+
     nxyz0 = grad(perm[ix1 + perm[iy1 + perm[iz1 + perm[iw0]]]], fx1, fy1, fz1, fw0);
     nxyz1 = grad(perm[ix1 + perm[iy1 + perm[iz1 + perm[iw1]]]], fx1, fy1, fz1, fw1);
     nxy1 = LERP( q, nxyz0, nxyz1 );
@@ -437,20 +439,20 @@ float Noise1234::noise( float x, float y, float z, float w )
 
     n1 = LERP( t, nx0, nx1 );
 
-    return 0.87f * ( LERP( s, n0, n1 ) );
+    return 0.87 * ( LERP( s, n0, n1 ) );
 }
 
 //---------------------------------------------------------------------
 /** 4D float Perlin periodic noise.
  */
 
-float Noise1234::pnoise( float x, float y, float z, float w,
+double Noise1234::pnoise( double x, double y, double z, double w,
                             int px, int py, int pz, int pw )
 {
     int ix0, iy0, iz0, iw0, ix1, iy1, iz1, iw1;
-    float fx0, fy0, fz0, fw0, fx1, fy1, fz1, fw1;
-    float s, t, r, q;
-    float nxyz0, nxyz1, nxy0, nxy1, nx0, nx1, n0, n1;
+    double fx0, fy0, fz0, fw0, fx1, fy1, fz1, fw1;
+    double s, t, r, q;
+    double nxyz0, nxyz1, nxy0, nxy1, nx0, nx1, n0, n1;
 
     ix0 = FASTFLOOR( x ); // Integer part of x
     iy0 = FASTFLOOR( y ); // Integer part of y
@@ -460,10 +462,10 @@ float Noise1234::pnoise( float x, float y, float z, float w,
     fy0 = y - iy0;        // Fractional part of y
     fz0 = z - iz0;        // Fractional part of z
     fw0 = w - iw0;        // Fractional part of w
-    fx1 = fx0 - 1.0f;
-    fy1 = fy0 - 1.0f;
-    fz1 = fz0 - 1.0f;
-    fw1 = fw0 - 1.0f;
+    fx1 = fx0 - 1.0;
+    fy1 = fy0 - 1.0;
+    fz1 = fz0 - 1.0;
+    fw1 = fw0 - 1.0;
     ix1 = (( ix0 + 1 ) % px ) & 0xff;  // Wrap to 0..px-1 and wrap to 0..255
     iy1 = (( iy0 + 1 ) % py ) & 0xff;  // Wrap to 0..py-1 and wrap to 0..255
     iz1 = (( iz0 + 1 ) % pz ) & 0xff;  // Wrap to 0..pz-1 and wrap to 0..255
@@ -481,17 +483,17 @@ float Noise1234::pnoise( float x, float y, float z, float w,
     nxyz0 = grad(perm[ix0 + perm[iy0 + perm[iz0 + perm[iw0]]]], fx0, fy0, fz0, fw0);
     nxyz1 = grad(perm[ix0 + perm[iy0 + perm[iz0 + perm[iw1]]]], fx0, fy0, fz0, fw1);
     nxy0 = LERP( q, nxyz0, nxyz1 );
-        
+
     nxyz0 = grad(perm[ix0 + perm[iy0 + perm[iz1 + perm[iw0]]]], fx0, fy0, fz1, fw0);
     nxyz1 = grad(perm[ix0 + perm[iy0 + perm[iz1 + perm[iw1]]]], fx0, fy0, fz1, fw1);
     nxy1 = LERP( q, nxyz0, nxyz1 );
-        
+
     nx0 = LERP ( r, nxy0, nxy1 );
 
     nxyz0 = grad(perm[ix0 + perm[iy1 + perm[iz0 + perm[iw0]]]], fx0, fy1, fz0, fw0);
     nxyz1 = grad(perm[ix0 + perm[iy1 + perm[iz0 + perm[iw1]]]], fx0, fy1, fz0, fw1);
     nxy0 = LERP( q, nxyz0, nxyz1 );
-        
+
     nxyz0 = grad(perm[ix0 + perm[iy1 + perm[iz1 + perm[iw0]]]], fx0, fy1, fz1, fw0);
     nxyz1 = grad(perm[ix0 + perm[iy1 + perm[iz1 + perm[iw1]]]], fx0, fy1, fz1, fw1);
     nxy1 = LERP( q, nxyz0, nxyz1 );
@@ -503,7 +505,7 @@ float Noise1234::pnoise( float x, float y, float z, float w,
     nxyz0 = grad(perm[ix1 + perm[iy0 + perm[iz0 + perm[iw0]]]], fx1, fy0, fz0, fw0);
     nxyz1 = grad(perm[ix1 + perm[iy0 + perm[iz0 + perm[iw1]]]], fx1, fy0, fz0, fw1);
     nxy0 = LERP( q, nxyz0, nxyz1 );
-        
+
     nxyz0 = grad(perm[ix1 + perm[iy0 + perm[iz1 + perm[iw0]]]], fx1, fy0, fz1, fw0);
     nxyz1 = grad(perm[ix1 + perm[iy0 + perm[iz1 + perm[iw1]]]], fx1, fy0, fz1, fw1);
     nxy1 = LERP( q, nxyz0, nxyz1 );
@@ -513,7 +515,7 @@ float Noise1234::pnoise( float x, float y, float z, float w,
     nxyz0 = grad(perm[ix1 + perm[iy1 + perm[iz0 + perm[iw0]]]], fx1, fy1, fz0, fw0);
     nxyz1 = grad(perm[ix1 + perm[iy1 + perm[iz0 + perm[iw1]]]], fx1, fy1, fz0, fw1);
     nxy0 = LERP( q, nxyz0, nxyz1 );
-        
+
     nxyz0 = grad(perm[ix1 + perm[iy1 + perm[iz1 + perm[iw0]]]], fx1, fy1, fz1, fw0);
     nxyz1 = grad(perm[ix1 + perm[iy1 + perm[iz1 + perm[iw1]]]], fx1, fy1, fz1, fw1);
     nxy1 = LERP( q, nxyz0, nxyz1 );
@@ -522,7 +524,7 @@ float Noise1234::pnoise( float x, float y, float z, float w,
 
     n1 = LERP( t, nx0, nx1 );
 
-    return 0.87f * ( LERP( s, n0, n1 ) );
+    return 0.87 * ( LERP( s, n0, n1 ) );
 }
 
 //---------------------------------------------------------------------

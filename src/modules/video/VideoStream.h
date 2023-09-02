@@ -22,7 +22,7 @@
 #define LOVE_VIDEO_VIDEOSTREAM_H
 
 // LOVE
-#include "common/Stream.h"
+#include "common/Object.h"
 #include "audio/Source.h"
 #include "thread/threads.h"
 
@@ -31,13 +31,35 @@ namespace love
 namespace video
 {
 
-class VideoStream : public Stream
+class VideoStream : public love::Object
 {
 public:
 
 	static love::Type type;
 
 	virtual ~VideoStream() {}
+
+	/**
+	 * A callback, gets called when some Stream consumer exhausts the data
+	 **/
+	virtual void fillBackBuffer() {}
+
+	/**
+	 * Get the front buffer, Streams are supposed to be (at least) double-buffered
+	 **/
+	virtual const void* getFrontBuffer() const = 0;
+
+	/**
+	 * Get the size of any (and in particular the front) buffer
+	 **/
+	virtual size_t getSize() const = 0;
+
+	/**
+	 * Swap buffers. Returns true if there is new data in the front buffer,
+	 * false otherwise.
+	 * NOTE: If there is no back buffer ready, this call must be ignored
+	 **/
+	virtual bool swapBuffers() = 0;
 
 	virtual int getWidth() const = 0;
 	virtual int getHeight() const = 0;

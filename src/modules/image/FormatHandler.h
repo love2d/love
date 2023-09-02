@@ -26,6 +26,8 @@
 #include "common/pixelformat.h"
 #include "CompressedSlice.h"
 
+#include <vector>
+
 namespace love
 {
 namespace image
@@ -43,13 +45,14 @@ public:
 	{
 		ENCODED_TGA,
 		ENCODED_PNG,
+		ENCODED_EXR,
 		ENCODED_MAX_ENUM
 	};
 
 	// Raw RGBA pixel data.
 	struct DecodedImage
 	{
-		PixelFormat format = PIXELFORMAT_RGBA8;
+		PixelFormat format = PIXELFORMAT_RGBA8_UNORM;
 		int width   = 0;
 		int height  = 0;
 		size_t size = 0;
@@ -107,7 +110,7 @@ public:
 	 *
 	 * @return The single block of memory containing the parsed images.
 	 **/
-	virtual StrongRef<CompressedMemory> parseCompressed(Data *filedata,
+	virtual StrongRef<ByteData> parseCompressed(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
 	        PixelFormat &format, bool &sRGB);
 
@@ -115,6 +118,11 @@ public:
 	 * Frees raw pixel memory allocated by the format handler.
 	 **/
 	virtual void freeRawPixels(unsigned char *mem);
+
+	/**
+	 * Frees encoded image memory allocated by the format handler.
+	 **/
+	virtual void freeEncodedImage(unsigned char *mem);
 
 }; // FormatHandler
 

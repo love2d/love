@@ -21,6 +21,7 @@
 // LOVE
 #include "wrap_Joystick.h"
 #include "wrap_JoystickModule.h"
+#include "sensor/Sensor.h"
 
 #include <vector>
 
@@ -83,6 +84,15 @@ int w_Joystick_getDeviceInfo(lua_State *L)
 	lua_pushnumber(L, productVersion);
 
 	return 3;
+}
+
+int w_Joystick_getJoystickType(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char* str = "unknown";
+	Joystick::getConstant(j->getJoystickType(), str);
+	lua_pushstring(L, str);
+	return 1;
 }
 
 int w_Joystick_getAxisCount(lua_State *L)
@@ -171,10 +181,35 @@ int w_Joystick_isDown(lua_State *L)
 	return 1;
 }
 
+int w_Joystick_setPlayerIndex(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	int index = (int) luaL_checkinteger(L, 2) - 1;
+	j->setPlayerIndex(index);
+	return 0;
+}
+
+int w_Joystick_getPlayerIndex(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	int index = j->getPlayerIndex();
+	lua_pushinteger(L, index >= 0 ? index + 1 : index);
+	return 1;
+}
+
 int w_Joystick_isGamepad(lua_State *L)
 {
 	Joystick *j = luax_checkjoystick(L, 1);
 	luax_pushboolean(L, j->isGamepad());
+	return 1;
+}
+
+int w_Joystick_getGamepadType(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char *str = "unknown";
+	Joystick::getConstant(j->getGamepadType(), str);
+	lua_pushstring(L, str);
 	return 1;
 }
 
@@ -342,6 +377,78 @@ int w_Joystick_getVibration(lua_State *L)
 	return 2;
 }
 
+#ifdef LOVE_ENABLE_SENSOR
+
+int w_Joystick_hasSensor(lua_State *L)
+{
+	using namespace love::sensor;
+
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char *sensorType = luaL_checkstring(L, 2);
+
+	Sensor::SensorType type;
+	if (!Sensor::getConstant(sensorType, type))
+		luax_enumerror(L, "sensor type", Sensor::getConstants(type), sensorType);
+
+	luax_pushboolean(L, j->hasSensor(type));
+	return 1;
+}
+
+int w_Joystick_isSensorEnabled(lua_State *L)
+{
+	using namespace love::sensor;
+
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char *sensorType = luaL_checkstring(L, 2);
+
+	Sensor::SensorType type;
+	if (!Sensor::getConstant(sensorType, type))
+		luax_enumerror(L, "sensor type", Sensor::getConstants(type), sensorType);
+
+	luax_pushboolean(L, j->isSensorEnabled(type));
+	return 1;
+}
+
+int w_Joystick_setSensorEnabled(lua_State *L)
+{
+	using namespace love::sensor;
+
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char *sensorType = luaL_checkstring(L, 2);
+
+	Sensor::SensorType type;
+	if (!Sensor::getConstant(sensorType, type))
+		luax_enumerror(L, "sensor type", Sensor::getConstants(type), sensorType);
+
+	bool enabled = luax_checkboolean(L, 3);
+
+	luax_catchexcept(L, [&]() { j->setSensorEnabled(type, enabled); });
+	return 0;
+}
+
+int w_Joystick_getSensorData(lua_State *L)
+{
+	using namespace love::sensor;
+
+	Joystick *j = luax_checkjoystick(L, 1);
+	const char *sensorType = luaL_checkstring(L, 2);
+
+	Sensor::SensorType type;
+	if (!Sensor::getConstant(sensorType, type))
+		luax_enumerror(L, "sensor type", Sensor::getConstants(type), sensorType);
+
+	std::vector<float> data;
+
+	luax_catchexcept(L, [&]() { data = j->getSensorData(type); });
+
+	for (float f: data)
+		lua_pushnumber(L, f);
+
+	return (int) data.size();
+}
+
+#endif // LOVE_ENABLE_SENSOR
+
 // List of functions to wrap.
 static const luaL_Reg w_Joystick_functions[] =
 {
@@ -350,6 +457,7 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "getID", w_Joystick_getID },
 	{ "getGUID", w_Joystick_getGUID },
 	{ "getDeviceInfo", w_Joystick_getDeviceInfo },
+	{ "getJoystickType", w_Joystick_getJoystickType },
 	{ "getAxisCount", w_Joystick_getAxisCount },
 	{ "getButtonCount", w_Joystick_getButtonCount },
 	{ "getHatCount", w_Joystick_getHatCount },
@@ -357,8 +465,11 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "getAxes", w_Joystick_getAxes },
 	{ "getHat", w_Joystick_getHat },
 	{ "isDown", w_Joystick_isDown },
+	{ "setPlayerIndex", w_Joystick_setPlayerIndex },
+	{ "getPlayerIndex", w_Joystick_getPlayerIndex },
 
 	{ "isGamepad", w_Joystick_isGamepad },
+	{ "getGamepadType", w_Joystick_getGamepadType },
 	{ "getGamepadAxis", w_Joystick_getGamepadAxis },
 	{ "isGamepadDown", w_Joystick_isGamepadDown },
 	{ "getGamepadMapping", w_Joystick_getGamepadMapping },
@@ -367,6 +478,13 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "isVibrationSupported", w_Joystick_isVibrationSupported },
 	{ "setVibration", w_Joystick_setVibration },
 	{ "getVibration", w_Joystick_getVibration },
+
+#ifdef LOVE_ENABLE_SENSOR
+	{ "hasSensor", w_Joystick_hasSensor },
+	{ "isSensorEnabled", w_Joystick_isSensorEnabled },
+	{ "setSensorEnabled", w_Joystick_setSensorEnabled },
+	{ "getSensorData", w_Joystick_getSensorData },
+#endif
 
 	// From wrap_JoystickModule.
 	{ "getConnectedIndex", w_getIndex },

@@ -1,6 +1,9 @@
 AC_DEFUN([ACLOVE_DEP_FREETYPE2], [
 	PKG_CHECK_MODULES([freetype2], [freetype2], [], [LOVE_MSG_ERROR([FreeType2])])])
 
+AC_DEFUN([ACLOVE_DEP_HARFBUZZ], [
+	PKG_CHECK_MODULES([harfbuzz], [harfbuzz], [], [LOVE_MSG_ERROR([Harfbuzz])])])
+
 AC_DEFUN([ACLOVE_DEP_OPENAL], [
 	PKG_CHECK_MODULES([openal], [openal], [], [LOVE_MSG_ERROR([OpenAL])])])
 
@@ -21,7 +24,7 @@ AC_DEFUN([ACLOVE_DEP_LIBM], [
 
 AC_DEFUN([ACLOVE_DEP_SDL2], [
 	aclove_sdl2_found=no
-	AM_PATH_SDL2([], [aclove_sdl2_found=yes], [])
+	AM_PATH_SDL2([2.0.9], [aclove_sdl2_found=yes], [])
 	AS_VAR_IF([aclove_sdl2_found], [no], [LOVE_MSG_ERROR([SDL 2])], [])])
 
 AC_DEFUN([ACLOVE_DEP_PTHREAD], [
@@ -34,11 +37,6 @@ AC_DEFUN([ACLOVE_DEP_MPG123], [
 	AC_SEARCH_LIBS([mpg123_seek_64], [mpg123],
 		AC_SUBST([FILE_OFFSET],[-D_FILE_OFFSET_BITS=64]),
 		AC_SUBST([FILE_OFFSET],[]))])
-
-AC_DEFUN([ACLOVE_DEP_GME], [
-	AC_SEARCH_LIBS([gme_open_data], [gme], [], [LOVE_MSG_ERROR([gme])])
-	AC_DEFINE([LOVE_SUPPORT_GME], [], [Enable gme])
-	AC_CHECK_HEADER([gme/gme.h], [includes="$includes -I/usr/include/gme"], [])])
 
 # For enet
 AC_DEFUN([ACLOVE_SOCKLEN_T], [

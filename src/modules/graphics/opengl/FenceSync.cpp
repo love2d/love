@@ -45,6 +45,22 @@ bool FenceSync::fence()
 	return !wasActive;
 }
 
+bool FenceSync::isComplete() const
+{
+	if (sync == 0)
+		return true;
+
+	GLenum status = glClientWaitSync(sync, 0, 0);
+
+	if (status == GL_ALREADY_SIGNALED || status == GL_CONDITION_SATISFIED)
+		return true;
+
+	if (status == GL_WAIT_FAILED)
+		return true;
+
+	return false;
+}
+
 bool FenceSync::cpuWait()
 {
 	if (sync == 0)

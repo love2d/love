@@ -30,6 +30,7 @@
 #include "common/math.h"
 #include "common/Matrix.h"
 #include "common/Color.h"
+#include "common/Range.h"
 #include "Drawable.h"
 #include "Mesh.h"
 #include "vertex.h"
@@ -51,7 +52,7 @@ public:
 
 	static love::Type type;
 
-	SpriteBatch(Graphics *gfx, Texture *texture, int size, vertex::Usage usage);
+	SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferDataUsage usage);
 	virtual ~SpriteBatch();
 
 	int add(const Matrix4 &m, int index = -1);
@@ -67,24 +68,17 @@ public:
 	Texture *getTexture() const;
 
 	/**
-	 * Set the current color for this SpriteBatch. The sprites added
-	 * after this call will use this color. Note that global color
-	 * will not longer apply to the SpriteBatch if this is used.
+	 * Set the current color for this SpriteBatch. The sprites added after this
+	 * call will use this color.
 	 *
 	 * @param color The color to use for the following sprites.
 	 */
 	void setColor(const Colorf &color);
 
 	/**
-	 * Disable per-sprite colors for this SpriteBatch. The next call to
-	 * draw will use the global color for all sprites.
-	 */
-	void setColor();
-
-	/**
 	 * Get the current color for this SpriteBatch.
 	 **/
-	Colorf getColor(bool &active) const;
+	Colorf getColor() const;
 
 	/**
 	 * Get the number of sprites currently in this SpriteBatch.
@@ -97,10 +91,13 @@ public:
 	int getBufferSize() const;
 
 	/**
-	 * Attaches a specific vertex attribute from a Mesh to this SpriteBatch.
+	 * Attaches a specific vertex attribute from a Buffer to this SpriteBatch.
 	 * The vertex attribute will be used when drawing the SpriteBatch.
+	 * If the attribute comes from a Mesh, it should be given as an argument as
+	 * well, to make sure the SpriteBatch flushes its data to its Buffer when
+	 * the SpriteBatch is drawn.
 	 **/
-	void attachAttribute(const std::string &name, Mesh *mesh);
+	void attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh);
 
 	void setDrawRange(int start, int count);
 	void setDrawRange();
@@ -113,6 +110,7 @@ private:
 
 	struct AttachedAttribute
 	{
+		StrongRef<Buffer> buffer;
 		StrongRef<Mesh> mesh;
 		int index;
 	};
@@ -131,15 +129,17 @@ private:
 	// The next free element.
 	int next;
 
-	// Current color. This color, if present, will be applied to the next
-	// added sprite.
+	// Current color. This color will be applied to the next added sprite.
 	Color32 color;
-	bool color_active;
+	Colorf colorf;
 
-	vertex::CommonFormat vertex_format;
+	CommonFormat vertex_format;
 	size_t vertex_stride;
-	
-	love::graphics::Buffer *array_buf;
+
+	StrongRef<love::graphics::Buffer> array_buf;
+	uint8 *vertex_data;
+
+	Range modified_sprites;
 
 	std::unordered_map<std::string, AttachedAttribute> attached_attributes;
 	

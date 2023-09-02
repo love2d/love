@@ -42,7 +42,7 @@ public:
 	// Implements FormatHandler.
 	bool canParseCompressed(Data *data) override;
 
-	StrongRef<CompressedMemory> parseCompressed(Data *filedata,
+	StrongRef<ByteData> parseCompressed(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
 	        PixelFormat &format, bool &sRGB) override;
 

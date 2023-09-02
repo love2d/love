@@ -23,127 +23,170 @@
 // LOVE
 #include "common/config.h"
 #include "common/int.h"
+#include "common/Object.h"
 #include "vertex.h"
 #include "Resource.h"
 
 // C
 #include <stddef.h>
+#include <string>
+#include <vector>
 
 namespace love
 {
 namespace graphics
 {
 
+class Graphics;
+
 /**
- * A block of GPU-owned memory. Currently meant for internal use.
+ * A block of GPU-owned memory.
  **/
-class Buffer : public Resource
+class Buffer : public love::Object, public Resource
 {
 public:
 
-	enum MapFlags
+	static love::Type type;
+
+	static const size_t SHADER_STORAGE_BUFFER_MAX_STRIDE = 2048;
+
+	enum MapType
 	{
-		MAP_EXPLICIT_RANGE_MODIFY = (1 << 0), // see setMappedRangeModified.
-		MAP_READ = (1 << 1),
+		MAP_WRITE_INVALIDATE,
+		MAP_READ_ONLY,
 	};
 
-	Buffer(size_t size, BufferType type, vertex::Usage usage, uint32 mapflags);
+	struct DataDeclaration
+	{
+		std::string name;
+		DataFormat format;
+		int arrayLength;
+
+		DataDeclaration(const std::string &name, DataFormat format, int arrayLength = 0)
+			: name(name)
+			, format(format)
+			, arrayLength(arrayLength)
+		{}
+	};
+
+	struct DataMember
+	{
+		DataDeclaration decl;
+		DataFormatInfo info;
+		size_t offset;
+		size_t size;
+
+		DataMember(const DataDeclaration &decl)
+			: decl(decl)
+			, info(getDataFormatInfo(decl.format))
+			, offset(0)
+			, size(0)
+		{}
+	};
+
+	struct Settings
+	{
+		BufferUsageFlags usageFlags;
+		BufferDataUsage dataUsage;
+		bool zeroInitialize;
+
+		Settings(uint32 usageflags, BufferDataUsage dataUsage)
+			: usageFlags((BufferUsageFlags)usageflags)
+			, dataUsage(dataUsage)
+			, zeroInitialize(false)
+		{}
+	};
+
+	Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, size_t size, size_t arraylength);
 	virtual ~Buffer();
 
 	size_t getSize() const { return size; }
+	BufferUsageFlags getUsageFlags() const { return usageFlags; }
+	BufferDataUsage getDataUsage() const { return dataUsage; }
+	bool isMapped() const { return mapped; }
 
-	BufferType getType() const { return type; }
+	size_t getArrayLength() const { return arrayLength; }
+	size_t getArrayStride() const { return arrayStride; }
+	const std::vector<DataMember> &getDataMembers() const { return dataMembers; }
+	const DataMember &getDataMember(int index) const { return dataMembers[index]; }
+	size_t getMemberOffset(int index) const { return dataMembers[index].offset; }
+	int getDataMemberIndex(const std::string &name) const;
 
-	vertex::Usage getUsage() const { return usage; }
-
-	bool isMapped() const { return is_mapped; }
+	void setImmutable(bool immutable) { this->immutable = immutable; };
+	bool isImmutable() const { return immutable; }
 
 	/**
-	 * Map the Buffer to client memory.
-	 *
-	 * This can be faster for large changes to the buffer. For smaller
-	 * changes, see fill().
+	 * Map a portion of the Buffer to client memory.
 	 */
-	virtual void *map() = 0;
+	virtual void *map(MapType map, size_t offset, size_t size) = 0;
 
 	/**
 	 * Unmap a previously mapped Buffer. The buffer must be unmapped when used
 	 * to draw.
 	 */
-	virtual void unmap() = 0;
+	virtual void unmap(size_t usedoffset, size_t usedsize) = 0;
 
 	/**
-	 * Marks a range of mapped data as modified.
-	 * NOTE: Buffer::fill calls this internally for you.
-	 **/
-	virtual void setMappedRangeModified(size_t offset, size_t size) = 0;
-
-	/**
-	 * Fill a portion of the buffer with data and marks the range as modified.
-	 *
-	 * @param offset The offset in the GLBuffer to store the data.
-	 * @param size The size of the incoming data.
-	 * @param data Pointer to memory to copy data from.
+	 * Fill a portion of the buffer with data.
 	 */
-	virtual void fill(size_t offset, size_t size, const void *data) = 0;
+	virtual bool fill(size_t offset, size_t size, const void *data) = 0;
 
 	/**
-	 * Copy the contents of this Buffer to another Buffer object.
-	 **/
-	virtual void copyTo(size_t offset, size_t size, Buffer *other, size_t otheroffset) = 0;
+	 * Reset the given portion of this buffer's data to 0.
+	 */
+	virtual void clear(size_t offset, size_t size) = 0;
 
-	uint32 getMapFlags() const { return map_flags; }
+	/**
+	 * Copy a portion of this Buffer's data to another buffer, using the GPU.
+	 **/
+	virtual void copyTo(Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size) = 0;
+
+	/**
+	 * Texel buffers may use an additional texture handle as well as a buffer
+	 * handle.
+	 **/
+	virtual ptrdiff_t getTexelBufferHandle() const = 0;
+
+	static std::vector<DataDeclaration> getCommonFormatDeclaration(CommonFormat format);
 
 	class Mapper
 	{
 	public:
 
-		/**
-		 * Memory-maps a Buffer.
-		 */
-		Mapper(Buffer &buffer)
-			: buf(buffer)
+		Mapper(Buffer &buffer, MapType maptype = MAP_WRITE_INVALIDATE)
+			: buffer(buffer)
 		{
-			elems = buf.map();
+			data = buffer.map(maptype, 0, buffer.getSize());
 		}
 
-		/**
-		 * unmaps the buffer
-		 */
 		~Mapper()
 		{
-			buf.unmap();
+			buffer.unmap(0, buffer.getSize());
 		}
 
-		/**
-		 * Get pointer to memory mapped region
-		 */
-		void *get()
-		{
-			return elems;
-		}
-
-	private:
-
-		Buffer &buf;
-		void *elems;
+		Buffer &buffer;
+		void *data;
 
 	}; // Mapper
 
 protected:
 
+	std::vector<DataMember> dataMembers;
+	size_t arrayLength;
+	size_t arrayStride;
+
 	// The size of the buffer, in bytes.
 	size_t size;
 
-	// The type of the buffer object.
-	BufferType type;
+	// Bit flags describing how the buffer can be used.
+	BufferUsageFlags usageFlags;
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
-	vertex::Usage usage;
-	
-	uint32 map_flags;
+	BufferDataUsage dataUsage;
 
-	bool is_mapped;
+	bool mapped;
+	MapType mappedType;
+	bool immutable;
 	
 }; // Buffer
 

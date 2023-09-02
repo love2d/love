@@ -60,12 +60,17 @@ bool FormatHandler::canParseCompressed(Data* /*data*/)
 	return false;
 }
 
-StrongRef<CompressedMemory> FormatHandler::parseCompressed(Data* /*filedata*/, std::vector<StrongRef<CompressedSlice>>& /*images*/, PixelFormat& /*format*/, bool& /*sRGB*/)
+StrongRef<ByteData> FormatHandler::parseCompressed(Data* /*filedata*/, std::vector<StrongRef<CompressedSlice>>& /*images*/, PixelFormat& /*format*/, bool& /*sRGB*/)
 {
 	throw love::Exception("Compressed image parsing is not implemented for this format backend.");
 }
 
 void FormatHandler::freeRawPixels(unsigned char *mem)
+{
+	delete[] mem;
+}
+
+void FormatHandler::freeEncodedImage(unsigned char *mem)
 {
 	delete[] mem;
 }

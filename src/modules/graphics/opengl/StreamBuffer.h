@@ -29,7 +29,7 @@ namespace graphics
 namespace opengl
 {
 
-love::graphics::StreamBuffer *CreateStreamBuffer(BufferType mode, size_t size);
+love::graphics::StreamBuffer *CreateStreamBuffer(BufferUsage mode, size_t size);
 
 } // opengl
 } // graphics

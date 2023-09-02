@@ -42,6 +42,7 @@ public:
 	~FenceSync();
 
 	bool fence();
+	bool isComplete() const;
 	bool cpuWait();
 	void cleanup();
 

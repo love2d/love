@@ -91,30 +91,29 @@ public:
 
 	/**
 	 * Get the current motor torque, usually in N.
-	 * @param inv_dt The inverse time step.
+	 * @param dt The time step.
 	 **/
-	float getMotorTorque(float inv_dt) const;
+	float getMotorTorque(float dt) const;
 
 	/**
-	 * Set the spring frequency, in hertz. Setting the frequency to 0
-	 * disables the spring.
+	 * Sets the response speed. Dependent of mass
 	 **/
-	void setSpringFrequency(float hz);
+	void setStiffness(float k);
 
 	/**
-	 * Get the spring frequency, in hertz.
+	 * Gets the response speed. Dependent of mass
 	 **/
-	float getSpringFrequency() const;
+	float getStiffness() const;
 
 	/**
-	 * Set the spring damping ratio.
+	 * Set the spring damping. Dependent of mass
 	 **/
-	void setSpringDampingRatio(float ratio);
+	void setDamping(float ratio);
 
 	/**
-	 * Get the spring damping ratio.
+	 * Get the spring damping. Dependent of mass
 	 **/
-	float getSpringDampingRatio() const;
+	float getDamping() const;
 
 	/**
 	 * Gets the axis unit vector, relative to body1.

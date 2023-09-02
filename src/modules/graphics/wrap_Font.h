@@ -30,7 +30,7 @@ namespace graphics
 {
 
 Font *luax_checkfont(lua_State *L, int idx);
-void luax_checkcoloredstring(lua_State *L, int idx, std::vector<Font::ColoredString> &strings);
+void luax_checkcoloredstring(lua_State *L, int idx, std::vector<love::font::ColoredString> &strings);
 extern "C" int luaopen_font(lua_State *L);
 
 } // graphics

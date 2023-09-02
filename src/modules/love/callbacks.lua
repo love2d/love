@@ -49,8 +49,8 @@ function love.createhandlers()
 		mousereleased = function (x,y,b,t,c)
 			if love.mousereleased then return love.mousereleased(x,y,b,t,c) end
 		end,
-		wheelmoved = function (x,y)
-			if love.wheelmoved then return love.wheelmoved(x,y) end
+		wheelmoved = function (x,y,px,py,dir)
+			if love.wheelmoved then return love.wheelmoved(x,y,px,py,dir) end
 		end,
 		touchpressed = function (id,x,y,dx,dy,p)
 			if love.touchpressed then return love.touchpressed(id,x,y,dx,dy,p) end
@@ -88,6 +88,9 @@ function love.createhandlers()
 		joystickremoved = function (j)
 			if love.joystickremoved then return love.joystickremoved(j) end
 		end,
+		joysticksensorupdated = function (j, sensorType, x, y, z)
+			if love.joysticksensorupdated then return love.joysticksensorupdated(j, sensorType, x, y, z) end
+		end,
 		focus = function (f)
 			if love.focus then return love.focus(f) end
 		end,
@@ -120,6 +123,17 @@ function love.createhandlers()
 		displayrotated = function (display, orient)
 			if love.displayrotated then return love.displayrotated(display, orient) end
 		end,
+		localechanged = function ()
+			if love.localechanged then return love.localechanged() end
+		end,
+		audiodisconnected = function (sources)
+			if not love.audiodisconnected or not love.audiodisconnected(sources) then
+				love.audio.setPlaybackDevice()
+			end
+		end,
+		sensorupdated = function (sensorType, x, y, z)
+			if love.sensorupdated then return love.sensorupdated(sensorType, x, y, z) end
+		end,
 	}, {
 		__index = function(self, name)
 			error("Unknown event: " .. name)
@@ -133,12 +147,10 @@ end
 -----------------------------------------------------------
 
 function love.run()
-	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
+	if love.load then love.load(love.parsedGameArguments, love.rawGameArguments) end
 
 	-- We don't want the first frame's dt to include time taken by love.load.
 	if love.timer then love.timer.step() end
-
-	local dt = 0
 
 	-- Main loop time.
 	return function()
@@ -148,7 +160,7 @@ function love.run()
 			for name, a,b,c,d,e,f in love.event.poll() do
 				if name == "quit" then
 					if not love.quit or not love.quit() then
-						return a or 0
+						return a or 0, b
 					end
 				end
 				love.handlers[name](a,b,c,d,e,f)
@@ -156,7 +168,7 @@ function love.run()
 		end
 
 		-- Update dt, as we'll be passing it to update
-		if love.timer then dt = love.timer.step() end
+		local dt = love.timer and love.timer.step() or 0
 
 		-- Call update and draw
 		if love.update then love.update(dt) end -- will pass 0 if love.timer is disabled
@@ -172,7 +184,6 @@ function love.run()
 
 		if love.timer then love.timer.sleep(0.001) end
 	end
-
 end
 
 local debug, print, tostring, error = debug, print, tostring, error
@@ -221,7 +232,7 @@ function love.errhand(msg)
 	if love.audio then love.audio.stop() end
 
 	love.graphics.reset()
-	local font = love.graphics.setNewFont(14)
+	love.graphics.setFont(love.graphics.newFont(15))
 
 	love.graphics.setColor(1, 1, 1)
 

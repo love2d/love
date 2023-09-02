@@ -20,6 +20,7 @@
 
 #include "Pool.h"
 
+#include "event/Event.h"
 #include "Source.h"
 
 namespace love
@@ -29,8 +30,20 @@ namespace audio
 namespace openal
 {
 
-Pool::Pool()
-	: sources()
+static Variant::SharedTable *putSourcesAsSharedTable(std::vector<audio::Source *> &sources)
+{
+	Variant::SharedTable *table = new Variant::SharedTable();
+
+	for (int i = 0; i < (int) sources.size(); i++)
+		table->pairs.emplace_back((double) (i + 1), Variant(&Source::type, sources[i]));
+
+	return table;
+}
+
+Pool::Pool(ALCdevice *device)
+	: device(device)
+	, sources()
+	, disconnectNotified(false)
 	, totalSources(0)
 {
 	// Clear errors.
@@ -101,7 +114,42 @@ bool Pool::isPlaying(Source *s)
 
 void Pool::update()
 {
+#ifndef ALC_CONNECTED
+	constexpr ALCenum ALC_CONNECTED = 0x313;
+#endif
+
 	thread::Lock lock(mutex);
+
+	static bool disconnectExtSupported = alcIsExtensionPresent(device, "ALC_EXT_Disconnect") == ALC_TRUE;
+
+	// Device disconnection event
+	if (disconnectExtSupported)
+	{
+		auto eventModule = Module::getInstance<event::Event>(Module::M_EVENT);
+		if (eventModule)
+		{
+			ALCint connected;
+			alcGetIntegerv(device, ALC_CONNECTED, 1, &connected);
+
+			if (connected)
+				disconnectNotified = false;
+			else if (!disconnectNotified)
+			{
+				// Get all sources in this Pool then stop it
+				// since they're all internally stopped.
+				std::vector<audio::Source *> sources = getPlayingSources();
+				Source::stop(sources);
+
+				std::vector<Variant> vargs;
+				vargs.emplace_back(putSourcesAsSharedTable(sources));
+
+				StrongRef<event::Message> msg(new event::Message("audiodisconnected", vargs), Acquire::NORETAIN);
+				eventModule->push(msg);
+
+				disconnectNotified = true;
+			}
+		}
+	}
 
 	std::vector<Source *> torelease;
 

@@ -22,7 +22,7 @@
 #include "common/config.h"
 #include "System.h"
 
-#if defined(LOVE_MACOSX)
+#if defined(LOVE_MACOS)
 #include <CoreServices/CoreServices.h>
 #elif defined(LOVE_IOS)
 #include "common/ios.h"
@@ -62,9 +62,9 @@ System::System()
 {
 }
 
-std::string System::getOS() const
+const char *System::getOS()
 {
-#if defined(LOVE_MACOSX)
+#if defined(LOVE_MACOS)
 	return "OS X";
 #elif defined(LOVE_IOS)
 	return "iOS";
@@ -91,7 +91,7 @@ extern "C"
 bool System::openURL(const std::string &url) const
 {
 
-#if defined(LOVE_MACOSX)
+#if defined(LOVE_MACOS)
 
 	bool success = false;
 	CFURLRef cfurl = CFURLCreateWithBytes(nullptr,

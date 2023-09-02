@@ -19,6 +19,7 @@
  **/
 
 #include "HashFunction.h"
+#include "common/Exception.h"
 
 // FIXME: Probably trivial by having tole and tobe functions, which can be ifdeffed to being identity functions
 #ifdef LOVE_BIG_ENDIAN

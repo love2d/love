@@ -23,7 +23,7 @@
 // LOVE
 #include "common/math.h"
 #include "Drawable.h"
-#include "Image.h"
+#include "Texture.h"
 #include "vertex.h"
 #include "video/VideoStream.h"
 #include "audio/Source.h"
@@ -58,8 +58,8 @@ public:
 	int getPixelWidth() const;
 	int getPixelHeight() const;
 
-	void setFilter(const Texture::Filter &f);
-	const Texture::Filter &getFilter() const;
+	void setSamplerState(const SamplerState &s);
+	const SamplerState &getSamplerState() const;
 
 private:
 
@@ -70,11 +70,11 @@ private:
 	int width;
 	int height;
 
-	Texture::Filter filter;
+	SamplerState samplerState;
 
 	Vertex vertices[4];
 
-	StrongRef<Image> images[3];
+	StrongRef<Texture> textures[3];
 	StrongRef<love::audio::Source> source;
 	
 }; // Video

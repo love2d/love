@@ -19,6 +19,7 @@
  **/
 
 #include "CompressedImageData.h"
+#include "common/Exception.h"
 
 namespace love
 {
@@ -53,7 +54,7 @@ CompressedImageData::CompressedImageData(const std::list<FormatHandler *> &forma
 	if (format == PIXELFORMAT_UNKNOWN)
 		throw love::Exception("Could not parse compressed data: Unknown format.");
 
-	if (dataImages.size() == 0 || memory->size == 0)
+	if (dataImages.size() == 0 || memory->getSize() == 0)
 		throw love::Exception("Could not parse compressed data: No valid data?");
 }
 
@@ -61,8 +62,7 @@ CompressedImageData::CompressedImageData(const CompressedImageData &c)
 	: format(c.format)
 	, sRGB(c.sRGB)
 {
-	memory.set(new CompressedMemory(c.memory->size), Acquire::NORETAIN);
-	memcpy(memory->data, c.memory->data, memory->size);
+	memory.set(c.memory->clone(), Acquire::NORETAIN);
 
 	for (const auto &i : c.dataImages)
 	{
@@ -83,12 +83,12 @@ CompressedImageData::~CompressedImageData()
 
 size_t CompressedImageData::getSize() const
 {
-	return memory->size;
+	return memory->getSize();
 }
 
 void *CompressedImageData::getData() const
 {
-	return memory->data;
+	return memory->getData();
 }
 
 int CompressedImageData::getMipmapCount() const

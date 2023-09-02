@@ -35,7 +35,7 @@ public:
 
 	static love::Type type;
 
-	ByteData(size_t size);
+	ByteData(size_t size, bool clear = true);
 	ByteData(const void *d, size_t size);
 	ByteData(void *d, size_t size, bool own);
 	ByteData(const ByteData &d);

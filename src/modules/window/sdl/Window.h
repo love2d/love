@@ -23,6 +23,8 @@
 
 // LOVE
 #include "window/Window.h"
+#include "common/config.h"
+#include "graphics/Graphics.h"
 
 // SDL
 #include <SDL.h>
@@ -85,6 +87,7 @@ public:
 	void minimize() override;
 	void maximize() override;
 	void restore() override;
+	void focus() override;
 
 	bool isMaximized() const override;
 	bool isMinimized() const override;
@@ -131,8 +134,6 @@ public:
 
 private:
 
-	void close(bool allowExceptions);
-
 	struct ContextAttribs
 	{
 		int versionMajor;
@@ -141,11 +142,13 @@ private:
 		bool debug;
 	};
 
-	void setGLFramebufferAttributes(int msaa, bool sRGB, bool stencil, int depth);
+	void close(bool allowExceptions);
+
+	void setGLFramebufferAttributes(bool sRGB);
 	void setGLContextAttributes(const ContextAttribs &attribs);
 	bool checkGLVersion(const ContextAttribs &attribs, std::string &outversion);
 	std::vector<ContextAttribs> getContextAttribsList() const;
-	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, int msaa, bool stencil, int depth);
+	bool createWindowAndContext(int x, int y, int w, int h, Uint32 windowflags, graphics::Renderer renderer);
 
 	// Update the saved window settings based on the window's actual state.
 	void updateSettings(const WindowSettings &newsettings, bool updateGraphicsViewport);
@@ -166,10 +169,15 @@ private:
 	bool mouseGrabbed;
 
 	SDL_Window *window;
-	SDL_GLContext context;
+
+	SDL_GLContext glcontext;
+#ifdef LOVE_GRAPHICS_METAL
+	SDL_MetalView metalView;
+#endif
+
+	graphics::Renderer windowRenderer = graphics::RENDERER_NONE;
 
 	bool displayedWindowError;
-	bool hasSDL203orEarlier;
 	ContextAttribs contextAttribs;
 
 	StrongRef<graphics::Graphics> graphics;

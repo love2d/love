@@ -32,18 +32,35 @@ namespace love
 namespace filesystem
 {
 
-extern bool hack_setupWriteDirectory();
-
 namespace physfs
 {
 
-File::File(const std::string &filename)
+static bool setupWriteDirectory()
+{
+	auto fs = Module::getInstance<love::filesystem::Filesystem>(Module::M_FILESYSTEM);
+	return fs != nullptr && fs->setupWriteDirectory();
+}
+
+File::File(const std::string &filename, Mode mode)
 	: filename(filename)
 	, file(nullptr)
 	, mode(MODE_CLOSED)
 	, bufferMode(BUFFER_NONE)
 	, bufferSize(0)
 {
+	if (!open(mode))
+		throw love::Exception("Could not open file at path %s", filename.c_str());
+}
+
+File::File(const File &other)
+	: filename(other.filename)
+	, file(nullptr)
+	, mode(MODE_CLOSED)
+	, bufferMode(other.bufferMode)
+	, bufferSize(other.bufferSize)
+{
+	if (!open(other.mode))
+		throw love::Exception("Could not open file at path %s", filename.c_str());
 }
 
 File::~File()
@@ -52,10 +69,18 @@ File::~File()
 		close();
 }
 
+File *File::clone()
+{
+	return new File(*this);
+}
+
 bool File::open(Mode mode)
 {
 	if (mode == MODE_CLOSED)
+	{
+		close();
 		return true;
+	}
 
 	if (!PHYSFS_isInit())
 		throw love::Exception("PhysFS is not initialized.");
@@ -65,14 +90,13 @@ bool File::open(Mode mode)
 		throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
 
 	// Check whether the write directory is set.
-	if ((mode == MODE_APPEND || mode == MODE_WRITE) && (PHYSFS_getWriteDir() == nullptr) && !hack_setupWriteDirectory())
+	if ((mode == MODE_APPEND || mode == MODE_WRITE) && !setupWriteDirectory())
 		throw love::Exception("Could not set write directory.");
 
 	// File already open?
 	if (file != nullptr)
 		return false;
 
-	PHYSFS_getLastErrorCode();
 	PHYSFS_File *handle = nullptr;
 
 	switch (mode)
@@ -148,10 +172,6 @@ int64 File::read(void *dst, int64 size)
 	if (!file || mode != MODE_READ)
 		throw love::Exception("File is not opened for reading.");
 
-	int64 max = (int64)PHYSFS_fileLength(file);
-	size = (size == ALL) ? max : size;
-	size = (size > max) ? max : size;
-
 	if (size < 0)
 		throw love::Exception("Invalid read size.");
 
@@ -191,26 +211,9 @@ bool File::flush()
 	return PHYSFS_flush(file) != 0;
 }
 
-#ifdef LOVE_WINDOWS
-// MSVC doesn't like the 'this' keyword
-// well, we'll use 'that'.
-// It zigs, we zag.
-inline bool test_eof(File *that, PHYSFS_File *)
-{
-	int64 pos = that->tell();
-	int64 size = that->getSize();
-	return pos == -1 || size == -1 || pos >= size;
-}
-#else
-inline bool test_eof(File *, PHYSFS_File *file)
-{
-	return PHYSFS_eof(file);
-}
-#endif
-
 bool File::isEOF()
 {
-	return file == nullptr || test_eof(this, file);
+	return file == nullptr || PHYSFS_eof(file);
 }
 
 int64 File::tell()
@@ -221,8 +224,19 @@ int64 File::tell()
 	return (int64) PHYSFS_tell(file);
 }
 
-bool File::seek(uint64 pos)
+bool File::seek(int64 pos, SeekOrigin origin)
 {
+	if (file != nullptr)
+	{
+		if (origin == SEEKORIGIN_CURRENT)
+			pos += tell();
+		else if (origin == SEEKORIGIN_END)
+			pos += getSize();
+	}
+
+	if (pos < 0)
+		return false;
+
 	return file != nullptr && PHYSFS_seek(file, (PHYSFS_uint64) pos) != 0;
 }
 

@@ -35,9 +35,14 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 	: stream(stream)
 	, width(stream->getWidth() / dpiscale)
 	, height(stream->getHeight() / dpiscale)
-	, filter(Texture::defaultFilter)
+	, samplerState()
 {
-	filter.mipmap = Texture::FILTER_NONE;
+	const SamplerState &defaultSampler = gfx->getDefaultSamplerState();
+	samplerState.minFilter = defaultSampler.minFilter;
+	samplerState.magFilter = defaultSampler.magFilter;
+	samplerState.wrapU = defaultSampler.wrapU;
+	samplerState.wrapV = defaultSampler.wrapV;
+	samplerState.maxAnisotropy = defaultSampler.maxAnisotropy;
 
 	stream->fillBackBuffer();
 
@@ -74,23 +79,24 @@ Video::Video(Graphics *gfx, love::video::VideoStream *stream, float dpiscale)
 
 	const unsigned char *data[3] = {frame->yplane, frame->cbplane, frame->crplane};
 
-	Texture::Wrap wrap; // Clamp wrap mode.
-	Image::Settings settings;
+	Texture::Settings settings;
 
 	for (int i = 0; i < 3; i++)
 	{
-		Image *img = gfx->newImage(TEXTURE_2D, PIXELFORMAT_R8, widths[i], heights[i], 1, settings);
+		settings.width = widths[i];
+		settings.height = heights[i];
+		settings.format = PIXELFORMAT_R8_UNORM;
+		Texture *tex = gfx->newTexture(settings, nullptr);
 
-		img->setFilter(filter);
-		img->setWrap(wrap);
+		tex->setSamplerState(samplerState);
 
-		size_t bpp = getPixelFormatSize(PIXELFORMAT_R8);
+		size_t bpp = getPixelFormatBlockSize(PIXELFORMAT_R8_UNORM);
 		size_t size = bpp * widths[i] * heights[i];
 
 		Rect rect = {0, 0, widths[i], heights[i]};
-		img->replacePixels(data[i], size, 0, 0, rect, false);
+		tex->replacePixels(data[i], size, 0, 0, rect, false);
 
-		images[i].set(img, Acquire::NORETAIN);
+		textures[i].set(tex, Acquire::NORETAIN);
 	}
 }
 
@@ -114,21 +120,21 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 
 	Matrix4 t(tm, m);
 
-	Graphics::StreamDrawCommand cmd;
-	cmd.formats[0] = vertex::getSinglePositionFormat(is2D);
-	cmd.formats[1] = vertex::CommonFormat::STf_RGBAub;
-	cmd.indexMode = vertex::TriangleIndexMode::QUADS;
+	Graphics::BatchedDrawCommand cmd;
+	cmd.formats[0] = getSinglePositionFormat(is2D);
+	cmd.formats[1] = CommonFormat::STf_RGBAub;
+	cmd.indexMode = TRIANGLEINDEX_QUADS;
 	cmd.vertexCount = 4;
 	cmd.standardShaderType = Shader::STANDARD_VIDEO;
 
-	Graphics::StreamVertexData data = gfx->requestStreamDraw(cmd);
+	Graphics::BatchedVertexData data = gfx->requestBatchedDraw(cmd);
 
 	if (is2D)
 		t.transformXY((Vector2 *) data.stream[0], vertices, 4);
 	else
 		t.transformXY0((Vector3 *) data.stream[0], vertices, 4);
 
-	vertex::STf_RGBAub *verts = (vertex::STf_RGBAub *) data.stream[1];
+	STf_RGBAub *verts = (STf_RGBAub *) data.stream[1];
 
 	Color32 c = toColor32(gfx->getColor());
 
@@ -140,9 +146,9 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 	}
 
 	if (Shader::current != nullptr)
-		Shader::current->setVideoTextures(images[0], images[1], images[2]);
+		Shader::current->setVideoTextures(textures[0], textures[1], textures[2]);
 
-	gfx->flushStreamDraws();
+	gfx->flushBatchedDraws();
 }
 
 void Video::update()
@@ -161,11 +167,11 @@ void Video::update()
 
 		for (int i = 0; i < 3; i++)
 		{
-			size_t bpp = getPixelFormatSize(PIXELFORMAT_R8);
+			size_t bpp = getPixelFormatBlockSize(PIXELFORMAT_R8_UNORM);
 			size_t size = bpp * widths[i] * heights[i];
 
 			Rect rect = {0, 0, widths[i], heights[i]};
-			images[i]->replacePixels(data[i], size, 0, 0, rect, false);
+			textures[i]->replacePixels(data[i], size, 0, 0, rect, false);
 		}
 	}
 }
@@ -200,17 +206,21 @@ int Video::getPixelHeight() const
 	return stream->getHeight();
 }
 
-void Video::setFilter(const Texture::Filter &f)
+void Video::setSamplerState(const SamplerState &s)
 {
-	for (const auto &image : images)
-		image->setFilter(f);
+	samplerState.minFilter = s.minFilter;
+	samplerState.magFilter = s.magFilter;
+	samplerState.wrapU = s.wrapU;
+	samplerState.wrapV = s.wrapV;
+	samplerState.maxAnisotropy = s.maxAnisotropy;
 
-	filter = f;
+	for (const auto &texture : textures)
+		texture->setSamplerState(samplerState);
 }
 
-const Texture::Filter &Video::getFilter() const
+const SamplerState &Video::getSamplerState() const
 {
-	return filter;
+	return samplerState;
 }
 
 } // graphics

@@ -62,7 +62,7 @@ public:
 	static love::Type type;
 
 	ImageData(Data *data);
-	ImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8);
+	ImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8_UNORM);
 	ImageData(int width, int height, PixelFormat format, void *data, bool own);
 	ImageData(const ImageData &c);
 	virtual ~ImageData();
@@ -124,7 +124,6 @@ public:
 	PixelGetFunction getPixelGetFunction() const { return pixelGetFunction; }
 
 	static bool validPixelFormat(PixelFormat format);
-	static bool canPaste(PixelFormat src, PixelFormat dst);
 
 	static PixelSetFunction getPixelSetFunction(PixelFormat format);
 	static PixelGetFunction getPixelGetFunction(PixelFormat format);

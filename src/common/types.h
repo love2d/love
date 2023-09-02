@@ -25,7 +25,6 @@
 
 // STD
 #include <bitset>
-#include <vector>
 
 namespace love
 {

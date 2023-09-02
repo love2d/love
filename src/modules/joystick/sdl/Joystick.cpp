@@ -22,6 +22,10 @@
 #include "common/config.h"
 #include "Joystick.h"
 #include "common/int.h"
+#include "sensor/sdl/Sensor.h"
+
+// SDL
+#include <SDL_version.h>
 
 // C++
 #include <algorithm>
@@ -42,6 +46,7 @@ Joystick::Joystick(int id)
 	: joyhandle(nullptr)
 	, controller(nullptr)
 	, haptic(nullptr)
+	, joystickType(JOYSTICK_TYPE_UNKNOWN)
 	, instanceid(-1)
 	, id(id)
 	, vibration()
@@ -92,6 +97,40 @@ bool Joystick::open(int deviceindex)
 
 		if (joyname)
 			name = joyname;
+
+		switch (SDL_JoystickGetType(joyhandle))
+		{
+		case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
+			joystickType = JOYSTICK_TYPE_GAMEPAD;
+			break;
+		case SDL_JOYSTICK_TYPE_WHEEL:
+			joystickType = JOYSTICK_TYPE_WHEEL;
+			break;
+		case SDL_JOYSTICK_TYPE_ARCADE_STICK:
+			joystickType = JOYSTICK_TYPE_ARCADE_STICK;
+			break;
+		case SDL_JOYSTICK_TYPE_FLIGHT_STICK:
+			joystickType = JOYSTICK_TYPE_FLIGHT_STICK;
+			break;
+		case SDL_JOYSTICK_TYPE_DANCE_PAD:
+			joystickType = JOYSTICK_TYPE_DANCE_PAD;
+			break;
+		case SDL_JOYSTICK_TYPE_GUITAR:
+			joystickType = JOYSTICK_TYPE_GUITAR;
+			break;
+		case SDL_JOYSTICK_TYPE_DRUM_KIT:
+			joystickType = JOYSTICK_TYPE_DRUM_KIT;
+			break;
+		case SDL_JOYSTICK_TYPE_ARCADE_PAD:
+			joystickType = JOYSTICK_TYPE_ARCADE_PAD;
+			break;
+		case SDL_JOYSTICK_TYPE_THROTTLE:
+			joystickType = JOYSTICK_TYPE_THROTTLE;
+			break;
+		default:
+			joystickType = JOYSTICK_TYPE_UNKNOWN;
+			break;
+		}
 	}
 
 	return isConnected();
@@ -123,6 +162,11 @@ bool Joystick::isConnected() const
 const char *Joystick::getName() const
 {
 	return name.c_str();
+}
+
+Joystick::JoystickType Joystick::getJoystickType() const
+{
+	return joystickType;
 }
 
 int Joystick::getAxisCount() const
@@ -195,6 +239,30 @@ bool Joystick::isDown(const std::vector<int> &buttonlist) const
 	return false;
 }
 
+void Joystick::setPlayerIndex(int index)
+{
+	if (!isConnected())
+		return;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	SDL_JoystickSetPlayerIndex(joyhandle, index);
+#else
+	LOVE_UNUSED(index);
+#endif
+}
+
+int Joystick::getPlayerIndex() const
+{
+	if (!isConnected())
+		return -1;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	return SDL_JoystickGetPlayerIndex(joyhandle);
+#else
+	return -1;
+#endif
+}
+
 bool Joystick::openGamepad(int deviceindex)
 {
 	if (!SDL_IsGameController(deviceindex))
@@ -213,6 +281,40 @@ bool Joystick::openGamepad(int deviceindex)
 bool Joystick::isGamepad() const
 {
 	return controller != nullptr;
+}
+
+Joystick::GamepadType Joystick::getGamepadType() const
+{
+	if (controller == nullptr)
+		return GAMEPAD_TYPE_UNKNOWN;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	switch (SDL_GameControllerGetType(controller))
+	{
+		case SDL_CONTROLLER_TYPE_UNKNOWN: return GAMEPAD_TYPE_UNKNOWN;
+		case SDL_CONTROLLER_TYPE_XBOX360: return GAMEPAD_TYPE_XBOX360;
+		case SDL_CONTROLLER_TYPE_XBOXONE: return GAMEPAD_TYPE_XBOXONE;
+		case SDL_CONTROLLER_TYPE_PS3: return GAMEPAD_TYPE_PS3;
+		case SDL_CONTROLLER_TYPE_PS4: return GAMEPAD_TYPE_PS4;
+		case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO: return GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+		case SDL_CONTROLLER_TYPE_VIRTUAL: return GAMEPAD_TYPE_VIRTUAL;
+		case SDL_CONTROLLER_TYPE_PS5: return GAMEPAD_TYPE_PS5;
+#endif
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+		case SDL_CONTROLLER_TYPE_AMAZON_LUNA: return GAMEPAD_TYPE_AMAZON_LUNA;
+		case SDL_CONTROLLER_TYPE_GOOGLE_STADIA: return GAMEPAD_TYPE_STADIA;
+#endif
+#if SDL_VERSION_ATLEAST(2, 24, 0)
+		case SDL_CONTROLLER_TYPE_NVIDIA_SHIELD: return GAMEPAD_TYPE_NVIDIA_SHIELD;
+		case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT: return GAMEPAD_TYPE_JOYCON_LEFT;
+		case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT: return GAMEPAD_TYPE_JOYCON_RIGHT;
+		case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_PAIR: return GAMEPAD_TYPE_JOYCON_PAIR;
+#endif
+	}
+#endif
+
+	return GAMEPAD_TYPE_UNKNOWN;
 }
 
 float Joystick::getGamepadAxis(love::joystick::Joystick::GamepadAxis axis) const
@@ -353,7 +455,6 @@ int Joystick::getID() const
 
 void Joystick::getDeviceInfo(int &vendorID, int &productID, int &productVersion) const
 {
-#if SDL_VERSION_ATLEAST(2, 0, 6)
 	if (joyhandle != nullptr)
 	{
 		vendorID = SDL_JoystickGetVendor(joyhandle);
@@ -361,7 +462,6 @@ void Joystick::getDeviceInfo(int &vendorID, int &productID, int &productVersion)
 		productVersion = SDL_JoystickGetProductVersion(joyhandle);
 	}
 	else
-#endif
 	{
 		vendorID = 0;
 		productID = 0;
@@ -459,16 +559,14 @@ bool Joystick::setVibration(float left, float right, float duration)
 	Uint32 length = SDL_HAPTIC_INFINITY;
 	if (duration >= 0.0f)
 	{
-		float maxduration = std::numeric_limits<Uint32>::max() / 1000.0f;
+		float maxduration = (float) (std::numeric_limits<Uint32>::max() / 1000.0);
 		length = Uint32(std::min(duration, maxduration) * 1000);
 	}
 
 	bool success = false;
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	if (SDL_JoystickRumble(joyhandle, (Uint16)(left * LOVE_UINT16_MAX), (Uint16)(right * LOVE_UINT16_MAX), length) == 0)
 		success = true;
-#endif
 
 	if (!success && !checkCreateHaptic())
 		return false;
@@ -550,10 +648,8 @@ bool Joystick::setVibration()
 {
 	bool success = false;
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
 	if (!success)
 		success = isConnected() && SDL_JoystickRumble(joyhandle, 0, 0, 0) == 0;
-#endif
 
 	if (!success && SDL_WasInit(SDL_INIT_HAPTIC) && haptic && SDL_HapticIndex(haptic) != -1)
 		success = (SDL_HapticStopEffect(haptic, vibration.id) == 0);
@@ -585,6 +681,86 @@ void Joystick::getVibration(float &left, float &right)
 
 	left = vibration.left;
 	right = vibration.right;
+}
+
+bool Joystick::hasSensor(Sensor::SensorType type) const
+{
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	using SDLSensor = love::sensor::sdl::Sensor;
+
+	if (!isGamepad())
+		return false;
+
+	return SDL_GameControllerHasSensor(controller, SDLSensor::convert(type)) == SDL_TRUE;
+#else
+	return false;
+#endif
+}
+
+bool Joystick::isSensorEnabled(Sensor::SensorType type) const
+{
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	using SDLSensor = love::sensor::sdl::Sensor;
+
+	if (!isGamepad())
+		return false;
+
+	return SDL_GameControllerIsSensorEnabled(controller, SDLSensor::convert(type)) == SDL_TRUE;
+#else
+	return false;
+#endif
+}
+
+void Joystick::setSensorEnabled(Sensor::SensorType type, bool enabled)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	using SDLSensor = love::sensor::sdl::Sensor;
+
+	if (!isGamepad())
+		throw love::Exception("Sensor is only supported on gamepad");
+
+	if (SDL_GameControllerSetSensorEnabled(controller, SDLSensor::convert(type), enabled ? SDL_TRUE : SDL_FALSE) != 0)
+	{
+		const char *name = nullptr;
+		SDLSensor::getConstant(type, name);
+
+		throw love::Exception("Could not open \"%s\" SDL gamepad sensor (%s)", name, SDL_GetError());
+	}
+#else
+	throw love::Exception("Compiled version of SDL or LOVE does not support gamepad sensor");
+#endif
+}
+
+std::vector<float> Joystick::getSensorData(Sensor::SensorType type) const
+{
+#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+	using SDLSensor = love::sensor::sdl::Sensor;
+
+	if (!isGamepad())
+		throw love::Exception("Sensor is only supported on gamepad");
+
+	std::vector<float> data(3);
+
+	if (!isSensorEnabled(type))
+	{
+		const char *name = nullptr;
+		SDLSensor::getConstant(type, name);
+
+		throw love::Exception("\"%s\" gamepad sensor is not enabled", name);
+	}
+
+	if (SDL_GameControllerGetSensorData(controller, SDLSensor::convert(type), data.data(), (int) data.size()) != 0)
+	{
+		const char *name = nullptr;
+		SDLSensor::getConstant(type, name);
+
+		throw love::Exception("Could not get \"%s\" SDL gamepad sensor data (%s)", name, SDL_GetError());
+	}
+
+	return data;
+#else
+	throw love::Exception("Compiled version of SDL or LOVE does not support gamepad sensor");
+#endif
 }
 
 bool Joystick::getConstant(Uint8 in, Joystick::Hat &out)
@@ -661,6 +837,14 @@ EnumMap<Joystick::GamepadButton, SDL_GameControllerButton, Joystick::GAMEPAD_BUT
 	{Joystick::GAMEPAD_BUTTON_DPAD_DOWN, SDL_CONTROLLER_BUTTON_DPAD_DOWN},
 	{Joystick::GAMEPAD_BUTTON_DPAD_LEFT, SDL_CONTROLLER_BUTTON_DPAD_LEFT},
 	{Joystick::GAMEPAD_BUTTON_DPAD_RIGHT, SDL_CONTROLLER_BUTTON_DPAD_RIGHT},
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	{Joystick::GAMEPAD_BUTTON_MISC1, SDL_CONTROLLER_BUTTON_MISC1},
+	{Joystick::GAMEPAD_BUTTON_PADDLE1, SDL_CONTROLLER_BUTTON_PADDLE1},
+	{Joystick::GAMEPAD_BUTTON_PADDLE2, SDL_CONTROLLER_BUTTON_PADDLE2},
+	{Joystick::GAMEPAD_BUTTON_PADDLE3, SDL_CONTROLLER_BUTTON_PADDLE3},
+	{Joystick::GAMEPAD_BUTTON_PADDLE4, SDL_CONTROLLER_BUTTON_PADDLE4},
+	{Joystick::GAMEPAD_BUTTON_TOUCHPAD, SDL_CONTROLLER_BUTTON_TOUCHPAD},
+#endif
 };
 
 EnumMap<Joystick::GamepadButton, SDL_GameControllerButton, Joystick::GAMEPAD_BUTTON_MAX_ENUM> Joystick::gpButtons(Joystick::gpButtonEntries, sizeof(Joystick::gpButtonEntries));

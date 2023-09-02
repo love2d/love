@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleShortVersionString</key>
-	<string>$(MARKETING_VERSION)</string>
+	<string>12.0</string>
 	<key>CFBundleSignature</key>
 	<string>LoVe</string>
 	<key>NSPrincipalClass</key>

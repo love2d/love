@@ -601,14 +601,6 @@ int w_Source_getType(lua_State *L)
 	return 1;
 }
 
-// Deprecated
-
-int w_Source_getChannels(lua_State *L)
-{
-	luax_markdeprecated(L, "Source:getChannels", API_METHOD, DEPRECATED_RENAMED, "Source:getChannelCount");
-	return w_Source_getChannelCount(L);
-}
-
 static const luaL_Reg w_Source_functions[] =
 {
 	{ "clone", w_Source_clone },
@@ -661,9 +653,6 @@ static const luaL_Reg w_Source_functions[] =
 	{ "queue", w_Source_queue },
 
 	{ "getType", w_Source_getType },
-
-	// Deprecated
-	{ "getChannels", w_Source_getChannels },
 
 	{ 0, 0 }
 };

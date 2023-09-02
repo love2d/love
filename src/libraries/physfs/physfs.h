@@ -2235,6 +2235,14 @@ PHYSFS_DECL int PHYSFS_mount(const char *newDir,
                              int appendToPath);
 
 /**
+ * Just like mount() but attempts to open the directory for writing as well as
+ * reading.
+ */
+PHYSFS_DECL int PHYSFS_mountRW(const char *newDir,
+                               const char *mountPoint,
+                               int appendToPath);
+
+/**
  * \fn int PHYSFS_getMountPoint(const char *dir)
  * \brief Determine a mounted archive's mountpoint.
  *
@@ -2808,6 +2816,12 @@ PHYSFS_DECL int PHYSFS_enumerate(const char *dir, PHYSFS_EnumerateCallback c,
  * \sa PHYSFS_mount
  */
 PHYSFS_DECL int PHYSFS_unmount(const char *oldDir);
+
+/**
+ * \fn int PHYSFS_canUnmount(const char *oldDir)
+ * \brief Check whether a directory or archive can be unmounted.
+ */
+PHYSFS_DECL int PHYSFS_canUnmount(const char *oldDir);
 
 
 /**

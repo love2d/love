@@ -93,10 +93,14 @@ if not status then return end
 pcall(ffi.cdef, [[
 typedef struct FFI_Math
 {
-	float (*noise1)(float x);
-	float (*noise2)(float x, float y);
-	float (*noise3)(float x, float y, float z);
-	float (*noise4)(float x, float y, float z, float w);
+	double (*snoise1)(double x);
+	double (*snoise2)(double x, double y);
+	double (*snoise3)(double x, double y, double z);
+	double (*snoise4)(double x, double y, double z, double w);
+	double (*pnoise1)(double x);
+	double (*pnoise2)(double x, double y);
+	double (*pnoise3)(double x, double y, double z);
+	double (*pnoise4)(double x, double y, double z, double w);
 
 	float (*gammaToLinear)(float c);
 	float (*linearToGamma)(float c);
@@ -104,19 +108,45 @@ typedef struct FFI_Math
 ]])
 
 local ffifuncs = ffi.cast("FFI_Math **", ffifuncspointer_str)[0]
-
+local love = require("love")
 
 -- Overwrite some regular love.math functions with FFI implementations.
 
 function love_math.noise(x, y, z, w)
+	love.markDeprecated(2, "love.math.noise", "function", "replaced", "love.math.perlinNoise or love.math.simplexNoise")
+
 	if w ~= nil then
-		return tonumber(ffifuncs.noise4(x, y, z, w))
+		return tonumber(ffifuncs.pnoise4(x, y, z, w))
 	elseif z ~= nil then
-		return tonumber(ffifuncs.noise3(x, y, z))
+		return tonumber(ffifuncs.pnoise3(x, y, z))
 	elseif y ~= nil then
-		return tonumber(ffifuncs.noise2(x, y))
+		return tonumber(ffifuncs.snoise2(x, y))
 	else
-		return tonumber(ffifuncs.noise1(x))
+		return tonumber(ffifuncs.snoise1(x))
+	end
+end
+
+function love_math.perlinNoise(x, y, z, w)
+	if w ~= nil then
+		return tonumber(ffifuncs.pnoise4(x, y, z, w))
+	elseif z ~= nil then
+		return tonumber(ffifuncs.pnoise3(x, y, z))
+	elseif y ~= nil then
+		return tonumber(ffifuncs.pnoise2(x, y))
+	else
+		return tonumber(ffifuncs.pnoise1(x))
+	end
+end
+
+function love_math.simplexNoise(x, y, z, w)
+	if w ~= nil then
+		return tonumber(ffifuncs.snoise4(x, y, z, w))
+	elseif z ~= nil then
+		return tonumber(ffifuncs.snoise3(x, y, z))
+	elseif y ~= nil then
+		return tonumber(ffifuncs.snoise2(x, y))
+	else
+		return tonumber(ffifuncs.snoise1(x))
 	end
 end
 

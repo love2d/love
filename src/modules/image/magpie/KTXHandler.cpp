@@ -146,76 +146,76 @@ PixelFormat convertFormat(uint32 glformat, bool &sRGB)
 	switch (glformat)
 	{
 	case KTX_GL_ETC1_RGB8_OES:
-		return PIXELFORMAT_ETC1;
+		return PIXELFORMAT_ETC1_UNORM;
 
 	// EAC and ETC2.
 	case KTX_GL_COMPRESSED_R11_EAC:
-		return PIXELFORMAT_EAC_R;
+		return PIXELFORMAT_EAC_R_UNORM;
 	case KTX_GL_COMPRESSED_SIGNED_R11_EAC:
-		return PIXELFORMAT_EAC_Rs;
+		return PIXELFORMAT_EAC_R_SNORM;
 	case KTX_GL_COMPRESSED_RG11_EAC:
-		return PIXELFORMAT_EAC_RG;
+		return PIXELFORMAT_EAC_RG_UNORM;
 	case KTX_GL_COMPRESSED_SIGNED_RG11_EAC:
-		return PIXELFORMAT_EAC_RGs;
+		return PIXELFORMAT_EAC_RG_SNORM;
 	case KTX_GL_COMPRESSED_RGB8_ETC2:
-		return PIXELFORMAT_ETC2_RGB;
+		return PIXELFORMAT_ETC2_RGB_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ETC2:
 		sRGB = true;
-		return PIXELFORMAT_ETC2_RGB;
+		return PIXELFORMAT_ETC2_RGB_UNORM;
 	case KTX_GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-		return PIXELFORMAT_ETC2_RGBA1;
+		return PIXELFORMAT_ETC2_RGBA1_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
 		sRGB = true;
-		return PIXELFORMAT_ETC2_RGBA1;
+		return PIXELFORMAT_ETC2_RGBA1_UNORM;
 	case KTX_GL_COMPRESSED_RGBA8_ETC2_EAC:
-		return PIXELFORMAT_ETC2_RGBA;
+		return PIXELFORMAT_ETC2_RGBA_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
 		sRGB = true;
-		return PIXELFORMAT_ETC2_RGBA;
+		return PIXELFORMAT_ETC2_RGBA_UNORM;
 
 	// PVRTC.
 	case KTX_GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-		return PIXELFORMAT_PVR1_RGB4;
+		return PIXELFORMAT_PVR1_RGB4_UNORM;
 	case KTX_GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-		return PIXELFORMAT_PVR1_RGB2;
+		return PIXELFORMAT_PVR1_RGB2_UNORM;
 	case KTX_GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
-		return PIXELFORMAT_PVR1_RGBA4;
+		return PIXELFORMAT_PVR1_RGBA4_UNORM;
 	case KTX_GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-		return PIXELFORMAT_PVR1_RGBA2;
+		return PIXELFORMAT_PVR1_RGBA2_UNORM;
 
 	// DXT.
 	case KTX_GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:
 		sRGB = true;
 	case KTX_GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-		return PIXELFORMAT_DXT1;
+		return PIXELFORMAT_DXT1_UNORM;
 	case KTX_GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
 		sRGB = true;
 	case KTX_GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-		return PIXELFORMAT_DXT3;
+		return PIXELFORMAT_DXT3_UNORM;
 	case KTX_GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
 		sRGB = true;
 	case KTX_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-		return PIXELFORMAT_DXT5;
+		return PIXELFORMAT_DXT5_UNORM;
 
 	// BC4 and BC5.
 	case KTX_GL_COMPRESSED_RED_RGTC1:
-		return PIXELFORMAT_BC4;
+		return PIXELFORMAT_BC4_UNORM;
 	case KTX_GL_COMPRESSED_SIGNED_RED_RGTC1:
-		return PIXELFORMAT_BC4s;
+		return PIXELFORMAT_BC4_SNORM;
 	case KTX_GL_COMPRESSED_RG_RGTC2:
-		return PIXELFORMAT_BC5;
+		return PIXELFORMAT_BC5_UNORM;
 	case KTX_GL_COMPRESSED_SIGNED_RG_RGTC2:
-		return PIXELFORMAT_BC5s;
+		return PIXELFORMAT_BC5_SNORM;
 
 	// BC6 and BC7.
 	case KTX_GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
 		sRGB = true;
 	case KTX_GL_COMPRESSED_RGBA_BPTC_UNORM:
-		return PIXELFORMAT_BC7;
+		return PIXELFORMAT_BC7_UNORM;
 	case KTX_GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
-		return PIXELFORMAT_BC6Hs;
+		return PIXELFORMAT_BC6H_FLOAT;
 	case KTX_GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
-		return PIXELFORMAT_BC6H;
+		return PIXELFORMAT_BC6H_UFLOAT;
 
 	// ASTC.
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
@@ -298,7 +298,7 @@ bool KTXHandler::canParseCompressed(Data *data)
 	return true;
 }
 
-StrongRef<CompressedMemory> KTXHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> KTXHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not a KTX file?)");
@@ -354,8 +354,7 @@ StrongRef<CompressedMemory> KTXHandler::parseCompressed(Data *filedata, std::vec
 		fileoffset += mipsizepadded;
 	}
 
-	StrongRef<CompressedMemory> memory;
-	memory.set(new CompressedMemory(totalsize), Acquire::NORETAIN);
+	StrongRef<ByteData> memory(new ByteData(totalsize, false), Acquire::NORETAIN);
 
 	// Reset the file offset to the start of the file's image data.
 	fileoffset = sizeof(KTXHeader) + header.bytesOfKeyValueData;
@@ -376,7 +375,7 @@ StrongRef<CompressedMemory> KTXHandler::parseCompressed(Data *filedata, std::vec
 		int width = (int) std::max(header.pixelWidth >> i, 1u);
 		int height = (int) std::max(header.pixelHeight >> i, 1u);
 
-		memcpy(memory->data + dataoffset, filebytes + fileoffset, mipsize);
+		memcpy((uint8 *) memory->getData() + dataoffset, filebytes + fileoffset, mipsize);
 
 		auto slice = new CompressedSlice(cformat, width, height, memory, dataoffset, mipsize);
 		images.push_back(slice);

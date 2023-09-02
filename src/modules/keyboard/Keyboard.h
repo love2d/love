@@ -519,6 +519,18 @@ public:
 		SCANCODE_MAX_ENUM
 	};
 
+	/**
+	 * Modifier keys. These are special keys that temporarily modifies the normal function of a button when active.
+	 **/
+	enum ModifierKey {
+		MODKEY_NUMLOCK,
+		MODKEY_CAPSLOCK,
+		MODKEY_SCROLLLOCK,
+		MODKEY_MODE,
+
+		MODKEY_MAX_ENUM
+	};
+
 	virtual ~Keyboard() {}
 
 	// Implements Module.
@@ -549,6 +561,13 @@ public:
 	 * @return Whether any of the specified scancodes are pressed.
 	 **/
 	virtual bool isScancodeDown(const std::vector<Scancode> &scancodelist) const = 0;
+
+	/**
+	 * Checks whether specific modifier key is active or not.
+	 * @param key Modifier key to check.
+	 * @return Whether the specified modifier key is active.
+	 **/
+	virtual bool isModifierActive(ModifierKey key) const = 0;
 
 	/**
 	 * Gets the key corresponding to the specified scancode according to the
@@ -592,6 +611,9 @@ public:
 	static bool getConstant(const char *in, Scancode &out);
 	static bool getConstant(Scancode in, const char *&out);
 
+	static bool getConstant(const char *in, ModifierKey &out);
+	static bool getConstant(ModifierKey in, const char *&out);
+
 private:
 
 	static StringMap<Key, KEY_MAX_ENUM>::Entry keyEntries[];
@@ -599,6 +621,9 @@ private:
 
 	static StringMap<Scancode, SCANCODE_MAX_ENUM>::Entry scancodeEntries[];
 	static StringMap<Scancode, SCANCODE_MAX_ENUM> scancodes;
+
+	static StringMap<ModifierKey, MODKEY_MAX_ENUM>::Entry modifierEntries[];
+	static StringMap<ModifierKey, MODKEY_MAX_ENUM> modifiers;
 
 }; // Keyboard
 
