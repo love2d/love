@@ -89,9 +89,7 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font glyph error: FT_Load_Glyph failed (0x%x)", err);
 
-	FT_GlyphSlot slot = face->glyph;
-
-	err = FT_Get_Glyph(slot, &ftglyph);
+	err = FT_Get_Glyph(face->glyph, &ftglyph);
 
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font glyph error: FT_Get_Glyph failed (0x%x)", err);
