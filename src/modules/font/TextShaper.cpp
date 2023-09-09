@@ -303,10 +303,10 @@ void TextShaper::getWrap(const ColoredCodepoints &codepoints, float wraplimit, s
 			float width = 0.0f;
 			int wrapindex = computeWordWrapIndex(codepoints, r, wraplimit, &width);
 
-			if (wrapindex >= (int) i)
+			if (wrapindex > (int) i)
 			{
-				r = Range(i, (size_t) wrapindex + 1 - i);
-				i = (size_t)wrapindex + 1;
+				r = Range(i, (size_t) wrapindex - i);
+				i = (size_t)wrapindex;
 			}
 			else
 			{

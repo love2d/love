@@ -335,8 +335,7 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ra
 	float w = 0.0f;
 	float outwidth = 0.0f;
 	float widthbeforelastspace = 0.0f;
-	int wrapindex = -1;
-	int lastspaceindex = -1;
+	int firstindexafterspace = -1;
 
 	uint32 prevcodepoint = 0;
 
@@ -376,38 +375,49 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ra
 
 			float newwidth = w + floorf((glyphpos.x_advance >> 6) / dpiScales[0] + 0.5f);
 
-			// Only wrap when there's a non-space character.
-			if (newwidth > wraplimit && !isWhitespace(clustercodepoint))
-			{
-				// Rewind to the last seen space when wrapping.
-				if (lastspaceindex != -1)
-				{
-					wrapindex = lastspaceindex;
-					outwidth = widthbeforelastspace;
-				}
-				break;
-			}
-
 			// Don't count trailing spaces in the output width.
 			if (isWhitespace(clustercodepoint))
 			{
-				lastspaceindex = info.cluster;
 				if (!isWhitespace(prevcodepoint))
 					widthbeforelastspace = w;
 			}
 			else
+			{
+				if (isWhitespace(prevcodepoint))
+					firstindexafterspace = info.cluster;
+
+				// Only wrap when there's a non-space character.
+				if (newwidth > wraplimit)
+				{
+					// If this is the first character, wrap from the next one instead of this one.
+					int wrapindex = info.cluster > (int) range.first ? info.cluster : (int) range.first + 1;
+
+					// Rewind to after the last seen space when wrapping.
+					if (firstindexafterspace != -1)
+					{
+						wrapindex = firstindexafterspace;
+						outwidth = widthbeforelastspace;
+					}
+
+					if (width)
+						*width = outwidth;
+
+					return wrapindex;
+				}
+
 				outwidth = newwidth;
+			}
 
 			w = newwidth;
 			prevcodepoint = clustercodepoint;
-			wrapindex = info.cluster;
 		}
 	}
 
 	if (width)
 		*width = outwidth;
 
-	return wrapindex;
+	// There wasn't any wrap in the middle of the range.
+	return (int) range.last + 1;
 }
 
 } // freetype

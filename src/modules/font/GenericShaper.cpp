@@ -151,8 +151,7 @@ int GenericShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ran
 	float w = 0.0f;
 	float outwidth = 0.0f;
 	float widthbeforelastspace = 0.0f;
-	int wrapindex = -1;
-	int lastspaceindex = -1;
+	int firstindexafterspace = -1;
 
 	for (int i = (int)range.getMin(); i <= (int)range.getMax(); i++)
 	{
@@ -166,37 +165,48 @@ int GenericShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ran
 
 		float newwidth = w + getKerning(prevglyph, g) + getGlyphAdvance(g);
 
-		// Only wrap when there's a non-space character.
-		if (newwidth > wraplimit && !isWhitespace(g))
-		{
-			// Rewind to the last seen space when wrapping.
-			if (lastspaceindex != -1)
-			{
-				wrapindex = lastspaceindex;
-				outwidth = widthbeforelastspace;
-			}
-			break;
-		}
-
 		// Don't count trailing spaces in the output width.
 		if (isWhitespace(g))
 		{
-			lastspaceindex = i;
 			if (!isWhitespace(prevglyph))
 				widthbeforelastspace = w;
 		}
 		else
+		{
+			if (isWhitespace(prevglyph))
+				firstindexafterspace = i;
+
+			// Only wrap when there's a non-space character.
+			if (newwidth > wraplimit)
+			{
+				// If this is the first character, wrap from the next one instead of this one.
+				int wrapindex = i > (int)range.first ? i : (int)range.first + 1;
+
+				// Rewind to after the last seen space when wrapping.
+				if (firstindexafterspace != -1)
+				{
+					wrapindex = firstindexafterspace;
+					outwidth = widthbeforelastspace;
+				}
+
+				if (width)
+					*width = outwidth;
+
+				return wrapindex;
+			}
+
 			outwidth = newwidth;
+		}
 
 		w = newwidth;
 		prevglyph = g;
-		wrapindex = i;
 	}
 
 	if (width)
 		*width = outwidth;
 
-	return wrapindex;
+	// There wasn't any wrap in the middle of the range.
+	return range.last + 1;
 }
 
 } // font
