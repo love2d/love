@@ -1912,7 +1912,7 @@ static Mesh *newCustomMesh(lua_State *L)
 			}
 
 			if (decl.format == DATAFORMAT_MAX_ENUM)
-				luax_enumerror(L, "vertex data format", getConstants(decl.format), tname);
+				luax_enumerror(L, "vertex data type", {"float", "byte", "unorm8", "unorm16"}, tname);
 
 			lua_pop(L, 3);
 
