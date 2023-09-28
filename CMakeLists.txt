@@ -1705,6 +1705,7 @@ set(LOVE_SRC_3P_PHYSFS
 	src/libraries/physfs/physfs_internal.h
 	src/libraries/physfs/physfs_lzmasdk.h
 	src/libraries/physfs/physfs_miniz.h
+	src/libraries/physfs/physfs_platform_android.c
 	src/libraries/physfs/physfs_platform_haiku.cpp
 	src/libraries/physfs/physfs_platform_os2.c
 	src/libraries/physfs/physfs_platform_posix.c
