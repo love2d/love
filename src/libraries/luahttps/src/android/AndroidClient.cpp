@@ -7,6 +7,10 @@
 
 #include <dlfcn.h>
 
+// We want std::string that contains null byte, hence length of 1.
+// NOLINTNEXTLINE
+static std::string null("", 1);
+
 static std::string replace(const std::string &str, const std::string &from, const std::string &to)
 {
 	std::stringstream ss;
@@ -31,9 +35,6 @@ static std::string replace(const std::string &str, const std::string &from, cons
 
 static jstring newStringUTF(JNIEnv *env, const std::string &str)
 {
-	// We want std::string that contains null byte, hence length of 1.
-	static std::string null("", 1);
-
 	std::string newStr = replace(str, null, "\xC0\x80");
 	jstring jstr = env->NewStringUTF(newStr.c_str());
 	return jstr;
@@ -41,9 +42,6 @@ static jstring newStringUTF(JNIEnv *env, const std::string &str)
 
 static std::string getStringUTF(JNIEnv *env, jstring str)
 {
-	// We want std::string that contains null byte, hence length of 1.
-	static std::string null("", 1);
-
 	const char *c = env->GetStringUTFChars(str, nullptr);
 	std::string result = replace(c, "\xC0\x80", null);
 
@@ -53,7 +51,6 @@ static std::string getStringUTF(JNIEnv *env, jstring str)
 
 AndroidClient::AndroidClient()
 : HTTPSClient()
-, SDL_AndroidGetJNIEnv(nullptr)
 {
 	// Look for SDL_AndroidGetJNIEnv
 	SDL_AndroidGetJNIEnv = (decltype(SDL_AndroidGetJNIEnv)) dlsym(RTLD_DEFAULT, "SDL_AndroidGetJNIEnv");
@@ -116,12 +113,14 @@ HTTPSClient::Reply AndroidClient::request(const HTTPSClient::Request &req)
 	env->DeleteLocalRef(method);
 
 	// Set post data
-	if (req.postdata.size() > 0)
+	if (!req.postdata.empty())
 	{
 		jmethodID setPostData = env->GetMethodID(httpsClass, "setPostData", "([B)V");
 		jbyteArray byteArray = env->NewByteArray((jsize) req.postdata.length());
 		jbyte *byteArrayData = env->GetByteArrayElements(byteArray, nullptr);
 
+		// The usage of memcpy is intentional.
+		// NOLINTNEXTLINE
 		memcpy(byteArrayData, req.postdata.data(), req.postdata.length());
 		env->ReleaseByteArrayElements(byteArray, byteArrayData, 0);
 
@@ -156,9 +155,9 @@ HTTPSClient::Reply AndroidClient::request(const HTTPSClient::Request &req)
 	{
 		// Get headers
 		jobjectArray interleavedHeaders = (jobjectArray) env->CallObjectMethod(httpsObject, getInterleavedHeaders);
-		int len = env->GetArrayLength(interleavedHeaders);
+		int headerLen = env->GetArrayLength(interleavedHeaders);
 
-		for (int i = 0; i < len; i += 2)
+		for (int i = 0; i < headerLen; i += 2)
 		{
 			jstring key = (jstring) env->GetObjectArrayElement(interleavedHeaders, i);
 			jstring value = (jstring) env->GetObjectArrayElement(interleavedHeaders, i + 1);
@@ -176,14 +175,16 @@ HTTPSClient::Reply AndroidClient::request(const HTTPSClient::Request &req)
 
 		if (responseData)
 		{
-			int len = env->GetArrayLength(responseData);
+			int responseLen = env->GetArrayLength(responseData);
 			jbyte *responseByte = env->GetByteArrayElements(responseData, nullptr);
 
-			response.body = std::string((char *) responseByte, len);
+			response.body = std::string((char *) responseByte, responseLen);
 
 			env->DeleteLocalRef(responseData);
 		}
 	}
+
+	env->DeleteLocalRef(httpsObject);
 
 	return response;
 }

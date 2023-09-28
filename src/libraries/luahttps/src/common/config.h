@@ -1,5 +1,10 @@
 #pragma once
 
+// MSVC warnings
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
+	#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #if defined(HTTPS_HAVE_CONFIG_GENERATED_H)
 	#include "common/config-generated.h"
 #elif defined(WIN32) || defined(_WIN32)
@@ -9,6 +14,12 @@
 	#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
 		// WinINet is only supported on desktop.
 		#define HTTPS_BACKEND_WININET
+	#endif
+	// Visual Studio 2017 supports __has_include
+	#if defined __has_include
+		#if __has_include(<curl/curl.h>)
+			#define HTTPS_BACKEND_CURL
+		#endif
 	#endif
 #elif defined(__ANDROID__)
 	#define HTTPS_BACKEND_ANDROID
