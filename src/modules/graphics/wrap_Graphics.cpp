@@ -1990,6 +1990,79 @@ static Mesh *newCustomMesh(lua_State *L)
 	return t;
 }
 
+static bool luax_isbufferattributetable(lua_State* L, int idx)
+{
+	if (lua_type(L, idx) != LUA_TTABLE)
+		return false;
+
+	lua_rawgeti(L, idx, 1);
+	if (lua_type(L, -1) != LUA_TTABLE)
+	{
+		lua_pop(L, 1);
+		return false;
+	}
+
+	lua_getfield(L, -1, "buffer");
+	bool isbuffer = luax_istype(L, -1, Buffer::type);
+	lua_pop(L, 2);
+	return isbuffer;
+}
+
+static Mesh::BufferAttribute luax_checkbufferattributetable(lua_State *L, int idx)
+{
+	Mesh::BufferAttribute attrib = {};
+
+	attrib.step = STEP_PER_VERTEX;
+	attrib.enabled = true;
+
+	lua_getfield(L, idx, "buffer");
+	attrib.buffer = luax_checkbuffer(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "name");
+	attrib.name = luax_checkstring(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "step");
+	if (!lua_isnoneornil(L, -1))
+	{
+		const char *stepstr = luaL_checkstring(L, -1);
+		if (!getConstant(stepstr, attrib.step))
+			luax_enumerror(L, "vertex attribute step", getConstants(attrib.step), stepstr);
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "nameinbuffer");	
+	if (!lua_isnoneornil(L, -1))
+		attrib.nameInBuffer = luax_checkstring(L, -1);
+	else
+		attrib.nameInBuffer = attrib.name;
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "startindex");
+	attrib.startArrayIndex = (int) luaL_optinteger(L, -1, 1) - 1;
+	lua_pop(L, 1);
+
+	return attrib;
+}
+
+static Mesh* newMeshFromBuffers(lua_State *L)
+{
+	std::vector<Mesh::BufferAttribute> attributes;
+	for (size_t i = 1; i <= luax_objlen(L, 1); i++)
+	{
+		lua_rawgeti(L, 1, i);
+		attributes.push_back(luax_checkbufferattributetable(L, -1));
+		lua_pop(L, 1);
+	}
+
+	PrimitiveType drawmode = luax_checkmeshdrawmode(L, 2);
+
+	Mesh *t = nullptr;
+	luax_catchexcept(L, [&]() { t = instance()->newMesh(attributes, drawmode); });
+	return t;
+}
+
 int w_newMesh(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
@@ -2002,7 +2075,9 @@ int w_newMesh(lua_State *L)
 	Mesh *t = nullptr;
 
 	int arg2type = lua_type(L, 2);
-	if (arg1type == LUA_TTABLE && (arg2type == LUA_TTABLE || arg2type == LUA_TNUMBER || arg2type == LUA_TUSERDATA))
+	if (luax_isbufferattributetable(L, 1))
+		t = newMeshFromBuffers(L);
+	else if (arg1type == LUA_TTABLE && (arg2type == LUA_TTABLE || arg2type == LUA_TNUMBER || arg2type == LUA_TUSERDATA))
 		t = newCustomMesh(L);
 	else
 		t = newStandardMesh(L);

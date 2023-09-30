@@ -107,15 +107,18 @@ Mesh::Mesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType d
 		throw love::Exception("At least one buffer attribute must be specified in this constructor.");
 
 	attachedAttributes = attributes;
-
 	vertexCount = attachedAttributes.size() > 0 ? LOVE_UINT32_MAX : 0;
 
-	for (const auto &attrib : attachedAttributes)
-	{
-		if ((attrib.buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
-			throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
-		if (getAttachedAttributeIndex(attrib.name) != -1)
+	for (int i = 0; i < (int) attachedAttributes.size(); i++)
+	{
+		auto &attrib = attachedAttributes[i];
+
+		finalizeAttribute(gfx, attrib);
+
+		int attributeIndex = getAttachedAttributeIndex(attrib.name);
+		if (attributeIndex != i && attributeIndex != -1)
 			throw love::Exception("Duplicate vertex attribute name: %s", attrib.name.c_str());
 
 		vertexCount = std::min(vertexCount, attrib.buffer->getArrayLength());
@@ -140,7 +143,7 @@ void Mesh::setupAttachedAttributes()
 		if (getAttachedAttributeIndex(name) != -1)
 			throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
 
-		attachedAttributes.push_back({name, vertexBuffer, nullptr, (int) i, 0, STEP_PER_VERTEX, true});
+		attachedAttributes.push_back({name, vertexBuffer, nullptr, name, (int) i, 0, STEP_PER_VERTEX, true});
 	}
 }
 
@@ -153,6 +156,24 @@ int Mesh::getAttachedAttributeIndex(const std::string &name) const
 	}
 
 	return -1;
+}
+
+void Mesh::finalizeAttribute(Graphics *gfx, BufferAttribute &attrib) const
+{
+	if ((attrib.buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
+		throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
+
+	if (attrib.step == STEP_PER_INSTANCE && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
+		throw love::Exception("Vertex attribute instancing is not supported on this system.");
+
+	if (attrib.startArrayIndex < 0 || attrib.startArrayIndex >= (int)attrib.buffer->getArrayLength())
+		throw love::Exception("Invalid start array index %d.", attrib.startArrayIndex + 1);
+
+	int indexInBuffer = attrib.buffer->getDataMemberIndex(attrib.nameInBuffer);
+	if (indexInBuffer < 0)
+		throw love::Exception("Buffer does not have a vertex attribute with name '%s'.", attrib.nameInBuffer.c_str());
+
+	attrib.indexInBuffer = indexInBuffer;
 }
 
 void *Mesh::checkVertexDataOffset(size_t vertindex, size_t *byteoffset)
@@ -210,15 +231,7 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 
 void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, int startindex, AttributeStep step)
 {
-	if ((buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
-		throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
-
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (step == STEP_PER_INSTANCE && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
-		throw love::Exception("Vertex attribute instancing is not supported on this system.");
-
-	if (startindex < 0 || startindex >= (int) buffer->getArrayLength())
-		throw love::Exception("Invalid start array index %d.", startindex + 1);
 
 	BufferAttribute oldattrib = {};
 	BufferAttribute newattrib = {};
@@ -233,9 +246,12 @@ void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, 
 	newattrib.buffer = buffer;
 	newattrib.mesh = mesh;
 	newattrib.enabled = oldattrib.buffer.get() ? oldattrib.enabled : true;
-	newattrib.indexInBuffer = buffer->getDataMemberIndex(attachname);
+	newattrib.nameInBuffer = attachname;
+	newattrib.indexInBuffer = -1;
 	newattrib.startArrayIndex = startindex;
 	newattrib.step = step;
+
+	finalizeAttribute(gfx, newattrib);
 
 	if (newattrib.indexInBuffer < 0)
 		throw love::Exception("The specified vertex buffer does not have a vertex attribute named '%s'", attachname.c_str());
