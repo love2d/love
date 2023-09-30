@@ -320,6 +320,9 @@ static void copyToIndexBuffer(const std::vector<uint32> &indices, void *data, si
 
 void Mesh::setVertexMap(const std::vector<uint32> &map)
 {
+	if (map.empty())
+		throw love::Exception("Vertex map array must not be empty.");
+
 	size_t maxval = getVertexCount();
 
 	IndexDataType datatype = getIndexDataTypeFromMax(maxval);
