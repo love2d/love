@@ -38,33 +38,22 @@ namespace box2d
 
 Joint::Joint(Body *body1)
 	: world(body1->world)
-	, udata(nullptr)
 	, body1(body1)
 	, body2(nullptr)
 {
-	udata = new jointudata();
-	udata->ref = nullptr;
 }
 
 Joint::Joint(Body *body1, Body *body2)
 	: world(body1->world)
-	, udata(nullptr)
 	, body1(body1)
 	, body2(body2)
 {
-	udata = new jointudata();
-	udata->ref = nullptr;
 }
 
 Joint::~Joint()
 {
-	if (!udata)
-		return;
-
-	if (udata->ref)
-		delete udata->ref;
-
-	delete udata;
+	if (ref)
+		delete ref;
 }
 
 Joint::Type Joint::getType() const
@@ -104,7 +93,7 @@ Body *Joint::getBodyA() const
 	if (b2body == nullptr)
 		return nullptr;
 
-	Body *body = (Body *) world->findObject(b2body);
+	Body *body = (Body *) (b2body->GetUserData().pointer);
 	if (body == nullptr)
 		throw love::Exception("A body has escaped Memoizer!");
 
@@ -117,7 +106,7 @@ Body *Joint::getBodyB() const
 	if (b2body == nullptr)
 		return nullptr;
 
-	Body *body = (Body *) world->findObject(b2body);
+	Body *body = (Body *) (b2body->GetUserData().pointer);
 	if (body == nullptr)
 		throw love::Exception("A body has escaped Memoizer!");
 
@@ -154,9 +143,8 @@ float Joint::getReactionTorque(float dt)
 
 b2Joint *Joint::createJoint(b2JointDef *def)
 {
-	def->userData.pointer = (uintptr_t)udata;
+	def->userData.pointer = (uintptr_t)this;
 	joint = world->world->CreateJoint(def);
-	world->registerObject(joint, this);
 	// Box2D joint has a reference to this love Joint.
 	this->retain();
 	return joint;
@@ -174,12 +162,11 @@ void Joint::destroyJoint(bool implicit)
 
 	if (!implicit && joint != nullptr)
 		world->world->DestroyJoint(joint);
-	world->unregisterObject(joint);
-	joint = NULL;
+	joint = nullptr;
 
 	// Remove userdata reference to avoid it sticking around after GC
-	if (udata && udata->ref)
-		udata->ref->unref();
+	if (ref)
+		ref->unref();
 
 	// Release the reference of the Box2D joint.
 	this->release();
@@ -199,24 +186,18 @@ int Joint::setUserData(lua_State *L)
 {
 	love::luax_assert_argc(L, 1, 1);
 
-	if (udata == nullptr)
-	{
-		udata = new jointudata();
-		joint->GetUserData().pointer = (uintptr_t)udata;
-	}
+	if(!ref)
+		ref = new Reference();
 
-	if(!udata->ref)
-		udata->ref = new Reference();
-
-	udata->ref->ref(L);
+	ref->ref(L);
 
 	return 0;
 }
 
 int Joint::getUserData(lua_State *L)
 {
-	if (udata != nullptr && udata->ref != nullptr)
-		udata->ref->push(L);
+	if (ref != nullptr)
+		ref->push(L);
 	else
 		lua_pushnil(L);
 

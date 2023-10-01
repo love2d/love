@@ -41,18 +41,6 @@ namespace box2d
 class World;
 
 /**
- * This struct is stored in a void pointer
- * in the Box2D Fixture class. For now, all we
- * need is a Lua reference to arbitrary data,
- * but we might need more later.
- **/
-struct fixtureudata
-{
-	// Reference to arbitrary data.
-	Reference *ref = nullptr;
-};
-
-/**
  * A Fixture is used to attach a shape to a body for collision detection.
  * A Fixture inherits its transform from its parent. Fixtures hold
  * additional non-geometric data such as friction, collision filters,
@@ -212,8 +200,10 @@ protected:
 	void checkCreateShape();
 
 	Body *body;
-	fixtureudata *udata;
 	b2Fixture *fixture;
+
+	// Reference to arbitrary data.
+	Reference* ref = nullptr;
 
 	StrongRef<Shape> shape;
 

@@ -35,6 +35,7 @@ Contact::Contact(World *world, b2Contact *contact)
 	: contact(contact)
 	, world(world)
 {
+	//contact->user
 	world->registerObject(contact, this);
 }
 
@@ -145,8 +146,8 @@ void Contact::getChildren(int &childA, int &childB)
 
 void Contact::getFixtures(Fixture *&fixtureA, Fixture *&fixtureB)
 {
-	fixtureA = (Fixture *) world->findObject(contact->GetFixtureA());
-	fixtureB = (Fixture *) world->findObject(contact->GetFixtureB());
+	fixtureA = (Fixture *) (contact->GetFixtureA()->GetUserData().pointer);
+	fixtureB = (Fixture *) (contact->GetFixtureB()->GetUserData().pointer);
 
 	if (!fixtureA || !fixtureB)
 		throw love::Exception("A fixture has escaped Memoizer!");

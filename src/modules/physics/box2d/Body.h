@@ -42,16 +42,6 @@ class Shape;
 class Fixture;
 
 /**
- * This struct is stored in a void pointer in the Box2D Body class. For now, all
- * we need is a Lua reference to arbitrary data, but we might need more later.
- **/
-struct bodyudata
-{
-	// Reference to arbitrary data.
-	Reference *ref = nullptr;
-};
-
-/**
  * A Body is an entity which has position and orientation
  * in world space. A Body does have collision geometry
  * by itself, but depend on an arbitrary number of child Shape objects
@@ -441,7 +431,8 @@ private:
 	// unowned?
 	World *world;
 
-	bodyudata *udata;
+	// Reference to arbitrary data.
+	Reference* ref = nullptr;
 
 }; // Body
 

@@ -41,26 +41,18 @@ Fixture::Fixture(Body *body, Shape *shape, float density)
 	: body(body)
 	, fixture(nullptr)
 {
-	udata = new fixtureudata();
-	udata->ref = nullptr;
 	b2FixtureDef def;
 	def.shape = shape->shape;
-	def.userData.pointer = (uintptr_t)udata;
+	def.userData.pointer = (uintptr_t)this;
 	def.density = density;
 	fixture = body->body->CreateFixture(&def);
 	this->retain();
-	body->world->registerObject(fixture, this);
 }
 
 Fixture::~Fixture()
 {
-	if (!udata)
-		return;
-
-	if (udata->ref)
-		delete udata->ref;
-
-	delete udata;
+	if (ref)
+		delete ref;
 }
 
 void Fixture::checkCreateShape()
@@ -259,24 +251,18 @@ int Fixture::setUserData(lua_State *L)
 {
 	love::luax_assert_argc(L, 1, 1);
 
-	if (udata == nullptr)
-	{
-		udata = new fixtureudata();
-		fixture->GetUserData().pointer = (uintptr_t)udata;
-	}
+	if(!ref)
+		ref = new Reference();
 
-	if(!udata->ref)
-		udata->ref = new Reference();
-
-	udata->ref->ref(L);
+	ref->ref(L);
 
 	return 0;
 }
 
 int Fixture::getUserData(lua_State *L)
 {
-	if (udata->ref != nullptr)
-		udata->ref->push(L);
+	if (ref != nullptr)
+		ref->push(L);
 	else
 		lua_pushnil(L);
 
@@ -348,12 +334,11 @@ void Fixture::destroy(bool implicit)
 
 	if (!implicit && fixture != nullptr)
 		body->body->DestroyFixture(fixture);
-	body->world->unregisterObject(fixture);
 	fixture = nullptr;
 
 	// Remove userdata reference to avoid it sticking around after GC
-	if (udata && udata->ref)
-		udata->ref->unref();
+	if (ref)
+		ref->unref();
 
 	// Box2D fixture destroyed. Release its reference to the love Fixture.
 	this->release();

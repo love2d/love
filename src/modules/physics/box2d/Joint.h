@@ -40,16 +40,6 @@ class Body;
 class World;
 
 /**
- * This struct is stored in a void pointer in the Box2D Joint class. For now, all
- * we need is a Lua reference to arbitrary data, but we might need more later.
- **/
-struct jointudata
-{
-    // Reference to arbitrary data.
-    Reference *ref = nullptr;
-};
-
-/**
  * A Joint acts as positioning constraints on Bodies.
  * A Joint can be used to prevent Bodies from going to
  * far apart, or coming too close together.
@@ -140,7 +130,8 @@ protected:
 
 	World *world;
 
-    jointudata *udata;
+	// Reference to arbitrary data.
+	Reference* ref = nullptr;
 
 private:
 

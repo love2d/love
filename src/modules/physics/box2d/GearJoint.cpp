@@ -69,7 +69,7 @@ Joint *GearJoint::getJointA() const
 	if (b2joint == nullptr)
 		return nullptr;
 
-	Joint *j = (Joint *) world->findObject(b2joint);
+	Joint *j = (Joint *) (b2joint->GetUserData().pointer);
 	if (j == nullptr)
 		throw love::Exception("A joint has escaped Memoizer!");
 
@@ -82,7 +82,7 @@ Joint *GearJoint::getJointB() const
 	if (b2joint == nullptr)
 		return nullptr;
 
-	Joint *j = (Joint *) world->findObject(b2joint);
+	Joint *j = (Joint *) (b2joint->GetUserData().pointer);
 	if (j == nullptr)
 		throw love::Exception("A joint has escaped Memoizer!");
 

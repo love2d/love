@@ -60,7 +60,7 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 
 		// Push first fixture.
 		{
-			Fixture *a = (Fixture *)world->findObject(contact->GetFixtureA());
+			Fixture *a = (Fixture *)(contact->GetFixtureA()->GetUserData().pointer);
 			if (a != nullptr)
 				luax_pushtype(L, a);
 			else
@@ -69,7 +69,7 @@ void World::ContactCallback::process(b2Contact *contact, const b2ContactImpulse 
 
 		// Push second fixture.
 		{
-			Fixture *b = (Fixture *)world->findObject(contact->GetFixtureB());
+			Fixture *b = (Fixture *)(contact->GetFixtureB()->GetUserData().pointer);
 			if (b != nullptr)
 				luax_pushtype(L, b);
 			else
@@ -158,7 +158,7 @@ bool World::QueryCallback::ReportFixture(b2Fixture *fixture)
 	if (L != nullptr)
 	{
 		lua_pushvalue(L, funcidx);
-		Fixture *f = (Fixture *)world->findObject(fixture);
+		Fixture *f = (Fixture *)(fixture->GetUserData().pointer);
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
 		luax_pushtype(L, f);
@@ -184,7 +184,7 @@ World::CollectCallback::~CollectCallback()
 
 bool World::CollectCallback::ReportFixture(b2Fixture *f)
 {
-	Fixture *fixture = (Fixture *)world->findObject(f);
+	Fixture *fixture = (Fixture *)(f->GetUserData().pointer);
 	if (!fixture)
 		throw love::Exception("A fixture has escaped Memoizer!");
 	luax_pushtype(L, fixture);
@@ -210,7 +210,7 @@ float World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &po
 	if (L != nullptr)
 	{
 		lua_pushvalue(L, funcidx);
-		Fixture *f = (Fixture *)world->findObject(fixture);
+		Fixture *f = (Fixture *)(fixture->GetUserData().pointer);
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
 		luax_pushtype(L, f);
@@ -233,14 +233,14 @@ float World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &po
 
 void World::SayGoodbye(b2Fixture *fixture)
 {
-	Fixture *f = (Fixture *)findObject(fixture);
+	Fixture *f = (Fixture *)(fixture->GetUserData().pointer);
 	// Hint implicit destruction with true.
 	if (f) f->destroy(true);
 }
 
 void World::SayGoodbye(b2Joint *joint)
 {
-	Joint *j = (Joint *)findObject(joint);
+	Joint *j = (Joint *)(joint->GetUserData().pointer);
 	// Hint implicit destruction with true.
 	if (j) j->destroyJoint(true);
 }
@@ -351,8 +351,8 @@ void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse)
 bool World::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB)
 {
 	// Fixtures should be memoized, if we created them
-	Fixture *a = (Fixture *)findObject(fixtureA);
-	Fixture *b = (Fixture *)findObject(fixtureB);
+	Fixture *a = (Fixture *)(fixtureA->GetUserData().pointer);
+	Fixture *b = (Fixture *)(fixtureB->GetUserData().pointer);
 	if (!a || !b)
 		throw love::Exception("A fixture has escaped Memoizer!");
 	return filter.process(a, b);
@@ -507,7 +507,7 @@ int World::getBodies(lua_State *L) const
 			break;
 		if (b == groundBody)
 			continue;
-		Body *body = (Body *)findObject(b);
+		Body *body = (Body *)(b->GetUserData().pointer);
 		if (!body)
 			throw love::Exception("A body has escaped Memoizer!");
 		luax_pushtype(L, body);
@@ -526,7 +526,7 @@ int World::getJoints(lua_State *L) const
 	do
 	{
 		if (!j) break;
-		Joint *joint = (Joint *)findObject(j);
+		Joint *joint = (Joint *)(j->GetUserData().pointer);
 		if (!joint) throw love::Exception("A joint has escaped Memoizer!");
 		luax_pushjoint(L, joint);
 		lua_rawseti(L, -2, i);
@@ -635,7 +635,7 @@ void World::destroy()
 		b = b->GetNext();
 		if (t == groundBody)
 			continue;
-		Body *body = (Body *)findObject(t);
+		Body *body = (Body *)(t->GetUserData().pointer);
 		if (!body)
 			throw love::Exception("A body has escaped Memoizer!");
 		body->destroy();
