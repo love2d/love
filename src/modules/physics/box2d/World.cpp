@@ -665,7 +665,7 @@ int World::rayCastAny(lua_State *L)
 		lua_pushnumber(L, raycast.hitNormal.x);
 		lua_pushnumber(L, raycast.hitNormal.y);
 		lua_pushnumber(L, raycast.hitFraction);
-		return 5;
+		return 6;
 	}
 	return 0;
 }
@@ -694,7 +694,7 @@ int World::rayCastClosest(lua_State *L)
 		lua_pushnumber(L, raycast.hitNormal.x);
 		lua_pushnumber(L, raycast.hitNormal.y);
 		lua_pushnumber(L, raycast.hitFraction);
-		return 5;
+		return 6;
 	}
 	return 0;
 }
