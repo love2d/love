@@ -286,7 +286,7 @@ public:
 	/**
 	 * Calls a callback on all fixtures that overlap a given bounding box.
 	 **/
-	int queryBoundingBox(lua_State *L);
+	int queryFixturesInArea(lua_State *L);
 
 	/**
 	 * Gets all fixtures that overlap a given bounding box.

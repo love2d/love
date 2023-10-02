@@ -569,7 +569,7 @@ b2Body *World::getGroundBody() const
 	return groundBody;
 }
 
-int World::queryBoundingBox(lua_State *L)
+int World::queryFixturesInArea(lua_State *L)
 {
 	b2AABB box;
 	float lx = (float)luaL_checknumber(L, 1);

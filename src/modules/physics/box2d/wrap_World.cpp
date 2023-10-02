@@ -178,11 +178,17 @@ int w_World_getContacts(lua_State *L)
 	return ret;
 }
 
-int w_World_queryBoundingBox(lua_State *L)
+int w_World_queryFixturesInArea(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
-	return t->queryBoundingBox(L);
+	return t->queryFixturesInArea(L);
+}
+
+int w_World_queryBoundingBox(lua_State* L)
+{
+	luax_markdeprecated(L, 1, "World:queryBoundingBox", API_METHOD, DEPRECATED_RENAMED, "World:queryFixturesInArea");
+	return w_World_queryFixturesInArea(L);
 }
 
 int w_World_getFixturesInArea(lua_State *L)
@@ -236,11 +242,14 @@ static const luaL_Reg w_World_functions[] =
 	{ "getBodies", w_World_getBodies },
 	{ "getJoints", w_World_getJoints },
 	{ "getContacts", w_World_getContacts },
-	{ "queryBoundingBox", w_World_queryBoundingBox },
+	{ "queryFixturesInArea", w_World_queryFixturesInArea },
 	{ "getFixturesInArea", w_World_getFixturesInArea },
 	{ "rayCast", w_World_rayCast },
 	{ "destroy", w_World_destroy },
 	{ "isDestroyed", w_World_isDestroyed },
+
+	// Deprecated
+	{ "queryBoundingBox", w_World_queryBoundingBox },
 
 	{ 0, 0 }
 };
