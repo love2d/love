@@ -100,6 +100,7 @@ public:
 		World *world;
 		lua_State *L;
 		int funcidx;
+		int userargs;
 	};
 
 	class CollectCallback : public b2QueryCallback
@@ -124,6 +125,7 @@ public:
 		World *world;
 		lua_State *L;
 		int funcidx;
+		int userargs;
 	};
 
 	/**

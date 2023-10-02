@@ -147,6 +147,7 @@ World::QueryCallback::QueryCallback(World *world, lua_State *L, int idx)
 	, funcidx(idx)
 {
 	luaL_checktype(L, funcidx, LUA_TFUNCTION);
+	userargs = lua_gettop(L) - funcidx;
 }
 
 World::QueryCallback::~QueryCallback()
@@ -162,7 +163,9 @@ bool World::QueryCallback::ReportFixture(b2Fixture *fixture)
 		if (!f)
 			throw love::Exception("A fixture has escaped Memoizer!");
 		luax_pushtype(L, f);
-		lua_call(L, 1, 1);
+		for (int i = 1; i <= userargs; i++)
+			lua_pushvalue(L, funcidx + i);
+		lua_call(L, 1 + userargs, 1);
 		bool cont = luax_toboolean(L, -1);
 		lua_pop(L, 1);
 		return cont;
@@ -199,6 +202,7 @@ World::RayCastCallback::RayCastCallback(World *world, lua_State *L, int idx)
 	, funcidx(idx)
 {
 	luaL_checktype(L, funcidx, LUA_TFUNCTION);
+	userargs = lua_gettop(L) - funcidx;
 }
 
 World::RayCastCallback::~RayCastCallback()
@@ -220,7 +224,9 @@ float World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &po
 		lua_pushnumber(L, normal.x);
 		lua_pushnumber(L, normal.y);
 		lua_pushnumber(L, fraction);
-		lua_call(L, 6, 1);
+		for (int i = 1; i <= userargs; i++)
+			lua_pushvalue(L, funcidx + i);
+		lua_call(L, 6 + userargs, 1);
 		if (!lua_isnumber(L, -1))
 			luaL_error(L, "Raycast callback didn't return a number!");
 		float fraction = (float) lua_tonumber(L, -1);
