@@ -185,7 +185,7 @@ int w_World_queryFixturesInArea(lua_State *L)
 	return t->queryFixturesInArea(L);
 }
 
-int w_World_queryBoundingBox(lua_State* L)
+int w_World_queryBoundingBox(lua_State *L)
 {
 	luax_markdeprecated(L, 1, "World:queryBoundingBox", API_METHOD, DEPRECATED_RENAMED, "World:queryFixturesInArea");
 	return w_World_queryFixturesInArea(L);
@@ -206,6 +206,24 @@ int w_World_rayCast(lua_State *L)
 	lua_remove(L, 1);
 	int ret = 0;
 	luax_catchexcept(L, [&](){ ret = t->rayCast(L); });
+	return ret;
+}
+
+int w_World_rayCastAny(lua_State *L)
+{
+	World *t = luax_checkworld(L, 1);
+	lua_remove(L, 1);
+	int ret = 0;
+	luax_catchexcept(L, [&]() { ret = t->rayCastAny(L); });
+	return ret;
+}
+
+int w_World_rayCastClosest(lua_State *L)
+{
+	World *t = luax_checkworld(L, 1);
+	lua_remove(L, 1);
+	int ret = 0;
+	luax_catchexcept(L, [&]() { ret = t->rayCastClosest(L); });
 	return ret;
 }
 
@@ -245,6 +263,8 @@ static const luaL_Reg w_World_functions[] =
 	{ "queryFixturesInArea", w_World_queryFixturesInArea },
 	{ "getFixturesInArea", w_World_getFixturesInArea },
 	{ "rayCast", w_World_rayCast },
+	{ "rayCastAny", w_World_rayCastAny },
+	{ "rayCastClosest", w_World_rayCastClosest },
 	{ "destroy", w_World_destroy },
 	{ "isDestroyed", w_World_isDestroyed },
 

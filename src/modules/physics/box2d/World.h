@@ -94,8 +94,8 @@ public:
 	{
 	public:
 		QueryCallback(World *world, lua_State *L, int idx);
-		~QueryCallback();
-		virtual bool ReportFixture(b2Fixture *fixture);
+		virtual ~QueryCallback();
+		bool ReportFixture(b2Fixture *fixture) override;
 	private:
 		World *world;
 		lua_State *L;
@@ -107,8 +107,8 @@ public:
 	{
 	public:
 		CollectCallback(World *world, lua_State *L);
-		~CollectCallback();
-		virtual bool ReportFixture(b2Fixture *fixture);
+		virtual ~CollectCallback();
+		bool ReportFixture(b2Fixture *fixture) override;
 	private:
 		World *world;
 		lua_State *L;
@@ -119,13 +119,30 @@ public:
 	{
 	public:
 		RayCastCallback(World *world, lua_State *L, int idx);
-		~RayCastCallback();
-		virtual float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction);
+		virtual ~RayCastCallback();
+		float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction) override;
 	private:
 		World *world;
 		lua_State *L;
 		int funcidx;
 		int userargs;
+	};
+
+	class RayCastOneCallback : public b2RayCastCallback
+	{
+	public:
+		RayCastOneCallback(uint16 categoryMask, bool any);
+		virtual ~RayCastOneCallback() {};
+		float ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float fraction) override;
+
+		bool hit;
+		b2Vec2 hitPoint;
+		b2Vec2 hitNormal;
+		float hitFraction;
+
+	private:
+		uint16 categoryMask;
+		bool any;
 	};
 
 	/**
@@ -297,6 +314,9 @@ public:
 	 * Raycasts the World for all Fixtures in the path of the ray.
 	 **/
 	int rayCast(lua_State *L);
+
+	int rayCastAny(lua_State *L);
+	int rayCastClosest(lua_State *L);
 
 	/**
 	 * Destroy this world.

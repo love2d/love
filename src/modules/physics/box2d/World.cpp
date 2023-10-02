@@ -237,6 +237,30 @@ float World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &po
 	return 0;
 }
 
+World::RayCastOneCallback::RayCastOneCallback(uint16 categoryMask, bool any)
+	: hit(false)
+	, hitPoint()
+	, hitNormal()
+	, hitFraction(1.0f)
+	, categoryMask(categoryMask)
+	, any(any)
+{
+}
+
+float World::RayCastOneCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction)
+{
+	if (categoryMask != 0xFFFF && (categoryMask & fixture->GetFilterData().categoryBits) == 0)
+		return -1;
+
+	hit = true;
+	hitPoint = point;
+	hitNormal = normal;
+	hitFraction = fraction;
+
+	// Returning the fraction makes sure it doesn't process anything farther away in subsequent iterations.
+	return any ? 0 : fraction;
+}
+
 void World::SayGoodbye(b2Fixture *fixture)
 {
 	Fixture *f = (Fixture *)(fixture->GetUserData().pointer);
@@ -609,6 +633,54 @@ int World::rayCast(lua_State *L)
 	luaL_checktype(L, 5, LUA_TFUNCTION);
 	RayCastCallback raycast(this, L, 5);
 	world->RayCast(&raycast, v1, v2);
+	return 0;
+}
+
+int World::rayCastAny(lua_State *L)
+{
+	float x1 = (float)luaL_checknumber(L, 1);
+	float y1 = (float)luaL_checknumber(L, 2);
+	float x2 = (float)luaL_checknumber(L, 3);
+	float y2 = (float)luaL_checknumber(L, 4);
+	uint16 categoryMaskBits = (uint16)luaL_optinteger(L, 5, 0xFFFF);
+	b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
+	b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
+	RayCastOneCallback raycast(categoryMaskBits, true);
+	world->RayCast(&raycast, v1, v2);
+	if (raycast.hit)
+	{
+		b2Vec2 hitPoint = Physics::scaleUp(raycast.hitPoint);
+		lua_pushnumber(L, hitPoint.x);
+		lua_pushnumber(L, hitPoint.y);
+		lua_pushnumber(L, raycast.hitNormal.x);
+		lua_pushnumber(L, raycast.hitNormal.y);
+		lua_pushnumber(L, raycast.hitFraction);
+		return 5;
+	}
+	return 0;
+}
+
+int World::rayCastClosest(lua_State *L)
+{
+	float x1 = (float)luaL_checknumber(L, 1);
+	float y1 = (float)luaL_checknumber(L, 2);
+	float x2 = (float)luaL_checknumber(L, 3);
+	float y2 = (float)luaL_checknumber(L, 4);
+	uint16 categoryMaskBits = (uint16)luaL_optinteger(L, 5, 0xFFFF);
+	b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
+	b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
+	RayCastOneCallback raycast(categoryMaskBits, false);
+	world->RayCast(&raycast, v1, v2);
+	if (raycast.hit)
+	{
+		b2Vec2 hitPoint = Physics::scaleUp(raycast.hitPoint);
+		lua_pushnumber(L, hitPoint.x);
+		lua_pushnumber(L, hitPoint.y);
+		lua_pushnumber(L, raycast.hitNormal.x);
+		lua_pushnumber(L, raycast.hitNormal.y);
+		lua_pushnumber(L, raycast.hitFraction);
+		return 5;
+	}
 	return 0;
 }
 
