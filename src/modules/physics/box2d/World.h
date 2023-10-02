@@ -106,11 +106,12 @@ public:
 	class CollectCallback : public b2QueryCallback
 	{
 	public:
-		CollectCallback(World *world, lua_State *L);
+		CollectCallback(World *world, uint16 categoryMask, lua_State *L);
 		virtual ~CollectCallback();
 		bool ReportFixture(b2Fixture *fixture) override;
 	private:
 		World *world;
+		uint16 categoryMask;
 		lua_State *L;
 		int i = 1;
 	};

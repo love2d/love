@@ -174,8 +174,9 @@ bool World::QueryCallback::ReportFixture(b2Fixture *fixture)
 	return true;
 }
 
-World::CollectCallback::CollectCallback(World *world, lua_State *L)
+World::CollectCallback::CollectCallback(World *world, uint16 categoryMask, lua_State *L)
 	: world(world)
+	, categoryMask(categoryMask)
 	, L(L)
 {
 	lua_newtable(L);
@@ -187,6 +188,9 @@ World::CollectCallback::~CollectCallback()
 
 bool World::CollectCallback::ReportFixture(b2Fixture *f)
 {
+	if (categoryMask != 0xFFFF && (categoryMask & f->GetFilterData().categoryBits) == 0)
+		return true;
+
 	Fixture *fixture = (Fixture *)(f->GetUserData().pointer);
 	if (!fixture)
 		throw love::Exception("A fixture has escaped Memoizer!");
@@ -614,10 +618,11 @@ int World::getFixturesInArea(lua_State *L)
 	float ly = (float)luaL_checknumber(L, 2);
 	float ux = (float)luaL_checknumber(L, 3);
 	float uy = (float)luaL_checknumber(L, 4);
+	uint16 categoryMaskBits = (uint16)luaL_optinteger(L, 5, 0xFFFF);
 	b2AABB box;
 	box.lowerBound = Physics::scaleDown(b2Vec2(lx, ly));
 	box.upperBound = Physics::scaleDown(b2Vec2(ux, uy));
-	CollectCallback query(this, L);
+	CollectCallback query(this, categoryMaskBits, L);
 	world->QueryAABB(&query, box);
 	return 1;
 }
