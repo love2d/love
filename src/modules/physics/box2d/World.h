@@ -136,7 +136,7 @@ public:
 		virtual ~RayCastOneCallback() {};
 		float ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float fraction) override;
 
-		bool hit;
+		b2Fixture *hitFixture;
 		b2Vec2 hitPoint;
 		b2Vec2 hitNormal;
 		float hitFraction;

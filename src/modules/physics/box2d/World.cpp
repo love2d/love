@@ -242,7 +242,7 @@ float World::RayCastCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &po
 }
 
 World::RayCastOneCallback::RayCastOneCallback(uint16 categoryMask, bool any)
-	: hit(false)
+	: hitFixture(nullptr)
 	, hitPoint()
 	, hitNormal()
 	, hitFraction(1.0f)
@@ -256,7 +256,7 @@ float World::RayCastOneCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 
 	if (categoryMask != 0xFFFF && (categoryMask & fixture->GetFilterData().categoryBits) == 0)
 		return -1;
 
-	hit = true;
+	hitFixture = fixture;
 	hitPoint = point;
 	hitNormal = normal;
 	hitFraction = fraction;
@@ -652,8 +652,13 @@ int World::rayCastAny(lua_State *L)
 	b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
 	RayCastOneCallback raycast(categoryMaskBits, true);
 	world->RayCast(&raycast, v1, v2);
-	if (raycast.hit)
+	if (raycast.hitFixture)
 	{
+		Fixture *f = (Fixture *)(raycast.hitFixture->GetUserData().pointer);
+		if (f == nullptr)
+			return luaL_error(L, "A fixture has escaped Memoizer!");
+		luax_pushtype(L, f);
+
 		b2Vec2 hitPoint = Physics::scaleUp(raycast.hitPoint);
 		lua_pushnumber(L, hitPoint.x);
 		lua_pushnumber(L, hitPoint.y);
@@ -676,8 +681,13 @@ int World::rayCastClosest(lua_State *L)
 	b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
 	RayCastOneCallback raycast(categoryMaskBits, false);
 	world->RayCast(&raycast, v1, v2);
-	if (raycast.hit)
+	if (raycast.hitFixture)
 	{
+		Fixture *f = (Fixture *)(raycast.hitFixture->GetUserData().pointer);
+		if (f == nullptr)
+			return luaL_error(L, "A fixture has escaped Memoizer!");
+		luax_pushtype(L, f);
+
 		b2Vec2 hitPoint = Physics::scaleUp(raycast.hitPoint);
 		lua_pushnumber(L, hitPoint.x);
 		lua_pushnumber(L, hitPoint.y);
