@@ -63,9 +63,69 @@ Body *Physics::newBody(World *world, Body::Type type)
 	return new Body(world, b2Vec2(0, 0), type);
 }
 
-CircleShape *Physics::newCircleShape(float radius)
+Body *Physics::newCircleBody(World *world, Body::Type type, float x, float y, float radius)
 {
-	return newCircleShape(0, 0, radius);
+	StrongRef<Body> body(newBody(world, x, y, type), Acquire::NORETAIN);
+	StrongRef<CircleShape> shape(newCircleShape(0, 0, radius), Acquire::NORETAIN);
+	StrongRef<Fixture> fixture(newFixture(body, shape, 1.0f), Acquire::NORETAIN);
+	body->retain();
+	return body.get();
+}
+
+Body *Physics::newRectangleBody(World *world, Body::Type type, float x, float y, float w, float h, float angle)
+{
+	StrongRef<Body> body(newBody(world, x, y, type), Acquire::NORETAIN);
+	StrongRef<PolygonShape> shape(newRectangleShape(0, 0, w, h, angle), Acquire::NORETAIN);
+	StrongRef<Fixture> fixture(newFixture(body, shape, 1.0f), Acquire::NORETAIN);
+	body->retain();
+	return body.get();
+}
+
+Body *Physics::newPolygonBody(World *world, Body::Type type, const Vector2 *coords, int count)
+{
+	Vector2 origin(0, 0);
+
+	for (int i = 0; i < count; i++)
+		origin += coords[i] / count;
+
+	std::vector<Vector2> localcoords;
+	for (int i = 0; i < count; i++)
+		localcoords.push_back(coords[i] - origin);
+
+	StrongRef<Body> body(newBody(world, origin.x, origin.y, type), Acquire::NORETAIN);
+	StrongRef<PolygonShape> shape(newPolygonShape(localcoords.data(), count), Acquire::NORETAIN);
+	StrongRef<Fixture> fixture(newFixture(body, shape, 1.0f), Acquire::NORETAIN);
+	body->retain();
+	return body.get();
+}
+
+Body *Physics::newEdgeBody(World *world, Body::Type type, float x1, float y1, float x2, float y2, bool oneSided)
+{
+	float wx = (x2 - x1) / 2.0f;
+	float wy = (y2 - y1) / 2.0f;
+	StrongRef<Body> body(newBody(world, wx, wy, type), Acquire::NORETAIN);
+	StrongRef<EdgeShape> shape(newEdgeShape(x1 - wx, y1 - wy, x2 - wx, y2 - wy, oneSided), Acquire::NORETAIN);
+	StrongRef<Fixture> fixture(newFixture(body, shape, 1.0f), Acquire::NORETAIN);
+	body->retain();
+	return body.get();
+}
+
+Body *Physics::newChainBody(World *world, Body::Type type, bool loop, const Vector2 *coords, int count)
+{
+	Vector2 origin(0, 0);
+
+	for (int i = 0; i < count; i++)
+		origin += coords[i] / count;
+
+	std::vector<Vector2> localcoords;
+	for (int i = 0; i < count; i++)
+		localcoords.push_back(coords[i] - origin);
+
+	StrongRef<Body> body(newBody(world, origin.x, origin.y, type), Acquire::NORETAIN);
+	StrongRef<ChainShape> shape(newChainShape(loop, localcoords.data(), count), Acquire::NORETAIN);
+	StrongRef<Fixture> fixture(newFixture(body, shape, 1.0f), Acquire::NORETAIN);
+	body->retain();
+	return body.get();
 }
 
 CircleShape *Physics::newCircleShape(float x, float y, float radius)
@@ -74,16 +134,6 @@ CircleShape *Physics::newCircleShape(float x, float y, float radius)
 	s->m_p = Physics::scaleDown(b2Vec2(x, y));
 	s->m_radius = Physics::scaleDown(radius);
 	return new CircleShape(s);
-}
-
-PolygonShape *Physics::newRectangleShape(float w, float h)
-{
-	return newRectangleShape(0, 0, w, h, 0);
-}
-
-PolygonShape *Physics::newRectangleShape(float x, float y, float w, float h)
-{
-	return newRectangleShape(x, y, w, h, 0);
 }
 
 PolygonShape *Physics::newRectangleShape(float x, float y, float w, float h, float angle)
@@ -109,54 +159,24 @@ EdgeShape *Physics::newEdgeShape(float x1, float y1, float x2, float y2, bool on
 	return new EdgeShape(s);
 }
 
-int Physics::newPolygonShape(lua_State *L)
+PolygonShape *Physics::newPolygonShape(const Vector2 *coords, int count)
 {
-	int argc = lua_gettop(L);
-
-	bool istable = lua_istable(L, 1);
-
-	if (istable)
-		argc = (int) luax_objlen(L, 1);
-
-	if (argc % 2 != 0)
-		return luaL_error(L, "Number of vertex components must be a multiple of two.");
-
 	// 3 to 8 (b2_maxPolygonVertices) vertices
-	int vcount = argc / 2;
-	if (vcount < 3)
-		return luaL_error(L, "Expected a minimum of 3 vertices, got %d.", vcount);
-	else if (vcount > b2_maxPolygonVertices)
-		return luaL_error(L, "Expected a maximum of %d vertices, got %d.", b2_maxPolygonVertices, vcount);
+	if (count < 3)
+		throw love::Exception("Expected a minimum of 3 vertices, got %d.", count);
+	else if (count > b2_maxPolygonVertices)
+		throw love::Exception("Expected a maximum of %d vertices, got %d.", b2_maxPolygonVertices, count);
 
 	b2Vec2 vecs[b2_maxPolygonVertices];
 
-	if (istable)
-	{
-		for (int i = 0; i < vcount; i++)
-		{
-			lua_rawgeti(L, 1, 1 + i * 2);
-			lua_rawgeti(L, 1, 2 + i * 2);
-			float x = (float)luaL_checknumber(L, -2);
-			float y = (float)luaL_checknumber(L, -1);
-			vecs[i] = Physics::scaleDown(b2Vec2(x, y));
-			lua_pop(L, 2);
-		}
-	}
-	else
-	{
-		for (int i = 0; i < vcount; i++)
-		{
-			float x = (float)luaL_checknumber(L, 1 + i * 2);
-			float y = (float)luaL_checknumber(L, 2 + i * 2);
-			vecs[i] = Physics::scaleDown(b2Vec2(x, y));
-		}
-	}
+	for (int i = 0; i < count; i++)
+		vecs[i] = Physics::scaleDown(b2Vec2(coords[i].x, coords[i].y));
 
 	b2PolygonShape *s = new b2PolygonShape();
 
 	try
 	{
-		s->Set(vecs, vcount);
+		s->Set(vecs, count);
 	}
 	catch (love::Exception &)
 	{
@@ -164,72 +184,32 @@ int Physics::newPolygonShape(lua_State *L)
 		throw;
 	}
 
-	PolygonShape *p = new PolygonShape(s);
-	luax_pushtype(L, p);
-	p->release();
-	return 1;
+	return new PolygonShape(s);
 }
 
-int Physics::newChainShape(lua_State *L)
+ChainShape *Physics::newChainShape(bool loop, const Vector2 *coords, int count)
 {
-	int argc = lua_gettop(L)-1; // first argument is looping
+	std::vector<b2Vec2> vecs;
 
-	bool istable = lua_istable(L, 2);
-
-	if (istable)
-		argc = (int) luax_objlen(L, 2);
-
-	if (argc == 0 || argc % 2 != 0)
-		return luaL_error(L, "Number of vertex components must be a multiple of two.");
-
-	int vcount = argc/2;
-	bool loop = luax_checkboolean(L, 1);
-	b2Vec2 *vecs = new b2Vec2[vcount];
-
-	if (istable)
-	{
-		for (int i = 0; i < vcount; i++)
-		{
-			lua_rawgeti(L, 2, 1 + i * 2);
-			lua_rawgeti(L, 2, 2 + i * 2);
-			float x = (float)lua_tonumber(L, -2);
-			float y = (float)lua_tonumber(L, -1);
-			vecs[i] = Physics::scaleDown(b2Vec2(x, y));
-			lua_pop(L, 2);
-		}
-	}
-	else
-	{
-		for (int i = 0; i < vcount; i++)
-		{
-			float x = (float)luaL_checknumber(L, 2 + i * 2);
-			float y = (float)luaL_checknumber(L, 3 + i * 2);
-			vecs[i] = Physics::scaleDown(b2Vec2(x, y));
-		}
-	}
+	for (int i = 0; i < count; i++)
+		vecs.push_back(Physics::scaleDown(b2Vec2(coords[i].x, coords[i].y)));
 
 	b2ChainShape *s = new b2ChainShape();
 
 	try
 	{
 		if (loop)
-			s->CreateLoop(vecs, vcount);
+			s->CreateLoop(vecs.data(), count);
 		else
-			s->CreateChain(vecs, vcount, vecs[0], vecs[vcount-1]);
+			s->CreateChain(vecs.data(), count, vecs[0], vecs[count - 1]);
 	}
 	catch (love::Exception &)
 	{
-		delete[] vecs;
 		delete s;
 		throw;
 	}
 
-	delete[] vecs;
-
-	ChainShape *c = new ChainShape(s);
-	luax_pushtype(L, c);
-	c->release();
-	return 1;
+	return new ChainShape(s);
 }
 
 DistanceJoint *Physics::newDistanceJoint(Body *body1, Body *body2, float x1, float y1, float x2, float y2, bool collideConnected)

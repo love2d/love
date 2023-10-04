@@ -23,6 +23,8 @@
 
 // LOVE
 #include "common/Module.h"
+#include "common/Vector.h"
+
 #include "World.h"
 #include "Contact.h"
 #include "Body.h"
@@ -93,10 +95,15 @@ public:
 	Body *newBody(World *world, Body::Type type);
 
 	/**
-	 * Creates a new CircleShape at (0, 0).
-	 * @param radius The radius of the circle.
+	 * Convenience functions for creating a Body, Shape, and Fixture all in one
+	 * call. The body's world position is the center/average of the given
+	 * coordinates, and the shape is centered at the local origin.
 	 **/
-	CircleShape *newCircleShape(float radius);
+	Body *newCircleBody(World *world, Body::Type type, float x, float y, float radius);
+	Body *newRectangleBody(World *world, Body::Type type, float x, float y, float w, float h, float angle);
+	Body *newPolygonBody(World *world, Body::Type type, const Vector2 *coords, int count);
+	Body *newEdgeBody(World *world, Body::Type type, float x1, float y1, float x2, float y2, bool oneSided);
+	Body *newChainBody(World *world, Body::Type type, bool loop, const Vector2 *coords, int count);
 
 	/**
 	 * Creates a new CircleShape at (x,y) in local coordinates.
@@ -105,24 +112,6 @@ public:
 	 * @param radius The radius of the circle.
 	 **/
 	CircleShape *newCircleShape(float x, float y, float radius);
-
-	/**
-	 * Shorthand for creating rectangular PolygonShapes. The rectangle
-	 * will be created at the local origin.
-	 * @param w The width of the rectangle.
-	 * @param h The height of the rectangle.
-	 **/
-	PolygonShape *newRectangleShape(float w, float h);
-
-	/**
-	 * Shorthand for creating rectangular PolygonShapes. The rectangle
-	 * will be created at (x,y) in local coordinates.
-	 * @param x The offset along the x-axis.
-	 * @param y The offset along the y-axis.
-	 * @param w The width of the rectangle.
-	 * @param h The height of the rectangle.
-	 **/
-	PolygonShape *newRectangleShape(float x, float y, float w, float h);
 
 	/**
 	 * Shorthand for creating rectangular PolygonShapes. The rectangle
@@ -148,12 +137,13 @@ public:
 	/**
 	 * Creates a new PolygonShape from a variable number of vertices.
 	 **/
-	int newPolygonShape(lua_State *L);
+	//int newPolygonShape(lua_State *L);
+	PolygonShape *newPolygonShape(const Vector2 *coords, int count);
 
 	/**
 	 * Creates a new ChainShape from a variable number of vertices.
 	 **/
-	int newChainShape(lua_State *L);
+	ChainShape *newChainShape(bool loop, const Vector2 *coords, int count);
 
 	/**
 	 * Creates a new DistanceJoint connecting body1 with body2.

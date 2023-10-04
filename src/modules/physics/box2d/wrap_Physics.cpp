@@ -83,6 +83,177 @@ int w_newBody(lua_State *L)
 	return 1;
 }
 
+int w_newCircleBody(lua_State *L)
+{
+	World *world = luax_checkworld(L, 1);
+
+	const char *typestr = luaL_checkstring(L, 2);
+	Body::Type btype = Body::BODY_STATIC;
+	if (!Body::getConstant(typestr, btype))
+		return luax_enumerror(L, "Body type", Body::getConstants(btype), typestr);
+
+	float x = (float)luaL_checknumber(L, 3);
+	float y = (float)luaL_checknumber(L, 4);
+	float radius = (float)luaL_checknumber(L, 5);
+
+	Body *body = nullptr;
+	luax_catchexcept(L, [&]() { body = instance()->newCircleBody(world, btype, x, y, radius); });
+
+	luax_pushtype(L, body);
+	body->release();
+	return 1;
+}
+
+int w_newRectangleBody(lua_State *L)
+{
+	World *world = luax_checkworld(L, 1);
+
+	const char *typestr = luaL_checkstring(L, 2);
+	Body::Type btype = Body::BODY_STATIC;
+	if (!Body::getConstant(typestr, btype))
+		return luax_enumerror(L, "Body type", Body::getConstants(btype), typestr);
+
+	float x = (float)luaL_checknumber(L, 3);
+	float y = (float)luaL_checknumber(L, 4);
+	float w = (float)luaL_checknumber(L, 5);
+	float h = (float)luaL_checknumber(L, 6);
+	float angle = (float)luaL_optnumber(L, 7, 0.0);
+
+	Body *body = nullptr;
+	luax_catchexcept(L, [&]() { body = instance()->newRectangleBody(world, btype, x, y, w, h, angle); });
+
+	luax_pushtype(L, body);
+	body->release();
+	return 1;
+}
+
+int w_newPolygonBody(lua_State *L)
+{
+	World *world = luax_checkworld(L, 1);
+
+	const char *typestr = luaL_checkstring(L, 2);
+	Body::Type btype = Body::BODY_STATIC;
+	if (!Body::getConstant(typestr, btype))
+		return luax_enumerror(L, "Body type", Body::getConstants(btype), typestr);
+
+	int argc = lua_gettop(L);
+
+	bool istable = lua_istable(L, 3);
+	if (istable)
+		argc = (int)luax_objlen(L, 3);
+
+	if (argc % 2 != 0)
+		return luaL_error(L, "Number of vertex components must be a multiple of two.");
+
+	int vcount = argc / 2;
+	std::vector<Vector2> coords;
+
+	if (istable)
+	{
+		for (int i = 0; i < vcount; i++)
+		{
+			lua_rawgeti(L, 3, 1 + i * 2);
+			lua_rawgeti(L, 3, 2 + i * 2);
+			float x = (float)luaL_checknumber(L, -2);
+			float y = (float)luaL_checknumber(L, -1);
+			coords.emplace_back(x, y);
+			lua_pop(L, 2);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < vcount; i++)
+		{
+			float x = (float)luaL_checknumber(L, 3 + i * 2);
+			float y = (float)luaL_checknumber(L, 4 + i * 2);
+			coords.emplace_back(x, y);
+		}
+	}
+
+	Body *body = nullptr;
+	luax_catchexcept(L, [&]() { body = instance()->newPolygonBody(world, btype, coords.data(), (int)coords.size()); });
+
+	luax_pushtype(L, body);
+	body->release();
+	return 1;
+}
+
+int w_newEdgeBody(lua_State *L)
+{
+	World *world = luax_checkworld(L, 1);
+
+	const char *typestr = luaL_checkstring(L, 2);
+	Body::Type btype = Body::BODY_STATIC;
+	if (!Body::getConstant(typestr, btype))
+		return luax_enumerror(L, "Body type", Body::getConstants(btype), typestr);
+
+	float x1 = (float)luaL_checknumber(L, 3);
+	float y1 = (float)luaL_checknumber(L, 4);
+	float x2 = (float)luaL_checknumber(L, 5);
+	float y2 = (float)luaL_checknumber(L, 6);
+	bool oneSided = luax_optboolean(L, 7, false);
+
+	Body *body = nullptr;
+	luax_catchexcept(L, [&]() { body = instance()->newEdgeBody(world, btype, x1, y1, x2, y2, oneSided); });
+
+	luax_pushtype(L, body);
+	body->release();
+	return 1;
+}
+
+int w_newChainBody(lua_State *L)
+{
+	World *world = luax_checkworld(L, 1);
+
+	const char *typestr = luaL_checkstring(L, 2);
+	Body::Type btype = Body::BODY_STATIC;
+	if (!Body::getConstant(typestr, btype))
+		return luax_enumerror(L, "Body type", Body::getConstants(btype), typestr);
+
+	bool loop = luax_checkboolean(L, 3);
+
+	int argc = lua_gettop(L) - 3;
+
+	bool istable = lua_istable(L, 4);
+	if (istable)
+		argc = (int)luax_objlen(L, 4);
+
+	if (argc == 0 || argc % 2 != 0)
+		return luaL_error(L, "Number of vertex components must be a multiple of two.");
+
+	int vcount = argc / 2;
+	std::vector<Vector2> coords;
+
+	if (istable)
+	{
+		for (int i = 0; i < vcount; i++)
+		{
+			lua_rawgeti(L, 4, 1 + i * 2);
+			lua_rawgeti(L, 4, 2 + i * 2);
+			float x = (float)lua_tonumber(L, -2);
+			float y = (float)lua_tonumber(L, -1);
+			coords.emplace_back(x, y);
+			lua_pop(L, 2);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < vcount; i++)
+		{
+			float x = (float)luaL_checknumber(L, 4 + i * 2);
+			float y = (float)luaL_checknumber(L, 5 + i * 2);
+			coords.emplace_back(x, y);
+		}
+	}
+
+	Body *body = nullptr;
+	luax_catchexcept(L, [&]() { body = instance()->newChainBody(world, btype, loop, coords.data(), (int)coords.size()); });
+
+	luax_pushtype(L, body);
+	body->release();
+	return 1;
+}
+
 int w_newFixture(lua_State *L)
 {
 	Body *body = luax_checkbody(L, 1);
@@ -103,7 +274,7 @@ int w_newCircleShape(lua_State *L)
 	{
 		float radius = (float)luaL_checknumber(L, 1);
 		CircleShape *shape;
-		luax_catchexcept(L, [&](){ shape = instance()->newCircleShape(radius); });
+		luax_catchexcept(L, [&](){ shape = instance()->newCircleShape(0, 0, radius); });
 		luax_pushtype(L, shape);
 		shape->release();
 		return 1;
@@ -132,7 +303,7 @@ int w_newRectangleShape(lua_State *L)
 		float w = (float)luaL_checknumber(L, 1);
 		float h = (float)luaL_checknumber(L, 2);
 		PolygonShape *shape;
-		luax_catchexcept(L, [&](){ shape = instance()->newRectangleShape(w, h); });
+		luax_catchexcept(L, [&](){ shape = instance()->newRectangleShape(0, 0, w, h, 0); });
 		luax_pushtype(L, shape);
 		shape->release();
 		return 1;
@@ -170,16 +341,91 @@ int w_newEdgeShape(lua_State *L)
 
 int w_newPolygonShape(lua_State *L)
 {
-	int ret = 0;
-	luax_catchexcept(L, [&](){ ret = instance()->newPolygonShape(L); });
-	return ret;
+	int argc = lua_gettop(L);
+
+	bool istable = lua_istable(L, 1);
+
+	if (istable)
+		argc = (int)luax_objlen(L, 1);
+
+	if (argc % 2 != 0)
+		return luaL_error(L, "Number of vertex components must be a multiple of two.");
+
+	int vcount = argc / 2;
+	std::vector<Vector2> coords;
+
+	if (istable)
+	{
+		for (int i = 0; i < vcount; i++)
+		{
+			lua_rawgeti(L, 1, 1 + i * 2);
+			lua_rawgeti(L, 1, 2 + i * 2);
+			float x = (float)luaL_checknumber(L, -2);
+			float y = (float)luaL_checknumber(L, -1);
+			coords.emplace_back(x, y);
+			lua_pop(L, 2);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < vcount; i++)
+		{
+			float x = (float)luaL_checknumber(L, 1 + i * 2);
+			float y = (float)luaL_checknumber(L, 2 + i * 2);
+			coords.emplace_back(x, y);
+		}
+	}
+
+	PolygonShape *shape = nullptr;
+	luax_catchexcept(L, [&](){ shape = instance()->newPolygonShape(coords.data(), (int)coords.size()); });
+	luax_pushtype(L, shape);
+	shape->release();
+	return 1;
 }
 
 int w_newChainShape(lua_State *L)
 {
-	int ret = 0;
-	luax_catchexcept(L, [&](){ ret = instance()->newChainShape(L); });
-	return ret;
+	int argc = lua_gettop(L) - 1; // first argument is looping
+
+	bool istable = lua_istable(L, 2);
+
+	if (istable)
+		argc = (int)luax_objlen(L, 2);
+
+	if (argc == 0 || argc % 2 != 0)
+		return luaL_error(L, "Number of vertex components must be a multiple of two.");
+
+	int vcount = argc / 2;
+	bool loop = luax_checkboolean(L, 1);
+	std::vector<Vector2> coords;
+
+	if (istable)
+	{
+		for (int i = 0; i < vcount; i++)
+		{
+			lua_rawgeti(L, 2, 1 + i * 2);
+			lua_rawgeti(L, 2, 2 + i * 2);
+			float x = (float)lua_tonumber(L, -2);
+			float y = (float)lua_tonumber(L, -1);
+			coords.emplace_back(x, y);
+			lua_pop(L, 2);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < vcount; i++)
+		{
+			float x = (float)luaL_checknumber(L, 2 + i * 2);
+			float y = (float)luaL_checknumber(L, 3 + i * 2);
+			coords.emplace_back(x, y);
+		}
+	}
+
+	ChainShape *shape = nullptr;
+	luax_catchexcept(L, [&]() { shape = instance()->newChainShape(loop, coords.data(), coords.size()); });
+	luax_pushtype(L, shape);
+	shape->release();
+	return 1;
 }
 
 int w_newDistanceJoint(lua_State *L)
@@ -573,6 +819,11 @@ static const luaL_Reg functions[] =
 {
 	{ "newWorld", w_newWorld },
 	{ "newBody", w_newBody },
+	{ "newCircleBody", w_newCircleBody },
+	{ "newRectangleBody", w_newRectangleBody },
+	{ "newPolygonBody", w_newPolygonBody },
+	{ "newEdgeBody", w_newEdgeBody },
+	{ "newChainBody", w_newChainBody },
 	{ "newFixture", w_newFixture },
 	{ "newCircleShape", w_newCircleShape },
 	{ "newRectangleShape", w_newRectangleShape },
