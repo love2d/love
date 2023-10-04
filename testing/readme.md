@@ -124,8 +124,8 @@ Modules still to be completed or barely started
 ## Failures
 - **love.window.isMaximized()** - returns false after calling love.window.maximize?
 - **love.window.maximize()** - same as above
-- **love.filesystem.newFile()** - something changed in 12
 - **love.physics.newGearJoint()** - something changed in 12
+- **love.objects.File()** - dont think I understand the buffering system
 
 ---
 
