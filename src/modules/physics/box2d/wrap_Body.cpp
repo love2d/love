@@ -599,6 +599,17 @@ int w_Body_getWorld(lua_State *L)
 	return 1;
 }
 
+int w_Body_getFixture(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	Fixture *f = t->getFixture();
+	if (f)
+		luax_pushtype(L, f);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
 int w_Body_getFixtures(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
@@ -713,6 +724,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "isFixedRotation", w_Body_isFixedRotation },
 	{ "isTouching", w_Body_isTouching },
 	{ "getWorld", w_Body_getWorld },
+	{ "getFixture", w_Body_getFixture },
 	{ "getFixtures", w_Body_getFixtures },
 	{ "getJoints", w_Body_getJoints },
 	{ "getContacts", w_Body_getContacts },

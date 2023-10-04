@@ -391,6 +391,11 @@ public:
 	World *getWorld() const;
 
 	/**
+	 * Gets the first Fixture attached to this Body.
+	 **/
+	Fixture *getFixture() const;
+
+	/**
 	 * Get an array of all the Fixtures attached to this Body.
 	 * @return An array of Fixtures.
 	 **/

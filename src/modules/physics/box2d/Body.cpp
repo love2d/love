@@ -461,6 +461,19 @@ World *Body::getWorld() const
 	return world;
 }
 
+Fixture *Body::getFixture() const
+{
+	b2Fixture *f = body->GetFixtureList();
+	if (f == nullptr)
+		return nullptr;
+
+	Fixture *fixture = (Fixture *)(f->GetUserData().pointer);
+	if (!fixture)
+		throw love::Exception("A fixture has escaped Memoizer!");
+
+	return fixture;
+}
+
 int Body::getFixtures(lua_State *L) const
 {
 	lua_newtable(L);
