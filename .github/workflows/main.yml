@@ -234,7 +234,7 @@ jobs:
         name: love-macos
         path: love-macos.zip
     - name: Run All Tests
-      run: love-macos/love.app testing --runAllTests
+      run: love-macos/love.app/Contents/MacOS/love testing --runAllTests
     - name: Test Report
       uses: dorny/test-reporter@v1
       with:

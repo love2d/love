@@ -144,9 +144,11 @@ TestSuite = {
       '<li>' .. finaltime .. 's</li></ul><br/><br/>'
 
     -- @TODO use mountFullPath to write output to src?
-    love.filesystem.createDirectory('output')
-    love.filesystem.write('output/' .. self.output .. '.xml', xml .. self.xml .. '</testsuites>')
-    love.filesystem.write('output/' .. self.output .. '.html', html .. self.html .. '</div></body></html>')
+    love.filesystem.mountFullPath(love.filesystem.getSource() .. "/output", "tempoutput", "readwrite")
+    love.filesystem.remove('tempoutput/' .. self.output .. '.xml')
+    love.filesystem.remove('tempoutput/' .. self.output .. '.html')
+    love.filesystem.write('tempoutput/' .. self.output .. '.xml', xml .. self.xml .. '</testsuites>')
+    love.filesystem.write('tempoutput/' .. self.output .. '.html', html .. self.html .. '</div></body></html>')
 
     self.module:log('grey', '\nFINISHED - ' .. finaltime .. 's\n')
     local failedcol = '\27[31m'

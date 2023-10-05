@@ -34,9 +34,9 @@ If you want to specify only 1 specific method only you can use:
 
 All results will be printed in the console per method as PASS, FAIL, or SKIP with total assertions met on a module level and overall level.  
 
-An `XML` file in the style of [JUnit XML](https://www.ibm.com/docs/en/developer-for-zos/14.1?topic=formats-junit-xml-format) will be generated in your save directory, along with a `HTML` file with a summary of all tests (including visuals for love.graphics tests). 
+An `XML` file in the style of [JUnit XML](https://www.ibm.com/docs/en/developer-for-zos/14.1?topic=formats-junit-xml-format) will be generated in the `/output` directory, along with a `HTML` file with a summary of all tests (including visuals for love.graphics tests) - you will need to make sure the command is run with read/write permissions for the source directory.
 > Note that this can only be viewed properly locally as the generated images are written to the save directory.   
-> An example of both types of output can be found in the `/output` folder
+> An example of both types of output can be found in the `/examples` folder
 
 ---
 
@@ -45,6 +45,7 @@ Each method has it's own test method written in `/tests` under the matching modu
 
 When you run the tests, a single TestSuite object is created which handles the progress + totals for all the tests.  
 Each module has a TestModule object created, and each test method has a TestMethod object created which keeps track of assertions for that method. You can currently do the following assertions:
+- **assertNotNil**(value)
 - **assertEquals**(expected, actual)
 - **assertNotEquals**(expected, actual)
 - **assertRange**(actual, min, max)
@@ -60,14 +61,14 @@ Example test method:
 love.test.filesystem.read = function(test)
   -- setup any data needed then run any asserts using the passed test object
   local content, size = love.filesystem.read('resources/test.txt')
-  test:assertNotEquals(nil, content, 'check not nil')
+  test:assertNotNil(content)
   test:assertEquals('helloworld', content, 'check content match')
   test:assertEquals(10, size, 'check size match')
   content, size = love.filesystem.read('resources/test.txt', 5)
-  test:assertNotEquals(nil, content, 'check not nil')
+  test:assertNotNil(content)
   test:assertEquals('hello', content, 'check content match')
   test:assertEquals(5, size, 'check size match')
-  -- no need to return anything just cleanup any objs if needed
+  -- no need to return anything or cleanup, GCC is called after each method
 end
 ```
 
