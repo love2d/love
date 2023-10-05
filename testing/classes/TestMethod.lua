@@ -309,7 +309,7 @@ TestMethod = {
         output = self.result.key .. ' ' ..  self.result.message
     end
     if output == '' and self.skipped == true then
-      failure = '\t\t\t<skipped message="' .. self.skipreason .. '></skipped>'
+      failure = '\t\t\t<skipped message="' .. self.skipreason .. '"></skipped>\n'
       output = self.skipreason
     end
 
