@@ -309,14 +309,15 @@ TestMethod = {
         output = self.result.key .. ' ' ..  self.result.message
     end
     if output == '' and self.skipped == true then
+      failure = '\t\t\t<skipped message="' .. self.skipreason .. '></skipped>'
       output = self.skipreason
     end
 
     -- append XML for the test class result
-    self.testmodule.xml = self.testmodule.xml .. '\t\t<testclass classname="' ..
-      self.method .. '" name="' .. self.method ..
+    self.testmodule.xml = self.testmodule.xml .. '\t\t<testcase classname="' ..
+      self.method .. '" name="' .. self.method .. '" assertions="' .. tostring(#self.asserts) ..
       '" time="' .. endtime .. '">\n' ..
-      failure .. '\t\t</testclass>\n'
+      failure .. '\t\t</testcase>\n'
 
     -- unused currently, adds a preview image for certain graphics methods to the output
     local preview = ''

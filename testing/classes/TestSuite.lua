@@ -145,8 +145,6 @@ TestSuite = {
 
     -- @TODO use mountFullPath to write output to src?
     love.filesystem.mountFullPath(love.filesystem.getSource() .. "/output", "tempoutput", "readwrite")
-    love.filesystem.remove('tempoutput/' .. self.output .. '.xml')
-    love.filesystem.remove('tempoutput/' .. self.output .. '.html')
     love.filesystem.write('tempoutput/' .. self.output .. '.xml', xml .. self.xml .. '</testsuites>')
     love.filesystem.write('tempoutput/' .. self.output .. '.html', html .. self.html .. '</div></body></html>')
 

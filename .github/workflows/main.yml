@@ -205,6 +205,14 @@ jobs:
       with:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
         path: pdb/Release/*.pdb
+    - name: Run All Tests
+      run: build/love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}.exe testing --runAllTests
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      with:
+        name: Test Output
+        path: testing/output/*.xml
+        reporter: jest-junit
   macOS:
     runs-on: macos-latest
     steps:
