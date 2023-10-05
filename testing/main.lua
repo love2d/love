@@ -170,3 +170,9 @@ function UtilStringSplit(str, splitter)
   end
   return splits
 end
+
+
+-- string time formatter
+function UtilTimeFormat(seconds)
+  return string.format("%.3f", tostring(seconds))
+end

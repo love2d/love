@@ -189,11 +189,20 @@ TestMethod = {
   -- @param {table} obj - table to check is a valid love object
   -- @return {nil}
   assertObject = function(self, obj)
-    self:assertNotEquals(nil, obj, 'check not nill')
+    self:assertNotNil(obj)
     self:assertEquals('userdata', type(obj), 'check is userdata')
-    if obj ~= nil then 
+    if obj ~= nil then
       self:assertNotEquals(nil, obj:type(), 'check has :type()')
     end
+  end,
+
+
+  -- @method - TestMethod:assertNotNil()
+  -- @desc - quick assert for value not nil 
+  -- @param {any} value - value to check not nil
+  -- @return {nil}
+  assertNotNil = function (self, value)
+    self:assertNotEquals(nil, value, 'check not nil')
   end,
 
 
@@ -289,10 +298,7 @@ TestMethod = {
     self.finish = love.timer.getTime() - self.start
     love.test.time = love.test.time + self.finish
     self.testmodule.time = self.testmodule.time + self.finish
-    local endtime = tostring(math.floor((love.timer.getTime() - self.start)*1000))
-    if string.len(endtime) == 1 then endtime = '   ' .. endtime end
-    if string.len(endtime) == 2 then endtime = '  ' .. endtime end
-    if string.len(endtime) == 3 then endtime = ' ' .. endtime end
+    local endtime = UtilTimeFormat(love.timer.getTime() - self.start)
 
     -- get failure/skip message for output (if any)
     local failure = ''
@@ -309,7 +315,7 @@ TestMethod = {
     -- append XML for the test class result
     self.testmodule.xml = self.testmodule.xml .. '\t\t<testclass classname="' ..
       self.method .. '" name="' .. self.method ..
-      '" time="' .. tostring(self.finish*1000) .. '">\n' ..
+      '" time="' .. endtime .. '">\n' ..
       failure .. '\t\t</testclass>\n'
 
     -- unused currently, adds a preview image for certain graphics methods to the output
@@ -329,7 +335,7 @@ TestMethod = {
       '<tr class=" ' .. cls .. '">' ..
         '<td>' .. status .. '</td>' ..
         '<td>' .. self.method .. '</td>' ..
-        '<td>' .. tostring(self.finish*1000) .. 'ms</td>' ..
+        '<td>' .. endtime .. 's</td>' ..
         '<td>' .. output .. preview .. '</td>' ..
       '</tr>'
 
@@ -350,7 +356,7 @@ TestMethod = {
     self.testmodule:log(
       self.testmodule.colors[self.result.result],
       '  ' .. tested .. matching,
-      ' ==> ' .. self.result.result .. ' - ' .. endtime .. 'ms ' ..
+      ' ==> ' .. self.result.result .. ' - ' .. endtime .. 's ' ..
       self.result.total .. msg
     )
   end

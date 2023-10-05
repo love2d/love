@@ -84,19 +84,22 @@ This is the status of all module tests currently.
 -- [x] audio        26 PASSED |  0 FAILED |  0 SKIPPED
 -- [x] data          7 PASSED |  0 FAILED |  3 SKIPPED      [SEE BELOW]
 -- [x] event         4 PASSED |  0 FAILED |  2 SKIPPED      [SEE BELOW]
--- [x] filesystem   26 PASSED |  1 FAILED |  2 SKIPPED      [SEE BELOW]
+-- [x] filesystem   27 PASSED |  0 FAILED |  2 SKIPPED
 -- [x] font          4 PASSED |  0 FAILED |  1 SKIPPED      [SEE BELOW]
--- [ ] graphics     STILL TO BE DONE
+-- [ ] graphics     65 PASSED |  0 FAILED | 31 SKIPPED      [SEE BELOW]
 -- [x] image         3 PASSED |  0 FAILED |  0 SKIPPED
--- [x] math         16 PASSED |  0 FAILED |  0 SKIPPED      [SEE BELOW]
--- [x] physics      21 PASSED |  1 FAILED |  0 SKIPPED      [SEE BELOW]
+-- [x] math         17 PASSED |  0 FAILED |  0 SKIPPED
+-- [x] physics      22 PASSED |  0 FAILED |  0 SKIPPED
 -- [x] sound         2 PASSED |  0 FAILED |  0 SKIPPED
--- [x] system        7 PASSED |  0 FAILED |  1 SKIPPED
--- [ ] thread        3 PASSED |  0 FAILED |  0 SKIPPED
--- [x] timer         6 PASSED |  0 FAILED |  0 SKIPPED      [SEE BELOW]
+-- [x] system        6 PASSED |  0 FAILED |  2 SKIPPED
+-- [x] thread        3 PASSED |  0 FAILED |  0 SKIPPED
+-- [x] timer         6 PASSED |  0 FAILED |  0 SKIPPED
 -- [x] video         1 PASSED |  0 FAILED |  0 SKIPPED
--- [x] window       32 PASSED |  2 FAILED |  1 SKIPPED      [SEE BELOW]
+-- [x] window       32 PASSED |  2 FAILED |  2 SKIPPED      [SEE BELOW]
+
 -- [ ] objects      STILL TO BE DONE
+--------------------------------------------------------------------------------
+-- [x] totals      226 PASSED |  4 FAILED | 43 SKIPPED
 ```
 
 The following modules are not covered as we can't really emulate input nicely:  
@@ -108,24 +111,17 @@ The following modules are not covered as we can't really emulate input nicely:
 Modules with some small bits needed or needing sense checking:
 - **love.data** - packing methods need writing cos i dont really get what they are
 - **love.event** - love.event.wait or love.event.pump need writing if possible I dunno how to check
-- **love.filesystem** - getSource() / setSource() dont think we can test
 - **love.font** - newBMFontRasterizer() wiki entry is wrong so not sure whats expected
-- **love.timer** - couple methods I don't know if you could reliably test specific values
+- **love.graphics** - still need to do tests for the drawing and state methods
 - **love.image** - ideally isCompressed should have an example of all compressed files love can take
 - **love.math** - linearToGamma + gammaToLinear using direct formulas don't get same value back
-- **love.window** - couple stuff just nil checked as I think it's hardware dependent, needs checking
-
-Modules still to be completed or barely started
-- **love.graphics** - done 1 as an example of how we can test the drawing but not really started
-- **love.objects** - done 1 as an example of how we can test objs with mini scenarios
+- **love.objects** - not started properly yet
 
 ---
 
 ## Failures
 - **love.window.isMaximized()** - returns false after calling love.window.maximize?
 - **love.window.maximize()** - same as above
-- **love.physics.newGearJoint()** - something changed in 12
-- **love.objects.File()** - dont think I understand the buffering system
 
 ---
 

@@ -2,19 +2,21 @@
 
 
 -- love.window.close
--- @NOTE closing window should cause graphics to no longer be active
 love.test.window.close = function(test)
+  -- closing window should cause graphics to not be active
   love.window.close()
   local active = false
-  if love.graphics ~= nil then active = love.graphics.isActive() end
+  if love.graphics ~= nil then 
+    active = love.graphics.isActive() 
+  end
   test:assertEquals(false, active, 'check window active')
   love.window.setMode(256, 256) -- reset 
 end
 
 
 -- love.window.fromPixels
--- @NOTE dependent on the DPI value returned I think
 love.test.window.fromPixels = function(test)
+  -- check dpi/pixel ratio as expected
   local dpi = love.window.getDPIScale()
   local pixels = love.window.fromPixels(100)
   test:assertEquals(100/dpi, pixels, 'check dpi ratio')
@@ -22,9 +24,9 @@ end
 
 
 -- love.window.getDPIScale
--- @NOTE i dont think there's a clever way to check this 
+-- @NOTE dependent on hardware so best can do is not nil
 love.test.window.getDPIScale = function(test)
-  test:assertNotEquals(nil, test, 'check not nil')
+  test:assertNotNil(test)
 end
 
 
@@ -32,59 +34,58 @@ end
 -- @NOTE dependent on hardware so best can do is not nil
 love.test.window.getDesktopDimensions = function(test)
   local w, h = love.window.getDesktopDimensions()
-  test:assertNotEquals(nil, w, 'check not nil')
-  test:assertNotEquals(nil, h, 'check not nil')
+  test:assertNotNil(w)
+  test:assertNotNil(h)
 end
 
 
 -- love.window.getDisplayCount
 -- @NOTE cant wait for the test suite to be run headless and fail here
 love.test.window.getDisplayCount = function(test)
-  local count = love.window.getDisplayCount()
-  test:assertGreaterEqual(1, count, 'check 1 display')
+  test:assertGreaterEqual(1, love.window.getDisplayCount(), 'check 1 display')
 end
 
 
 -- love.window.getDisplayName
 -- @NOTE dependent on hardware so best can do is not nil
 love.test.window.getDisplayName = function(test)
-  local name = love.window.getDisplayName(1)
-  test:assertNotEquals(nil, name, 'check not nil')
+  test:assertNotNil(love.window.getDisplayName(1))
 end
 
 
 -- love.window.getDisplayOrientation
 -- @NOTE dependent on hardware so best can do is not nil
 love.test.window.getDisplayOrientation = function(test)
-  local orientation = love.window.getDisplayOrientation(1)
-  test:assertNotEquals(nil, orientation, 'check not nil')
+  test:assertNotNil(love.window.getDisplayOrientation(1))
 end
 
 
 -- love.window.getFullscreen
 love.test.window.getFullscreen = function(test)
+  -- check not fullscreen to start
   test:assertEquals(false, love.window.getFullscreen(), 'check not fullscreen')
   love.window.setFullscreen(true)
+  -- check now fullscreen
   test:assertEquals(true, love.window.getFullscreen(), 'check now fullscreen')
-  love.window.setFullscreen(false)
+  love.window.setFullscreen(false) -- reset
 end
 
 
 -- love.window.getFullscreenModes
 -- @NOTE dependent on hardware so best can do is not nil
 love.test.window.getFullscreenModes = function(test)
-  local modes = love.window.getFullscreenModes(1)
-  test:assertNotEquals(nil, modes, 'check not nil')
+  test:assertNotNil(love.window.getFullscreenModes(1))
 end
 
 
 -- love.window.getIcon
 love.test.window.getIcon = function(test)
-  test:assertEquals(nil, love.window.getIcon(), 'check nil by default') -- nil if not set
+  -- check icon nil by default if not set
+  test:assertEquals(nil, love.window.getIcon(), 'check nil by default')
   local icon = love.image.newImageData('resources/love.png')
+  -- check getting icon not nil after setting
   love.window.setIcon(icon)
-  test:assertNotEquals(nil, love.window.getIcon(), 'check not nil')
-  icon:release()
+  test:assertNotNil(love.window.getIcon())
 end
 
 
@@ -112,15 +113,16 @@ end
 -- @NOTE dependent on hardware so best can do is not nil
 love.test.window.getSafeArea = function(test)
   local x, y, w, h = love.window.getSafeArea()
-  test:assertNotEquals(nil, x, 'check not nil')
-  test:assertNotEquals(nil, y, 'check not nil')
-  test:assertNotEquals(nil, w, 'check not nil')
-  test:assertNotEquals(nil, h, 'check not nil')
+  test:assertNotNil(x)
+  test:assertNotNil(y)
+  test:assertNotNil(w)
+  test:assertNotNil(h)
 end
 
 
 -- love.window.getTitle
 love.test.window.getTitle = function(test)
+  -- check title returned is what was set
   love.window.setTitle('love.testing')
   test:assertEquals('love.testing', love.window.getTitle(), 'check title match')
   love.window.setTitle('love.test')
@@ -129,33 +131,37 @@ end
 
 -- love.window.getVSync
 love.test.window.getVSync = function(test)
-  test:assertNotEquals(nil, love.window.getVSync(), 'check not nil')
-  love.window.setVSync(false)
+  test:assertNotNil(love.window.getVSync())
+  -- check turning off
+  love.window.setVSync(0)
   test:assertEquals(0, love.window.getVSync(), 'check vsync off')
-  love.window.setVSync(true)
+  -- check turning on
+  love.window.setVSync(1)
   test:assertEquals(1, love.window.getVSync(), 'check vsync on')
 end
 
 
 -- love.window.hasFocus
--- @NOTE cant really test as cant force focus?
+-- @NOTE cant really test as cant force focus
 love.test.window.hasFocus = function(test)
-  test:assertNotEquals(nil, love.window.hasFocus(), 'check not nil')
+  test:assertNotNil(love.window.hasFocus())
 end
 
 
 -- love.window.hasMouseFocus
--- @NOTE cant really test as cant force focus?
+-- @NOTE cant really test as cant force focus
 love.test.window.hasMouseFocus = function(test)
-  test:assertNotEquals(nil, love.window.hasMouseFocus(), 'check not nil')
+  test:assertNotNil(love.window.hasMouseFocus())
 end
 
 
 -- love.window.isDisplaySleepEnabled
 love.test.window.isDisplaySleepEnabled = function(test)
-  test:assertNotEquals(nil, love.window.isDisplaySleepEnabled(), 'check not nil')
+  test:assertNotNil(love.window.isDisplaySleepEnabled())
+  -- check disabled
   love.window.setDisplaySleepEnabled(false)
   test:assertEquals(false, love.window.isDisplaySleepEnabled(), 'check sleep disabled')
+  -- check enabled
   love.window.setDisplaySleepEnabled(true)
   test:assertEquals(true, love.window.isDisplaySleepEnabled(), 'check sleep enabled')
 end
@@ -163,8 +169,10 @@ end
 
 -- love.window.isMaximized
 love.test.window.isMaximized = function(test)
+  -- check minimized to start
   love.window.minimize()
   test:assertEquals(false, love.window.isMaximized(), 'check window maximized')
+  -- try to mazimize
   love.window.maximize()
   test:assertEquals(true, love.window.isMaximized(), 'check window not maximized')
   love.window.restore()
@@ -173,7 +181,9 @@ end
 
 -- love.window.isMinimized
 love.test.window.isMinimized = function(test)
+  -- check not minimized to start
   test:assertEquals(false, love.window.isMinimized(), 'check window not minimized')
+  -- try to minimize
   love.window.minimize()
   test:assertEquals(true, love.window.isMinimized(), 'check window minimized')
   love.window.restore()
@@ -182,7 +192,9 @@ end
 
 -- love.window.isOpen
 love.test.window.isOpen = function(test)
+  -- check open initially
   test:assertEquals(true, love.window.isOpen(), 'check window open')
+  -- try closing
   love.window.close()
   test:assertEquals(false, love.window.isOpen(), 'check window closed')
   love.window.setMode(256, 256) -- reset 
@@ -191,7 +203,9 @@ end
 
 -- love.window.isVisible
 love.test.window.isVisible = function(test)
+  -- check visible initially
   test:assertEquals(true, love.window.isVisible(), 'check window visible')
+  -- check closing makes window not visible
   love.window.close()
   test:assertEquals(false, love.window.isVisible(), 'check window not visible')
   love.window.setMode(256, 256) -- reset 
@@ -200,6 +214,7 @@ end
 
 -- love.window.maximize
 love.test.window.maximize = function(test)
+  -- check maximizing is set
   love.window.maximize()
   test:assertEquals(true, love.window.isMaximized(), 'check window maximized')
   love.window.restore()
@@ -208,6 +223,7 @@ end
 
 -- love.window.minimize
 love.test.window.minimize = function(test)
+  -- check minimizing is set
   love.window.minimize()
   test:assertEquals(true, love.window.isMinimized(), 'check window minimized')
   love.window.restore()
@@ -215,15 +231,17 @@ end
 
 
 -- love.window.requestAttention
-love.window.requestAttention = function(test)
-  test:skipTest('cant really test this')
+love.test.window.requestAttention = function(test)
+  test:skipTest('cant test this worked')
 end
 
 
 -- love.window.restore
 love.test.window.restore = function(test)
+  -- check minimized to start
   love.window.minimize()
   test:assertEquals(true, love.window.isMinimized(), 'check window minimized')
+  -- check restoring the state of the window
   love.window.restore()
   test:assertEquals(false, love.window.isMinimized(), 'check window restored')
 end
@@ -231,8 +249,10 @@ end
 
 -- love.window.setDisplaySleepEnabled
 love.test.window.setDisplaySleepEnabled = function(test)
+  -- check disabling sleep
   love.window.setDisplaySleepEnabled(false)
   test:assertEquals(false, love.window.isDisplaySleepEnabled(), 'check sleep disabled')
+  -- check setting it back to enabled
   love.window.setDisplaySleepEnabled(true)
   test:assertEquals(true, love.window.isDisplaySleepEnabled(), 'check sleep enabled')
 end
@@ -240,8 +260,10 @@ end
 
 -- love.window.setFullscreen
 love.test.window.setFullscreen = function(test)
+  -- check fullscreen is set
   love.window.setFullscreen(true)
   test:assertEquals(true, love.window.getFullscreen(), 'check fullscreen')
+  -- check setting back to normal
   love.window.setFullscreen(false)
   test:assertEquals(false, love.window.getFullscreen(), 'check not fullscreen')
 end
@@ -250,20 +272,22 @@ end
 -- love.window.setIcon
 -- @NOTE could check the image data itself?
 love.test.window.setIcon = function(test)
+  -- check setting an icon returns the val
   local icon = love.image.newImageData('resources/love.png')
   love.window.setIcon(icon)
   test:assertNotEquals(nil, love.window.getIcon(), 'check icon not nil')
-  icon:release()
 end
 
 
 -- love.window.setMode
 -- @NOTE same as getMode could be checking more flag properties
 love.test.window.setMode = function(test)
+  -- set window mode
   love.window.setMode(512, 512, {
     fullscreen = false,
     resizable = false
   })
+  -- check what we set is returned
   local width, height, flags = love.window.getMode()
   test:assertEquals(512, width, 'check window w match')
   test:assertEquals(512, height, 'check window h match')
@@ -277,6 +301,7 @@ end
 
 -- love.window.setPosition
 love.test.window.setPosition = function(test)
+  -- check position is returned
   love.window.setPosition(100, 100, 1)
   local x, y, _ = love.window.getPosition()
   test:assertEquals(100, x, 'check position x')
@@ -286,6 +311,7 @@ end
 
 -- love.window.setTitle
 love.test.window.setTitle = function(test)
+  -- check setting title val is returned
   love.window.setTitle('love.testing')
   test:assertEquals('love.testing', love.window.getTitle(), 'check title matches')
   love.window.setTitle('love.test')
@@ -294,23 +320,25 @@ end
 
 -- love.window.setVSync
 love.test.window.setVSync = function(test)
-  love.window.setVSync(false)
+  -- check setting vsync value off
+  love.window.setVSync(0)
   test:assertEquals(0, love.window.getVSync(), 'check vsync off')
-  love.window.setVSync(true)
+  -- check setting vsync value on
+  love.window.setVSync(1)
   test:assertEquals(1, love.window.getVSync(), 'check vsync on')
 end
 
 
 -- love.window.showMessageBox
 -- @NOTE if running headless would need to skip anyway cos can't press it
--- skipping here cos it's annoying
 love.test.window.showMessageBox = function(test)
-  test:skipTest('skipping cos annoying to test with')
+  test:skipTest('cant test this worked')
 end
 
 
 -- love.window.toPixels
 love.test.window.toPixels = function(test)
+  -- check dpi/pixel ratio is as expected
   local dpi = love.window.getDPIScale()
   local pixels = love.window.toPixels(50)
   test:assertEquals(50*dpi, pixels, 'check dpi ratio')
@@ -319,17 +347,20 @@ end
 
 -- love.window.updateMode
 love.test.window.updateMode = function(test)
+  -- set initial mode
   love.window.setMode(512, 512, {
     fullscreen = false,
     resizable = false
   })
+  -- update mode with some props but not others
   love.window.updateMode(256, 256, nil)
+  -- check only changed values changed
   local width, height, flags = love.window.getMode()
   test:assertEquals(256, width, 'check window w match')
   test:assertEquals(256, height, 'check window h match')
   test:assertEquals(false, flags["fullscreen"], 'check window not fullscreen')
   test:assertEquals(false, flags["resizable"], 'check window not resizeable')
-  love.window.setMode(256, 256, {
+  love.window.setMode(256, 256, { -- reset
     fullscreen = false,
     resizable = true
   })

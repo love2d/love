@@ -3,11 +3,11 @@
 
 -- love.event.clear
 love.test.event.clear = function(test)
-  -- setup
+  -- push some events first
   love.event.push('test', 1, 2, 3)
   love.event.push('test', 1, 2, 3)
   love.event.push('test', 1, 2, 3)
-  -- tests
+  -- check after calling clear there are no events left
   love.event.clear()
   local count = 0
   for n, a, b, c, d, e, f in love.event.poll() do
@@ -19,11 +19,11 @@ end
 
 -- love.event.poll
 love.test.event.poll = function(test)
-  -- setup
+  -- push some events first
   love.event.push('test', 1, 2, 3)
   love.event.push('test', 1, 2, 3)
   love.event.push('test', 1, 2, 3)
-  -- tests
+  -- check poll recieves all events
   local count = 0
   for n, a, b, c, d, e, f in love.event.poll() do
     count = count + 1
@@ -33,15 +33,15 @@ end
 
 
 -- love.event.pump
--- @NOTE dont think can really test as internal?
+-- @NOTE dont think can really test as internally used
 love.test.event.pump = function(test)
-  test:skipTest('not sure we can test when its internal?')
+  test:skipTest('not sure can be tested as used internally')
 end
 
 
 -- love.event.push
 love.test.event.push = function(test)
-  -- test
+  -- check pushing some different types
   love.event.push('add', 1, 2, 3)
   love.event.push('ignore', 1, 2, 3)
   love.event.push('add', 1, 2, 3)
@@ -58,10 +58,10 @@ end
 
 -- love.event.quit
 love.test.event.quit = function(test)
+  -- setting this overrides the quit hook to prevent actually quitting
   love.test.module.fakequit = true
-  -- this should call love.quit, which will prevent the quit
-  -- if this fails then the test would just abort here
   love.event.quit(0)
+  -- if it failed we'd have quit here
   test:assertEquals(true, true, 'check quit hook called')
 end
 
@@ -69,5 +69,5 @@ end
 -- love.event.wait
 -- @NOTE not sure best way to test this one
 love.test.event.wait = function(test)
-  test:skipTest('not sure on best way to test this')
+  test:skipTest('test method needs writing')
 end

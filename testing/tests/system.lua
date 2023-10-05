@@ -4,25 +4,31 @@
 -- love.system.getClipboardText
 love.test.system.getClipboardText = function(test)
   -- ignore if not using window
-  if love.test.windowmode == false then return test:skipTest('clipboard only available in window mode') end
-  -- setup
+  if love.test.windowmode == false then 
+    return test:skipTest('clipboard only available in window mode') 
+  end
+  -- check clipboard value is set
   love.system.setClipboardText('helloworld')
-  -- test
   test:assertEquals('helloworld', love.system.getClipboardText(), 'check clipboard match')
 end
 
 
 -- love.system.getOS
 love.test.system.getOS = function(test)
+  -- check os is in documented values
   local os = love.system.getOS()
-  test:assertMatch({'OS X', 'Windows', 'Linux', 'Android', 'iOS'}, os, 'check value matches')
+  local options = {'OS X', 'Windows', 'Linux', 'Android', 'iOS'}
+  test:assertMatch(options, os, 'check value matches')
 end
 
 
 -- love.system.getPowerInfo
 love.test.system.getPowerInfo = function(test)
+  -- check battery state is one of the documented states
   local state, percent, seconds = love.system.getPowerInfo()
-  test:assertMatch({'unknown', 'battery', 'nobattery', 'charging', 'charged'}, state, 'check value matches')
+  local states = {'unknown', 'battery', 'nobattery', 'charging', 'charged'}
+  test:assertMatch(states, state, 'check value matches')
+  -- if percent/seconds check within expected range
   if percent ~= nil then
     test:assertRange(percent, 0, 100, 'check value within range')
   end
@@ -34,19 +40,19 @@ end
 
 -- love.system.getProcessorCount
 love.test.system.getProcessorCount = function(test)
-  test:assertGreaterEqual(0, love.system.getProcessorCount(), 'check not nil') -- youd hope right
+  test:assertNotNil(love.system.getProcessorCount()) -- youd hope right
 end
 
 
 -- love.system.hasBackgroundMusic
 love.test.system.hasBackgroundMusic = function(test)
-  test:assertNotEquals(nil, love.system.hasBackgroundMusic(), 'check not nil')
+  test:assertNotNil(love.system.hasBackgroundMusic())
 end
 
 
 -- love.system.openURL
 love.test.system.openURL = function(test)
-  test:skipTest('gets annoying to test everytime')
+  test:skipTest('cant test this worked')
   --test:assertNotEquals(nil, love.system.openURL('https://love2d.org'), 'check open URL')
 end
 
@@ -54,8 +60,10 @@ end
 -- love.system.getClipboardText
 love.test.system.setClipboardText = function(test)
   -- ignore if not using window
-  if love.test.windowmode == false then return test:skipTest('clipboard only available in window mode') end
-  -- test
+  if love.test.windowmode == false then 
+    return test:skipTest('clipboard only available in window mode') 
+  end
+  -- check value returned is what was set
   love.system.setClipboardText('helloworld')
   test:assertEquals('helloworld', love.system.getClipboardText(), 'check set text')
 end
@@ -64,5 +72,5 @@ end
 -- love.system.vibrate
 -- @NOTE cant really test this
 love.test.system.vibrate = function(test)
-  test:skipTest('cant really test this')
+  test:skipTest('cant test this worked')
 end

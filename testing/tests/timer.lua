@@ -4,20 +4,20 @@
 -- love.timer.getAverageDelta
 -- @NOTE not sure if you could reliably get a specific delta?
 love.test.timer.getAverageDelta = function(test)
-  test:assertNotEquals(nil, love.timer.getAverageDelta(), 'check not nil')
+  test:assertNotNil(love.timer.getAverageDelta())
 end
 
 -- love.timer.getDelta
 -- @NOTE not sure if you could reliably get a specific delta?
 love.test.timer.getDelta = function(test)
-  test:assertNotEquals(nil, love.timer.getDelta(), 'check not nil')
+  test:assertNotNil(love.timer.getDelta())
 end
 
 
 -- love.timer.getFPS
 -- @NOTE not sure if you could reliably get a specific FPS?
 love.test.timer.getFPS = function(test)
-  test:assertNotEquals(nil, love.timer.getFPS(), 'check not nil')
+  test:assertNotNil(love.timer.getFPS())
 end
 
 
@@ -41,5 +41,5 @@ end
 -- love.timer.step
 -- @NOTE not sure if you could reliably get a specific step val?
 love.test.timer.step = function(test)
-  test:assertNotEquals(nil, love.timer.step(), 'check not nil')
+  test:assertNotNil(love.timer.step())
 end

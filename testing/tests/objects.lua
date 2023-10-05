@@ -45,16 +45,18 @@ love.test.objects.File = function(test)
   -- @NOTE think I'm just not understanding how this is supposed to work?
   -- I thought if buffering is enabled then nothing should get written until 
   -- buffer overflows?
-  file1:open('a')
-  ok, err = file1:setBuffer('full', 10000)
-  test:assertEquals(true, ok)
-  test:assertEquals('full', file1:getBuffer())
-  file1:write('morecontent')
-  file1:close()
-  file1:open('r')
-  contents, size = file1:read()
-  test:assertEquals('helloworld', contents, 'check buffered content wasnt written')
-  file1:close()
+  -- file1:open('a')
+  -- ok, err = file1:setBuffer('full', 10000)
+  -- test:assertEquals(true, ok)
+  -- test:assertEquals('full', file1:getBuffer())
+  -- file1:write('morecontent')
+  -- file1:close()
+  -- file1:open('r')
+  -- contents, size = file1:read()
+  -- test:assertEquals('helloworld', contents, 'check buffered content wasnt written')
+  -- file1:close()
+
+  -- @NOTE :close() commits buffer content so need to check before not after
 
   -- test buffering and flushing
   file1:open('w')
@@ -82,8 +84,6 @@ love.test.objects.File = function(test)
   end
   test:assertEquals(counter, 15)
   file1:close()
-
-  file1:release()
 
 end
 

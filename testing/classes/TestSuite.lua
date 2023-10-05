@@ -10,7 +10,7 @@ TestSuite = {
       -- testsuite internals
       modules = {},
       module = nil,
-      testcanvas = love.graphics.newCanvas(16, 16),
+      testcanvas = nil,
       current = 1,
       output = '',
       totals = {0, 0, 0},
@@ -91,6 +91,9 @@ TestSuite = {
                   test.fatal = tostring(chunk) .. tostring(err)
                 end
               end
+              -- save having to :release() anything we made in the last test
+              -- 7251ms > 7543ms
+              collectgarbage("collect")
               -- move onto the next test
               self.module.index = self.module.index + 1
             end
@@ -124,15 +127,12 @@ TestSuite = {
   --         the XML + HTML of the testsuite output
   -- @return {nil}
   printResult = function(self)
-    local finaltime = tostring(math.floor(self.time*1000))
-    if string.len(finaltime) == 1 then finaltime = '   ' .. finaltime end
-    if string.len(finaltime) == 2 then finaltime = '  ' .. finaltime end
-    if string.len(finaltime) == 3 then finaltime = ' ' .. finaltime end
+    local finaltime = UtilTimeFormat(self.time)
 
     local xml = '<testsuites name="love.test" tests="' .. tostring(self.totals[1]) .. 
       '" failures="' .. tostring(self.totals[2]) .. 
       '" skipped="' .. tostring(self.totals[3]) .. 
-      '" time="' .. tostring(self.time*1000) .. '">\n'
+      '" time="' .. finaltime .. '">\n'
 
     local status = '🔴'
     if self.totals[2] == 0 then status = '🟢' end
@@ -141,14 +141,14 @@ TestSuite = {
       '<li>🟢&nbsp;' .. tostring(self.totals[1]) .. ' Tests</li>' ..
       '<li>🔴&nbsp;' .. tostring(self.totals[2]) .. ' Failures</li>' ..
       '<li>🟡&nbsp;' .. tostring(self.totals[3]) .. ' Skipped</li>' ..
-      '<li>' .. tostring(self.time*1000) .. 'ms</li></ul><br/><br/>'
+      '<li>' .. finaltime .. 's</li></ul><br/><br/>'
 
     -- @TODO use mountFullPath to write output to src?
     love.filesystem.createDirectory('output')
     love.filesystem.write('output/' .. self.output .. '.xml', xml .. self.xml .. '</testsuites>')
     love.filesystem.write('output/' .. self.output .. '.html', html .. self.html .. '</div></body></html>')
 
-    self.module:log('grey', '\nFINISHED - ' .. finaltime .. 'ms\n')
+    self.module:log('grey', '\nFINISHED - ' .. finaltime .. 's\n')
     local failedcol = '\27[31m'
     if self.totals[2] == 0 then failedcol = '\27[37m' end
     self.module:log('green', tostring(self.totals[1]) .. ' PASSED' .. ' || ' .. failedcol .. tostring(self.totals[2]) .. ' FAILED || \27[37m' .. tostring(self.totals[3]) .. ' SKIPPED')

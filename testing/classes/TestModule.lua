@@ -83,12 +83,13 @@ TestModule = {
   --         the XML + HTML for the test to the testsuite output
   -- @return {nil}
   printResult = function(self)
+    local finaltime = UtilTimeFormat(self.time)
     -- add xml to main output
     love.test.xml = love.test.xml .. '\t<testsuite name="love.' .. self.module .. 
       '" tests="' .. tostring(self.passed) .. 
       '" failures="' .. tostring(self.failed) .. 
       '" skipped="' .. tostring(self.skipped) ..
-      '" time="' .. tostring(self.time*1000) .. '">\n' .. self.xml .. '\t</testsuite>\n'
+      '" time="' .. finaltime .. '">\n' .. self.xml .. '\t</testsuite>\n'
     -- add html to main output
     local status = '🔴'
     if self.failed == 0 then status = '🟢' end
@@ -96,8 +97,8 @@ TestModule = {
       '<li>🟢&nbsp;' .. tostring(self.passed) .. ' Tests</li>' ..
       '<li>🔴&nbsp;' .. tostring(self.failed) .. ' Failures</li>' ..
       '<li>🟡&nbsp;' .. tostring(self.skipped) .. ' Skipped</li>' ..
-      '<li>' .. tostring(self.time*1000) .. 'ms</li>' .. '<ul><br/><br/>' ..
-      '<table><thead><tr><td width="20px"></td><td width="100px">Method</td><td width="100px">Time</td><td>Details</td></tr></thead><tbody>' ..
+      '<li>' .. finaltime .. 's</li>' .. '<ul><br/><br/>' ..
+      '<table><thead><tr><td width="20px"></td><td width="100px">Method</td><td width="60px">Time</td><td>Details</td></tr></thead><tbody>' ..
       self.html .. '</tbody></table>'
     -- print module results to console
     self:log('yellow', 'love.' .. self.module .. '.testmodule.end')
@@ -105,7 +106,7 @@ TestModule = {
     if self.failed == 0 then failedcol = '\27[37m' end
     self:log('green', tostring(self.passed) .. ' PASSED' .. ' || ' .. 
       failedcol .. tostring(self.failed) .. ' FAILED || \27[37m' .. 
-      tostring(self.skipped) .. ' SKIPPED')
+      tostring(self.skipped) .. ' SKIPPED || ' .. finaltime .. 's')
     self.start = false
     self.fakequit = false
   end

@@ -3,16 +3,19 @@
 
 -- love.math.colorFromBytes
 love.test.math.colorFromBytes = function(test)
+  -- check random value
   local r, g, b, a = love.math.colorFromBytes(51, 51, 51, 51)
   test:assertEquals(r, 0.2, 'check r from bytes')
   test:assertEquals(g, 0.2, 'check g from bytes')
   test:assertEquals(b, 0.2, 'check b from bytes')
   test:assertEquals(a, 0.2, 'check a from bytes')
+  -- check "max" value
   r, g, b, a = love.math.colorFromBytes(255, 255, 255, 255)
   test:assertEquals(r, 1, 'check r from bytes')
   test:assertEquals(g, 1, 'check g from bytes')
   test:assertEquals(b, 1, 'check b from bytes')
   test:assertEquals(a, 1, 'check a from bytes')
+  -- check "min" value
   r, g, b, a = love.math.colorFromBytes(0, 0, 0, 0)
   test:assertEquals(r, 0, 'check r from bytes')
   test:assertEquals(g, 0, 'check g from bytes')
@@ -23,16 +26,19 @@ end
 
 -- love.math.colorToBytes
 love.test.math.colorToBytes = function(test)
+  -- check random value
   local r, g, b, a = love.math.colorToBytes(0.2, 0.2, 0.2, 0.2)
   test:assertEquals(r, 51, 'check bytes from r')
   test:assertEquals(g, 51, 'check bytes from g')
   test:assertEquals(b, 51, 'check bytes from b')
   test:assertEquals(a, 51, 'check bytes from a')
+  -- check "max" value
   r, g, b, a = love.math.colorToBytes(1, 1, 1, 1)
   test:assertEquals(r, 255, 'check bytes from r')
   test:assertEquals(g, 255, 'check bytes from g')
   test:assertEquals(b, 255, 'check bytes from b')
   test:assertEquals(a, 255, 'check bytes from a')
+  -- check "min" value
   r, g, b, a = love.math.colorToBytes(0, 0, 0, 0)
   test:assertEquals(r, 0, 'check bytes from r')
   test:assertEquals(g, 0, 'check bytes from g')
@@ -65,8 +71,7 @@ end
 
 -- love.math.getRandomState
 love.test.math.getRandomState = function(test)
-  local state = love.math.getRandomState()
-  test:assertNotEquals(nil, state, 'check not nil')
+  test:assertNotNil(love.math.getRandomState())
 end
 
 
@@ -95,49 +100,69 @@ end
 -- love.math.newBezierCurve
 -- @NOTE this is just basic nil checking, full obj test are in objects.lua
 love.test.math.newBezierCurve = function(test)
-  local curve = love.math.newBezierCurve({0, 0, 0, 1, 1, 1, 2, 1})
-  test:assertObject(curve)
-  curve:release()
+  test:assertObject(love.math.newBezierCurve({0, 0, 0, 1, 1, 1, 2, 1}))
 end
 
 
 -- love.math.newRandomGenerator
 -- @NOTE this is just basic nil checking, full obj test are in objects.lua
 love.test.math.newRandomGenerator = function(test)
-  local rangen = love.math.newRandomGenerator()
-  test:assertObject(rangen)
-  rangen:release()
+  test:assertObject(love.math.newRandomGenerator())
 end
 
 
 -- love.math.newTransform
 -- @NOTE this is just basic nil checking, full obj test are in objects.lua
 love.test.math.newTransform = function(test)
-  local transform = love.math.newTransform()
-  test:assertObject(transform)
-  transform:release()
+  test:assertObject(love.math.newTransform())
 end
 
 
--- love.math.noise
-love.test.math.noise = function(test)
-  local noise1 = love.math.noise(100)
-  local noise2 = love.math.noise(1, 10)
-  local noise3 = love.math.noise(1043, 31.123, 999)
-  local noise4 = love.math.noise(99.222, 10067, 8, 1843)
+-- love.math.perlinNoise
+love.test.math.perlinNoise = function(test)
+  -- check some noise values
+  -- output should be consistent if given the same input
+  local noise1 = love.math.perlinNoise(100)
+  local noise2 = love.math.perlinNoise(1, 10)
+  local noise3 = love.math.perlinNoise(1043, 31.123, 999)
+  local noise4 = love.math.perlinNoise(99.222, 10067, 8, 1843)
+  -- rounded to avoid floating point issues 
   test:assertEquals(50000, math.floor(noise1*100000), 'check noise 1 dimension')
-  test:assertEquals(47863, math.floor(noise2*100000), 'check noise 2 dimensions')
+  test:assertEquals(50000, math.floor(noise2*100000), 'check noise 2 dimensions')
   test:assertEquals(56297, math.floor(noise3*100000), 'check noise 3 dimensions')
   test:assertEquals(52579, math.floor(noise4*100000), 'check noise 4 dimensions')
 end
 
 
+-- love.math.simplexNoise
+love.test.math.simplexNoise = function(test)
+  -- check some noise values
+  -- output should be consistent if given the same input
+  local noise1 = love.math.simplexNoise(100)
+  local noise2 = love.math.simplexNoise(1, 10)
+  local noise3 = love.math.simplexNoise(1043, 31.123, 999)
+  local noise4 = love.math.simplexNoise(99.222, 10067, 8, 1843)
+  -- rounded to avoid floating point issues 
+  test:assertEquals(50000, math.floor(noise1*100000), 'check noise 1 dimension')
+  test:assertEquals(47863, math.floor(noise2*100000), 'check noise 2 dimensions')
+  test:assertEquals(26440, math.floor(noise3*100000), 'check noise 3 dimensions')
+  test:assertEquals(53360, math.floor(noise4*100000), 'check noise 4 dimensions')
+end
+
+
 -- love.math.random
 love.test.math.random = function(test)
-  local random = love.math.random(10)
-  local randomminmax = love.math.random(5, 100)
-  test:assertRange(random, 1, 10, 'check within 1 - 10')
-  test:assertRange(randomminmax, 5, 100, 'check within 5 - 100')
+  -- check some random ranges
+  test:assertRange(love.math.random(10), 1, 10, 'check within 1 - 10')
+  test:assertRange(love.math.random(10), 1, 10, 'check within 1 - 10')
+  test:assertRange(love.math.random(10), 1, 10, 'check within 1 - 10')
+  test:assertRange(love.math.random(10), 1, 10, 'check within 1 - 10')
+  test:assertRange(love.math.random(10), 1, 10, 'check within 1 - 10')
+  test:assertRange(love.math.random(5, 100), 5, 100, 'check within 5 - 100')
+  test:assertRange(love.math.random(5, 100), 5, 100, 'check within 5 - 100')
+  test:assertRange(love.math.random(5, 100), 5, 100, 'check within 5 - 100')
+  test:assertRange(love.math.random(5, 100), 5, 100, 'check within 5 - 100')
+  test:assertRange(love.math.random(5, 100), 5, 100, 'check within 5 - 100')
 end
 
 
@@ -145,8 +170,7 @@ end
 -- @NOTE i dont _really_ get the range expected based on stddev + mean
 -- so feel free to change to be more accurate
 love.test.math.randomNormal = function(test)
-  local random = love.math.randomNormal(1, 0)
-  test:assertRange(random, -3, 3, 'check within -3 - 3')
+  test:assertRange(love.math.randomNormal(1, 0), -3, 3, 'check within -3 - 3')
 end
 
 
@@ -162,6 +186,7 @@ end
 
 -- love.math.setRandomState
 love.test.math.setRandomState = function(test)
+  -- check setting state matches value returned
   local rs1 = love.math.getRandomState()
   love.math.setRandomState(rs1)
   local rs2 = love.math.getRandomState()

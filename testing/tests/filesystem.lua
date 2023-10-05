@@ -3,15 +3,16 @@
 
 -- love.filesystem.append
 love.test.filesystem.append = function(test)
-	-- setup
+	-- create a new file to test with
 	love.filesystem.write('filesystem.append.txt', 'foo')
-	-- test
+	-- try appending text and check new file contents/size matches
 	local success, message = love.filesystem.append('filesystem.append.txt', 'bar')
   test:assertNotEquals(false, success, 'check success')
   test:assertEquals(nil, message, 'check no error msg')
 	local contents, size = love.filesystem.read('filesystem.append.txt')
 	test:assertEquals(contents, 'foobar', 'check file contents')
 	test:assertEquals(size, 6, 'check file size')
+  -- check appending a specific no. of bytes
   love.filesystem.append('filesystem.append.txt', 'foobarfoobarfoo', 6)
   contents, size = love.filesystem.read('filesystem.append.txt')
   test:assertEquals(contents, 'foobarfoobar', 'check appended contents')
@@ -22,14 +23,15 @@ end
 
 
 -- love.filesystem.areSymlinksEnabled
--- @NOTE  this one, need to see if default val is consistent on platforms?
+-- @NOTE best can do here is just check not nil
 love.test.filesystem.areSymlinksEnabled = function(test)
-  test:assertNotEquals(nil, love.filesystem.areSymlinksEnabled())
+  test:assertNotNil(love.filesystem.areSymlinksEnabled())
 end
 
 
 -- love.filesystem.createDirectory
 love.test.filesystem.createDirectory = function(test)
+  -- try creating a dir + subdir and check both exist 
   local success = love.filesystem.createDirectory('foo/bar')
   test:assertNotEquals(false, success, 'check success')
   test:assertNotEquals(nil, love.filesystem.getInfo('foo', 'directory'), 'check directory created')
@@ -43,23 +45,24 @@ end
 -- love.filesystem.getAppdataDirectory
 -- @NOTE i think this is too platform dependent to be tested nicely
 love.test.filesystem.getAppdataDirectory = function(test)
-  test:assertNotEquals(nil, love.filesystem.getAppdataDirectory(), 'check not nill')
+  test:assertNotNil(love.filesystem.getAppdataDirectory())
 end
 
 
 -- love.filesystem.getCRequirePath
 love.test.filesystem.getCRequirePath = function(test)
+  -- check default value from documentation
   test:assertEquals('??', love.filesystem.getCRequirePath(), 'check default value')
 end
 
 
 -- love.filesystem.getDirectoryItems
 love.test.filesystem.getDirectoryItems = function(test)
-  -- setup
+  -- create a dir + subdir with 2 files
   love.filesystem.createDirectory('foo/bar')
 	love.filesystem.write('foo/file1.txt', 'file1')
   love.filesystem.write('foo/bar/file2.txt', 'file2')
-  -- tests
+  -- check both the file + subdir exist in the item list
   local files = love.filesystem.getDirectoryItems('foo')
   local hasfile = false
   local hasdir = false
@@ -80,23 +83,23 @@ end
 
 -- love.filesystem.getIdentity
 love.test.filesystem.getIdentity = function(test)
-  -- setup
+  -- check setting identity matches
   local original = love.filesystem.getIdentity()
   love.filesystem.setIdentity('lover')
-  -- test
   test:assertEquals('lover', love.filesystem.getIdentity(), 'check identity matches')
-  -- cleanup
+  -- put back to original value
   love.filesystem.setIdentity(original)
 end
 
 
 -- love.filesystem.getRealDirectory
 love.test.filesystem.getRealDirectory = function(test)
-  -- setup
+  -- make a test dir + file first
   love.filesystem.createDirectory('foo')
   love.filesystem.write('foo/test.txt', 'test')
-  -- test
-  test:assertEquals(love.filesystem.getSaveDirectory(), love.filesystem.getRealDirectory('foo/test.txt'), 'check directory matches')
+  -- check save dir matches the real dir we just wrote to
+  test:assertEquals(love.filesystem.getSaveDirectory(), 
+    love.filesystem.getRealDirectory('foo/test.txt'), 'check directory matches')
   -- cleanup
   love.filesystem.remove('foo/test.txt')
   love.filesystem.remove('foo')
@@ -105,51 +108,52 @@ end
 
 -- love.filesystem.getRequirePath
 love.test.filesystem.getRequirePath = function(test)
-  test:assertEquals('?.lua;?/init.lua', love.filesystem.getRequirePath(), 'check default value')
+  test:assertEquals('?.lua;?/init.lua',
+    love.filesystem.getRequirePath(), 'check default value')
 end
 
 
 -- love.filesystem.getSource
 -- @NOTE i dont think we can test this cos love calls it first
 love.test.filesystem.getSource = function(test)
-  test:skipTest('not sure we can test when its internal?')
+  test:skipTest('not sure can be tested as used internally')
 end
 
 
 -- love.filesystem.getSourceBaseDirectory
 -- @NOTE i think this is too platform dependent to be tested nicely
 love.test.filesystem.getSourceBaseDirectory = function(test)
-  test:assertNotEquals(nil, love.filesystem.getSourceBaseDirectory(), 'check not nil')
+  test:assertNotNil(love.filesystem.getSourceBaseDirectory())
 end
 
 
 -- love.filesystem.getUserDirectory
 -- @NOTE i think this is too platform dependent to be tested nicely
 love.test.filesystem.getUserDirectory = function(test)
-  test:assertNotEquals(nil, love.filesystem.getUserDirectory(), 'check not nil')
+  test:assertNotNil(love.filesystem.getUserDirectory())
 end
 
 
 -- love.filesystem.getWorkingDirectory
 -- @NOTE i think this is too platform dependent to be tested nicely
 love.test.filesystem.getWorkingDirectory = function(test)
-  test:assertNotEquals(nil, love.filesystem.getWorkingDirectory(), 'check not nil')
+  test:assertNotNil(love.filesystem.getWorkingDirectory())
 end
 
 
 -- love.filesystem.getSaveDirectory
 -- @NOTE i think this is too platform dependent to be tested nicely
 love.test.filesystem.getSaveDirectory = function(test)
-  test:assertNotEquals(nil, love.filesystem.getSaveDirectory(), 'check not nil')
+  test:assertNotNil(love.filesystem.getSaveDirectory())
 end
 
 
 -- love.filesystem.getInfo
 love.test.filesystem.getInfo = function(test)
-  -- setup
+  -- create a dir and subdir with a file
   love.filesystem.createDirectory('foo/bar')
   love.filesystem.write('foo/bar/file2.txt', 'file2')
-  -- tests
+  -- check getinfo returns the correct values
   test:assertEquals(nil, love.filesystem.getInfo('foo/bar/file2.txt', 'directory'), 'check not directory')
   test:assertNotEquals(nil, love.filesystem.getInfo('foo/bar/file2.txt'), 'check info not nil')
   test:assertEquals(love.filesystem.getInfo('foo/bar/file2.txt').size, 5, 'check info size match')
@@ -164,18 +168,18 @@ end
 -- love.filesystem.isFused
 love.test.filesystem.isFused = function(test)
   -- kinda assuming you'd run the testsuite in a non-fused game
-  test:assertEquals(love.filesystem.isFused(), false, 'check default value')
+  test:assertEquals(love.filesystem.isFused(), false, 'check not fused')
 end
 
 
 -- love.filesystem.lines
 love.test.filesystem.lines = function(test)
-  -- setup
+  -- check lines returns the 3 lines expected
   love.filesystem.write('file.txt', 'line1\nline2\nline3')
-  -- tests
   local linenum = 1
   for line in love.filesystem.lines('file.txt') do
     test:assertEquals('line' .. tostring(linenum), line, 'check line matches')
+    -- also check it removes newlines like the docs says it does
     test:assertEquals(nil, string.find(line, '\n'), 'check newline removed')
     linenum = linenum + 1
   end
@@ -186,15 +190,17 @@ end
 
 -- love.filesystem.load
 love.test.filesystem.load = function(test)
-  -- setup
+  -- setup some fake lua files
   love.filesystem.write('test1.lua', 'function test()\nreturn 1\nend\nreturn test()')
   love.filesystem.write('test2.lua', 'function test()\nreturn 1')
-  -- tests
+  -- check file that doesn't exist
   local chunk, errormsg = love.filesystem.load('faker.lua')
   test:assertEquals(nil, chunk, 'check file doesnt exist')
+  -- check valid lua file
   chunk, errormsg = love.filesystem.load('test1.lua')
   test:assertEquals(nil, errormsg, 'check no error message')
   test:assertEquals(1, chunk(), 'check lua file runs')
+  -- check invalid lua file
   local ok, chunk, err = pcall(love.filesystem.load, 'test2.lua')
   test:assertEquals(false, ok, 'check invalid lua file')
   -- cleanup
@@ -205,10 +211,10 @@ end
 
 -- love.filesystem.mount
 love.test.filesystem.mount = function(test)
-  -- setup 
+  -- write an example zip to savedir to use
   local contents, size = love.filesystem.read('resources/test.zip') -- contains test.txt
   love.filesystem.write('test.zip', contents, size)
-  -- tests
+  -- check mounting file and check contents are mounted
   local success = love.filesystem.mount('test.zip', 'test')
   test:assertEquals(true, success, 'check success')
   test:assertNotEquals(nil, love.filesystem.getInfo('test'), 'check mount not nil')
@@ -222,45 +228,31 @@ love.test.filesystem.mount = function(test)
 end
 
 
--- love.filesystem.newFile
+-- love.filesystem.openFile
 -- @NOTE this is just basic nil checking, full obj test are in objects.lua
-love.test.filesystem.newFile = function(test)
-  -- setup
-  local file = love.filesystem.newFile('file1')
-  local file_r, err_r = love.filesystem.newFile('file2', 'r')
-  local file_w, err_w = love.filesystem.newFile('file2', 'w')
-  local file_a, err_a = love.filesystem.newFile('file2', 'a')
-  local file_c, err_c = love.filesystem.newFile('file2', 'c')
-  -- tests
-  test:assertNotEquals(nil, file, 'check file made')
-  test:assertNotEquals(nil, file_r, 'check file made')
-  test:assertNotEquals(nil, file_w, 'check file made')
-  test:assertNotEquals(nil, file_a, 'check file made')
-  test:assertNotEquals(nil, file_c, 'check file made')
-  -- cleanup
-  if file ~= nil then file:release() end
-  if file_r ~= nil then file_r:release() end
-  if file_w ~= nil then file_w:release() end
-  if file_a ~= nil then file_a:release() end
-  if file_c ~= nil then file_c:release() end
+love.test.filesystem.openFile = function(test)
+  test:assertNotNil(love.filesystem.openFile('file2', 'r'))
+  test:assertNotNil(love.filesystem.openFile('file2', 'w'))
+  test:assertNotNil(love.filesystem.openFile('file2', 'a'))
+  test:assertNotNil(love.filesystem.openFile('file2', 'c'))
 end
 
 
 -- love.filesystem.newFileData
 -- @NOTE this is just basic nil checking, full obj test are in objects.lua
 love.test.filesystem.newFileData = function(test)
-  local data = love.filesystem.newFileData('helloworld', 'file1')
-  test:assertNotEquals(nil, data, 'check not nil')
-  data:release()
+  test:assertNotNil(love.filesystem.newFileData('helloworld', 'file1'))
 end
 
 
 -- love.filesystem.read
 love.test.filesystem.read = function(test)
+  -- check reading a full file
   local content, size = love.filesystem.read('resources/test.txt')
   test:assertNotEquals(nil, content, 'check not nil')
   test:assertEquals('helloworld', content, 'check content match')
   test:assertEquals(10, size, 'check size match')
+  -- check reading partial file
   content, size = love.filesystem.read('resources/test.txt', 5)
   test:assertNotEquals(nil, content, 'check not nil')
   test:assertEquals('hello', content, 'check content match')
@@ -270,21 +262,22 @@ end
 
 -- love.filesystem.remove
 love.test.filesystem.remove = function(test)
-  -- setup
+  -- create a dir + subdir with a file
   love.filesystem.createDirectory('foo/bar')
   love.filesystem.write('foo/bar/file2.txt', 'helloworld')
-  -- tests
+  -- check removing files + dirs (should fail to remove dir if file inside)
   test:assertEquals(false, love.filesystem.remove('foo'), 'check fail when file inside')
   test:assertEquals(false, love.filesystem.remove('foo/bar'), 'check fail when file inside')
   test:assertEquals(true, love.filesystem.remove('foo/bar/file2.txt'), 'check file removed')
   test:assertEquals(true, love.filesystem.remove('foo/bar'), 'check subdirectory removed')
   test:assertEquals(true, love.filesystem.remove('foo'), 'check directory removed')
-  -- cleanup not needed here
+  -- cleanup not needed here hopefully...
 end
 
 
 -- love.filesystem.setCRequirePath
 love.test.filesystem.setCRequirePath = function(test)
+  -- check setting path val is returned
   love.filesystem.setCRequirePath('/??')
   test:assertEquals('/??', love.filesystem.getCRequirePath(), 'check crequirepath value')
   love.filesystem.setCRequirePath('??')
@@ -293,22 +286,21 @@ end
 
 -- love.filesystem.setIdentity
 love.test.filesystem.setIdentity = function(test)
-  -- setup
+  -- check setting identity val is returned
   local original = love.filesystem.getIdentity()
-  -- test
   love.filesystem.setIdentity('lover')
   test:assertEquals('lover', love.filesystem.getIdentity(), 'check indentity value')
-  -- cleanup
+  -- return value to original
   love.filesystem.setIdentity(original)
 end
 
 
 -- love.filesystem.setRequirePath
 love.test.filesystem.setRequirePath = function(test)
-  -- test
+  -- check setting path val is returned
   love.filesystem.setRequirePath('?.lua;?/start.lua')
   test:assertEquals('?.lua;?/start.lua', love.filesystem.getRequirePath(), 'check require path')
-  -- cleanup
+  -- reset to default
   love.filesystem.setRequirePath('?.lua;?/init.lua')
 end
 
@@ -316,17 +308,17 @@ end
 -- love.filesystem.setSource
 -- @NOTE dont think can test this cos used internally?
 love.test.filesystem.setSource = function(test)
-  test:skipTest('not sure we can test when its internal?')
+  test:skipTest('not sure can be tested as used internally')
 end
 
 
 -- love.filesystem.unmount
 love.test.filesystem.unmount = function(test)
-  --setup
+  -- create a zip file mounted to use
   local contents, size = love.filesystem.read('resources/test.zip') -- contains test.txt
   love.filesystem.write('test.zip', contents, size)
   love.filesystem.mount('test.zip', 'test')
-  -- tests
+  -- check mounted, unmount, then check its unmounted
   test:assertNotEquals(nil, love.filesystem.getInfo('test/test.txt'), 'check mount exists')
   love.filesystem.unmount('test.zip')
   test:assertEquals(nil, love.filesystem.getInfo('test/test.txt'), 'check unmounted')
@@ -339,11 +331,10 @@ end
 
 -- love.filesystem.write
 love.test.filesystem.write = function(test)
-  -- setup
+  -- check writing a bunch of files matches whats read back
   love.filesystem.write('test1.txt', 'helloworld')
   love.filesystem.write('test2.txt', 'helloworld', 10)
   love.filesystem.write('test3.txt', 'helloworld', 5)
-  -- test
   test:assertEquals('helloworld', love.filesystem.read('test1.txt'), 'check read file')
   test:assertEquals('helloworld', love.filesystem.read('test2.txt'), 'check read all')
   test:assertEquals('hello', love.filesystem.read('test3.txt'), 'check read partial')

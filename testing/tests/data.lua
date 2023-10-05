@@ -3,9 +3,8 @@
 
 -- love.data.compress
 love.test.data.compress = function(test)
-  -- here just testing each combo 'works', in decompress's test method
+  -- here just testing each combo 'works' - in decompress's test method
   -- we actually check the compress + decompress give the right value back
-  -- setup
   local compressions = {
     { love.data.compress('string', 'lz4', 'helloworld', -1), 'string'},
     { love.data.compress('string', 'lz4', 'helloworld', 0), 'string'},
@@ -26,9 +25,8 @@ love.test.data.compress = function(test)
     { love.data.compress('data', 'gzip', 'helloworld', 0), 'userdata'},
     { love.data.compress('data', 'gzip', 'helloworld', 9), 'userdata'}
   }
-  -- tests
   for c=1,#compressions do
-    test:assertNotEquals(nil, compressions[c][1], 'check not nil')
+    test:assertNotNil(compressions[c][1])
     -- sense check return type and make sure bytedata returns are an object
     test:assertEquals(compressions[c][2], type(compressions[c][1]), 'check is userdata')
     if compressions[c][2] == 'userdata' then
@@ -40,12 +38,12 @@ end
 
 -- love.data.decode
 love.test.data.decode = function(test)
-  -- setup
+  -- setup encoded strings
   local str1 = love.data.encode('string', 'base64', 'helloworld', 0)
   local str2 = love.data.encode('string', 'hex', 'helloworld')
   local str3 = love.data.encode('data', 'base64', 'helloworld', 0)
   local str4 = love.data.encode('data', 'hex', 'helloworld')
-  -- tests
+  -- check value matches expected when decoded back
   test:assertEquals('helloworld', love.data.decode('string', 'base64', str1), 'check string base64 decode')
   test:assertEquals('helloworld', love.data.decode('string', 'hex', str2), 'check string hex decode')
   test:assertEquals(love.data.newByteData('helloworld'):getString(), love.data.decode('data', 'base64', str3):getString(), 'check data base64 decode')
@@ -55,7 +53,7 @@ end
 
 -- love.data.decompress
 love.test.data.decompress = function(test)
-  -- setup
+  -- setup compressed data for each combination
   local str1 = love.data.compress('string', 'lz4', 'helloworld', -1)
   local str2 = love.data.compress('string', 'lz4', 'helloworld', 0)
   local str3 = love.data.compress('string', 'lz4', 'helloworld', 9)
@@ -74,7 +72,7 @@ love.test.data.decompress = function(test)
   local str16 = love.data.compress('data', 'gzip', 'helloworld', -1)
   local str17 = love.data.compress('data', 'gzip', 'helloworld', 0)
   local str18 = love.data.compress('data', 'gzip', 'helloworld', 9)
-  -- tests
+  -- check decompressed value matches whats expected
   test:assertEquals('helloworld', love.data.decompress('string', 'lz4', str1), 'check string lz4 decompress')
   test:assertEquals('helloworld', love.data.decompress('string', 'lz4', str2), 'check string lz4 decompress')
   test:assertEquals('helloworld', love.data.decompress('string', 'lz4', str3), 'check string lz4 decompress')
@@ -98,9 +96,8 @@ end
 
 -- love.data.encode
 love.test.data.encode = function(test)
-  -- here just testing each combo 'works', in decode's test method
+  -- here just testing each combo 'works' - in decode's test method
   -- we actually check the encode + decode give the right value back
-  -- setup
   local encodes = {
     { love.data.encode('string', 'base64', 'helloworld', 0), 'string'},
     { love.data.encode('string', 'base64', 'helloworld', 2), 'string'},
@@ -109,9 +106,8 @@ love.test.data.encode = function(test)
     { love.data.encode('data', 'base64', 'helloworld', 2), 'userdata'},
     { love.data.encode('data', 'hex', 'helloworld'), 'userdata'}
   }
-  -- tests
   for e=1,#encodes do
-    test:assertNotEquals(nil, encodes[e][1], 'check not nil')
+    test:assertNotNil(encodes[e][1])
     -- sense check return type and make sure bytedata returns are an object
     test:assertEquals(encodes[e][2], type(encodes[e][1]), 'check is usedata')
     if encodes[e][2] == 'userdata' then
@@ -123,22 +119,22 @@ end
 
 
 -- love.data.getPackedSize
--- @NOTE I dont really get the packing types of lua so best someone else writes this one
+-- @NOTE I don't really get what lua packing types are so skipping for now - ell
 love.test.data.getPackedSize = function(test)
-  test:skipTest('dont understand lua packing types')
+  test:skipTest('test method needs writing')
 end
 
 
 -- love.data.hash
 love.test.data.hash = function(test)
-  -- setup
+  -- setup all the different hashing types
   local str1 = love.data.hash('md5', 'helloworld')
   local str2 = love.data.hash('sha1', 'helloworld')
   local str3 = love.data.hash('sha224', 'helloworld')
   local str4 = love.data.hash('sha256', 'helloworld')
   local str5 = love.data.hash('sha384', 'helloworld')
   local str6 = love.data.hash('sha512', 'helloworld')
-  -- tests
+  -- check encoded hash value matches what's expected for that algo
   test:assertEquals('fc5e038d38a57032085441e7fe7010b0', love.data.encode("string", "hex", str1), 'check md5 encode')
   test:assertEquals('6adfb183a4a2c94a2f92dab5ade762a47889a5a1', love.data.encode("string", "hex", str2), 'check sha1 encode')
   test:assertEquals('b033d770602994efa135c5248af300d81567ad5b59cec4bccbf15bcc', love.data.encode("string", "hex", str3), 'check sha224 encode')
@@ -151,32 +147,26 @@ end
 -- love.data.newByteData
 -- @NOTE this is just basic nil checking, full obj test are in objects.lua
 love.test.data.newByteData = function(test)
-  -- setup
-  local bytedata = love.data.newByteData('helloworld')
-  -- tests
-  test:assertObject(bytedata)
+  test:assertObject(love.data.newByteData('helloworld'))
 end
 
 
 -- love.data.newDataView
 -- @NOTE this is just basic nil checking, full obj test are in objects.lua
 love.test.data.newDataView = function(test)
-  -- setup
-  local dataview = love.data.newDataView(love.data.newByteData('helloworld'), 0, 10)
-  -- tests
-  test:assertObject(dataview)
+  test:assertObject(love.data.newDataView(love.data.newByteData('helloworld'), 0, 10))
 end
 
 
 -- love.data.pack
--- @NOTE i dont really get the packing types of lua so best someone else writes this one
+-- @NOTE I don't really get what lua packing types are so skipping for now - ell
 love.test.data.pack = function(test)
-  test:skipTest('dont understand lua packing types')
+  test:skipTest('test method needs writing')
 end
 
 
 -- love.data.unpack
--- @NOTE i dont really get the packing types of lua so best someone else writes this one
+-- @NOTE I don't really get what lua packing types are so skipping for now - ell
 love.test.data.unpack = function(test)
-  test:skipTest('dont understand lua packing types')
+  test:skipTest('test method needs writing')
 end
