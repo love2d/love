@@ -303,13 +303,15 @@ TestMethod = {
     -- get failure/skip message for output (if any)
     local failure = ''
     local output = ''
+    -- @NOTE if you don't put anything inside of the <failure></failure> then
+    -- dorny/test-reporter@v1 will fail to parse it
     if self.passed == false and self.skipped == false then
       failure = '\t\t\t<failure message="' .. self.result.key .. ' ' ..
-        self.result.message .. '"></failure>\n'
+        self.result.message .. '">' .. self.result.key .. ' ' .. self.result.message .. '</failure>\n'
         output = self.result.key .. ' ' ..  self.result.message
     end
     if output == '' and self.skipped == true then
-      failure = '\t\t\t<skipped message="' .. self.skipreason .. '"></skipped>\n'
+      failure = '\t\t\t<skipped message="' .. self.skipreason .. '" />\n'
       output = self.skipreason
     end
 
