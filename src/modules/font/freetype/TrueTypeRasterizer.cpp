@@ -102,7 +102,18 @@ GlyphData *TrueTypeRasterizer::getGlyphData(uint32 glyph) const
 
 	err = FT_Glyph_To_Bitmap(&ftglyph, rendermode, 0, 1);
 	if (err != FT_Err_Ok)
-		throw love::Exception("TrueType Font glyph error: FT_Glyph_To_Bitmap failed (0x%x)", err);
+	{
+		if (rendermode == FT_RENDER_MODE_SDF)
+		{
+			err = FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, 0, 1);
+			if (err != FT_Err_Ok)
+				throw love::Exception("TrueType Font glyph error: FT_Glyph_To_Bitmap failed (0x%x)", err);
+		}
+		else
+		{
+			throw love::Exception("TrueType Font glyph error: FT_Glyph_To_Bitmap failed (0x%x)", err);
+		}
+	}
 	FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph) ftglyph;
 	FT_Bitmap &bitmap = bitmap_glyph->bitmap;//just to make things easier
 	// Get metrics
