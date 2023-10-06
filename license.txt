@@ -28,6 +28,12 @@ This distribution contains code from the following projects (full license text b
 	License: 3-Clause BSD
 	Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
 	Copyright (C) 2013-2016 LunarG, Inc.
+	
+- SPIRV-Cross
+	Website: https://github.com/KhronosGroup/SPIRV-Cross
+	License: Apache 2.0 or MIT/Expat
+	Copyright 2015-2021 Arm Limited
+	Copyright 2016-2021 The Brenwill Workshop Ltd.
 
  - Kepler Project's lua-compat-5.3
 	Website: https://github.com/keplerproject/lua-compat-5.3
@@ -87,7 +93,13 @@ This distribution contains code from the following projects (full license text b
 
  - dr_flac
 	Website: https://github.com/mackron/dr_libs
-	Source download: https://github.com/mackron/dr_libs/blob/c5e5355/dr_flac.h
+	Source download: https://github.com/mackron/dr_libs/blob/15f37e3/dr_flac.h
+	License: MIT/Expat
+	Copyright 2018 David Reid
+
+ - dr_mp3
+	Website: https://mackron.github.io/dr_libs/
+	Source download: https://github.com/mackron/dr_libs/blob/dd762b8/dr_mp3.h
 	License: MIT/Expat
 	Copyright 2018 David Reid
 
@@ -96,20 +108,6 @@ This distribution contains code from the following projects (full license text b
 	Source download: https://github.com/nothings/stb/blob/e140649ccf40818781b7e408f6228a486f6d254b/stb_image.h
 	License: MIT/Expat
 	Copyright (c) 2017 Sean Barrett
-
- - libmpg123
-	Website: http://www.mpg123.de/
-	Source download: http://sourceforge.net/projects/mpg123/files/latest/download
-	License: LGPL 2.1
-	Copyright (c) 1995-2013 by Michael Hipp and others, free software under the terms of the LGPL v2.1
-	Detailed information from the debian project:
-		 Copyright 1995-2016 by the mpg123 project
-		 Copyright 2009-2011 by Malcolm Boczek
-		 Copyright 2008 Christian Weisgerber <naddy@openbsd.org>
-		 Copyright 2006-2007 by Zuxy Meng
-		 Copyright 2000-2002 David Olofson
-		 Copyright 1998 Fabrice Bellard
-		 Copyright 1997 Mikko Tommila
 
  - OpenAL Soft
 	Website: https://openal-soft.org/
@@ -148,6 +146,21 @@ This distribution contains code from the following projects (full license text b
 			Copyright © 2013 Nasca Octavian Paul
 			Copyright © 2013 Mike Gorchak
 			Copyright © 2014 Timothy Arceri
+
+ - Vulkan Memory Allocator
+	Website: https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+	License: MIT/Expat
+	Copyright (c) 2017-2022 Advanced Micro Devices, Inc.
+
+ - volk
+	Website: https://github.com/zeux/volk
+	License: MIT/Expat
+	Copyright (c) 2018-2022 Arseny Kapoulkine
+
+ - Vulkan-Headers
+	Website: https://github.com/KhronosGroup/Vulkan-Headers
+	License: Apache 2.0
+	Copyright (c) 2022 Khronos Group
 
 License text
 ============

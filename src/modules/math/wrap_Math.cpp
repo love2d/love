@@ -26,10 +26,6 @@
 #include "BezierCurve.h"
 #include "Transform.h"
 
-#include "data/wrap_DataModule.h"
-#include "data/wrap_CompressedData.h"
-#include "data/DataModule.h"
-
 #include <cmath>
 #include <iostream>
 #include <algorithm>
@@ -322,27 +318,29 @@ int w_linearToGamma(lua_State *L)
 
 int w_noise(lua_State *L)
 {
+	luax_markdeprecated(L, 1, "love.math.noise", API_FUNCTION, DEPRECATED_REPLACED, "love.math.perlinNoise or love.math.simplexNoise");
+
 	int nargs = std::min(std::max(lua_gettop(L), 1), 4);
-	float args[4];
+	double args[4];
 
 	for (int i = 0; i < nargs; i++)
-		args[i] = (float) luaL_checknumber(L, i + 1);
+		args[i] = luaL_checknumber(L, i + 1);
 
-	float val = 0.0f;
+	double val = 0.0;
 
 	switch (nargs)
 	{
 	case 1:
-		val = noise1(args[0]);
+		val = simplexNoise1(args[0]);
 		break;
 	case 2:
-		val = noise2(args[0], args[1]);
+		val = simplexNoise2(args[0], args[1]);
 		break;
 	case 3:
-		val = noise3(args[0], args[1], args[2]);
+		val = perlinNoise3(args[0], args[1], args[2]);
 		break;
 	case 4:
-		val = noise4(args[0], args[1], args[2], args[3]);
+		val = perlinNoise4(args[0], args[1], args[2], args[3]);
 		break;
 	}
 
@@ -350,88 +348,77 @@ int w_noise(lua_State *L)
 	return 1;
 }
 
-int w_compress(lua_State *L)
+int w_perlinNoise(lua_State* L)
 {
-	using namespace love::data;
-	luax_markdeprecated(L, "love.math.compress", API_FUNCTION, DEPRECATED_REPLACED, "love.data.compress");
+	int nargs = std::min(std::max(lua_gettop(L), 1), 4);
+	double args[4];
 
-	const char *fstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
-	Compressor::Format format = Compressor::FORMAT_LZ4;
+	for (int i = 0; i < nargs; i++)
+		args[i] = luaL_checknumber(L, i + 1);
 
-	if (fstr && !Compressor::getConstant(fstr, format))
-		return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
+	double val = 0.0;
 
-	int level = (int) luaL_optinteger(L, 3, -1);
-	size_t rawsize = 0;
-	const char *rawbytes = nullptr;
-
-	if (lua_isstring(L, 1))
-		rawbytes = luaL_checklstring(L, 1, &rawsize);
-	else
+	switch (nargs)
 	{
-		Data *rawdata = luax_checktype<Data>(L, 1);
-		rawsize = rawdata->getSize();
-		rawbytes = (const char *) rawdata->getData();
+	case 1:
+		val = perlinNoise1(args[0]);
+		break;
+	case 2:
+		val = perlinNoise2(args[0], args[1]);
+		break;
+	case 3:
+		val = perlinNoise3(args[0], args[1], args[2]);
+		break;
+	case 4:
+		val = perlinNoise4(args[0], args[1], args[2], args[3]);
+		break;
 	}
 
-	CompressedData *cdata = nullptr;
-	luax_catchexcept(L, [&](){ cdata = compress(format, rawbytes, rawsize, level); });
-
-	luax_pushtype(L, cdata);
-	cdata->release();
+	lua_pushnumber(L, (lua_Number) val);
 	return 1;
 }
 
-int w_decompress(lua_State *L)
+int w_simplexNoise(lua_State* L)
 {
-	using namespace love::data;
-	luax_markdeprecated(L, "love.math.decompress", API_FUNCTION, DEPRECATED_REPLACED, "love.data.decompress");
+	int nargs = std::min(std::max(lua_gettop(L), 1), 4);
+	double args[4];
 
-	char *rawbytes = nullptr;
-	size_t rawsize = 0;
+	for (int i = 0; i < nargs; i++)
+		args[i] = luaL_checknumber(L, i + 1);
 
-	if (luax_istype(L, 1, CompressedData::type))
+	double val = 0.0;
+
+	switch (nargs)
 	{
-		CompressedData *data = luax_checkcompresseddata(L, 1);
-		rawsize = data->getDecompressedSize();
-		luax_catchexcept(L, [&](){ rawbytes = decompress(data, rawsize); });
-	}
-	else
-	{
-		Compressor::Format format = Compressor::FORMAT_LZ4;
-		const char *fstr = luaL_checkstring(L, 2);
-
-		if (!Compressor::getConstant(fstr, format))
-			return luax_enumerror(L, "compressed data format", Compressor::getConstants(format), fstr);
-
-		size_t compressedsize = 0;
-		const char *cbytes = nullptr;
-
-		if (luax_istype(L, 1, Data::type))
-		{
-			Data *data = luax_checktype<Data>(L, 1);
-			cbytes = (const char *) data->getData();
-			compressedsize = data->getSize();
-		}
-		else
-			cbytes = luaL_checklstring(L, 1, &compressedsize);
-
-		luax_catchexcept(L, [&](){ rawbytes = decompress(format, cbytes, compressedsize, rawsize); });
+	case 1:
+		val = simplexNoise1(args[0]);
+		break;
+	case 2:
+		val = simplexNoise2(args[0], args[1]);
+		break;
+	case 3:
+		val = simplexNoise3(args[0], args[1], args[2]);
+		break;
+	case 4:
+		val = simplexNoise4(args[0], args[1], args[2], args[3]);
+		break;
 	}
 
-	lua_pushlstring(L, rawbytes, rawsize);
-	delete[] rawbytes;
-
+	lua_pushnumber(L, (lua_Number) val);
 	return 1;
 }
 
 // C functions in a struct, necessary for the FFI versions of math functions.
 struct FFI_Math
 {
-	float (*noise1)(float x);
-	float (*noise2)(float x, float y);
-	float (*noise3)(float x, float y, float z);
-	float (*noise4)(float x, float y, float z, float w);
+	double (*snoise1)(double x);
+	double (*snoise2)(double x, double y);
+	double (*snoise3)(double x, double y, double z);
+	double (*snoise4)(double x, double y, double z, double w);
+	double (*pnoise1)(double x);
+	double (*pnoise2)(double x, double y);
+	double (*pnoise3)(double x, double y, double z);
+	double (*pnoise4)(double x, double y, double z, double w);
 
 	float (*gammaToLinear)(float c);
 	float (*linearToGamma)(float c);
@@ -439,10 +426,15 @@ struct FFI_Math
 
 static FFI_Math ffifuncs =
 {
-	noise1,
-	noise2,
-	noise3,
-	noise4,
+	simplexNoise1,
+	simplexNoise2,
+	simplexNoise3,
+	simplexNoise4,
+
+	perlinNoise1,
+	perlinNoise2,
+	perlinNoise3,
+	perlinNoise4,
 
 	gammaToLinear,
 	linearToGamma,
@@ -462,10 +454,8 @@ static const luaL_Reg functions[] =
 	{ "gammaToLinear", w_gammaToLinear },
 	{ "linearToGamma", w_linearToGamma },
 	{ "noise", w_noise },
-
-	// Deprecated.
-	{ "compress", w_compress },
-	{ "decompress", w_decompress },
+	{ "perlinNoise", w_perlinNoise },
+	{ "simplexNoise", w_simplexNoise },
 
 	{ 0, 0 }
 };

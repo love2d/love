@@ -29,14 +29,24 @@ namespace sound
 
 love::Type Decoder::type("Decoder", &Object::type);
 
-Decoder::Decoder(Data *data, int bufferSize)
-	: data(data)
+Decoder::Decoder(Stream *stream, int bufferSize)
+	: stream(stream)
 	, bufferSize(bufferSize)
 	, sampleRate(DEFAULT_SAMPLE_RATE)
 	, buffer(0)
 	, eof(false)
 {
-	buffer = new char[bufferSize];
+	if (!stream->isReadable() || !stream->isSeekable())
+		throw love::Exception("Decoder input stream must be readable and seekable.");
+
+	try
+	{
+		buffer = new char[bufferSize];
+	}
+	catch (std::exception &)
+	{
+		throw love::Exception("Out of memory.");
+	}
 }
 
 Decoder::~Decoder()
@@ -64,6 +74,13 @@ bool Decoder::isFinished()
 {
 	return eof;
 }
+
+STRINGMAP_CLASS_BEGIN(Decoder, Decoder::StreamSource, Decoder::STREAM_MAX_ENUM, streamSource)
+{
+	{ "memory", Decoder::STREAM_MEMORY },
+	{ "file",   Decoder::STREAM_FILE   },
+}
+STRINGMAP_CLASS_END(Decoder, Decoder::StreamSource, Decoder::STREAM_MAX_ENUM, streamSource)
 
 } // sound
 } // love

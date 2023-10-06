@@ -35,55 +35,37 @@ EdgeShape *luax_checkedgeshape(lua_State *L, int idx)
 int w_EdgeShape_setNextVertex(lua_State *L)
 {
 	EdgeShape *t = luax_checkedgeshape(L, 1);
-	if (lua_isnoneornil(L, 2))
-		t->setNextVertex();
-	else
-	{
-		float x = (float)luaL_checknumber(L, 2);
-		float y = (float)luaL_checknumber(L, 3);
-		t->setNextVertex(x, y);
-	}
+	float x = (float)luaL_checknumber(L, 2);
+	float y = (float)luaL_checknumber(L, 3);
+	t->setNextVertex(x, y);
 	return 0;
 }
 
 int w_EdgeShape_setPreviousVertex(lua_State *L)
 {
 	EdgeShape *t = luax_checkedgeshape(L, 1);
-	if (lua_isnoneornil(L, 2))
-		t->setPreviousVertex();
-	else
-	{
-		float x = (float)luaL_checknumber(L, 2);
-		float y = (float)luaL_checknumber(L, 3);
-		t->setPreviousVertex(x, y);
-	}
+	float x = (float)luaL_checknumber(L, 2);
+	float y = (float)luaL_checknumber(L, 3);
+	t->setPreviousVertex(x, y);
 	return 0;
 }
 
 int w_EdgeShape_getNextVertex(lua_State *L)
 {
 	EdgeShape *t = luax_checkedgeshape(L, 1);
-	float x, y;
-	if (t->getNextVertex(x, y))
-	{
-		lua_pushnumber(L, x);
-		lua_pushnumber(L, y);
-		return 2;
-	}
-	return 0;
+	b2Vec2 v = t->getNextVertex();
+	lua_pushnumber(L, v.x);
+	lua_pushnumber(L, v.y);
+	return 2;
 }
 
 int w_EdgeShape_getPreviousVertex(lua_State *L)
 {
 	EdgeShape *t = luax_checkedgeshape(L, 1);
-	float x, y;
-	if (t->getPreviousVertex(x, y))
-	{
-		lua_pushnumber(L, x);
-		lua_pushnumber(L, y);
-		return 2;
-	}
-	return 0;
+	b2Vec2 v = t->getPreviousVertex();
+	lua_pushnumber(L, v.x);
+	lua_pushnumber(L, v.y);
+	return 2;
 }
 
 int w_EdgeShape_getPoints(lua_State *L)

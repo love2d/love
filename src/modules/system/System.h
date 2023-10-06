@@ -57,7 +57,7 @@ public:
 	/**
 	 * Gets the current operating system.
 	 **/
-	std::string getOS() const;
+	static const char *getOS();
 
 	/**
 	 * Gets the number of reported CPU cores on the current system.
@@ -113,6 +113,19 @@ public:
 	 * @return Whether a music is playing on background.
 	 **/
 	bool hasBackgroundMusic() const;
+
+	/**
+	 * Gets the list of locales in order of user preference.
+	 * 
+	 * The returned string from this function has format of
+	 * xx_YY where 'xx' is ISO-639 language code and 'YY' is
+	 * the ISO-3166 country code if available. If country
+	 * code is unavailable, then it simply returns the language.
+	 * 
+	 * @return List user preferred locales or empty if the current
+	 * platform does not support this function.
+	 */
+	virtual std::vector<std::string> getPreferredLocales() const = 0;
 
 	static bool getConstant(const char *in, PowerState &out);
 	static bool getConstant(PowerState in, const char *&out);

@@ -97,38 +97,38 @@ int w_WheelJoint_getMaxMotorTorque(lua_State *L)
 int w_WheelJoint_getMotorTorque(lua_State *L)
 {
 	WheelJoint *t = luax_checkwheeljoint(L, 1);
-	float inv_dt = (float)luaL_checknumber(L, 2);
-	lua_pushnumber(L, t->getMotorTorque(inv_dt));
+	float dt = (float)luaL_checknumber(L, 2);
+	lua_pushnumber(L, t->getMotorTorque(dt));
 	return 1;
 }
 
-int w_WheelJoint_setSpringFrequency(lua_State *L)
+int w_WheelJoint_setStiffness(lua_State *L)
 {
 	WheelJoint *t = luax_checkwheeljoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setSpringFrequency(arg1);
+	t->setStiffness(arg1);
 	return 0;
 }
 
-int w_WheelJoint_getSpringFrequency(lua_State *L)
+int w_WheelJoint_getStiffness(lua_State *L)
 {
 	WheelJoint *t = luax_checkwheeljoint(L, 1);
-	lua_pushnumber(L, t->getSpringFrequency());
+	lua_pushnumber(L, t->getStiffness());
 	return 1;
 }
 
-int w_WheelJoint_setSpringDampingRatio(lua_State *L)
+int w_WheelJoint_setDamping(lua_State *L)
 {
 	WheelJoint *t = luax_checkwheeljoint(L, 1);
 	float arg1 = (float)luaL_checknumber(L, 2);
-	t->setSpringDampingRatio(arg1);
+	t->setDamping(arg1);
 	return 0;
 }
 
-int w_WheelJoint_getSpringDampingRatio(lua_State *L)
+int w_WheelJoint_getDamping(lua_State *L)
 {
 	WheelJoint *t = luax_checkwheeljoint(L, 1);
-	lua_pushnumber(L, t->getSpringDampingRatio());
+	lua_pushnumber(L, t->getDamping());
 	return 1;
 }
 
@@ -150,10 +150,14 @@ static const luaL_Reg w_WheelJoint_functions[] =
 	{ "setMaxMotorTorque", w_WheelJoint_setMaxMotorTorque },
 	{ "getMaxMotorTorque", w_WheelJoint_getMaxMotorTorque },
 	{ "getMotorTorque", w_WheelJoint_getMotorTorque },
-	{ "setSpringFrequency", w_WheelJoint_setSpringFrequency },
-	{ "getSpringFrequency", w_WheelJoint_getSpringFrequency },
-	{ "setSpringDampingRatio", w_WheelJoint_setSpringDampingRatio },
-	{ "getSpringDampingRatio", w_WheelJoint_getSpringDampingRatio },
+	{ "setSpringStiffness", w_WheelJoint_setStiffness },
+	{ "getSpringStiffness", w_WheelJoint_getStiffness },
+	{ "setSpringDamping", w_WheelJoint_setDamping },
+	{ "getSpringDamping", w_WheelJoint_getDamping },
+	{ "setStiffness", w_WheelJoint_setStiffness },
+	{ "getStiffness", w_WheelJoint_getStiffness },
+	{ "setDamping", w_WheelJoint_setDamping },
+	{ "getDamping", w_WheelJoint_getDamping },
 	{ "getAxis", w_WheelJoint_getAxis },
 	{ 0, 0 }
 };

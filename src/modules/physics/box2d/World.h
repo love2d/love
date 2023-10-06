@@ -31,7 +31,7 @@
 #include <unordered_map>
 
 // Box2D
-#include <Box2D/Box2D.h>
+#include <box2d/Box2D.h>
 
 namespace love
 {
@@ -102,12 +102,24 @@ public:
 		int funcidx;
 	};
 
+	class CollectCallback : public b2QueryCallback
+	{
+	public:
+		CollectCallback(World *world, lua_State *L);
+		~CollectCallback();
+		virtual bool ReportFixture(b2Fixture *fixture);
+	private:
+		World *world;
+		lua_State *L;
+		int i = 1;
+	};
+
 	class RayCastCallback : public b2RayCastCallback
 	{
 	public:
 		RayCastCallback(World *world, lua_State *L, int idx);
 		~RayCastCallback();
-		virtual float32 ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float32 fraction);
+		virtual float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction);
 	private:
 		World *world;
 		lua_State *L;
@@ -270,9 +282,14 @@ public:
 	b2Body *getGroundBody() const;
 
 	/**
-	 * Gets all fixtures that overlap a given bounding box.
+	 * Calls a callback on all fixtures that overlap a given bounding box.
 	 **/
 	int queryBoundingBox(lua_State *L);
+
+	/**
+	 * Gets all fixtures that overlap a given bounding box.
+	 **/
+	int getFixturesInArea(lua_State *L);
 
 	/**
 	 * Raycasts the World for all Fixtures in the path of the ray.

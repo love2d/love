@@ -18,8 +18,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_FILESYSTEM_FILE_DATA_H
-#define LOVE_FILESYSTEM_FILE_DATA_H
+#pragma once
 
 // LOVE
 #include "common/Data.h"
@@ -74,5 +73,3 @@ private:
 
 } // filesystem
 } // love
-
-#endif // LOVE_FILESYSTEM_FILE_DATA_H

@@ -31,132 +31,65 @@ namespace sound
 namespace lullaby
 {
 
-/**
- * CALLBACK FUNCTIONS
- **/
-static int vorbisClose(void *	/* ptr to the data that the vorbis files need*/)
+static int vorbisClose(void *)
 {
 	// Does nothing (handled elsewhere)
 	return 1;
 }
 
-static size_t vorbisRead(void *ptr	/* ptr to the data that the vorbis files need*/,
-				  size_t byteSize	/* how big a byte is*/,
-				  size_t sizeToRead	/* How much we can read*/,
-				  void *datasource	/* this is a pointer to the data we passed into ov_open_callbacks (our SOggFile struct*/)
+static size_t vorbisRead(void *ptr, size_t byteSize, size_t sizeToRead, void *datasource)
 {
-	size_t				spaceToEOF;			// How much more we can read till we hit the EOF marker
-	size_t				actualSizeToRead;	// How much data we are actually going to read from memory
-	SOggFile			 *vorbisData;			// Our vorbis data, for the typecast
-
-	// Get the data in the right format
-	vorbisData = (SOggFile *)datasource;
-
-	// Calculate how much we need to read.  This can be sizeToRead*byteSize or less depending on how near the EOF marker we are
-	spaceToEOF = vorbisData->dataSize - vorbisData->dataRead;
-	if ((sizeToRead*byteSize) < spaceToEOF)
-		actualSizeToRead = (sizeToRead*byteSize);
-	else
-		actualSizeToRead = spaceToEOF;
-
-	// A simple copy of the data from memory to the datastruct that the vorbis libs will use
-	if (actualSizeToRead)
-	{
-		// Copy the data from the start of the file PLUS how much we have already read in
-		memcpy(ptr, (const char *)vorbisData->dataPtr + vorbisData->dataRead, actualSizeToRead);
-		// Increase by how much we have read by
-		vorbisData->dataRead += (actualSizeToRead);
-	}
-
-	// Return how much we read (in the same way fread would)
-	return actualSizeToRead;
+	auto stream = (Stream *) datasource;
+	return stream->read(ptr, byteSize * sizeToRead);
 }
 
-static int vorbisSeek(void *datasource	/* ptr to the data that the vorbis files need*/,
-			   ogg_int64_t offset	/*offset from the point we wish to seek to*/,
-			   int whence			/*where we want to seek to*/)
+static int vorbisSeek(void *datasource, ogg_int64_t offset, int whence)
 {
-	int64    spaceToEOF;   // How much more we can read till we hit the EOF marker
-	int64    actualOffset; // How much we can actually offset it by
-	SOggFile *vorbisData;  // The data we passed in (for the typecast)
+	auto stream = (Stream *) datasource;
+	auto origin = Stream::SEEKORIGIN_BEGIN;
 
-	// Get the data in the right format
-	vorbisData = (SOggFile *) datasource;
-
-	// Goto where we wish to seek to
 	switch (whence)
 	{
-	case SEEK_SET: // Seek to the start of the data file
-		// Make sure we are not going to the end of the file
-		if (vorbisData->dataSize >= offset)
-			actualOffset = offset;
-		else
-			actualOffset = vorbisData->dataSize;
-		// Set where we now are
-		vorbisData->dataRead = (int)actualOffset;
+	case SEEK_SET:
+		origin = Stream::SEEKORIGIN_BEGIN;
 		break;
-	case SEEK_CUR: // Seek from where we are
-		// Make sure we dont go past the end
-		spaceToEOF = vorbisData->dataSize - vorbisData->dataRead;
-		if (offset < spaceToEOF)
-			actualOffset = (offset);
-		else
-			actualOffset = spaceToEOF;
-		// Seek from our currrent location
-		vorbisData->dataRead += actualOffset;
+	case SEEK_CUR:
+		origin = Stream::SEEKORIGIN_CURRENT;
 		break;
-	case SEEK_END: // Seek from the end of the file
-		if (offset < 0)
-			vorbisData->dataRead = vorbisData->dataSize + offset;
-		else
-			vorbisData->dataRead = vorbisData->dataSize;
+	case SEEK_END:
+		origin = Stream::SEEKORIGIN_END;
 		break;
 	default:
 		break;
 	};
 
-	return 0;
+	return stream->seek(offset, origin) ? 0 : -1;
 }
 
-static long vorbisTell(void *datasource	/* ptr to the data that the vorbis files need*/)
+static long vorbisTell(void *datasource)
 {
-	SOggFile *vorbisData;
-	vorbisData = (SOggFile *) datasource;
-	return vorbisData->dataRead;
+	auto stream = (Stream *) datasource;
+	return (long) stream->tell();
 }
 /**
  * END CALLBACK FUNCTIONS
  **/
 
-VorbisDecoder::VorbisDecoder(Data *data, int bufferSize)
-	: Decoder(data, bufferSize)
+VorbisDecoder::VorbisDecoder(Stream *stream, int bufferSize)
+	: Decoder(stream, bufferSize)
 	, duration(-2.0)
 {
-	// Initialize callbacks
-	vorbisCallbacks.close_func = vorbisClose;
-	vorbisCallbacks.seek_func  = vorbisSeek;
-	vorbisCallbacks.read_func  = vorbisRead;
-	vorbisCallbacks.tell_func  = vorbisTell;
-
-	// Check endianness
-#ifdef LOVE_BIG_ENDIAN
-	endian = 1;
-#else
-	endian = 0;
-#endif
-
-	// Initialize OGG file
-	oggFile.dataPtr = (const char *) data->getData();
-	oggFile.dataSize = data->getSize();
-	oggFile.dataRead = 0;
+	ov_callbacks callbacks = {};
+	callbacks.close_func = vorbisClose;
+	callbacks.seek_func  = vorbisSeek;
+	callbacks.read_func  = vorbisRead;
+	callbacks.tell_func  = vorbisTell;
 
 	// Open Vorbis handle
-	if (ov_open_callbacks(&oggFile, &handle, NULL, 0, vorbisCallbacks) < 0)
+	if (ov_open_callbacks(stream, &handle, nullptr, 0, callbacks) < 0)
 		throw love::Exception("Could not read Ogg bitstream");
 
-	// Get info and comments
 	vorbisInfo = ov_info(&handle, -1);
-	vorbisComment = ov_comment(&handle, -1);
 }
 
 VorbisDecoder::~VorbisDecoder()
@@ -164,30 +97,21 @@ VorbisDecoder::~VorbisDecoder()
 	ov_clear(&handle);
 }
 
-bool VorbisDecoder::accepts(const std::string &ext)
-{
-	static const std::string supported[] =
-	{
-		"ogg", "oga", "ogv", ""
-	};
-
-	for (int i = 0; !(supported[i].empty()); i++)
-	{
-		if (supported[i].compare(ext) == 0)
-			return true;
-	}
-
-	return false;
-}
-
 love::sound::Decoder *VorbisDecoder::clone()
 {
-	return new VorbisDecoder(data.get(), bufferSize);
+	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);
+	return new VorbisDecoder(s, bufferSize);
 }
 
 int VorbisDecoder::decode()
 {
 	int size = 0;
+
+#ifdef LOVE_BIG_ENDIAN
+	int endian = 1;
+#else
+	int endian = 0;
+#endif
 
 	while (size < bufferSize)
 	{

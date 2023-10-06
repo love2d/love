@@ -32,15 +32,14 @@
 #include "StreamBuffer.h"
 #include "vertex.h"
 #include "Texture.h"
-#include "Canvas.h"
 #include "Font.h"
 #include "ShaderStage.h"
 #include "Shader.h"
 #include "Quad.h"
 #include "Mesh.h"
-#include "Image.h"
+#include "GraphicsReadback.h"
 #include "Deprecations.h"
-#include "depthstencil.h"
+#include "renderstate.h"
 #include "math/Transform.h"
 #include "font/Rasterizer.h"
 #include "font/Font.h"
@@ -59,13 +58,22 @@ namespace graphics
 
 class SpriteBatch;
 class ParticleSystem;
-class Text;
+class TextBatch;
 class Video;
 class Buffer;
 
-typedef Optional<Colorf> OptionalColorf;
+typedef Optional<ColorD> OptionalColorD;
 
 const int MAX_COLOR_RENDER_TARGETS = 8;
+
+enum Renderer
+{
+	RENDERER_NONE,
+	RENDERER_OPENGL,
+	RENDERER_METAL,
+	RENDERER_VULKAN,
+	RENDERER_MAX_ENUM
+};
 
 /**
  * Globally sets whether gamma correction is enabled. Ideally this should be set
@@ -97,6 +105,10 @@ Colorf unGammaCorrectColor(const Colorf &c);
 
 bool isDebugEnabled();
 
+const std::vector<Renderer> &getDefaultRenderers();
+const std::vector<Renderer> &getRenderers();
+void setRenderers(const std::vector<Renderer> &renderers);
+
 class Graphics : public Module
 {
 public:
@@ -118,27 +130,6 @@ public:
 		ARC_MAX_ENUM
 	};
 
-	enum BlendMode
-	{
-		BLEND_ALPHA,
-		BLEND_ADD,
-		BLEND_SUBTRACT,
-		BLEND_MULTIPLY,
-		BLEND_LIGHTEN,
-		BLEND_DARKEN,
-		BLEND_SCREEN,
-		BLEND_REPLACE,
-		BLEND_NONE,
-		BLEND_MAX_ENUM
-	};
-
-	enum BlendAlpha
-	{
-		BLENDALPHA_MULTIPLY,
-		BLENDALPHA_PREMULTIPLIED,
-		BLENDALPHA_MAX_ENUM
-	};
-
 	enum LineStyle
 	{
 		LINE_ROUGH,
@@ -156,22 +147,26 @@ public:
 
 	enum Feature
 	{
-		FEATURE_MULTI_CANVAS_FORMATS,
+		FEATURE_MULTI_RENDER_TARGET_FORMATS,
 		FEATURE_CLAMP_ZERO,
-		FEATURE_LIGHTEN,
+		FEATURE_CLAMP_ONE,
+		FEATURE_BLEND_MINMAX,
+		FEATURE_LIGHTEN, // Deprecated
 		FEATURE_FULL_NPOT,
 		FEATURE_PIXEL_SHADER_HIGHP,
 		FEATURE_SHADER_DERIVATIVES,
 		FEATURE_GLSL3,
+		FEATURE_GLSL4,
 		FEATURE_INSTANCING,
+		FEATURE_TEXEL_BUFFER,
+		FEATURE_INDEX_BUFFER_32BIT,
+		FEATURE_COPY_BUFFER,
+		FEATURE_COPY_BUFFER_TO_TEXTURE,
+		FEATURE_COPY_TEXTURE_TO_BUFFER,
+		FEATURE_COPY_RENDER_TARGET_TO_BUFFER,
+		FEATURE_MIPMAP_RANGE,
+		FEATURE_INDIRECT_DRAW,
 		FEATURE_MAX_ENUM
-	};
-
-	enum Renderer
-	{
-		RENDERER_OPENGL = 0,
-		RENDERER_OPENGLES,
-		RENDERER_MAX_ENUM
 	};
 
 	enum SystemLimit
@@ -181,8 +176,13 @@ public:
 		LIMIT_VOLUME_TEXTURE_SIZE,
 		LIMIT_CUBE_TEXTURE_SIZE,
 		LIMIT_TEXTURE_LAYERS,
-		LIMIT_MULTI_CANVAS,
-		LIMIT_CANVAS_MSAA,
+		LIMIT_TEXEL_BUFFER_SIZE,
+		LIMIT_SHADER_STORAGE_BUFFER_SIZE,
+		LIMIT_THREADGROUPS_X,
+		LIMIT_THREADGROUPS_Y,
+		LIMIT_THREADGROUPS_Z,
+		LIMIT_RENDER_TARGETS,
+		LIMIT_TEXTURE_MSAA,
 		LIMIT_ANISOTROPY,
 		LIMIT_MAX_ENUM
 	};
@@ -198,6 +198,13 @@ public:
 	{
 		TEMPORARY_RT_DEPTH   = (1 << 0),
 		TEMPORARY_RT_STENCIL = (1 << 1),
+	};
+
+	enum IndirectArgsType
+	{
+		INDIRECT_ARGS_DISPATCH,
+		INDIRECT_ARGS_DRAW_VERTICES,
+		INDIRECT_ARGS_DRAW_INDICES,
 	};
 
 	struct Capabilities
@@ -219,54 +226,33 @@ public:
 	{
 		int drawCalls;
 		int drawCallsBatched;
-		int canvasSwitches;
+		int renderTargetSwitches;
 		int shaderSwitches;
-		int canvases;
-		int images;
+		int textures;
 		int fonts;
 		int64 textureMemory;
-	};
-
-	struct ColorMask
-	{
-		bool r, g, b, a;
-
-		ColorMask()
-			: r(true), g(true), b(true), a(true)
-		{}
-
-		ColorMask(bool _r, bool _g, bool _b, bool _a)
-			: r(_r), g(_g), b(_b), a(_a)
-		{}
-
-		bool operator == (const ColorMask &m) const
-		{
-			return r == m.r && g == m.g && b == m.b && a == m.a;
-		}
-
-		bool operator != (const ColorMask &m) const
-		{
-			return !(operator == (m));
-		}
 	};
 
 	struct DrawCommand
 	{
 		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-		const vertex::Attributes *attributes;
-		const vertex::BufferBindings *buffers;
+		const VertexAttributes *attributes;
+		const BufferBindings *buffers;
 
 		int vertexStart = 0;
 		int vertexCount = 0;
 		int instanceCount = 1;
+
+		Buffer *indirectBuffer = nullptr;
+		size_t indirectBufferOffset = 0;
 
 		Texture *texture = nullptr;
 
 		// TODO: This should be moved out to a state transition API?
 		CullMode cullMode = CULL_NONE;
 
-		DrawCommand(const vertex::Attributes *attribs, const vertex::BufferBindings *buffers)
+		DrawCommand(const VertexAttributes *attribs, const BufferBindings *buffers)
 			: attributes(attribs)
 			, buffers(buffers)
 		{}
@@ -276,8 +262,8 @@ public:
 	{
 		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-		const vertex::Attributes *attributes;
-		const vertex::BufferBindings *buffers;
+		const VertexAttributes *attributes;
+		const BufferBindings *buffers;
 
 		int indexCount = 0;
 		int instanceCount = 1;
@@ -286,35 +272,38 @@ public:
 		Resource *indexBuffer;
 		size_t indexBufferOffset = 0;
 
+		Buffer *indirectBuffer = nullptr;
+		size_t indirectBufferOffset = 0;
+
 		Texture *texture = nullptr;
 
 		// TODO: This should be moved out to a state transition API?
 		CullMode cullMode = CULL_NONE;
 
-		DrawIndexedCommand(const vertex::Attributes *attribs, const vertex::BufferBindings *buffers, Resource *indexbuffer)
+		DrawIndexedCommand(const VertexAttributes *attribs, const BufferBindings *buffers, Resource *indexbuffer)
 			: attributes(attribs)
 			, buffers(buffers)
 			, indexBuffer(indexbuffer)
 		{}
 	};
 
-	struct StreamDrawCommand
+	struct BatchedDrawCommand
 	{
 		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
-		vertex::CommonFormat formats[2];
-		vertex::TriangleIndexMode indexMode = vertex::TriangleIndexMode::NONE;
+		CommonFormat formats[2];
+		TriangleIndexMode indexMode = TRIANGLEINDEX_NONE;
 		int vertexCount = 0;
 		Texture *texture = nullptr;
 		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;
 
-		StreamDrawCommand()
+		BatchedDrawCommand()
 		{
 			// VS2013 can't initialize arrays in the above manner...
-			formats[1] = formats[0] = vertex::CommonFormat::NONE;
+			formats[1] = formats[0] = CommonFormat::NONE;
 		}
 	};
 
-	struct StreamVertexData
+	struct BatchedVertexData
 	{
 		void *stream[2];
 	};
@@ -358,53 +347,53 @@ public:
 
 	struct RenderTarget
 	{
-		Canvas *canvas;
+		Texture *texture;
 		int slice;
 		int mipmap;
 
-		RenderTarget(Canvas *canvas, int slice = 0, int mipmap = 0)
-			: canvas(canvas)
+		RenderTarget(Texture *texture, int slice = 0, int mipmap = 0)
+			: texture(texture)
 			, slice(slice)
 			, mipmap(mipmap)
 		{}
 
 		RenderTarget()
-			: canvas(nullptr)
+			: texture(nullptr)
 			, slice(0)
 			, mipmap(0)
 		{}
 
 		bool operator != (const RenderTarget &other) const
 		{
-			return canvas != other.canvas || slice != other.slice || mipmap != other.mipmap;
+			return texture != other.texture || slice != other.slice || mipmap != other.mipmap;
 		}
 
 		bool operator != (const RenderTargetStrongRef &other) const
 		{
-			return canvas != other.canvas.get() || slice != other.slice || mipmap != other.mipmap;
+			return texture != other.texture.get() || slice != other.slice || mipmap != other.mipmap;
 		}
 	};
 
 	struct RenderTargetStrongRef
 	{
-		StrongRef<Canvas> canvas;
+		StrongRef<Texture> texture;
 		int slice = 0;
 		int mipmap = 0;
 
-		RenderTargetStrongRef(Canvas *canvas, int slice = 0, int mipmap = 0)
-			: canvas(canvas)
+		RenderTargetStrongRef(Texture *texture, int slice = 0, int mipmap = 0)
+			: texture(texture)
 			, slice(slice)
 			, mipmap(mipmap)
 		{}
 
 		bool operator != (const RenderTargetStrongRef &other) const
 		{
-			return canvas.get() != other.canvas.get() || slice != other.slice || mipmap != other.mipmap;
+			return texture.get() != other.texture.get() || slice != other.slice || mipmap != other.mipmap;
 		}
 
 		bool operator != (const RenderTarget &other) const
 		{
-			return canvas.get() != other.canvas || slice != other.slice || mipmap != other.mipmap;
+			return texture.get() != other.texture || slice != other.slice || mipmap != other.mipmap;
 		}
 	};
 
@@ -460,51 +449,49 @@ public:
 		}
 	};
 
-	struct DefaultShaderCode
-	{
-		std::string source[ShaderStage::STAGE_MAX_ENUM];
-	};
-
 	Graphics();
 	virtual ~Graphics();
 
 	// Implements Module.
 	virtual ModuleType getModuleType() const { return M_GRAPHICS; }
 
-	virtual Image *newImage(const Image::Slices &data, const Image::Settings &settings) = 0;
-	virtual Image *newImage(TextureType textype, PixelFormat format, int width, int height, int slices, const Image::Settings &settings) = 0;
+	virtual Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) = 0;
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
-	Font *newFont(love::font::Rasterizer *data, const Texture::Filter &filter = Texture::defaultFilter);
-	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting, const Texture::Filter &filter = Texture::defaultFilter);
+	Font *newFont(love::font::Rasterizer *data);
+	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting);
 	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
-	SpriteBatch *newSpriteBatch(Texture *texture, int size, vertex::Usage usage);
+	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferDataUsage usage);
 	ParticleSystem *newParticleSystem(Texture *texture, int size);
 
-	virtual Canvas *newCanvas(const Canvas::Settings &settings) = 0;
+	Shader *newShader(const std::vector<std::string> &stagessource, const Shader::CompileOptions &options);
+	Shader *newComputeShader(const std::string &source, const Shader::CompileOptions &options);
 
-	ShaderStage *newShaderStage(ShaderStage::StageType stage, const std::string &source);
-	Shader *newShader(const std::string &vertex, const std::string &pixel);
+	virtual Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) = 0;
+	virtual Buffer *newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength);
 
-	virtual Buffer *newBuffer(size_t size, const void *data, BufferType type, vertex::Usage usage, uint32 mapflags) = 0;
+	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferDataUsage usage);
+	Mesh *newMesh(const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferDataUsage usage);
+	Mesh *newMesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType drawmode);
 
-	Mesh *newMesh(const std::vector<Vertex> &vertices, PrimitiveType drawmode, vertex::Usage usage);
-	Mesh *newMesh(int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
-	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
-	Mesh *newMesh(const std::vector<Mesh::AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage);
+	TextBatch *newTextBatch(Font *font, const std::vector<love::font::ColoredString> &text = {});
 
-	Text *newText(Font *font, const std::vector<Font::ColoredString> &text = {});
+	data::ByteData *readbackBuffer(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);
+	GraphicsReadback *readbackBufferAsync(Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset);
 
-	bool validateShader(bool gles, const std::string &vertex, const std::string &pixel, std::string &err);
+	image::ImageData *readbackTexture(Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty);
+	GraphicsReadback *readbackTextureAsync(Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty);
+
+	bool validateShader(bool gles, const std::vector<std::string> &stages, const Shader::CompileOptions &options, std::string &err);
 
 	/**
 	 * Resets the current color, background color, line style, and so forth.
 	 **/
 	void reset();
 
-	virtual void clear(OptionalColorf color, OptionalInt stencil, OptionalDouble depth) = 0;
-	virtual void clear(const std::vector<OptionalColorf> &colors, OptionalInt stencil, OptionalDouble depth) = 0;
+	virtual void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) = 0;
+	virtual void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) = 0;
 
 	virtual void discard(const std::vector<bool> &colorbuffers, bool depthstencil) = 0;
 
@@ -523,7 +510,7 @@ public:
 	 * @param width The viewport width.
 	 * @param height The viewport height.
 	 **/
-	virtual bool setMode(int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil) = 0;
+	virtual bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if
@@ -558,6 +545,12 @@ public:
 	double getCurrentDPIScale() const;
 	double getScreenDPIScale() const;
 
+	virtual int getRequestedBackbufferMSAA() const = 0;
+	virtual int getBackbufferMSAA() const = 0;
+
+	Buffer *getQuadIndexBuffer() const { return quadIndexBuffer; }
+	Buffer *getFanIndexBuffer() const { return fanIndexBuffer; }
+
 	/**
 	 * Sets the current constant color.
 	 **/
@@ -586,15 +579,15 @@ public:
 
 	Shader *getShader() const;
 
-	void setCanvas(RenderTarget rt, uint32 temporaryRTFlags);
-	void setCanvas(const RenderTargets &rts);
-	void setCanvas(const RenderTargetsStrongRef &rts);
-	void setCanvas();
+	void setRenderTarget(RenderTarget rt, uint32 temporaryRTFlags);
+	void setRenderTargets(const RenderTargets &rts);
+	void setRenderTargets(const RenderTargetsStrongRef &rts);
+	void setRenderTarget();
 
-	RenderTargets getCanvas() const;
-	bool isCanvasActive() const;
-	bool isCanvasActive(Canvas *canvas) const;
-	bool isCanvasActive(Canvas *canvas, int slice) const;
+	RenderTargets getRenderTargets() const;
+	bool isRenderTargetActive() const;
+	bool isRenderTargetActive(Texture *texture) const;
+	bool isRenderTargetActive(Texture *texture, int slice) const;
 
 	/**
 	 * Scissor defines a box such that everything outside that box is discarded
@@ -615,19 +608,9 @@ public:
 	 */
 	bool getScissor(Rect &rect) const;
 
-	/**
-	 * Enables or disables drawing to the stencil buffer. When enabled, the
-	 * color buffer is disabled.
-	 **/
-	virtual void drawToStencilBuffer(StencilAction action, int value) = 0;
-	virtual void stopDrawToStencilBuffer() = 0;
-
-	/**
-	 * Sets whether stencil testing is enabled.
-	 **/
-	virtual void setStencilTest(CompareMode compare, int value) = 0;
-	void setStencilTest();
-	void getStencilTest(CompareMode &compare, int &value) const;
+	virtual void setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) = 0;
+	void setStencilMode();
+	void getStencilMode(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const;
 
 	virtual void setDepthMode(CompareMode compare, bool write) = 0;
 	void setDepthMode();
@@ -636,44 +619,40 @@ public:
 	void setMeshCullMode(CullMode cull);
 	CullMode getMeshCullMode() const;
 
-	virtual void setFrontFaceWinding(vertex::Winding winding) = 0;
-	vertex::Winding getFrontFaceWinding() const;
+	virtual void setFrontFaceWinding(Winding winding) = 0;
+	Winding getFrontFaceWinding() const;
 
 	/**
 	 * Sets the enabled color components when rendering.
 	 **/
-	virtual void setColorMask(ColorMask mask) = 0;
+	virtual void setColorMask(ColorChannelMask mask) = 0;
 
 	/**
 	 * Gets the current color mask.
 	 **/
-	ColorMask getColorMask() const;
+	ColorChannelMask getColorMask() const;
 
 	/**
-	 * Sets the current blend mode.
+	 * High-level blend mode.
 	 **/
-	virtual void setBlendMode(BlendMode mode, BlendAlpha alphamode) = 0;
-
-	/**
-	 * Gets the current blend mode.
-	 **/
+	void setBlendMode(BlendMode mode, BlendAlpha alphamode);
 	BlendMode getBlendMode(BlendAlpha &alphamode) const;
 
 	/**
-	 * Sets the default filter for images, canvases, and fonts.
+	 * Low-level blend state.
 	 **/
-	void setDefaultFilter(const Texture::Filter &f);
+	virtual void setBlendState(const BlendState &blend) = 0;
+	const BlendState &getBlendState() const;
 
 	/**
-	 * Gets the default filter for images, canvases, and fonts.
+	 * Sets the default sampler state for textures, videos, and fonts.
 	 **/
-	const Texture::Filter &getDefaultFilter() const;
+	void setDefaultSamplerState(const SamplerState &s);
 
 	/**
-	 * Default Image mipmap filter mode and sharpness values.
+	 * Gets the default sampler state for textures, videos, and fonts.
 	 **/
-	void setDefaultMipmapFilter(Texture::FilterMode filter, float sharpness);
-	void getDefaultMipmapFilter(Texture::FilterMode *filter, float *sharpness) const;
+	const SamplerState &getDefaultSamplerState() const;
 
 	/**
 	 * Sets the line width.
@@ -720,23 +699,36 @@ public:
 
 	void captureScreenshot(const ScreenshotInfo &info);
 
+	void copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size);
+	void copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth);
+	void copyBufferToTexture(Buffer *source, Texture *dest, size_t sourceoffset, int sourcewidth, int slice, int mipmap, const Rect &rect);
+
+	void dispatchThreadgroups(Shader *shader, int x, int y, int z);
+	void dispatchIndirect(Shader *shader, Buffer *indirectargs, int argsindex);
+
 	void draw(Drawable *drawable, const Matrix4 &m);
 	void draw(Texture *texture, Quad *quad, const Matrix4 &m);
 	void drawLayer(Texture *texture, int layer, const Matrix4 &m);
 	void drawLayer(Texture *texture, int layer, Quad *quad, const Matrix4 &m);
 	void drawInstanced(Mesh *mesh, const Matrix4 &m, int instancecount);
+	void drawIndirect(Mesh *mesh, const Matrix4 &m, Buffer *indirectargs, int argsindex);
+
+	void drawFromShader(PrimitiveType primtype, int vertexcount, int instancecount, Texture *maintexture);
+	void drawFromShader(Buffer *indexbuffer, int indexcount, int instancecount, int startindex, Texture *maintexture);
+	void drawFromShaderIndirect(PrimitiveType primtype, Buffer *indirectargs, int argsindex, Texture *maintexture);
+	void drawFromShaderIndirect(Buffer *indexbuffer, Buffer *indirectargs, int argsindex, Texture *maintexture);
 
 	/**
 	 * Draws text at the specified coordinates
 	 **/
-	void print(const std::vector<Font::ColoredString> &str, const Matrix4 &m);
-	void print(const std::vector<Font::ColoredString> &str, Font *font, const Matrix4 &m);
+	void print(const std::vector<love::font::ColoredString> &str, const Matrix4 &m);
+	void print(const std::vector<love::font::ColoredString> &str, Font *font, const Matrix4 &m);
 
 	/**
 	 * Draws formatted text on screen at the specified coordinates.
 	 **/
-	void printf(const std::vector<Font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m);
-	void printf(const std::vector<Font::ColoredString> &str, Font *font, float wrap, Font::AlignMode align, const Matrix4 &m);
+	void printf(const std::vector<love::font::ColoredString> &str, float wrap, Font::AlignMode align, const Matrix4 &m);
+	void printf(const std::vector<love::font::ColoredString> &str, Font *font, float wrap, Font::AlignMode align, const Matrix4 &m);
 
 	/**
 	 * Draws a series of points at the specified positions.
@@ -825,17 +817,24 @@ public:
 	const Capabilities &getCapabilities() const;
 
 	/**
-	 * Gets whether the specified pixel format is supported by Canvases or
-	 * Images.
+	 * Converts PIXELFORMAT_NORMAL and PIXELFORMAT_HDR into a real format.
 	 **/
-	virtual bool isCanvasFormatSupported(PixelFormat format) const = 0;
-	virtual bool isCanvasFormatSupported(PixelFormat format, bool readable) const = 0;
-	virtual bool isImageFormatSupported(PixelFormat format, bool sRGB = false) const = 0;
+	virtual PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const = 0;
+
+	/**
+	 * Gets whether the specified pixel format usage is supported.
+	 **/
+	virtual bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.
 	 **/
 	virtual Renderer getRenderer() const = 0;
+
+	/**
+	 * Whether shaders will use GLSL ES or not (mobile shaders).
+	 **/
+	virtual bool usesGLSLES() const = 0;
 
 	/**
 	 * Returns system-dependent renderer information.
@@ -854,7 +853,7 @@ public:
 	void pop();
 
 	const Matrix4 &getTransform() const;
-	const Matrix4 &getProjection() const;
+	const Matrix4 &getDeviceProjection() const;
 
 	void rotate(float r);
 	void scale(float x, float y = 1.0f);
@@ -862,25 +861,37 @@ public:
 	void shear(float kx, float ky);
 	void origin();
 
-	void applyTransform(love::math::Transform *transform);
-	void replaceTransform(love::math::Transform *transform);
+	void applyTransform(const Matrix4 &m);
+	void replaceTransform(const Matrix4 &m);
 
 	Vector2 transformPoint(Vector2 point);
 	Vector2 inverseTransformPoint(Vector2 point);
 
+	void setOrthoProjection(float w, float h, float near, float far);
+	void setPerspectiveProjection(float verticalfov, float aspect, float near, float far);
+	void setCustomProjection(const Matrix4 &m);
+	void resetProjection();
+
+	virtual Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const = 0;
+
 	virtual void draw(const DrawCommand &cmd) = 0;
 	virtual void draw(const DrawIndexedCommand &cmd) = 0;
-	virtual void drawQuads(int start, int count, const vertex::Attributes &attributes, const vertex::BufferBindings &buffers, Texture *texture) = 0;
+	virtual void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, Texture *texture) = 0;
 
-	void flushStreamDraws();
-	StreamVertexData requestStreamDraw(const StreamDrawCommand &command);
+	void flushBatchedDraws();
+	BatchedVertexData requestBatchedDraw(const BatchedDrawCommand &command);
 
-	static void flushStreamDrawsGlobal();
+	static void flushBatchedDrawsGlobal();
 
-	virtual Shader::Language getShaderLanguageTarget() const = 0;
-	const DefaultShaderCode &getCurrentDefaultShaderCode() const;
+	Texture *getTemporaryTexture(PixelFormat format, int w, int h, int samples);
+	void releaseTemporaryTexture(Texture *texture);
 
-	void cleanupCachedShaderStage(ShaderStage::StageType type, const std::string &cachekey);
+	Buffer *getTemporaryBuffer(size_t size, DataFormat format, uint32 usageflags, BufferDataUsage datausage);
+	void releaseTemporaryBuffer(Buffer *buffer);
+
+	void cleanupCachedShaderStage(ShaderStageType type, const std::string &cachekey);
+
+	void validateIndirectArgsBuffer(IndirectArgsType argstype, Buffer *indirectargs, int argsindex);
 
 	template <typename T>
 	T *getScratchBuffer(size_t count)
@@ -893,52 +904,34 @@ public:
 		return (T *) scratchBuffer.data();
 	}
 
-	static bool getConstant(const char *in, DrawMode &out);
-	static bool getConstant(DrawMode in, const char *&out);
-	static std::vector<std::string> getConstants(DrawMode);
+	static Graphics *createInstance();
 
-	static bool getConstant(const char *in, ArcMode &out);
-	static bool getConstant(ArcMode in, const char *&out);
-	static std::vector<std::string> getConstants(ArcMode);
-
-	static bool getConstant(const char *in, BlendMode &out);
-	static bool getConstant(BlendMode in, const char *&out);
-	static std::vector<std::string> getConstants(BlendMode);
-
-	static bool getConstant(const char *in, BlendAlpha &out);
-	static bool getConstant(BlendAlpha in, const char *&out);
-	static std::vector<std::string> getConstants(BlendAlpha);
-
-	static bool getConstant(const char *in, LineStyle &out);
-	static bool getConstant(LineStyle in, const char *&out);
-	static std::vector<std::string> getConstants(LineStyle);
-
-	static bool getConstant(const char *in, LineJoin &out);
-	static bool getConstant(LineJoin in, const char *&out);
-	static std::vector<std::string> getConstants(LineJoin);
-
-	static bool getConstant(const char *in, Feature &out);
-	static bool getConstant(Feature in, const char *&out);
-
-	static bool getConstant(const char *in, SystemLimit &out);
-	static bool getConstant(SystemLimit in, const char *&out);
-
-	static bool getConstant(const char *in, StackType &out);
-	static bool getConstant(StackType in, const char *&out);
-	static std::vector<std::string> getConstants(StackType);
-
-	// Default shader code (a shader is always required internally.)
-	static DefaultShaderCode defaultShaderCode[Shader::STANDARD_MAX_ENUM][Shader::LANGUAGE_MAX_ENUM][2];
+	STRINGMAP_CLASS_DECLARE(DrawMode);
+	STRINGMAP_CLASS_DECLARE(ArcMode);
+	STRINGMAP_CLASS_DECLARE(LineStyle);
+	STRINGMAP_CLASS_DECLARE(LineJoin);
+	STRINGMAP_CLASS_DECLARE(Feature);
+	STRINGMAP_CLASS_DECLARE(SystemLimit);
+	STRINGMAP_CLASS_DECLARE(StackType);
 
 protected:
 
+	enum DeviceProjectionFlags
+	{
+		DEVICE_PROJECTION_DEFAULT = 0,
+		DEVICE_PROJECTION_FLIP_Y = (1 << 0),
+		DEVICE_PROJECTION_Z_01 = (1 << 1),
+		DEVICE_PROJECTION_REVERSE_Z = (1 << 2),
+	};
+
 	struct DisplayState
 	{
+		DisplayState();
+
 		Colorf color = Colorf(1.0, 1.0, 1.0, 1.0);
 		Colorf backgroundColor = Colorf(0.0, 0.0, 0.0, 1.0);
 
-		BlendMode blendMode = BLEND_ALPHA;
-		BlendAlpha blendAlphaMode = BLENDALPHA_MULTIPLY;
+		BlendState blend = computeBlendState(BLEND_ALPHA, BLENDALPHA_MULTIPLY);
 
 		float lineWidth = 1.0f;
 		LineStyle lineStyle = LINE_SMOOTH;
@@ -949,37 +942,37 @@ protected:
 		bool scissor = false;
 		Rect scissorRect = Rect();
 
-		CompareMode stencilCompare = COMPARE_ALWAYS;
-		int stencilTestValue = 0;
+		StencilState stencil;
 
 		CompareMode depthTest = COMPARE_ALWAYS;
 		bool depthWrite = false;
 
 		CullMode meshCullMode = CULL_NONE;
-		vertex::Winding winding = vertex::WINDING_CCW;
+		Winding winding = WINDING_CCW;
 
 		StrongRef<Font> font;
 		StrongRef<Shader> shader;
 
 		RenderTargetsStrongRef renderTargets;
 
-		ColorMask colorMask = ColorMask(true, true, true, true);
+		ColorChannelMask colorMask;
 
 		bool wireframe = false;
 
-		Texture::Filter defaultFilter = Texture::Filter();
+		bool useCustomProjection = false;
+		Matrix4 customProjection;
 
-		Texture::FilterMode defaultMipmapFilter = Texture::FILTER_LINEAR;
-		float defaultMipmapSharpness = 0.0f;
+		// Default mipmap filter is set in the DisplayState constructor.
+		SamplerState defaultSamplerState = SamplerState();
 	};
 
-	struct StreamBufferState
+	struct BatchedDrawState
 	{
 		StreamBuffer *vb[2];
 		StreamBuffer *indexBuffer = nullptr;
 
 		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
-		vertex::CommonFormat formats[2];
+		CommonFormat formats[2];
 		StrongRef<Texture> texture;
 		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;
 		int vertexCount = 0;
@@ -988,37 +981,61 @@ protected:
 		StreamBuffer::MapInfo vbMap[2];
 		StreamBuffer::MapInfo indexBufferMap = StreamBuffer::MapInfo();
 
-		StreamBufferState()
+		BatchedDrawState()
 		{
 			vb[0] = vb[1] = nullptr;
-			formats[0] = formats[1] = vertex::CommonFormat::NONE;
+			formats[0] = formats[1] = CommonFormat::NONE;
 			vbMap[0] = vbMap[1] = StreamBuffer::MapInfo();
 		}
 	};
 
-	struct TemporaryCanvas
+	struct TemporaryBuffer
 	{
-		Canvas *canvas;
+		Buffer *buffer;
+		size_t size;
 		int framesSinceUse;
 
-		TemporaryCanvas(Canvas *c)
-			: canvas(c)
-			, framesSinceUse(0)
+		TemporaryBuffer(Buffer *buf, size_t size)
+			: buffer(buf)
+			, size(size)
+			, framesSinceUse(-1)
 		{}
 	};
 
-	virtual ShaderStage *newShaderStageInternal(ShaderStage::StageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
-	virtual Shader *newShaderInternal(ShaderStage *vertex, ShaderStage *pixel) = 0;
-	virtual StreamBuffer *newStreamBuffer(BufferType type, size_t size) = 0;
+	struct TemporaryTexture
+	{
+		Texture *texture;
+		int framesSinceUse;
 
-	virtual void setCanvasInternal(const RenderTargets &rts, int w, int h, int pixelw, int pixelh, bool hasSRGBcanvas) = 0;
+		TemporaryTexture(Texture *tex)
+			: texture(tex)
+			, framesSinceUse(-1)
+		{}
+	};
+
+	ShaderStage *newShaderStage(ShaderStageType stage, const std::string &source, const Shader::CompileOptions &options, const Shader::SourceInfo &info, bool cache);
+	virtual ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
+	virtual Shader *newShaderInternal(StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) = 0;
+	virtual StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) = 0;
+
+	virtual GraphicsReadback *newReadbackInternal(ReadbackMethod method, Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) = 0;
+	virtual GraphicsReadback *newReadbackInternal(ReadbackMethod method, Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty) = 0;
+
+	virtual bool dispatch(Shader *shader, int x, int y, int z) = 0;
+	virtual bool dispatch(Shader *shader, Buffer *indirectargs, size_t argsoffset) = 0;
+
+	virtual void setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture) = 0;
 
 	virtual void initCapabilities() = 0;
 	virtual void getAPIStats(int &shaderswitches) const = 0;
 
 	void createQuadIndexBuffer();
+	void createFanIndexBuffer();
 
-	Canvas *getTemporaryCanvas(PixelFormat format, int w, int h, int samples);
+	void updateTemporaryResources();
+	void clearTemporaryResources();
+
+	void updatePendingReadbacks();
 
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
@@ -1026,6 +1043,9 @@ protected:
 	void pushTransform();
 	void pushIdentityTransform();
 	void popTransform();
+
+	void updateDeviceProjection(const Matrix4 &projection);
+	Matrix4 calculateDeviceProjection(const Matrix4 &projection, uint32 flags) const;
 
 	int width;
 	int height;
@@ -1035,36 +1055,37 @@ protected:
 	bool created;
 	bool active;
 
-	bool writingToStencil;
-
 	StrongRef<love::graphics::Font> defaultFont;
 
 	std::vector<ScreenshotInfo> pendingScreenshotCallbacks;
+	std::vector<StrongRef<GraphicsReadback>> pendingReadbacks;
 
-	StreamBufferState streamBufferState;
+	BatchedDrawState batchedDrawState;
 
 	std::vector<Matrix4> transformStack;
-	Matrix4 projectionMatrix;
+	Matrix4 deviceProjectionMatrix;
 
 	std::vector<double> pixelScaleStack;
 
 	std::vector<DisplayState> states;
 	std::vector<StackType> stackTypeStack;
 
-	std::vector<TemporaryCanvas> temporaryCanvases;
+	std::vector<TemporaryBuffer> temporaryBuffers;
+	std::vector<TemporaryTexture> temporaryTextures;
 
-	int canvasSwitchCount;
+	int renderTargetSwitchCount;
 	int drawCalls;
 	int drawCallsBatched;
 
 	Buffer *quadIndexBuffer;
+	Buffer *fanIndexBuffer;
 
 	Capabilities capabilities;
 
 	Deprecations deprecations;
 
 	static const size_t MAX_USER_STACK_DEPTH = 128;
-	static const int MAX_TEMPORARY_CANVAS_UNUSED_FRAMES = 16;
+	static const int MAX_TEMPORARY_RESOURCE_UNUSED_FRAMES = 16;
 
 private:
 
@@ -1073,36 +1094,11 @@ private:
 
 	std::vector<uint8> scratchBuffer;
 
-	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[ShaderStage::STAGE_MAX_ENUM];
-
-	static StringMap<DrawMode, DRAW_MAX_ENUM>::Entry drawModeEntries[];
-	static StringMap<DrawMode, DRAW_MAX_ENUM> drawModes;
-
-	static StringMap<ArcMode, ARC_MAX_ENUM>::Entry arcModeEntries[];
-	static StringMap<ArcMode, ARC_MAX_ENUM> arcModes;
-
-	static StringMap<BlendMode, BLEND_MAX_ENUM>::Entry blendModeEntries[];
-	static StringMap<BlendMode, BLEND_MAX_ENUM> blendModes;
-
-	static StringMap<BlendAlpha, BLENDALPHA_MAX_ENUM>::Entry blendAlphaEntries[];
-	static StringMap<BlendAlpha, BLENDALPHA_MAX_ENUM> blendAlphaModes;
-
-	static StringMap<LineStyle, LINE_MAX_ENUM>::Entry lineStyleEntries[];
-	static StringMap<LineStyle, LINE_MAX_ENUM> lineStyles;
-
-	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM>::Entry lineJoinEntries[];
-	static StringMap<LineJoin, LINE_JOIN_MAX_ENUM> lineJoins;
-
-	static StringMap<Feature, FEATURE_MAX_ENUM>::Entry featureEntries[];
-	static StringMap<Feature, FEATURE_MAX_ENUM> features;
-
-	static StringMap<SystemLimit, LIMIT_MAX_ENUM>::Entry systemLimitEntries[];
-	static StringMap<SystemLimit, LIMIT_MAX_ENUM> systemLimits;
-
-	static StringMap<StackType, STACK_MAX_ENUM>::Entry stackTypeEntries[];
-	static StringMap<StackType, STACK_MAX_ENUM> stackTypes;
+	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[SHADERSTAGE_MAX_ENUM];
 
 }; // Graphics
+
+STRINGMAP_DECLARE(Renderer);
 
 } // graphics
 } // love

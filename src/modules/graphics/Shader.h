@@ -33,17 +33,13 @@
 #include <vector>
 #include <stddef.h>
 
-namespace glslang
-{
-class TShader;
-}
-
 namespace love
 {
 namespace graphics
 {
 
 class Graphics;
+class Buffer;
 
 // A GLSL shader
 class Shader : public Object, public Resource
@@ -55,9 +51,8 @@ public:
 	enum Language
 	{
 		LANGUAGE_GLSL1,
-		LANGUAGE_ESSL1,
 		LANGUAGE_GLSL3,
-		LANGUAGE_ESSL3,
+		LANGUAGE_GLSL4,
 		LANGUAGE_MAX_ENUM
 	};
 
@@ -68,12 +63,8 @@ public:
 		BUILTIN_TEXTURE_VIDEO_Y,
 		BUILTIN_TEXTURE_VIDEO_CB,
 		BUILTIN_TEXTURE_VIDEO_CR,
-		BUILTIN_MATRIX_VIEW_FROM_LOCAL,
-		BUILTIN_MATRIX_CLIP_FROM_VIEW,
-		BUILTIN_MATRIX_CLIP_FROM_LOCAL,
-		BUILTIN_MATRIX_VIEW_NORMAL_FROM_LOCAL,
-		BUILTIN_POINT_SIZE,
-		BUILTIN_SCREEN_SIZE,
+		BUILTIN_UNIFORMS_PER_DRAW,
+		BUILTIN_UNIFORMS_PER_DRAW_2,
 		BUILTIN_MAX_ENUM
 	};
 
@@ -86,6 +77,9 @@ public:
 		UNIFORM_UINT,
 		UNIFORM_BOOL,
 		UNIFORM_SAMPLER,
+		UNIFORM_STORAGETEXTURE,
+		UNIFORM_TEXELBUFFER,
+		UNIFORM_STORAGEBUFFER,
 		UNIFORM_UNKNOWN,
 		UNIFORM_MAX_ENUM
 	};
@@ -95,7 +89,35 @@ public:
 		STANDARD_DEFAULT,
 		STANDARD_VIDEO,
 		STANDARD_ARRAY,
+		STANDARD_POINTS,
 		STANDARD_MAX_ENUM
+	};
+
+	enum EntryPoint
+	{
+		ENTRYPOINT_NONE,
+		ENTRYPOINT_HIGHLEVEL,
+		ENTRYPOINT_CUSTOM,
+		ENTRYPOINT_RAW,
+	};
+
+	enum Access
+	{
+		ACCESS_NONE = 0,
+		ACCESS_READ = (1 << 0),
+		ACCESS_WRITE = (1 << 1),
+	};
+
+	struct CompileOptions
+	{
+		std::map<std::string, std::string> defines;
+	};
+
+	struct SourceInfo
+	{
+		Language language;
+		EntryPoint stages[SHADERSTAGE_MAX_ENUM];
+		bool usesMRT;
 	};
 
 	struct MatrixSize
@@ -116,8 +138,13 @@ public:
 		};
 
 		UniformType baseType;
+		DataBaseType dataBaseType;
 		TextureType textureType;
+		Access access;
 		bool isDepthSampler;
+		PixelFormat storageTextureFormat;
+		size_t bufferStride;
+		size_t bufferMemberCount;
 		std::string name;
 
 		union
@@ -130,8 +157,31 @@ public:
 
 		size_t dataSize;
 
-		Texture **textures;
+		union
+		{
+			Texture **textures;
+			Buffer **buffers;
+		};
 	};
+
+	union LocalUniformValue
+	{
+		float f;
+		int32 i;
+		uint32 u;
+	};
+
+	// The members in here must respect uniform buffer alignment/padding rules.
+ 	struct BuiltinUniformData
+ 	{
+ 		Matrix4 transformMatrix;
+ 		Matrix4 projectionMatrix;
+ 		Vector4 normalMatrix[3]; // 3x3 matrix padded to an array of 3 vector4s.
+ 		Colorf constantColor;
+
+		// Pixel shader-centric variables past this point.
+		Vector4 screenSizeParams;
+ 	};
 
 	// Pointer to currently active Shader.
 	static Shader *current;
@@ -139,8 +189,13 @@ public:
 	// Pointer to the default Shader.
 	static Shader *standardShaders[STANDARD_MAX_ENUM];
 
-	Shader(ShaderStage *vertex, ShaderStage *pixel);
+	Shader(StrongRef<ShaderStage> stages[]);
 	virtual ~Shader();
+
+	/**
+	 * Check whether a Shader has a stage.
+	 **/
+	bool hasStage(ShaderStageType stage);
 
 	/**
 	 * Binds this Shader's program to be used when rendering.
@@ -170,6 +225,7 @@ public:
 	virtual void updateUniform(const UniformInfo *info, int count) = 0;
 
 	virtual void sendTextures(const UniformInfo *info, Texture **textures, int count) = 0;
+	virtual void sendBuffers(const UniformInfo *info, Buffer **buffers, int count) = 0;
 
 	/**
 	 * Gets whether a uniform with the specified name exists and is actively
@@ -182,14 +238,20 @@ public:
 	 **/
 	virtual void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture) = 0;
 
-	TextureType getMainTextureType() const;
-	void checkMainTextureType(TextureType textype, bool isDepthSampler) const;
-	void checkMainTexture(Texture *texture) const;
+	const UniformInfo *getMainTextureInfo() const;
+	void validateDrawState(PrimitiveType primtype, Texture *maintexture) const;
 
-	static bool validate(ShaderStage *vertex, ShaderStage *pixel, std::string &err);
+	void getLocalThreadgroupSize(int *x, int *y, int *z);
+
+	static SourceInfo getSourceInfo(const std::string &src);
+	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const CompileOptions &options, const SourceInfo &info, bool gles, bool checksystemfeatures);
+
+	static bool validate(StrongRef<ShaderStage> stages[], std::string &err);
 
 	static bool initialize();
 	static void deinitialize();
+
+	static const std::string &getDefaultCode(StandardShader shader, ShaderStageType stage);
 
 	static bool getConstant(const char *in, Language &out);
 	static bool getConstant(Language in, const char *&out);
@@ -199,16 +261,46 @@ public:
 
 protected:
 
-	StrongRef<ShaderStage> stages[ShaderStage::STAGE_MAX_ENUM];
+	struct BufferReflection
+	{
+		size_t stride;
+		size_t memberCount;
+		Access access;
+	};
 
-private:
+	struct StorageTextureReflection
+	{
+		PixelFormat format;
+		Access access;
+	};
 
-	static StringMap<Language, LANGUAGE_MAX_ENUM>::Entry languageEntries[];
-	static StringMap<Language, LANGUAGE_MAX_ENUM> languages;
-	
-	// Names for the built-in uniform variables.
-	static StringMap<BuiltinUniform, BUILTIN_MAX_ENUM>::Entry builtinNameEntries[];
-	static StringMap<BuiltinUniform, BUILTIN_MAX_ENUM> builtinNames;
+	struct LocalUniform
+	{
+		DataBaseType dataType;
+		std::vector<LocalUniformValue> initializerValues;
+	};
+
+	struct ValidationReflection
+	{
+		std::map<std::string, BufferReflection> storageBuffers;
+		std::map<std::string, StorageTextureReflection> storageTextures;
+		std::map<std::string, LocalUniform> localUniforms;
+		int localThreadgroupSize[3];
+		bool usesPointSize;
+	};
+
+	bool fillUniformReflectionData(UniformInfo &u);
+
+	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, ValidationReflection &reflection);
+	static DataBaseType getDataBaseType(PixelFormat format);
+	static bool isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b);
+
+	static bool validateTexture(const UniformInfo *info, Texture *tex, bool internalUpdate);
+	static bool validateBuffer(const UniformInfo *info, Buffer *buffer, bool internalUpdate);
+
+	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
+
+	ValidationReflection validationReflection;
 
 }; // Shader
 

@@ -32,13 +32,8 @@
 #include <sstream>
 
 #ifdef LOVE_WINDOWS
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
-#if defined(_MSC_VER) && (_MSC_VER < 1900)
-// VS 2013 and earlier doesn't have snprintf
-#define snprintf sprintf_s
-#endif // defined(_MSC_VER) && (_MSC_VER < 1900)
-
 #endif // LOVE_WINDOWS
 
 #ifdef LOVE_ANDROID
@@ -76,9 +71,19 @@ extern "C"
 #	include "graphics/Graphics.h"
 #endif
 
+// For love::window::setHighDPIAllowed
+#ifdef LOVE_ENABLE_WINDOW
+#	include "window/Window.h"
+#endif
+
 // For love::audio::Audio::setMixWithSystem.
 #ifdef LOVE_ENABLE_AUDIO
 #	include "audio/Audio.h"
+#endif
+
+// For love::system::System::getOS.
+#ifdef LOVE_ENABLE_SYSTEM
+#	include "system/System.h"
 #endif
 
 // Scripts.
@@ -142,6 +147,9 @@ extern "C"
 #if defined(LOVE_ENABLE_PHYSICS)
 	extern int luaopen_love_physics(lua_State*);
 #endif
+#if defined(LOVE_ENABLE_SENSOR)
+	extern int luaopen_love_sensor(lua_State*);
+#endif
 #if defined(LOVE_ENABLE_SOUND)
 	extern int luaopen_love_sound(lua_State*);
 #endif
@@ -168,6 +176,10 @@ extern "C"
 	extern int luaopen_love_arg(lua_State*);
 	extern int luaopen_love_callbacks(lua_State*);
 	extern int luaopen_love_boot(lua_State*);
+
+#ifdef LOVE_ENABLE_LUAHTTPS
+	extern int luaopen_https(lua_State*);
+#endif
 }
 
 static const luaL_Reg modules[] = {
@@ -206,6 +218,9 @@ static const luaL_Reg modules[] = {
 #endif
 #if defined(LOVE_ENABLE_PHYSICS)
 	{ "love.physics", luaopen_love_physics },
+#endif
+#if defined(LOVE_ENABLE_SENSOR)
+	{ "love.sensor", luaopen_love_sensor },
 #endif
 #if defined(LOVE_ENABLE_SOUND)
 	{ "love.sound", luaopen_love_sound },
@@ -351,6 +366,83 @@ static int w__setGammaCorrect(lua_State *L)
 	return 0;
 }
 
+static int w__getDefaultRenderers(lua_State *L)
+{
+#ifdef LOVE_ENABLE_GRAPHICS
+	const auto &renderers = love::graphics::getDefaultRenderers();
+
+	lua_createtable(L, (int) renderers.size(), 0);
+
+	int n = 1;
+	for (auto r : renderers)
+	{
+		const char *str = nullptr;
+		if (love::graphics::getConstant(r, str))
+		{
+			lua_pushstring(L, str);
+			lua_rawseti(L, -2, n++);
+		}
+	}
+#else
+	lua_createtable(L, 0, 0);
+#endif
+	return 1;
+}
+
+static int w__getRenderers(lua_State *L)
+{
+#ifdef LOVE_ENABLE_GRAPHICS
+	const auto &renderers = love::graphics::getRenderers();
+
+	lua_createtable(L, (int) renderers.size(), 0);
+
+	int n = 1;
+	for (auto r : renderers)
+	{
+		const char *str = nullptr;
+		if (love::graphics::getConstant(r, str))
+		{
+			lua_pushstring(L, str);
+			lua_rawseti(L, -2, n++);
+		}
+	}
+#else
+	lua_createtable(L, 0, 0);
+#endif
+	return 1;
+}
+
+static int w__setRenderers(lua_State *L)
+{
+#ifdef LOVE_ENABLE_GRAPHICS
+	std::vector<love::graphics::Renderer> renderers;
+
+	luaL_checktype(L, 1, LUA_TTABLE);
+	for (size_t i = 1; i <= love::luax_objlen(L, 1); i++)
+	{
+		lua_rawgeti(L, -1, (int) i);
+		const char *str = luaL_checkstring(L, -1);
+
+		love::graphics::Renderer r;
+		if (love::graphics::getConstant(str, r))
+			renderers.push_back(r);
+
+		lua_pop(L, 1);
+	}
+
+	love::graphics::setRenderers(renderers);
+#endif
+	return 0;
+}
+
+static int w__setHighDPIAllowed(lua_State *L)
+{
+#ifdef LOVE_ENABLE_WINDOW
+	love::window::setHighDPIAllowed((bool) lua_toboolean(L, 1));
+#endif
+	return 0;
+}
+
 static int w__setAudioMixWithSystem(lua_State *L)
 {
 	bool success = false;
@@ -369,6 +461,29 @@ static int w__requestRecordingPermission(lua_State *L)
 #ifdef LOVE_ENABLE_AUDIO
 	love::audio::setRequestRecordingPermission((bool) lua_toboolean(L, 1));
 #endif
+	return 0;
+}
+
+static int w_love_markDeprecated(lua_State *L)
+{
+	int level = (int)luaL_checkinteger(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	const char *apiname = luaL_checkstring(L, 3);
+	const char *deprecationtname = luaL_checkstring(L, 4);
+
+	love::APIType api;
+	if (!love::getConstant(apiname, api))
+		return love::luax_enumerror(L, "API type", love::getConstants(api), apiname);
+
+	love::DeprecationType dtype;
+	if (!love::getConstant(deprecationtname, dtype))
+		return love::luax_enumerror(L, "deprecation type", love::getConstants(dtype), deprecationtname);
+
+	const char *replacement = nullptr;
+	if (dtype != love::DEPRECATED_NO_REPLACEMENT)
+		replacement = luaL_checkstring(L, 5);
+
+	love::luax_markdeprecated(L, level, name, api, dtype, replacement);
 	return 0;
 }
 
@@ -455,6 +570,18 @@ int luaopen_love(lua_State *L)
 	lua_pushcfunction(L, w__setGammaCorrect);
 	lua_setfield(L, -2, "_setGammaCorrect");
 
+	lua_pushcfunction(L, w__getDefaultRenderers);
+	lua_setfield(L, -2, "_getDefaultRenderers");
+
+	lua_pushcfunction(L, w__getRenderers);
+	lua_setfield(L, -2, "_getRenderers");
+
+	lua_pushcfunction(L, w__setRenderers);
+	lua_setfield(L, -2, "_setRenderers");
+
+	lua_pushcfunction(L, w__setHighDPIAllowed);
+	lua_setfield(L, -2, "_setHighDPIAllowed");
+
 	// Exposed here because we need to be able to call it before the audio
 	// module is initialized.
 	lua_pushcfunction(L, w__setAudioMixWithSystem);
@@ -478,18 +605,8 @@ int luaopen_love(lua_State *L)
 	lua_pushcfunction(L, w_love_isVersionCompatible);
 	lua_setfield(L, -2, "isVersionCompatible");
 
-#ifdef LOVE_WINDOWS_UWP
-	lua_pushstring(L, "UWP");
-#elif LOVE_WINDOWS
-	lua_pushstring(L, "Windows");
-#elif defined(LOVE_MACOSX)
-	lua_pushstring(L, "OS X");
-#elif defined(LOVE_IOS)
-	lua_pushstring(L, "iOS");
-#elif defined(LOVE_ANDROID)
-	lua_pushstring(L, "Android");
-#elif defined(LOVE_LINUX)
-	lua_pushstring(L, "Linux");
+#ifdef LOVE_ENABLE_SYSTEM
+	lua_pushstring(L, love::system::System::getOS());
 #else
 	lua_pushstring(L, "Unknown");
 #endif
@@ -508,6 +625,9 @@ int luaopen_love(lua_State *L)
 		lua_setmetatable(L, -2);
 
 		lua_setfield(L, -2, "_deprecation");
+
+		lua_pushcfunction(L, w_love_markDeprecated);
+		lua_setfield(L, -2, "markDeprecated");
 
 		lua_pushcfunction(L, w_love_setDeprecationOutput);
 		lua_setfield(L, -2, "setDeprecationOutput");
@@ -528,13 +648,16 @@ int luaopen_love(lua_State *L)
 #endif
 
 #ifdef LOVE_ENABLE_LUASOCKET
-	love::luasocket::__open(L);
+	love::luasocket::preload(L);
 #endif
 #ifdef LOVE_ENABLE_ENET
 	love::luax_preload(L, luaopen_enet, "enet");
 #endif
 #ifdef LOVE_ENABLE_LUA53
 	love::luax_preload(L, luaopen_luautf8, "utf8");
+#endif
+#ifdef LOVE_ENABLE_LUAHTTPS
+	love::luax_preload(L, luaopen_https, "https");
 #endif
 
 #ifdef LOVE_ENABLE_WINDOW
@@ -656,6 +779,10 @@ int w__setAccelerometerAsJoystick(lua_State *L)
 {
 	bool enable = (bool) lua_toboolean(L, 1);
 	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, enable ? "1" : "0");
+
+	if (enable)
+		love::luax_markdeprecated(L, 1, "accelerometerjoystick", love::API_FIELD, love::DEPRECATED_REPLACED, "love.sensor module");
+
 	return 0;
 }
 #endif // LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK

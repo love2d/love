@@ -19,6 +19,9 @@
  **/
 
 #include "ios.h"
+#include "apple.h"
+
+using namespace love::apple;
 
 #ifdef LOVE_IOS
 
@@ -127,18 +130,14 @@ static bool deleteFileInDocuments(NSString *filename);
 
 @end
 
-static NSString *getDocumentsDirectory()
-{
-	NSArray *docdirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-	return docdirs[0];
-}
-
 static NSArray *getLovesInDocuments()
 {
+	std::string docdir = getUserDirectory(USER_DIRECTORY_DOCUMENTS);
+
 	NSMutableArray *paths = [NSMutableArray new];
 
 	NSFileManager *manager = [NSFileManager defaultManager];
-	NSDirectoryEnumerator *enumerator = [manager enumeratorAtPath:getDocumentsDirectory()];
+	NSDirectoryEnumerator *enumerator = [manager enumeratorAtPath:@(docdir.c_str())];
 
 	NSString *path = nil;
 	while ((path = [enumerator nextObject]))
@@ -155,9 +154,9 @@ static NSArray *getLovesInDocuments()
 
 static bool deleteFileInDocuments(NSString *filename)
 {
-	NSString *documents = getDocumentsDirectory();
+	std::string docdir = getUserDirectory(USER_DIRECTORY_DOCUMENTS);
 
-	NSString *file = [documents stringByAppendingPathComponent:filename];
+	NSString *file = [@(docdir.c_str()) stringByAppendingPathComponent:filename];
 	bool success = [[NSFileManager defaultManager] removeItemAtPath:file error:nil];
 
 	if (success)
@@ -178,7 +177,8 @@ static int dropFileEventFilter(void *userdata, SDL_Event *event)
 
 		if ([fmanager fileExistsAtPath:fname] && [fname.pathExtension isEqual:@"love"])
 		{
-			NSString *documents = getDocumentsDirectory();
+			std::string docdir = getUserDirectory(USER_DIRECTORY_DOCUMENTS);
+			NSString *documents = @(docdir.c_str());
 
 			documents = documents.stringByStandardizingPath.stringByResolvingSymlinksInPath;
 			fname = fname.stringByStandardizingPath.stringByResolvingSymlinksInPath;
@@ -331,37 +331,10 @@ std::string getLoveInResources(bool &fused)
 		// The string length might be 0 if the no-game screen was selected.
 		if (selectedfile != nil && selectedfile.length > 0)
 		{
-			NSString *documents = getDocumentsDirectory();
+			std::string docdir = getUserDirectory(USER_DIRECTORY_DOCUMENTS);
+			NSString *documents = @(docdir.c_str());
 			path = [documents stringByAppendingPathComponent:selectedfile].UTF8String;
 		}
-	}
-
-	return path;
-}
-
-std::string getAppdataDirectory()
-{
-	NSSearchPathDirectory searchdir = NSApplicationSupportDirectory;
-	std::string path;
-
-	@autoreleasepool
-	{
-		NSArray *dirs = NSSearchPathForDirectoriesInDomains(searchdir, NSUserDomainMask, YES);
-
-		if (dirs.count > 0)
-			path = [dirs[0] UTF8String];
-	}
-
-	return path;
-}
-
-std::string getHomeDirectory()
-{
-	std::string path;
-
-	@autoreleasepool
-	{
-		path = [NSHomeDirectory() UTF8String];
 	}
 
 	return path;
@@ -381,14 +354,6 @@ bool openURL(const std::string &url)
 	}
 
 	return success;
-}
-
-std::string getExecutablePath()
-{
-	@autoreleasepool
-	{
-		return std::string([NSBundle mainBundle].executablePath.UTF8String);
-	}
 }
 
 void vibrate()

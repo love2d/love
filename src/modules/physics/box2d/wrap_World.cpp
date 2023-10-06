@@ -185,6 +185,15 @@ int w_World_queryBoundingBox(lua_State *L)
 	return t->queryBoundingBox(L);
 }
 
+int w_World_getFixturesInArea(lua_State *L)
+{
+	World *t = luax_checkworld(L, 1);
+	lua_remove(L, 1);
+	int ret = 0;
+	luax_catchexcept(L, [&](){ ret = t->getFixturesInArea(L); });
+	return ret;
+}
+
 int w_World_rayCast(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
@@ -208,24 +217,6 @@ int w_World_isDestroyed(lua_State *L)
 	return 1;
 }
 
-int w_World_getBodyList(lua_State *L)
-{
-	luax_markdeprecated(L, "World:getBodyList", API_METHOD, DEPRECATED_RENAMED, "World:getBodies");
-	return w_World_getBodies(L);
-}
-
-int w_World_getJointList(lua_State *L)
-{
-	luax_markdeprecated(L, "World:getJointList", API_METHOD, DEPRECATED_RENAMED, "World:getJoints");
-	return w_World_getJoints(L);
-}
-
-int w_World_getContactList(lua_State *L)
-{
-	luax_markdeprecated(L, "World:getContactList", API_METHOD, DEPRECATED_RENAMED, "World:getContacts");
-	return w_World_getContacts(L);
-}
-
 static const luaL_Reg w_World_functions[] =
 {
 	{ "update", w_World_update },
@@ -246,14 +237,10 @@ static const luaL_Reg w_World_functions[] =
 	{ "getJoints", w_World_getJoints },
 	{ "getContacts", w_World_getContacts },
 	{ "queryBoundingBox", w_World_queryBoundingBox },
+	{ "getFixturesInArea", w_World_getFixturesInArea },
 	{ "rayCast", w_World_rayCast },
 	{ "destroy", w_World_destroy },
 	{ "isDestroyed", w_World_isDestroyed },
-
-	// Deprecated
-	{ "getBodyList", w_World_getBodyList },
-	{ "getJointList", w_World_getJointList },
-	{ "getContactList", w_World_getContactList },
 
 	{ 0, 0 }
 };

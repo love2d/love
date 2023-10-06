@@ -211,6 +211,15 @@ void Audio::resumeContext()
 {
 }
 
+std::string Audio::getPlaybackDevice()
+{
+	return "";
+}
+
+void Audio::getPlaybackDevices(std::vector<std::string> &/*list*/)
+{
+}
+
 
 } // null
 } // audio

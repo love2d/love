@@ -6,24 +6,27 @@
 * Diego Nehab
 * 9/11/1999
 \*=========================================================================*/
-#include "lua.h"
 
-/*-------------------------------------------------------------------------*\
+/*-------------------------------------------------------------------------* \
 * Current socket library version
 \*-------------------------------------------------------------------------*/
-#define LUASOCKET_VERSION    "LuaSocket 3.0-rc1"
+#define LUASOCKET_VERSION    "LuaSocket 3.0.0"
 #define LUASOCKET_COPYRIGHT  "Copyright (C) 1999-2013 Diego Nehab"
 
 /*-------------------------------------------------------------------------*\
 * This macro prefixes all exported API functions
 \*-------------------------------------------------------------------------*/
 #ifndef LUASOCKET_API
-#if defined(WIN32) || defined(_WIN32)
-#       define LUASOCKET_API __declspec(dllexport)
+#ifdef _WIN32
+#define LUASOCKET_API __declspec(dllexport)
 #else
-#       define LUASOCKET_API __attribute__((visibility("default")))
+#define LUASOCKET_API __attribute__ ((visibility ("default")))
 #endif
 #endif
+
+#include "lua.h"
+#include "lauxlib.h"
+#include "compat.h"
 
 /*-------------------------------------------------------------------------*\
 * Initializes the library.

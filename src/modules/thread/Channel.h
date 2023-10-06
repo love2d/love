@@ -36,9 +36,6 @@ namespace thread
 
 class Channel : public love::Object
 {
-// FOR WRAPPER USE ONLY
-friend int w_Channel_performAtomic(lua_State *);
-
 public:
 
 	static love::Type type;
@@ -57,10 +54,10 @@ public:
 	bool hasRead(uint64 id) const;
 	void clear();
 
-private:
-
 	void lockMutex();
 	void unlockMutex();
+
+private:
 
 	MutexRef mutex;
 	ConditionalRef cond;

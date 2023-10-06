@@ -26,8 +26,9 @@
 
 #include <iostream>
 #if defined(LOVE_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
+#elif defined(LOVE_MACOS) || defined(LOVE_IOS)
 #include <mach/mach_time.h>
 #include <sys/time.h>
 #elif defined(LOVE_LINUX)
@@ -141,7 +142,7 @@ double Timer::getTime()
 	return (double) sec + (double) nsec / 1.0e9;
 }
 
-#elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
+#elif defined(LOVE_MACOS) || defined(LOVE_IOS)
 
 static mach_timebase_info_data_t getTimebaseInfo()
 {

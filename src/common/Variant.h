@@ -21,19 +21,18 @@
 #ifndef LOVE_VARIANT_H
 #define LOVE_VARIANT_H
 
-#include "common/runtime.h"
+#include "common/config.h"
 #include "common/Object.h"
 #include "common/int.h"
 
 #include <cstring>
 #include <string>
 #include <vector>
-#include <set>
 
 namespace love
 {
 
-class Variant
+class LOVE_EXPORT Variant
 {
 public:
 
@@ -73,14 +72,10 @@ public:
 	{
 	public:
 
-		SharedTable(std::vector<std::pair<Variant, Variant>> *table)
-			: table(table)
-		{
-		}
+		SharedTable() {}
+		virtual ~SharedTable() {}
 
-		virtual ~SharedTable() { delete table; }
-
-		std::vector<std::pair<Variant, Variant>> *table;
+		std::vector<std::pair<Variant, Variant>> pairs;
 	};
 
 	union Data
@@ -105,7 +100,7 @@ public:
 	Variant(const std::string &str);
 	Variant(void *lightuserdata);
 	Variant(love::Type *type, love::Object *object);
-	Variant(std::vector<std::pair<Variant, Variant>> *table);
+	Variant(SharedTable *table);
 	Variant(const Variant &v);
 	Variant(Variant &&v);
 	~Variant();
@@ -115,10 +110,11 @@ public:
 	Type getType() const { return type; }
 	const Data &getData() const { return data; }
 
-	static Variant fromLua(lua_State *L, int n, std::set<const void*> *tableSet = nullptr);
-	void toLua(lua_State *L) const;
+	static Variant unknown() { return Variant(UNKNOWN); }
 
 private:
+
+	Variant(Type vtype);
 
 	Type type;
 	Data data;

@@ -40,12 +40,13 @@ namespace filesystem
  **/
 FileData *luax_getfiledata(lua_State *L, int idx);
 bool luax_cangetfiledata(lua_State *L, int idx);
+
 File *luax_getfile(lua_State *L, int idx);
+bool luax_cangetfile(lua_State *L, int idx);
 
 Data *luax_getdata(lua_State *L, int idx);
 bool luax_cangetdata(lua_State *L, int idx);
 
-bool hack_setupWriteDirectory();
 int loader(lua_State *L);
 int extloader(lua_State *L);
 extern "C" LOVE_EXPORT int luaopen_love_filesystem(lua_State *L);

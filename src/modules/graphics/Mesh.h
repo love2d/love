@@ -25,6 +25,7 @@
 #include "common/int.h"
 #include "common/math.h"
 #include "common/StringMap.h"
+#include "common/Range.h"
 #include "Drawable.h"
 #include "Texture.h"
 #include "vertex.h"
@@ -50,36 +51,30 @@ class Mesh : public Drawable
 {
 public:
 
-	static love::Type type;
-
-	struct AttribFormat
+	struct BufferAttribute
 	{
 		std::string name;
-		vertex::DataType type;
-		int components; // max 4
+		StrongRef<Buffer> buffer;
+		StrongRef<Mesh> mesh;
+		int indexInBuffer;
+		int startArrayIndex;
+		AttributeStep step;
+		bool enabled;
 	};
 
-	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, vertex::Usage usage);
-	Mesh(Graphics *gfx, const std::vector<AttribFormat> &vertexformat, int vertexcount, PrimitiveType drawmode, vertex::Usage usage);
+	static love::Type type;
+
+	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, const void *data, size_t datasize, PrimitiveType drawmode, BufferDataUsage usage);
+	Mesh(Graphics *gfx, const std::vector<Buffer::DataDeclaration> &vertexformat, int vertexcount, PrimitiveType drawmode, BufferDataUsage usage);
+	Mesh(const std::vector<BufferAttribute> &attributes, PrimitiveType drawmode);
 
 	virtual ~Mesh();
 
 	/**
-	 * Sets the values of all attributes at a specific vertex index in the Mesh.
-	 * The size of the data must be less than or equal to the total size of all
-	 * vertex attributes.
+	 * Validates a vertex index and whether the Mesh has its own vertex buffer,
+	 * and returns a pointer to the vertex data at the given vertex index.
 	 **/
-	void setVertex(size_t vertindex, const void *data, size_t datasize);
-	size_t getVertex(size_t vertindex, void *data, size_t datasize);
-	void *getVertexScratchBuffer();
-
-	/**
-	 * Sets the values for a single attribute at a specific vertex index in the
-	 * Mesh. The size of the data must be less than or equal to the size of the
-	 * attribute.
-	 **/
-	void setVertexAttribute(size_t vertindex, int attribindex, const void *data, size_t datasize);
-	size_t getVertexAttribute(size_t vertindex, int attribindex, void *data, size_t datasize);
+	void *checkVertexDataOffset(size_t vertindex, size_t *byteoffset);
 
 	/**
 	 * Gets the total number of vertices that can be used when drawing the Mesh.
@@ -93,11 +88,14 @@ public:
 	size_t getVertexStride() const;
 
 	/**
+	 * Gets the Buffer that holds the Mesh's vertices.
+	 **/
+	Buffer *getVertexBuffer() const;
+
+	/**
 	 * Gets the format of each vertex attribute stored in the Mesh.
 	 **/
-	const std::vector<AttribFormat> &getVertexFormat() const;
-	vertex::DataType getAttributeInfo(int attribindex, int &components) const;
-	int getAttributeIndex(const std::string &name) const;
+	const std::vector<Buffer::DataMember> &getVertexFormat() const;
 
 	/**
 	 * Sets whether a specific vertex attribute is used when drawing the Mesh.
@@ -106,14 +104,18 @@ public:
 	bool isAttributeEnabled(const std::string &name) const;
 
 	/**
-	 * Attaches a vertex attribute from another Mesh to this one. The attribute
-	 * will be used when drawing this Mesh.
+	 * Attaches a vertex attribute from another vertex buffer to this Mesh. The
+	 * attribute will be used when drawing this Mesh.
+	 * Attributes from other Meshes should also pass in the Mesh as an argument,
+	 * to make sure this Mesh knows to flush the passed in Mesh's data to its
+	 * buffer when drawing.
 	 **/
-	void attachAttribute(const std::string &name, Mesh *mesh, const std::string &attachname, AttributeStep step = STEP_PER_VERTEX);
+	void attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, int startindex = 0, AttributeStep step = STEP_PER_VERTEX);
 	bool detachAttribute(const std::string &name);
+	const std::vector<BufferAttribute> &getAttachedAttributes() const;
 
-	void *mapVertexData();
-	void unmapVertexData(size_t modifiedoffset = 0, size_t modifiedsize = -1);
+	void *getVertexData() const;
+	void setVertexDataModified(size_t offset, size_t size);
 
 	/**
 	 * Flushes all modified data to the GPU.
@@ -136,10 +138,13 @@ public:
 	 **/
 	bool getVertexMap(std::vector<uint32> &map) const;
 
+	void setIndexBuffer(Buffer *buffer);
+	Buffer *getIndexBuffer() const;
+
 	/**
 	 * Gets the total number of elements in the vertex map array.
 	 **/
-	size_t getVertexMapCount() const;
+	size_t getIndexCount() const;
 
 	/**
 	 * Sets the texture used when drawing the Mesh.
@@ -171,49 +176,42 @@ public:
 	void draw(Graphics *gfx, const Matrix4 &m) override;
 
 	void drawInstanced(Graphics *gfx, const Matrix4 &m, int instancecount);
+	void drawIndirect(Graphics *gfx, const Matrix4 &m, Buffer *indirectargs, int argsindex);
 
-	static std::vector<AttribFormat> getDefaultVertexFormat();
+	static std::vector<Buffer::DataDeclaration> getDefaultVertexFormat();
 
 private:
 
 	friend class SpriteBatch;
 
-	struct AttachedAttribute
-	{
-		Mesh *mesh;
-		int index;
-		AttributeStep step;
-		bool enabled;
-	};
-
 	void setupAttachedAttributes();
-	void calculateAttributeSizes();
-	size_t getAttributeOffset(size_t attribindex) const;
+	int getAttachedAttributeIndex(const std::string &name) const;
 
-	std::vector<AttribFormat> vertexFormat;
-	std::vector<size_t> attributeSizes;
+	void drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buffer *indirectargs, int argsindex);
 
-	std::unordered_map<std::string, AttachedAttribute> attachedAttributes;
+	std::vector<Buffer::DataMember> vertexFormat;
+
+	std::vector<BufferAttribute> attachedAttributes;
 
 	// Vertex buffer, for the vertex data.
-	Buffer *vertexBuffer;
-	size_t vertexCount;
-	size_t vertexStride;
+	StrongRef<Buffer> vertexBuffer;
+	uint8 *vertexData = nullptr;
+	Range modifiedVertexData = Range();
 
-	// Block of memory whose size is at least as large as a single vertex. Helps
-	// avoid memory allocations when using Mesh::setVertex etc.
-	char *vertexScratchBuffer;
+	size_t vertexCount = 0;
+	size_t vertexStride = 0;
 
 	// Index buffer, for the vertex map.
-	Buffer *indexBuffer;
-	bool useIndexBuffer;
-	size_t indexCount;
-	IndexDataType indexDataType;
+	StrongRef<Buffer> indexBuffer;
+	uint8 *indexData = nullptr;
+	bool indexDataModified = false;
+	bool useIndexBuffer = false;
+	size_t indexCount = 0;
+	IndexDataType indexDataType = INDEX_UINT16;
 
-	PrimitiveType primitiveType;
+	PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-	int rangeStart;
-	int rangeCount;
+	Range drawRange = Range();
 
 	StrongRef<Texture> texture;
 

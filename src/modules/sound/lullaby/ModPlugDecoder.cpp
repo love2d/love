@@ -23,6 +23,7 @@
 #ifndef LOVE_NO_MODPLUG
 
 #include "common/Exception.h"
+#include "common/Data.h"
 
 namespace love
 {
@@ -31,12 +32,11 @@ namespace sound
 namespace lullaby
 {
 
-ModPlugDecoder::ModPlugDecoder(Data *data, int bufferSize)
-	: Decoder(data, bufferSize)
+ModPlugDecoder::ModPlugDecoder(Stream *stream, int bufferSize)
+	: Decoder(stream, bufferSize)
 	, plug(0)
 	, duration(-2.0)
 {
-
 	// Set some ModPlug settings.
 	settings.mFlags = MODPLUG_ENABLE_OVERSAMPLING | MODPLUG_ENABLE_NOISE_REDUCTION;
 	settings.mChannels = 2;
@@ -60,10 +60,29 @@ ModPlugDecoder::ModPlugDecoder(Data *data, int bufferSize)
 
 	ModPlug_SetSettings(&settings);
 
-	// Load the module.
-	plug = ModPlug_Load(data->getData(), (int) data->getSize());
+	// ModPlug has no streaming API. Miserable.
+	// We don't want to load the entire stream immediately if it's big, because
+	// it might not be compatible with ModPlug. So we just try to load 4MB and
+	// see if that works, and then load the whole thing if it does.
+	if (stream->getSize() > 1024 * 1024 * 4)
+	{
+		data.set(stream->read(1024 * 1024 * 4), Acquire::NORETAIN);
 
-	if (plug == 0)
+		plug = ModPlug_Load(data->getData(), (int)data->getSize());
+
+		if (plug == nullptr)
+			throw love::Exception("Could not load file with ModPlug.");
+
+		stream->seek(0);
+		ModPlug_Unload(plug);
+	}
+
+	data.set(stream->read(stream->getSize()), Acquire::NORETAIN);
+
+	// Load the module.
+	plug = ModPlug_Load(data->getData(), (int)data->getSize());
+
+	if (plug == nullptr)
 		throw love::Exception("Could not load file with ModPlug.");
 
 	// set master volume for delicate ears
@@ -72,33 +91,14 @@ ModPlugDecoder::ModPlugDecoder(Data *data, int bufferSize)
 
 ModPlugDecoder::~ModPlugDecoder()
 {
-	if (plug != 0)
+	if (plug != nullptr)
 		ModPlug_Unload(plug);
-}
-
-bool ModPlugDecoder::accepts(const std::string &ext)
-{
-	static const std::string supported[] =
-	{
-		"699", "abc", "amf", "ams", "dbm", "dmf",
-		"dsm", "far", "it", "j2b", "mdl", "med",
-		"mid", "mod", "mt2", "mtm", "okt", "pat",
-		"psm", "s3m", "stm", "ult", "umx",  "xm",
-		""
-	};
-
-	for (int i = 0; !(supported[i].empty()); i++)
-	{
-		if (supported[i].compare(ext) == 0)
-			return true;
-	}
-
-	return false;
 }
 
 love::sound::Decoder *ModPlugDecoder::clone()
 {
-	return new ModPlugDecoder(data.get(), bufferSize);
+	StrongRef<Stream> s(stream->clone(), Acquire::NORETAIN);
+	return new ModPlugDecoder(s, bufferSize);
 }
 
 int ModPlugDecoder::decode()

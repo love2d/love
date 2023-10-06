@@ -25,10 +25,15 @@ namespace love
 namespace filesystem
 {
 
-love::Type File::type("File", &Object::type);
+love::Type File::type("File", &Stream::type);
 
 File::~File()
 {
+}
+
+FileData *File::read()
+{
+	return read(getSize());
 }
 
 FileData *File::read(int64 size)
@@ -40,7 +45,6 @@ FileData *File::read(int64 size)
 
 	int64 max = getSize();
 	int64 cur = tell();
-	size = (size == ALL) ? max : size;
 
 	if (size < 0)
 		throw love::Exception("Invalid read size.");
@@ -54,7 +58,7 @@ FileData *File::read(int64 size)
 	if (cur + size > max)
 		size = max - cur;
 
-	FileData *fileData = new FileData(size, getFilename());
+	StrongRef<FileData> fileData(new FileData(size, getFilename()), Acquire::NORETAIN);
 	int64 bytesRead = read(fileData->getData(), size);
 
 	if (bytesRead < 0 || (bytesRead == 0 && bytesRead != size))
@@ -65,21 +69,16 @@ FileData *File::read(int64 size)
 
 	if (bytesRead < size)
 	{
-		FileData *tmpFileData = new FileData(bytesRead, getFilename());
+		StrongRef<FileData> tmpFileData(new FileData(bytesRead, getFilename()), Acquire::NORETAIN);
 		memcpy(tmpFileData->getData(), fileData->getData(), (size_t) bytesRead);
-		fileData->release();
 		fileData = tmpFileData;
 	}
 
 	if (!isopen)
 		close();
 
+	fileData->retain();
 	return fileData;
-}
-
-bool File::write(const Data *data, int64 size)
-{
-	return write(data->getData(), (size == ALL) ? data->getSize() : size);
 }
 
 std::string File::getExtension() const
@@ -93,54 +92,22 @@ std::string File::getExtension() const
 		return std::string();
 }
 
-bool File::getConstant(const char *in, Mode &out)
+STRINGMAP_CLASS_BEGIN(File, File::Mode, File::MODE_MAX_ENUM, mode)
 {
-	return modes.find(in, out);
+	{ "c", File::MODE_CLOSED },
+	{ "r", File::MODE_READ   },
+	{ "w", File::MODE_WRITE  },
+	{ "a", File::MODE_APPEND },
 }
+STRINGMAP_CLASS_END(File, File::Mode, File::MODE_MAX_ENUM, mode)
 
-bool File::getConstant(Mode in, const char *&out)
+STRINGMAP_CLASS_BEGIN(File, File::BufferMode, File::BUFFER_MAX_ENUM, bufferMode)
 {
-	return modes.find(in, out);
+	{ "none", File::BUFFER_NONE },
+	{ "line", File::BUFFER_LINE },
+	{ "full", File::BUFFER_FULL },
 }
-
-std::vector<std::string> File::getConstants(Mode)
-{
-	return modes.getNames();
-}
-
-bool File::getConstant(const char *in, BufferMode &out)
-{
-	return bufferModes.find(in, out);
-}
-
-bool File::getConstant(BufferMode in, const char *&out)
-{
-	return bufferModes.find(in, out);
-}
-
-std::vector<std::string> File::getConstants(BufferMode)
-{
-	return bufferModes.getNames();
-}
-
-StringMap<File::Mode, File::MODE_MAX_ENUM>::Entry File::modeEntries[] =
-{
-	{ "c", MODE_CLOSED },
-	{ "r", MODE_READ   },
-	{ "w", MODE_WRITE  },
-	{ "a", MODE_APPEND },
-};
-
-StringMap<File::Mode, File::MODE_MAX_ENUM> File::modes(File::modeEntries, sizeof(File::modeEntries));
-
-StringMap<File::BufferMode, File::BUFFER_MAX_ENUM>::Entry File::bufferModeEntries[] =
-{
-	{ "none", BUFFER_NONE },
-	{ "line", BUFFER_LINE },
-	{ "full", BUFFER_FULL },
-};
-
-StringMap<File::BufferMode, File::BUFFER_MAX_ENUM> File::bufferModes(File::bufferModeEntries, sizeof(File::bufferModeEntries));
+STRINGMAP_CLASS_END(File, File::BufferMode, File::BUFFER_MAX_ENUM, bufferMode)
 
 } // filesystem
 } // love

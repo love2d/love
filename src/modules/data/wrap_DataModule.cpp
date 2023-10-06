@@ -326,6 +326,28 @@ int w_hash(lua_State *L)
 
 int w_pack(lua_State *L)
 {
+	if (luax_istype(L, 1, ByteData::type))
+	{
+		ByteData *d = luax_checkbytedata(L, 1);
+		size_t offset = (size_t) luaL_checknumber(L, 2);
+		const char *fmt = luaL_checkstring(L, 3);
+
+		luaL_Buffer_53 b;
+		lua53_str_pack(L, fmt, 4, &b);
+
+		if (offset + b.nelems > d->getSize())
+		{
+			lua53_cleanupbuffer(&b);
+			return luaL_error(L, "The given byte offset and pack format parameters do not fit within the ByteData's size.");
+		}
+
+		memcpy((uint8 *) d->getData() + offset, b.ptr, b.nelems);
+
+		lua53_cleanupbuffer(&b);
+		luax_pushtype(L, Data::type, d);
+		return 1;
+	}
+
 	ContainerType ctype = luax_checkcontainertype(L, 1);
 	const char *fmt = luaL_checkstring(L, 2);
 	luaL_Buffer_53 b;

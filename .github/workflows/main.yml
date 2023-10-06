@@ -20,6 +20,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: love2d/love-appimage-source
+        ref: 12.x
     - name: Checkout LÖVE
       uses: actions/checkout@v3
       with:
@@ -41,7 +42,7 @@ jobs:
     - name: Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: love-x86_64.AppImage
+        name: love-linux-x86_64.AppImage
         path: love-${{ github.sha }}.AppImage
     - name: Artifact Debug Symbols
       uses: actions/upload-artifact@v3
@@ -52,36 +53,158 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        platform: [Win32, x64]
+        platform: [Win32, x64, ARM64]
+        install: [compat, modern]
+        exclude:
+        - platform: ARM64
+          install: compat
+    defaults:
+      run:
+        shell: cmd
+    continue-on-error: ${{ matrix.platform == 'ARM64' }}
     steps:
+    - name: Define Variables
+      id: vars
+      run: |
+        rem Compat/Modern switch
+        if "${{ matrix.install }}" == "compat" (
+          echo moredef=-DLOVE_INSTALL_UCRT=ON>> "%GITHUB_OUTPUT%"
+          echo compatname=-compat>> "%GITHUB_OUTPUT%"
+        ) else (
+          echo moredef=>> "%GITHUB_OUTPUT%"
+          echo compatname=>> "%GITHUB_OUTPUT%"
+        )
+        
+        rem JIT Modules
+        if "${{ matrix.platform }}-${{ matrix.install }}" == "x64-modern" (
+          (echo jitmodules=1)>> "%GITHUB_OUTPUT%"
+        ) else (
+          (echo jitmodules=0)>> "%GITHUB_OUTPUT%"
+        )
+        
+        rem Architecture-Specific Switch
+        goto ${{ matrix.platform }}
+        exit /b 1
+        
+        :Win32
+        (echo arch=x86)>> "%GITHUB_OUTPUT%"
+        (echo angle=0)>> "%GITHUB_OUTPUT%"
+        echo nofiles=warn>> "%GITHUB_OUTPUT%"
+        exit /b 0
+        
+        :x64
+        (echo arch=x64)>> "%GITHUB_OUTPUT%"
+        (echo angle=0)>> "%GITHUB_OUTPUT%"
+        echo nofiles=warn>> "%GITHUB_OUTPUT%"
+        exit /b 0
+        
+        :ARM64
+        (echo arch=arm64)>> "%GITHUB_OUTPUT%"
+        (echo angle=1)>> "%GITHUB_OUTPUT%"
+        echo nofiles=ignore>> "%GITHUB_OUTPUT%"
+        echo moredef=-DLOVE_EXTRA_DLLS=%CD%\angle\libEGL.dll;%CD%\angle\libGLESv2.dll>> "%GITHUB_OUTPUT%"
+        exit /b 0
+    - name: Download Windows SDK Setup 10.0.20348
+      run: curl -Lo winsdksetup.exe https://go.microsoft.com/fwlink/?linkid=2164145
+    - name: Install Debugging Tools for Windows
+      id: windbg
+      run: |
+        setlocal enabledelayedexpansion
+        start /WAIT %CD%\winsdksetup.exe /features OptionId.WindowsDesktopDebuggers /q /log %CD%\log.txt
+        echo ERRORLEVEL=!ERRORLEVEL! >> %GITHUB_OUTPUT%
+    - name: Print Debugging Tools Install Log
+      if: always()
+      run: |
+        type log.txt
+        exit /b ${{ steps.windbg.outputs.ERRORLEVEL }}
+    - name: Setup Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+    - name: Download source_index.py
+      run: curl -Lo source_index.py https://gist.github.com/MikuAuahDark/d9c099f5714e09a765496471c2827a55/raw/df34956052035f3473c5f01861dfb53930d06843/source_index.py
     - name: Clone Megasource
       uses: actions/checkout@v3
       with:
         path: megasource
         repository: love2d/megasource
-        ref: main
+        ref: 12.x
+    - id: megasource
+      name: Get Megasource Commit SHA
+      shell: python
+      run: |
+        import os
+        import subprocess
+        
+        result = subprocess.run("git -C megasource rev-parse HEAD".split(), check=True, capture_output=True, encoding="UTF-8")
+        commit = result.stdout.split()[0]
+        with open(os.environ["GITHUB_OUTPUT"], "w", encoding="UTF-8") as f: f.write(f"commit={commit}")
     - name: Checkout
       uses: actions/checkout@v3
       with:
         path: megasource/libs/love
+    - name: Download ANGLE
+      uses: robinraju/release-downloader@v1.7
+      if: steps.vars.outputs.angle == '1'
+      with:
+        repository: MikuAuahDark/angle-winbuild
+        tag: cr_5249
+        fileName: angle-win-${{ steps.vars.outputs.arch }}.zip
+        tarBall: false
+        zipBall: false
+        out-file-path: angle
+    - name: Extract ANGLE
+      if: steps.vars.outputs.angle == '1'
+      working-directory: angle
+      run: 7z x angle-win-${{ steps.vars.outputs.arch }}.zip
+    - name: Delete Strawbery Perl
+      # https://github.com/actions/runner-images/issues/6627
+      # In particular, this is not pretty, but even CMAKE_IGNORE_PREFIX_PATH
+      # cannot help in this case. Delete the whole folder!
+      run: |
+        rmdir /s /q C:\Strawberry
+        exit /b 0
     - name: Configure
-      shell: cmd
       env:
-        PLATFORM: ${{ matrix.platform }}
-      run: cmake -Bbuild -Hmegasource -T v142 -A %PLATFORM% -DCMAKE_INSTALL_PREFIX=%CD%\install
+        CFLAGS: /Zi
+        CXXFLAGS: /Zi
+        LDFLAGS: /DEBUG:FULL /OPT:REF /OPT:ICF
+      run: cmake -Bbuild -Smegasource -T v142 -A ${{ matrix.platform }} --install-prefix %CD%\install -DCMAKE_PDB_OUTPUT_DIRECTORY=%CD%\pdb ${{ steps.vars.outputs.moredef }}
     - name: Install
-      shell: cmd
-      run: cmake --build build --config Release --target install -j2
+      run: cmake --build build --target PACKAGE --config Release -j2
+    - name: Copy LuaJIT lua51.pdb
+      run: |
+        copy /Y build\libs\LuaJIT\src\lua51.pdb pdb\Release\lua51.pdb
+        exit /b 0
+    - name: Add srcsrv to PATH
+      run: |
+        echo C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\srcsrv>>%GITHUB_PATH%
+    - name: Embed Source Index into PDBs
+      run: |
+        python source_index.py ^
+        --source %CD%\megasource\libs\love https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }} ^
+        --source %CD%\megasource https://raw.githubusercontent.com/love2d/megasource/${{ steps.megasource.outputs.commit }} ^
+        --source %CD%\build\libs\LuaJIT https://raw.githubusercontent.com/love2d/megasource/${{ steps.megasource.outputs.commit }}/libs/LuaJIT ^
+        pdb\Release\*.pdb
     - name: Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: love-windows-${{ matrix.platform }}
-        path: install
+        name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}
+        path: |
+          build/*.zip
+          build/*.exe
+        if-no-files-found: ${{ steps.vars.outputs.nofiles }}
     - name: Artifact JIT Modules
+      if: steps.vars.outputs.jitmodules == '1'
       uses: actions/upload-artifact@v3
       with:
-        name: love-windows-jitmodules-${{ matrix.platform }}
+        name: love-windows-jitmodules
         path: build/libs/LuaJIT/src/jit/*.lua
+    - name: Artifact PDB
+      uses: actions/upload-artifact@v3
+      with:
+        name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
+        path: pdb/Release/*.pdb
   macOS:
     runs-on: macos-latest
     steps:
@@ -92,7 +215,7 @@ jobs:
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
-        ref: main
+        ref: 12.x
     - name: Move Dependencies
       run:
         mv apple-dependencies/macOS/Frameworks platform/xcode/macosx
@@ -120,7 +243,7 @@ jobs:
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
-        ref: main
+        ref: 12.x
     - name: Move Dependencies
       run: |
         mv apple-dependencies/iOS/libraries platform/xcode/ios

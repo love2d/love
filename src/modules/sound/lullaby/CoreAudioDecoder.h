@@ -26,7 +26,7 @@
 #ifdef LOVE_SUPPORT_COREAUDIO
 
 // LOVE
-#include "common/Data.h"
+#include "common/Stream.h"
 #include "sound/Decoder.h"
 
 // Core Audio
@@ -47,19 +47,17 @@ class CoreAudioDecoder : public Decoder
 {
 public:
 
-	CoreAudioDecoder(Data *data, int bufferSize);
+	CoreAudioDecoder(Stream *stream, int bufferSize);
 	virtual ~CoreAudioDecoder();
 
-	static bool accepts(const std::string &ext);
-
-	love::sound::Decoder *clone();
-	int decode();
-	bool seek(double s);
-	bool rewind();
-	bool isSeekable();
-	int getChannelCount() const;
-	int getBitDepth() const;
-	double getDuration();
+	love::sound::Decoder *clone() override;
+	int decode() override;
+	bool seek(double s) override;
+	bool rewind() override;
+	bool isSeekable() override;
+	int getChannelCount() const override;
+	int getBitDepth() const override;
+	double getDuration() override;
 
 private:
 

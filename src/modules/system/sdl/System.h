@@ -43,14 +43,15 @@ public:
 	virtual ~System() {}
 
 	// Implements Module.
-	const char *getName() const;
+	const char *getName() const override;
 
-	int getProcessorCount() const;
+	int getProcessorCount() const override;
 
-	void setClipboardText(const std::string &text) const;
-	std::string getClipboardText() const;
+	void setClipboardText(const std::string &text) const override;
+	std::string getClipboardText() const override;
 
-	PowerState getPowerInfo(int &seconds, int &percent) const;
+	PowerState getPowerInfo(int &seconds, int &percent) const override;
+	std::vector<std::string> getPreferredLocales() const override;
 
 private:
 

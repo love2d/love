@@ -101,8 +101,9 @@ float RevoluteJoint::getMotorSpeed() const
 	return joint->GetMotorSpeed();
 }
 
-float RevoluteJoint::getMotorTorque(float inv_dt) const
+float RevoluteJoint::getMotorTorque(float dt) const
 {
+	float inv_dt = 1.0f / dt;
 	return Physics::scaleUp(Physics::scaleUp(joint->GetMotorTorque(inv_dt)));
 }
 

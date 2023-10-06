@@ -26,12 +26,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if defined(LOVE_MACOSX)
-#include "common/macosx.h"
-#elif defined(LOVE_IOS)
-#include "common/ios.h"
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+#include "common/apple.h"
+#include <unistd.h>
 #elif defined(LOVE_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <fileapi.h>
 #include "common/utf8.h"
 #elif defined(LOVE_LINUX)
 #include <unistd.h>
@@ -71,6 +72,14 @@ FileData *Filesystem::newFileData(const void *data, size_t size, const char *fil
 
 bool Filesystem::isRealDirectory(const std::string &path) const
 {
+	FileType ftype = FILETYPE_MAX_ENUM;
+	if (!getRealPathType(path, ftype))
+		return false;
+	return ftype == FILETYPE_DIRECTORY;
+}
+
+bool Filesystem::getRealPathType(const std::string &path, FileType &ftype) const
+{
 #ifdef LOVE_WINDOWS
 	// make sure non-ASCII paths work.
 	std::wstring wpath = to_widestr(path);
@@ -79,23 +88,89 @@ bool Filesystem::isRealDirectory(const std::string &path) const
 	if (_wstat(wpath.c_str(), &buf) != 0)
 		return false;
 
-	return (buf.st_mode & _S_IFDIR) == _S_IFDIR;
+	if ((buf.st_mode & _S_IFREG) == _S_IFREG)
+		ftype = FILETYPE_FILE;
+	else if ((buf.st_mode & _S_IFDIR) == _S_IFDIR)
+		ftype = FILETYPE_DIRECTORY;
+	else
+		ftype = FILETYPE_OTHER;
 #else
 	// Assume POSIX support...
 	struct stat buf;
 	if (stat(path.c_str(), &buf) != 0)
 		return false;
 
-	return S_ISDIR(buf.st_mode) != 0;
+	if (S_ISREG(buf.st_mode))
+		ftype = FILETYPE_FILE;
+	else if (S_ISDIR(buf.st_mode))
+		ftype = FILETYPE_DIRECTORY;
+	else if (S_ISLNK(buf.st_mode))
+		ftype = FILETYPE_SYMLINK;
+	else
+		ftype = FILETYPE_OTHER;
 #endif
+
+	return true;
+}
+
+static bool getContainingDirectory(const std::string &path, std::string &newpath)
+{
+	size_t index = path.find_last_of("/\\");
+
+	if (index == std::string::npos)
+		return false;
+
+	newpath = path.substr(0, index);
+
+	// Bail if the root has been stripped out.
+	return newpath.find_first_of("/\\") != std::string::npos;
+}
+
+static bool createDirectoryRaw(const std::string &path)
+{
+#ifdef LOVE_WINDOWS
+	std::wstring wpath = to_widestr(path);
+	return CreateDirectoryW(wpath.c_str(), nullptr) != 0;
+#else
+	return mkdir(path.c_str(), S_IRWXU) == 0;
+#endif
+}
+
+bool Filesystem::createRealDirectory(const std::string &path)
+{
+	FileType ftype = FILETYPE_MAX_ENUM;
+	if (getRealPathType(path, ftype))
+		return ftype == FILETYPE_DIRECTORY;
+
+	std::vector<std::string> createpaths = {path};
+
+	// Find the deepest subdirectory in the given path that actually exists.
+	while (true)
+	{
+		std::string subpath;
+		if (!getContainingDirectory(createpaths[0], subpath))
+			break;
+
+		if (isRealDirectory(subpath))
+			break;
+
+		createpaths.insert(createpaths.begin(), subpath);
+	}
+
+	// Try to create missing subdirectories starting from that existing one.
+	for (const std::string &p : createpaths)
+	{
+		if (!createDirectoryRaw(p))
+			return false;
+	}
+
+	return true;
 }
 
 std::string Filesystem::getExecutablePath() const
 {
-#if defined(LOVE_MACOSX)
-	return love::macosx::getExecutablePath();
-#elif defined(LOVE_IOS)
-	return love::ios::getExecutablePath();
+#if defined(LOVE_MACOS) || defined(LOVE_IOS)
+	return love::apple::getExecutablePath();
 #elif defined(LOVE_WINDOWS)
 
 	wchar_t buffer[MAX_PATH + 1] = {0};
@@ -120,30 +195,40 @@ std::string Filesystem::getExecutablePath() const
 #endif
 }
 
-bool Filesystem::getConstant(const char *in, FileType &out)
+STRINGMAP_CLASS_BEGIN(Filesystem, Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM, fileType)
 {
-	return fileTypes.find(in, out);
+	{ "file",      Filesystem::FILETYPE_FILE      },
+	{ "directory", Filesystem::FILETYPE_DIRECTORY },
+	{ "symlink",   Filesystem::FILETYPE_SYMLINK   },
+	{ "other",     Filesystem::FILETYPE_OTHER     },
 }
+STRINGMAP_CLASS_END(Filesystem, Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM, fileType)
 
-bool Filesystem::getConstant(FileType in, const char *&out)
+STRINGMAP_CLASS_BEGIN(Filesystem, Filesystem::CommonPath, Filesystem::COMMONPATH_MAX_ENUM, commonPath)
 {
-	return fileTypes.find(in, out);
+	{ "appsavedir",    Filesystem::COMMONPATH_APP_SAVEDIR    },
+	{ "appdocuments",  Filesystem::COMMONPATH_APP_DOCUMENTS  },
+	{ "userhome",      Filesystem::COMMONPATH_USER_HOME      },
+	{ "userappdata",   Filesystem::COMMONPATH_USER_APPDATA   },
+	{ "userdesktop",   Filesystem::COMMONPATH_USER_DESKTOP   },
+	{ "userdocuments", Filesystem::COMMONPATH_USER_DOCUMENTS },
 }
+STRINGMAP_CLASS_END(Filesystem, Filesystem::CommonPath, Filesystem::COMMONPATH_MAX_ENUM, commonPath)
 
-std::vector<std::string> Filesystem::getConstants(FileType)
+STRINGMAP_CLASS_BEGIN(Filesystem, Filesystem::MountPermissions, Filesystem::MOUNT_PERMISSIONS_MAX_ENUM, mountPermissions)
 {
-	return fileTypes.getNames();
+	{ "read",      Filesystem::MOUNT_PERMISSIONS_READ      },
+	{ "readwrite", Filesystem::MOUNT_PERMISSIONS_READWRITE },
 }
+STRINGMAP_CLASS_END(Filesystem, Filesystem::MountPermissions, Filesystem::MOUNT_PERMISSIONS_MAX_ENUM, mountPermissions)
 
-StringMap<Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM>::Entry Filesystem::fileTypeEntries[] =
+STRINGMAP_CLASS_BEGIN(Filesystem, Filesystem::LoadMode, Filesystem::LOADMODE_MAX_ENUM, loadMode)
 {
-	{ "file",      FILETYPE_FILE      },
-	{ "directory", FILETYPE_DIRECTORY },
-	{ "symlink",   FILETYPE_SYMLINK   },
-	{ "other",     FILETYPE_OTHER     },
-};
-
-StringMap<Filesystem::FileType, Filesystem::FILETYPE_MAX_ENUM> Filesystem::fileTypes(Filesystem::fileTypeEntries, sizeof(Filesystem::fileTypeEntries));
+	{ "b",  Filesystem::LOADMODE_BINARY},
+	{ "t",  Filesystem::LOADMODE_TEXT  },
+	{ "bt", Filesystem::LOADMODE_ANY   }
+}
+STRINGMAP_CLASS_END(Filesystem, Filesystem::LoadMode, Filesystem::LOADMODE_MAX_ENUM, loadMode)
 
 } // filesystem
 } // love

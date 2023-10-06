@@ -51,6 +51,8 @@ public:
 
 	const char *getName() const override;
 
+	JoystickType getJoystickType() const override;
+
 	int getAxisCount() const override;
 	int getButtonCount() const override;
 	int getHatCount() const override;
@@ -61,8 +63,13 @@ public:
 
 	bool isDown(const std::vector<int> &buttonlist) const override;
 
+	void setPlayerIndex(int index) override;
+	int getPlayerIndex() const override;
+
 	bool openGamepad(int deviceindex) override;
 	bool isGamepad() const override;
+
+	GamepadType getGamepadType() const override;
 
 	float getGamepadAxis(GamepadAxis axis) const override;
 	bool isGamepadDown(const std::vector<GamepadButton> &blist) const override;
@@ -83,6 +90,11 @@ public:
 	bool setVibration() override;
 	void getVibration(float &left, float &right) override;
 
+	bool hasSensor(Sensor::SensorType type) const override;
+	bool isSensorEnabled(Sensor::SensorType type) const override;
+	void setSensorEnabled(Sensor::SensorType type, bool enabled) override;
+	std::vector<float> getSensorData(Sensor::SensorType type) const override;
+
 	static bool getConstant(Hat in, Uint8 &out);
 	static bool getConstant(Uint8 in, Hat &out);
 
@@ -102,6 +114,8 @@ private:
 	SDL_Joystick *joyhandle;
 	SDL_GameController *controller;
 	SDL_Haptic *haptic;
+
+	JoystickType joystickType;
 
 	SDL_JoystickID instanceid;
 	std::string pguid;

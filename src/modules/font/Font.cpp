@@ -22,6 +22,7 @@
 #include "Font.h"
 #include "BMFontRasterizer.h"
 #include "ImageRasterizer.h"
+#include "data/DataModule.h"
 
 #include "libraries/utf8/utf8.h"
 
@@ -30,28 +31,28 @@ namespace love
 namespace font
 {
 
-// Default TrueType font.
-#include "Vera.ttf.h"
+// Default TrueType font, gzip-compressed.
+#include "NotoSans-Regular.ttf.gzip.h"
 
-class DefaultFontData : public love::Data
+Font::Font()
 {
-public:
+	auto compressedbytes = (const char *) NotoSans_Regular_ttf_gzip;
+	size_t compressedsize = NotoSans_Regular_ttf_gzip_len;
 
-	Data *clone() const override { return new DefaultFontData(); }
-	void *getData() const override { return Vera_ttf; }
-	size_t getSize() const override { return sizeof(Vera_ttf); }
-};
+	size_t rawsize = 0;
+	char *fontdata = data::decompress(data::Compressor::FORMAT_GZIP, compressedbytes, compressedsize, rawsize);
+
+	defaultFontData.set(new data::ByteData(fontdata, rawsize, true), Acquire::NORETAIN);
+}
 
 Rasterizer *Font::newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hinting)
 {
-	StrongRef<DefaultFontData> data(new DefaultFontData, Acquire::NORETAIN);
-	return newTrueTypeRasterizer(data.get(), size, hinting);
+	return newTrueTypeRasterizer(defaultFontData.get(), size, hinting);
 }
 
 Rasterizer *Font::newTrueTypeRasterizer(int size, float dpiscale, TrueTypeRasterizer::Hinting hinting)
 {
-	StrongRef<DefaultFontData> data(new DefaultFontData, Acquire::NORETAIN);
-	return newTrueTypeRasterizer(data.get(), size, dpiscale, hinting);
+	return newTrueTypeRasterizer(defaultFontData.get(), size, dpiscale, hinting);
 }
 
 Rasterizer *Font::newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images, float dpiscale)

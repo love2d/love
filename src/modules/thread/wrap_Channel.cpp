@@ -34,7 +34,7 @@ int w_Channel_push(lua_State *L)
 {
 	Channel *c = luax_checkchannel(L, 1);
 	luax_catchexcept(L, [&]() {
-		Variant var = Variant::fromLua(L, 2);
+		Variant var = luax_checkvariant(L, 2);
 		if (var.getType() == Variant::UNKNOWN)
 			luaL_argerror(L, 2, "boolean, number, string, love type, or table expected");
 		uint64 id = c->push(var);
@@ -48,7 +48,7 @@ int w_Channel_supply(lua_State *L)
 	Channel *c = luax_checkchannel(L, 1);
 	bool result = false;
 	luax_catchexcept(L, [&]() {
-		Variant var = Variant::fromLua(L, 2);
+		Variant var = luax_checkvariant(L, 2);
 		if (var.getType() == Variant::UNKNOWN)
 			luaL_argerror(L, 2, "boolean, number, string, love type, or table expected");
 		if (lua_isnumber(L, 3))
@@ -66,7 +66,7 @@ int w_Channel_pop(lua_State *L)
 	Channel *c = luax_checkchannel(L, 1);
 	Variant var;
 	if (c->pop(&var))
-		var.toLua(L);
+		luax_pushvariant(L, var);
 	else
 		lua_pushnil(L);
 	return 1;
@@ -84,7 +84,7 @@ int w_Channel_demand(lua_State *L)
 		result = c->demand(&var);
 
 	if (result)
-		var.toLua(L);
+		luax_pushvariant(L, var);
 	else
 		lua_pushnil(L);
 	return 1;
@@ -95,7 +95,7 @@ int w_Channel_peek(lua_State *L)
 	Channel *c = luax_checkchannel(L, 1);
 	Variant var;
 	if (c->peek(&var))
-		var.toLua(L);
+		luax_pushvariant(L, var);
 	else
 		lua_pushnil(L);
 	return 1;

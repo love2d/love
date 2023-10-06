@@ -27,7 +27,7 @@ namespace graphics
 namespace opengl
 {
 
-ShaderStage::ShaderStage(love::graphics::Graphics *gfx, StageType stage, const std::string &source, bool gles, const std::string &cachekey)
+ShaderStage::ShaderStage(love::graphics::Graphics *gfx, ShaderStageType stage, const std::string &source, bool gles, const std::string &cachekey)
 	: love::graphics::ShaderStage(gfx, stage, source, gles, cachekey)
 	, glShader(0)
 {
@@ -44,15 +44,17 @@ bool ShaderStage::loadVolatile()
 	if (glShader != 0)
 		return true;
 
-	StageType stage = getStageType();
+	ShaderStageType stage = getStageType();
 	const char *typestr = "unknown";
 	getConstant(stage, typestr);
 
 	GLenum glstage = 0;
-	if (stage == STAGE_VERTEX)
+	if (stage == SHADERSTAGE_VERTEX)
 		glstage = GL_VERTEX_SHADER;
-	else if (stage == STAGE_PIXEL)
+	else if (stage == SHADERSTAGE_PIXEL)
 		glstage = GL_FRAGMENT_SHADER;
+	else if (stage == SHADERSTAGE_COMPUTE)
+		glstage = GL_COMPUTE_SHADER;
 	else
 		throw love::Exception("%s shader stage is not handled in OpenGL backend code.", typestr);
 

@@ -113,38 +113,38 @@ int w_Video_getPixelDimensions(lua_State *L)
 int w_Video_setFilter(lua_State *L)
 {
 	Video *video = luax_checkvideo(L, 1);
-	Texture::Filter f = video->getFilter();
+	SamplerState s = video->getSamplerState();
 
 	const char *minstr = luaL_checkstring(L, 2);
 	const char *magstr = luaL_optstring(L, 3, minstr);
 
-	if (!Texture::getConstant(minstr, f.min))
-		return luax_enumerror(L, "filter mode", Texture::getConstants(f.min), minstr);
-	if (!Texture::getConstant(magstr, f.mag))
-		return luax_enumerror(L, "filter mode", Texture::getConstants(f.mag), magstr);
+	if (!SamplerState::getConstant(minstr, s.minFilter))
+		return luax_enumerror(L, "filter mode", SamplerState::getConstants(s.minFilter), minstr);
+	if (!SamplerState::getConstant(magstr, s.magFilter))
+		return luax_enumerror(L, "filter mode", SamplerState::getConstants(s.magFilter), magstr);
 
-	f.anisotropy = (float) luaL_optnumber(L, 4, 1.0);
+	s.maxAnisotropy = std::min(std::max(1, (int) luaL_optnumber(L, 4, 1.0)), LOVE_UINT8_MAX);
 
-	luax_catchexcept(L, [&](){ video->setFilter(f); });
+	luax_catchexcept(L, [&](){ video->setSamplerState(s); });
 	return 0;
 }
 
 int w_Video_getFilter(lua_State *L)
 {
 	Video *video = luax_checkvideo(L, 1);
-	const Texture::Filter f = video->getFilter();
+	const SamplerState &s = video->getSamplerState();
 
 	const char *minstr = nullptr;
 	const char *magstr = nullptr;
 
-	if (!Texture::getConstant(f.min, minstr))
+	if (!SamplerState::getConstant(s.minFilter, minstr))
 		return luaL_error(L, "Unknown filter mode.");
-	if (!Texture::getConstant(f.mag, magstr))
+	if (!SamplerState::getConstant(s.magFilter, magstr))
 		return luaL_error(L, "Unknown filter mode.");
 
 	lua_pushstring(L, minstr);
 	lua_pushstring(L, magstr);
-	lua_pushnumber(L, f.anisotropy);
+	lua_pushnumber(L, s.maxAnisotropy);
 	return 3;
 }
 

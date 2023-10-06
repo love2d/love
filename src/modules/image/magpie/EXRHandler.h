@@ -36,15 +36,18 @@ class EXRHandler : public FormatHandler
 {
 public:
 
+	virtual ~EXRHandler() {}
+
 	// Implements FormatHandler.
 
-	virtual bool canDecode(Data *data);
-	virtual bool canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat);
+	bool canDecode(Data *data) override;
+	bool canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat) override;
 
-	virtual DecodedImage decode(Data *data);
-	virtual EncodedImage encode(const DecodedImage &img, EncodedFormat format);
+	DecodedImage decode(Data *data) override;
+	EncodedImage encode(const DecodedImage &img, EncodedFormat format) override;
 
-	virtual void freeRawPixels(unsigned char *mem);
+	void freeRawPixels(unsigned char *mem) override;
+	void freeEncodedImage(unsigned char *mem) override;
 
 }; // EXRHandler
 

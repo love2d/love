@@ -74,22 +74,22 @@ static PixelFormat convertFormat(uint16 texformat)
 	switch (texformat)
 	{
 	case ETC1_RGB_NO_MIPMAPS:
-		return PIXELFORMAT_ETC1;
+		return PIXELFORMAT_ETC1_UNORM;
 	case ETC2PACKAGE_RGB_NO_MIPMAPS:
-		return PIXELFORMAT_ETC2_RGB;
+		return PIXELFORMAT_ETC2_RGB_UNORM;
 	case ETC2PACKAGE_RGBA_NO_MIPMAPS_OLD:
 	case ETC2PACKAGE_RGBA_NO_MIPMAPS:
-		return PIXELFORMAT_ETC2_RGBA;
+		return PIXELFORMAT_ETC2_RGBA_UNORM;
 	case ETC2PACKAGE_RGBA1_NO_MIPMAPS:
-		return PIXELFORMAT_ETC2_RGBA1;
+		return PIXELFORMAT_ETC2_RGBA1_UNORM;
 	case ETC2PACKAGE_R_NO_MIPMAPS:
-		return PIXELFORMAT_EAC_R;
+		return PIXELFORMAT_EAC_R_UNORM;
 	case ETC2PACKAGE_RG_NO_MIPMAPS:
-		return PIXELFORMAT_EAC_RG;
+		return PIXELFORMAT_EAC_RG_UNORM;
 	case ETC2PACKAGE_R_SIGNED_NO_MIPMAPS:
-		return PIXELFORMAT_EAC_Rs;
+		return PIXELFORMAT_EAC_R_SNORM;
 	case ETC2PACKAGE_RG_SIGNED_NO_MIPMAPS:
-		return PIXELFORMAT_EAC_RGs;
+		return PIXELFORMAT_EAC_RG_SNORM;
 	default:
 		return PIXELFORMAT_UNKNOWN;
 	}
@@ -114,7 +114,7 @@ bool PKMHandler::canParseCompressed(Data *data)
 	return true;
 }
 
-StrongRef<CompressedMemory> PKMHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> PKMHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
 {
 	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");
@@ -135,11 +135,10 @@ StrongRef<CompressedMemory> PKMHandler::parseCompressed(Data *filedata, std::vec
 	// The rest of the file after the header is all texture data.
 	size_t totalsize = filedata->getSize() - sizeof(PKMHeader);
 
-	StrongRef<CompressedMemory> memory;
-	memory.set(new CompressedMemory(totalsize), Acquire::NORETAIN);
+	StrongRef<ByteData> memory(new ByteData(totalsize, false), Acquire::NORETAIN);
 
 	// PKM files only store a single mipmap level.
-	memcpy(memory->data, (uint8 *) filedata->getData() + sizeof(PKMHeader), totalsize);
+	memcpy(memory->getData(), (uint8 *) filedata->getData() + sizeof(PKMHeader), totalsize);
 
 	// TODO: verify whether glCompressedTexImage works properly with the unpadded
 	// width and height values (extended == padded.)

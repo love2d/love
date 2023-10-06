@@ -22,6 +22,7 @@
 #include "Compressor.h"
 #include "common/config.h"
 #include "common/int.h"
+#include "common/Exception.h"
 
 #include "libraries/lz4/lz4.h"
 #include "libraries/lz4/lz4hc.h"

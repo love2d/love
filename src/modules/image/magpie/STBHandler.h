@@ -40,6 +40,8 @@ class STBHandler final : public FormatHandler
 {
 public:
 
+	virtual ~STBHandler() {}
+
 	// Implements FormatHandler.
 
 	bool canDecode(Data *data) override;
@@ -49,6 +51,7 @@ public:
 	EncodedImage encode(const DecodedImage &img, EncodedFormat format) override;
 
 	void freeRawPixels(unsigned char *mem) override;
+	void freeEncodedImage(unsigned char *mem) override;
 
 }; // STBHandler
 

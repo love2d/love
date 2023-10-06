@@ -45,7 +45,7 @@ Body::Body(World *world, b2Vec2 p, Body::Type type)
 	udata->ref = nullptr;
 	b2BodyDef def;
 	def.position = Physics::scaleDown(p);
-	def.userData = (void *) udata;
+	def.userData.pointer = (uintptr_t)udata;
 	body = world->world->CreateBody(&def);
 	// Box2D body holds a reference to the love Body.
 	this->retain();
@@ -110,6 +110,14 @@ void Body::getLocalCenter(float &x_o, float &y_o)
 float Body::getAngularVelocity() const
 {
 	return body->GetAngularVelocity();
+}
+
+void Body::getKinematicState(b2Vec2 &pos_o, float &a_o, b2Vec2 &vel_o, float &da_o) const
+{
+	pos_o = Physics::scaleUp(body->GetPosition());
+	a_o = body->GetAngle();
+	vel_o = Physics::scaleUp(body->GetLinearVelocity());
+	da_o = body->GetAngularVelocity();
 }
 
 float Body::getMass() const
@@ -223,6 +231,13 @@ void Body::setAngle(float d)
 void Body::setAngularVelocity(float r)
 {
 	body->SetAngularVelocity(r);
+}
+
+void Body::setKinematicState(b2Vec2 pos, float a, b2Vec2 vel, float da)
+{
+	body->SetTransform(Physics::scaleDown(pos), a);
+	body->SetLinearVelocity(Physics::scaleDown(vel));
+	body->SetAngularVelocity(da);
 }
 
 void Body::setPosition(float x, float y)
@@ -394,9 +409,9 @@ void Body::setBullet(bool bullet)
 	return body->SetBullet(bullet);
 }
 
-bool Body::isActive() const
+bool Body::isEnabled() const
 {
-	return body->IsActive();
+	return body->IsEnabled();
 }
 
 bool Body::isAwake() const
@@ -414,9 +429,9 @@ bool Body::isSleepingAllowed() const
 	return body->IsSleepingAllowed();
 }
 
-void Body::setActive(bool active)
+void Body::setEnabled(bool enabled)
 {
-	body->SetActive(active);
+	body->SetEnabled(enabled);
 }
 
 void Body::setAwake(bool awake)
@@ -553,7 +568,7 @@ int Body::setUserData(lua_State *L)
 	if (udata == nullptr)
 	{
 		udata = new bodyudata();
-		body->SetUserData((void *) udata);
+		body->GetUserData().pointer = (uintptr_t)udata;
 	}
 
 	if(!udata->ref)

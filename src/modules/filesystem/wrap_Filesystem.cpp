@@ -22,7 +22,7 @@
 #include "common/config.h"
 #include "wrap_Filesystem.h"
 #include "wrap_File.h"
-#include "wrap_DroppedFile.h"
+#include "wrap_NativeFile.h"
 #include "wrap_FileData.h"
 #include "data/wrap_Data.h"
 #include "data/wrap_DataModule.h"
@@ -48,13 +48,6 @@ namespace filesystem
 {
 
 #define instance() (Module::getInstance<Filesystem>(Module::M_FILESYSTEM))
-
-bool hack_setupWriteDirectory()
-{
-	if (instance() != 0)
-		return instance()->setupWriteDirectory();
-	return false;
-}
 
 int w_init(lua_State *L)
 {
@@ -144,9 +137,9 @@ int w_mount(lua_State *L)
 		luax_pushboolean(L, instance()->mount(data, archive.c_str(), mountpoint, append));
 		return 1;
 	}
-	else if (luax_istype(L, 1, DroppedFile::type))
+	else if (luax_istype(L, 1, NativeFile::type))
 	{
-		DroppedFile *file = luax_totype<DroppedFile>(L, 1);
+		NativeFile *file = luax_totype<NativeFile>(L, 1);
 		archive = file->getFilename();
 	}
 	else
@@ -156,6 +149,48 @@ int w_mount(lua_State *L)
 	bool append = luax_optboolean(L, 3, false);
 
 	luax_pushboolean(L, instance()->mount(archive.c_str(), mountpoint, append));
+	return 1;
+}
+
+int w_mountFullPath(lua_State *L)
+{
+	const char *fullpath = luaL_checkstring(L, 1);
+	const char *mountpoint = luaL_checkstring(L, 2);
+
+	auto permissions = Filesystem::MOUNT_PERMISSIONS_READ;
+	if (!lua_isnoneornil(L, 3))
+	{
+		const char *permissionstr = luaL_checkstring(L, 3);
+		if (!Filesystem::getConstant(permissionstr, permissions))
+			return luax_enumerror(L, "mount permissions", Filesystem::getConstants(permissions), permissionstr);
+	}
+
+	bool append = luax_optboolean(L, 4, false);
+
+	luax_pushboolean(L, instance()->mountFullPath(fullpath, mountpoint, permissions, append));
+	return 1;
+}
+
+int w_mountCommonPath(lua_State *L)
+{
+	const char *commonpathstr = luaL_checkstring(L, 1);
+	Filesystem::CommonPath commonpath;
+	if (!Filesystem::getConstant(commonpathstr, commonpath))
+		return luax_enumerror(L, "common path", Filesystem::getConstants(commonpath), commonpathstr);
+
+	const char *mountpoint = luaL_checkstring(L, 2);
+
+	auto permissions = Filesystem::MOUNT_PERMISSIONS_READ;
+	if (!lua_isnoneornil(L, 3))
+	{
+		const char *permissionstr = luaL_checkstring(L, 3);
+		if (!Filesystem::getConstant(permissionstr, permissions))
+			return luax_enumerror(L, "mount permissions", Filesystem::getConstants(permissions), permissionstr);
+	}
+
+	bool append = luax_optboolean(L, 4, false);
+
+	luax_pushboolean(L, instance()->mountCommonPath(commonpath, mountpoint, permissions, append));
 	return 1;
 }
 
@@ -174,34 +209,71 @@ int w_unmount(lua_State *L)
 	return 1;
 }
 
-int w_newFile(lua_State *L)
+int w_unmountFullPath(lua_State *L)
+{
+	const char *fullpath = luaL_checkstring(L, 1);
+	luax_pushboolean(L, instance()->unmountFullPath(fullpath));
+	return 1;
+}
+
+int w_unmountCommonPath(lua_State *L)
+{
+	const char *commonpathstr = luaL_checkstring(L, 1);
+	Filesystem::CommonPath commonpath;
+	if (!Filesystem::getConstant(commonpathstr, commonpath))
+		return luax_enumerror(L, "common path", Filesystem::getConstants(commonpath), commonpathstr);
+
+	luax_pushboolean(L, instance()->unmount(commonpath));
+	return 1;
+}
+
+int w_openFile(lua_State *L)
 {
 	const char *filename = luaL_checkstring(L, 1);
+	const char *modestr = luaL_checkstring(L, 2);
 
-	const char *str = 0;
 	File::Mode mode = File::MODE_CLOSED;
+	if (!File::getConstant(modestr, mode))
+		return luax_enumerror(L, "file open mode", File::getConstants(mode), modestr);
 
-	if (lua_isstring(L, 2))
+	File *t = nullptr;
+	try
 	{
-		str = luaL_checkstring(L, 2);
-		if (!File::getConstant(str, mode))
-			return luax_enumerror(L, "file open mode", File::getConstants(mode), str);
+		t = instance()->openFile(filename, mode);
+	}
+	catch (love::Exception &e)
+	{
+		return luax_ioError(L, "%s", e.what());
 	}
 
-	File *t = instance()->newFile(filename);
+	luax_pushtype(L, t);
+	t->release();
+	return 1;
+}
 
-	if (mode != File::MODE_CLOSED)
+int w_newFile(lua_State* L)
+{
+	luax_markdeprecated(L, 1, "love.filesystem.newFile", API_FUNCTION, DEPRECATED_RENAMED, "love.filesystem.openFile");
+
+	const char* filename = luaL_checkstring(L, 1);
+
+	File::Mode mode = File::MODE_CLOSED;
+
+	if (!lua_isnoneornil(L, 2))
 	{
-		try
-		{
-			if (!t->open(mode))
-				throw love::Exception("Could not open file.");
-		}
-		catch (love::Exception &e)
-		{
-			t->release();
-			return luax_ioError(L, "%s", e.what());
-		}
+		const char* modestr = luaL_checkstring(L, 2);
+		if (!File::getConstant(modestr, mode))
+			return luax_enumerror(L, "file open mode", File::getConstants(mode), modestr);
+	}
+
+	File* t = nullptr;
+	try
+	{
+		t = instance()->openFile(filename, mode);
+	}
+	catch (love::Exception& e)
+	{
+		return luax_ioError(L, "%s", e.what());
 	}
 
 	luax_pushtype(L, t);
@@ -215,7 +287,14 @@ File *luax_getfile(lua_State *L, int idx)
 	if (lua_isstring(L, idx))
 	{
 		const char *filename = luaL_checkstring(L, idx);
-		file = instance()->newFile(filename);
+		try
+		{
+			file = instance()->openFile(filename, File::MODE_CLOSED);
+		}
+		catch (love::Exception &e)
+		{
+			luax_ioError(L, "%s", e.what());
+		}
 	}
 	else
 	{
@@ -226,10 +305,11 @@ File *luax_getfile(lua_State *L, int idx)
 	return file;
 }
 
-FileData *luax_getfiledata(lua_State *L, int idx)
+FileData *luax_getfiledata(lua_State *L, int idx, bool ioerror, int &nresults)
 {
 	FileData *data = nullptr;
 	File *file = nullptr;
+	nresults = 0;
 
 	if (lua_isstring(L, idx) || luax_istype(L, idx, File::type))
 	{
@@ -243,19 +323,35 @@ FileData *luax_getfiledata(lua_State *L, int idx)
 
 	if (!data && !file)
 	{
-		luaL_argerror(L, idx, "filename, File, or FileData expected");
+		nresults = luaL_argerror(L, idx, "filename, File, or FileData expected");
 		return nullptr; // Never reached.
 	}
-
-	if (file)
+	else if (file && !data)
 	{
-		luax_catchexcept(L,
-			[&]() { data = file->read(); },
-			[&](bool) { file->release(); }
-		);
+		try
+		{
+			data = file->read();
+		}
+		catch (love::Exception &e)
+		{
+			file->release();
+			if (ioerror)
+				nresults = luax_ioError(L, "%s", e.what());
+			else
+				nresults = luaL_error(L, "%s", e.what());
+			return nullptr; // Never reached if ioerror is false.
+		}
+
+		file->release();
 	}
 
 	return data;
+}
+
+FileData *luax_getfiledata(lua_State *L, int idx)
+{
+	int nresults = 0;
+	return luax_getfiledata(L, idx, false, nresults);
 }
 
 Data *luax_getdata(lua_State *L, int idx)
@@ -290,6 +386,11 @@ Data *luax_getdata(lua_State *L, int idx)
 	return data;
 }
 
+bool luax_cangetfile(lua_State *L, int idx)
+{
+	return lua_isstring(L, idx) || luax_istype(L, idx, File::type);
+}
+
 bool luax_cangetfiledata(lua_State *L, int idx)
 {
 	return lua_isstring(L, idx) || luax_istype(L, idx, File::type) || luax_istype(L, idx, FileData::type);
@@ -305,29 +406,13 @@ int w_newFileData(lua_State *L)
 	// Single argument: treat as filepath or File.
 	if (lua_gettop(L) == 1)
 	{
-		// We don't use luax_getfiledata because we want to use an ioError.
-		if (lua_isstring(L, 1))
-			luax_convobj(L, 1, "filesystem", "newFile");
-
-		// Get FileData from the File.
-		if (luax_istype(L, 1, File::type))
-		{
-			File *file = luax_checkfile(L, 1);
-
-			StrongRef<FileData> data;
-			try
-			{
-				data.set(file->read(), Acquire::NORETAIN);
-			}
-			catch (love::Exception &e)
-			{
-				return luax_ioError(L, "%s", e.what());
-			}
-			luax_pushtype(L, data);
-			return 1;
-		}
-		else
-			return luaL_argerror(L, 1, "filename or File expected");
+		int nresults = 0;
+		FileData *data = luax_getfiledata(L, 1, true, nresults);
+		if (data == nullptr)
+			return nresults;
+		luax_pushtype(L, data);
+		data->release();
+		return 1;
 	}
 
 	size_t length = 0;
@@ -353,6 +438,17 @@ int w_newFileData(lua_State *L)
 	return 1;
 }
 
+int w_getFullCommonPath(lua_State *L)
+{
+	const char *commonpathstr = luaL_checkstring(L, 1);
+	Filesystem::CommonPath commonpath;
+	if (!Filesystem::getConstant(commonpathstr, commonpath))
+		return luax_enumerror(L, "common path", Filesystem::getConstants(commonpath), commonpathstr);
+
+	luax_pushstring(L, instance()->getFullCommonPath(commonpath));
+	return 1;
+}
+
 int w_getWorkingDirectory(lua_State *L)
 {
 	lua_pushstring(L, instance()->getWorkingDirectory());
@@ -373,7 +469,7 @@ int w_getAppdataDirectory(lua_State *L)
 
 int w_getSaveDirectory(lua_State *L)
 {
-	lua_pushstring(L, instance()->getSaveDirectory());
+	luax_pushstring(L, instance()->getSaveDirectory());
 	return 1;
 }
 
@@ -404,6 +500,13 @@ int w_getRealDirectory(lua_State *L)
 int w_getExecutablePath(lua_State *L)
 {
 	luax_pushstring(L, instance()->getExecutablePath());
+	return 1;
+}
+
+int w_exists(lua_State *L)
+{
+	const char *path = luaL_checkstring(L, 1);
+	luax_pushboolean(L, instance()->exists(path));
 	return 1;
 }
 
@@ -442,6 +545,9 @@ int w_getInfo(lua_State *L)
 
 		lua_pushstring(L, typestr);
 		lua_setfield(L, -2, "type");
+
+		luax_pushboolean(L, info.readonly);
+		lua_setfield(L, -2, "readonly");
 
 		// Lua numbers (doubles) can't fit the full range of 64 bit ints.
 		info.size = std::min<int64>(info.size, 0x20000000000000LL);
@@ -490,12 +596,15 @@ int w_read(lua_State *L)
 	}
 
 	const char *filename = luaL_checkstring(L, startidx + 0);
-	int64 len = (int64) luaL_optinteger(L, startidx + 1, File::ALL);
+	int64 len = (int64) luaL_optinteger(L, startidx + 1, -1);
 
 	FileData *data = nullptr;
 	try
 	{
-		data = instance()->read(filename, len);
+		if (len >= 0)
+			data = instance()->read(filename, len);
+		else
+			data = instance()->read(filename);
 	}
 	catch (love::Exception &e)
 	{
@@ -588,16 +697,8 @@ int w_lines(lua_State *L)
 {
 	if (lua_isstring(L, 1))
 	{
-		File *file = instance()->newFile(lua_tostring(L, 1));
-		bool success = false;
-
-		luax_catchexcept(L, [&](){ success = file->open(File::MODE_READ); });
-
-		if (!success)
-		{
-			file->release();
-			return luaL_error(L, "Could not open file.");
-		}
+		File *file = nullptr;
+		luax_catchexcept(L, [&]() { file = instance()->openFile(lua_tostring(L, 1), File::MODE_READ); });
 
 		luax_pushtype(L, file);
 		file->release();
@@ -615,6 +716,16 @@ int w_load(lua_State *L)
 {
 	std::string filename = std::string(luaL_checkstring(L, 1));
 
+	Filesystem::LoadMode loadMode = Filesystem::LOADMODE_ANY;
+
+	if (!lua_isnoneornil(L, 2))
+	{
+		const char *mode = luaL_checkstring(L, 2);
+
+		if (!Filesystem::getConstant(mode, loadMode))
+			return luax_enumerror(L, "load mode", Filesystem::getConstants(loadMode), mode);
+	}
+
 	Data *data = nullptr;
 	try
 	{
@@ -625,7 +736,24 @@ int w_load(lua_State *L)
 		return luax_ioError(L, "%s", e.what());
 	}
 
-	int status = luaL_loadbuffer(L, (const char *)data->getData(), data->getSize(), ("@" + filename).c_str());
+	int status;
+
+#if (LUA_VERSION_NUM > 501) || defined(LUA_JITLIBNAME)
+	// LuaJIT support this Lua 5.2 function.
+	const char *mode;
+	Filesystem::getConstant(loadMode, mode);
+
+	status = luaL_loadbufferx(L, (const char *)data->getData(), data->getSize(), ("@" + filename).c_str(), mode);
+#else
+	if (loadMode == Filesystem::LOADMODE_ANY)
+		status = luaL_loadbuffer(L, (const char *)data->getData(), data->getSize(), ("@" + filename).c_str());
+	else
+	{
+		// Unsupported
+		data->release();
+		return luaL_error(L, "only \"bt\" is supported on this Lua interpreter\n");
+	}
+#endif
 
 	data->release();
 
@@ -738,6 +866,7 @@ static void replaceAll(std::string &str, const std::string &substr, const std::s
 int loader(lua_State *L)
 {
 	std::string modulename = luax_checkstring(L, 1);
+	bool hasSlash = modulename.find('/') != std::string::npos;
 
 	for (char &c : modulename)
 	{
@@ -753,6 +882,9 @@ int loader(lua_State *L)
 		Filesystem::Info info = {};
 		if (inst->getInfo(element.c_str(), info) && info.type != Filesystem::FILETYPE_DIRECTORY)
 		{
+			if (hasSlash)
+				luax_markdeprecated(L, 2, "character in require string (forward slashes), use dots instead.", API_CUSTOM);
+
 			lua_pop(L, 1);
 			lua_pushstring(L, element.c_str());
 			return w_load(L);
@@ -769,7 +901,7 @@ static const char *library_extensions[] =
 {
 #ifdef LOVE_WINDOWS
 	".dll"
-#elif defined(LOVE_MACOSX) || defined(LOVE_IOS)
+#elif defined(LOVE_MACOS) || defined(LOVE_IOS)
 	".dylib", ".so"
 #else
 	".so"
@@ -870,85 +1002,6 @@ int extloader(lua_State *L)
 	return 1;
 }
 
-// Deprecated functions.
-
-int w_exists(lua_State *L)
-{
-	luax_markdeprecated(L, "love.filesystem.exists", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
-	const char *arg = luaL_checkstring(L, 1);
-	Filesystem::Info info = {};
-	luax_pushboolean(L, instance()->getInfo(arg, info));
-	return 1;
-}
-
-int w_isDirectory(lua_State *L)
-{
-	luax_markdeprecated(L, "love.filesystem.isDirectory", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
-	const char *arg = luaL_checkstring(L, 1);
-	Filesystem::Info info = {};
-	bool exists = instance()->getInfo(arg, info);
-	luax_pushboolean(L, exists && info.type == Filesystem::FILETYPE_DIRECTORY);
-	return 1;
-}
-
-int w_isFile(lua_State *L)
-{
-	luax_markdeprecated(L, "love.filesystem.isFile", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
-	const char *arg = luaL_checkstring(L, 1);
-	Filesystem::Info info = {};
-	bool exists = instance()->getInfo(arg, info);
-	luax_pushboolean(L, exists && info.type == Filesystem::FILETYPE_FILE);
-	return 1;
-}
-
-int w_isSymlink(lua_State *L)
-{
-	luax_markdeprecated(L, "love.filesystem.isSymlink", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
-	const char *filename = luaL_checkstring(L, 1);
-	Filesystem::Info info = {};
-	bool exists = instance()->getInfo(filename, info);
-	luax_pushboolean(L, exists && info.type == Filesystem::FILETYPE_SYMLINK);
-	return 1;
-}
-
-int w_getLastModified(lua_State *L)
-{
-	luax_markdeprecated(L, "love.filesystem.getLastModified", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
-
-	const char *filename = luaL_checkstring(L, 1);
-
-	Filesystem::Info info = {};
-	bool exists = instance()->getInfo(filename, info);
-
-	if (!exists)
-		return luax_ioError(L, "File does not exist");
-	else if (info.modtime == -1)
-		return luax_ioError(L, "Could not determine file modification date.");
-
-	lua_pushnumber(L, (lua_Number) info.modtime);
-	return 1;
-}
-
-int w_getSize(lua_State *L)
-{
-	luax_markdeprecated(L, "love.filesystem.getSize", API_FUNCTION, DEPRECATED_REPLACED, "love.filesystem.getInfo");
-
-	const char *filename = luaL_checkstring(L, 1);
-
-	Filesystem::Info info = {};
-	bool exists = instance()->getInfo(filename, info);
-
-	if (!exists)
-		luax_ioError(L, "File does not exist");
-	else if (info.size == -1)
-		return luax_ioError(L, "Could not determine file size.");
-	else if (info.size >= 0x20000000000000LL)
-		return luax_ioError(L, "Size too large to fit into a Lua number!");
-
-	lua_pushnumber(L, (lua_Number) info.size);
-	return 1;
-}
-
 // List of functions to wrap.
 static const luaL_Reg functions[] =
 {
@@ -961,8 +1014,13 @@ static const luaL_Reg functions[] =
 	{ "setSource", w_setSource },
 	{ "getSource", w_getSource },
 	{ "mount", w_mount },
+	{ "mountFullPath", w_mountFullPath },
+	{ "mountCommonPath", w_mountCommonPath },
 	{ "unmount", w_unmount },
-	{ "newFile", w_newFile },
+	{ "unmountFullPath", w_unmountFullPath },
+	{ "unmountCommonPath", w_unmountCommonPath },
+	{ "openFile", w_openFile },
+	{ "getFullCommonPath", w_getFullCommonPath },
 	{ "getWorkingDirectory", w_getWorkingDirectory },
 	{ "getUserDirectory", w_getUserDirectory },
 	{ "getAppdataDirectory", w_getAppdataDirectory },
@@ -978,6 +1036,7 @@ static const luaL_Reg functions[] =
 	{ "getDirectoryItems", w_getDirectoryItems },
 	{ "lines", w_lines },
 	{ "load", w_load },
+	{ "exists", w_exists },
 	{ "getInfo", w_getInfo },
 	{ "setSymlinksEnabled", w_setSymlinksEnabled },
 	{ "areSymlinksEnabled", w_areSymlinksEnabled },
@@ -987,13 +1046,8 @@ static const luaL_Reg functions[] =
 	{ "getCRequirePath", w_getCRequirePath },
 	{ "setCRequirePath", w_setCRequirePath },
 
-	// Deprecated.
-	{ "exists", w_exists },
-	{ "isDirectory", w_isDirectory },
-	{ "isFile", w_isFile },
-	{ "isSymlink", w_isSymlink },
-	{ "getLastModified", w_getLastModified },
-	{ "getSize", w_getSize },
+	// Deprecated
+	{ "newFile", w_newFile },
 
 	{ 0, 0 }
 };
@@ -1001,7 +1055,7 @@ static const luaL_Reg functions[] =
 static const lua_CFunction types[] =
 {
 	luaopen_file,
-	luaopen_droppedfile,
+	luaopen_nativefile,
 	luaopen_filedata,
 	0
 };

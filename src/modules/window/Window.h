@@ -43,6 +43,10 @@ class Graphics;
 namespace window
 {
 
+// Applied when the window is first created.
+void setHighDPIAllowed(bool enable);
+bool isHighDPIAllowed();
+
 // Forward-declared so it can be used in the class methods. We can't define the
 // whole thing here because it uses the Window::Type enum.
 struct WindowSettings;
@@ -65,8 +69,9 @@ public:
 		SETTING_MIN_HEIGHT,
 		SETTING_BORDERLESS,
 		SETTING_CENTERED,
-		SETTING_DISPLAY,
-		SETTING_HIGHDPI,
+		SETTING_DISPLAYINDEX,
+		SETTING_DISPLAY, // Deprecated
+		SETTING_HIGHDPI, // Deprecated
 		SETTING_USE_DPISCALE,
 		SETTING_REFRESHRATE,
 		SETTING_X,
@@ -173,6 +178,7 @@ public:
 	virtual void minimize() = 0;
 	virtual void maximize() = 0;
 	virtual void restore() = 0;
+	virtual void focus() = 0;
 
 	virtual bool isMaximized() const = 0;
 	virtual bool isMinimized() const = 0;
@@ -262,8 +268,7 @@ struct WindowSettings
 	int minheight = 1;
 	bool borderless = false;
 	bool centered = true;
-	int display = 0;
-	bool highdpi = false;
+	int displayindex = 0;
 	bool usedpiscale = true;
 	double refreshrate = 0.0;
 	bool useposition = false;

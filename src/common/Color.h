@@ -137,6 +137,7 @@ ColorT<T> operator/(const ColorT<T> &a, T s)
 
 typedef ColorT<unsigned char> Color32;
 typedef ColorT<float> Colorf;
+typedef ColorT<double> ColorD;
 
 inline Color32 toColor32(Colorf cf)
 {

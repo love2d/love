@@ -41,7 +41,7 @@
 #	define LOVE_PATH_SEPARATOR "/"
 #	define LOVE_MAX_PATH _MAX_PATH
 #else
-#	if defined(LOVE_MACOSX) || defined(LOVE_IOS)
+#	if defined(LOVE_MACOS) || defined(LOVE_IOS)
 #		define LOVE_APPDATA_FOLDER "LOVE"
 #	elif defined(LOVE_LINUX)
 #		define LOVE_APPDATA_FOLDER "love"
@@ -71,12 +71,39 @@ public:
 		FILETYPE_MAX_ENUM
 	};
 
+	enum CommonPath
+	{
+		COMMONPATH_APP_SAVEDIR,
+		COMMONPATH_APP_DOCUMENTS,
+		COMMONPATH_USER_HOME,
+		COMMONPATH_USER_APPDATA,
+		COMMONPATH_USER_DESKTOP,
+		COMMONPATH_USER_DOCUMENTS,
+		COMMONPATH_MAX_ENUM
+	};
+
+	enum MountPermissions
+	{
+		MOUNT_PERMISSIONS_READ,
+		MOUNT_PERMISSIONS_READWRITE,
+		MOUNT_PERMISSIONS_MAX_ENUM
+	};
+
+	enum LoadMode
+	{
+		LOADMODE_BINARY,
+		LOADMODE_TEXT,
+		LOADMODE_ANY,
+		LOADMODE_MAX_ENUM
+	};
+
 	struct Info
 	{
 		// Numbers will be -1 if they cannot be determined.
 		int64 size;
 		int64 modtime;
 		FileType type;
+		bool readonly;
 	};
 
 	static love::Type type;
@@ -136,13 +163,19 @@ public:
 
 	virtual bool mount(const char *archive, const char *mountpoint, bool appendToPath = false) = 0;
 	virtual bool mount(Data *data, const char *archivename, const char *mountpoint, bool appendToPath = false) = 0;
+
+	virtual bool mountFullPath(const char *archive, const char *mountpoint, MountPermissions permissions, bool appendToPath = false) = 0;
+	virtual bool mountCommonPath(CommonPath path, const char *mountpoint, MountPermissions permissions, bool appendToPath = false) = 0;
+
 	virtual bool unmount(const char *archive) = 0;
 	virtual bool unmount(Data *data) = 0;
+	virtual bool unmount(CommonPath path) = 0;
+	virtual bool unmountFullPath(const char *fullpath) = 0;
 
 	/**
-	 * Creates a new file.
+	 * Opens a new File object from the specified path, using the given mode.
 	 **/
-	virtual File *newFile(const char *filename) const = 0;
+	virtual File *openFile(const char *filename, File::Mode mode) const = 0;
 
 	/**
 	 * Creates a new FileData object. Data will be copied.
@@ -151,6 +184,11 @@ public:
 	 * @param filename The full filename used to file type identification.
 	 **/
 	virtual FileData *newFileData(const void *data, size_t size, const char *filename) const;
+
+	/**
+	 * Gets the full path for the given common path.
+	 */
+	virtual std::string getFullCommonPath(CommonPath path) = 0;
 
 	/**
 	 * Gets the current working directory.
@@ -172,7 +210,7 @@ public:
 	/**
 	 * Gets the full path of the save folder.
 	 **/
-	virtual const char *getSaveDirectory() = 0;
+	virtual std::string getSaveDirectory() = 0;
 
 	/**
 	 * Gets the full path to the directory containing the game source.
@@ -185,6 +223,11 @@ public:
 	 * Gets the real directory path containing the file.
 	 **/
 	virtual std::string getRealDirectory(const char *filename) const = 0;
+
+	/**
+	 * Gets whether anything exists at the specified path.
+	 **/
+	virtual bool exists(const char *filepath) const = 0;
 
 	/**
 	 * Gets information about the item at the specified filepath. Returns false
@@ -209,7 +252,8 @@ public:
 	 * @param filename The name of the file to read from.
 	 * @param size The size in bytes of the data to read.
 	 **/
-	virtual FileData *read(const char *filename, int64 size = File::ALL) const = 0;
+	virtual FileData *read(const char *filename, int64 size) const = 0;
+	virtual FileData *read(const char *filename) const = 0;
 
 	/**
 	 * Write data to a file.
@@ -231,7 +275,7 @@ public:
 	 * This "native" method returns a table of all
 	 * files in a given directory.
 	 **/
-	virtual void getDirectoryItems(const char *dir, std::vector<std::string> &items) = 0;
+	virtual bool getDirectoryItems(const char *dir, std::vector<std::string> &items) = 0;
 
 	/**
 	 * Enable or disable symbolic link support in love.filesystem.
@@ -259,21 +303,26 @@ public:
 	virtual bool isRealDirectory(const std::string &path) const;
 
 	/**
+	 * Recursively creates a directory at the given full OS-dependent path.
+	 **/
+	virtual bool createRealDirectory(const std::string &path);
+
+	/**
 	 * Gets the full platform-dependent path to the executable.
 	 **/
 	virtual std::string getExecutablePath() const;
 
-	static bool getConstant(const char *in, FileType &out);
-	static bool getConstant(FileType in, const char *&out);
-	static std::vector<std::string> getConstants(FileType);
+	STRINGMAP_CLASS_DECLARE(FileType);
+	STRINGMAP_CLASS_DECLARE(CommonPath);
+	STRINGMAP_CLASS_DECLARE(MountPermissions);
+	STRINGMAP_CLASS_DECLARE(LoadMode);
 
 private:
 
+	bool getRealPathType(const std::string &path, FileType &ftype) const;
+
 	// Should we save external or internal for Android
 	bool useExternal;
-
-	static StringMap<FileType, FILETYPE_MAX_ENUM>::Entry fileTypeEntries[];
-	static StringMap<FileType, FILETYPE_MAX_ENUM> fileTypes;
 
 }; // Filesystem
 

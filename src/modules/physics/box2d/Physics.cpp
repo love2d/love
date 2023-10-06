@@ -93,10 +93,19 @@ PolygonShape *Physics::newRectangleShape(float x, float y, float w, float h, flo
 	return new PolygonShape(s);
 }
 
-EdgeShape *Physics::newEdgeShape(float x1, float y1, float x2, float y2)
+EdgeShape *Physics::newEdgeShape(float x1, float y1, float x2, float y2, bool oneSided)
 {
 	b2EdgeShape *s = new b2EdgeShape();
-	s->Set(Physics::scaleDown(b2Vec2(x1, y1)), Physics::scaleDown(b2Vec2(x2, y2)));
+	if (oneSided)
+	{
+		b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
+		b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
+		s->SetOneSided(v1, v1, v2, v2);
+	}
+	else
+	{
+		s->SetTwoSided(Physics::scaleDown(b2Vec2(x1, y1)), Physics::scaleDown(b2Vec2(x2, y2)));
+	}
 	return new EdgeShape(s);
 }
 
@@ -170,7 +179,7 @@ int Physics::newChainShape(lua_State *L)
 	if (istable)
 		argc = (int) luax_objlen(L, 2);
 
-	if (argc % 2 != 0)
+	if (argc == 0 || argc % 2 != 0)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
 
 	int vcount = argc/2;
@@ -206,7 +215,7 @@ int Physics::newChainShape(lua_State *L)
 		if (loop)
 			s->CreateLoop(vecs, vcount);
 		else
-			s->CreateChain(vecs, vcount);
+			s->CreateChain(vecs, vcount, vecs[0], vecs[vcount-1]);
 	}
 	catch (love::Exception &)
 	{
@@ -394,6 +403,76 @@ b2AABB Physics::scaleUp(const b2AABB &aabb)
 	t.lowerBound = scaleUp(aabb.lowerBound);
 	t.upperBound = scaleUp(aabb.upperBound);
 	return t;
+}
+
+void Physics::computeLinearStiffness(float &stiffness, float &damping, float frequency, float dampingRatio, b2Body *bodyA, b2Body *bodyB)
+{
+	b2LinearStiffness(stiffness, damping, frequency, dampingRatio, bodyA, bodyB);
+}
+
+void Physics::computeLinearFrequency(float &frequency, float &ratio, float stiffness, float damping, b2Body *bodyA, b2Body *bodyB)
+{
+	float massA = bodyA->GetMass();
+	float massB = bodyB->GetMass();
+	float mass;
+	if (massA > 0.0f && massB > 0.0f)
+	{
+		mass = massA * massB / (massA + massB);
+	}
+	else if (massA > 0.0f)
+	{
+		mass = massA;
+	}
+	else
+	{
+		mass = massB;
+	}
+
+	if (mass == 0.0f || stiffness <= 0.0f)
+	{
+		frequency = 0.0f;
+		ratio = 0.0f;
+		return;
+	};
+
+	float omega = b2Sqrt(stiffness / mass);
+	frequency = omega / (2.0f * b2_pi);
+	ratio = damping / (mass * 2.0f * omega);
+}
+
+void Physics::computeAngularStiffness(float &stiffness, float &damping, float frequency, float dampingRatio, b2Body *bodyA, b2Body *bodyB)
+{
+	b2AngularStiffness(stiffness, damping, frequency, dampingRatio, bodyA, bodyB);
+}
+
+void Physics::computeAngularFrequency(float &frequency, float &ratio, float stiffness, float damping, b2Body *bodyA, b2Body *bodyB)
+{
+	float IA = bodyA->GetInertia();
+	float IB = bodyB->GetInertia();
+	float I;
+	if (IA > 0.0f && IB > 0.0f)
+	{
+		I = IA * IB / (IA + IB);
+	}
+	else if (IA > 0.0f)
+	{
+		I = IA;
+	}
+	else
+	{
+		I = IB;
+	}
+
+	if (I == 0.0f || stiffness <= 0.0f)
+	{
+		frequency = 0.0f;
+		ratio = 0.0f;
+		return;
+	};
+
+	float omega = b2Sqrt(stiffness / I);
+	frequency = omega / (2.0f * b2_pi);
+	ratio = damping / (I * 2.0f * omega);
 }
 
 } // box2d

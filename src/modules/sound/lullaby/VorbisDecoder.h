@@ -22,7 +22,7 @@
 #define LOVE_SOUND_LULLABY_VORBIS_DECODER_H
 
 // LOVE
-#include "common/Data.h"
+#include "common/Stream.h"
 #include "common/int.h"
 #include "sound/Decoder.h"
 
@@ -38,41 +38,29 @@ namespace sound
 namespace lullaby
 {
 
-// Struct for handling data
-struct SOggFile
-{
-	const char *dataPtr;	// Pointer to the data in memory
-	int64 dataSize;	// Size of the data
-	int64 dataRead;	// How much we've read so far
-};
-
 class VorbisDecoder : public Decoder
 {
 public:
 
-	VorbisDecoder(Data *data, int bufferSize);
+	VorbisDecoder(Stream *stream, int bufferSize);
 	virtual ~VorbisDecoder();
 
-	static bool accepts(const std::string &ext);
-
-	love::sound::Decoder *clone();
-	int decode();
-	bool seek(double s);
-	bool rewind();
-	bool isSeekable();
-	int getChannelCount() const;
-	int getBitDepth() const;
-	int getSampleRate() const;
-	double getDuration();
+	love::sound::Decoder *clone() override;
+	int decode() override;
+	bool seek(double s) override;
+	bool rewind() override;
+	bool isSeekable() override;
+	int getChannelCount() const override;
+	int getBitDepth() const override;
+	int getSampleRate() const override;
+	double getDuration() override;
 
 private:
-	SOggFile oggFile;				// (see struct)
-	ov_callbacks vorbisCallbacks;	// Callbacks used to read the file from mem
-	OggVorbis_File handle;			// Handle to the file
-	vorbis_info *vorbisInfo;		// Info
-	vorbis_comment *vorbisComment;	// Comments
-	int endian;						// Endianness
+
+	OggVorbis_File handle;
+	vorbis_info *vorbisInfo;
 	double duration;
+
 }; // VorbisDecoder
 
 } // lullaby

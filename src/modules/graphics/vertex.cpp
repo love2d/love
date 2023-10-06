@@ -25,8 +25,6 @@ namespace love
 {
 namespace graphics
 {
-namespace vertex
-{
 
 static_assert(sizeof(Color32) == 4, "sizeof(Color32) incorrect!");
 static_assert(sizeof(STf_RGBAub) == sizeof(float)*2 + sizeof(Color32), "sizeof(STf_RGBAub) incorrect!");
@@ -41,28 +39,17 @@ size_t getFormatStride(CommonFormat format)
 {
 	switch (format)
 	{
-	case CommonFormat::NONE:
-		return 0;
-	case CommonFormat::XYf:
-		return sizeof(float) * 2;
-	case CommonFormat::XYZf:
-		return sizeof(float) * 3;
-	case CommonFormat::RGBAub:
-		return sizeof(uint8) * 4;
-	case CommonFormat::STf_RGBAub:
-		return sizeof(STf_RGBAub);
-	case CommonFormat::STPf_RGBAub:
-		return sizeof(STPf_RGBAub);
-	case CommonFormat::XYf_STf:
-		return sizeof(XYf_STf);
-	case CommonFormat::XYf_STPf:
-		return sizeof(XYf_STPf);
-	case CommonFormat::XYf_STf_RGBAub:
-		return sizeof(XYf_STf_RGBAub);
-	case CommonFormat::XYf_STus_RGBAub:
-		return sizeof(XYf_STus_RGBAub);
-	case CommonFormat::XYf_STPf_RGBAub:
-		return sizeof(XYf_STPf_RGBAub);
+		case CommonFormat::NONE: return 0;
+		case CommonFormat::XYf: return sizeof(float) * 2;
+		case CommonFormat::XYZf: return sizeof(float) * 3;
+		case CommonFormat::RGBAub: return sizeof(uint8) * 4;
+		case CommonFormat::STf_RGBAub: return sizeof(STf_RGBAub);
+		case CommonFormat::STPf_RGBAub: return sizeof(STPf_RGBAub);
+		case CommonFormat::XYf_STf: return sizeof(XYf_STf);
+		case CommonFormat::XYf_STPf: return sizeof(XYf_STPf);
+		case CommonFormat::XYf_STf_RGBAub: return sizeof(XYf_STf_RGBAub);
+		case CommonFormat::XYf_STus_RGBAub: return sizeof(XYf_STus_RGBAub);
+		case CommonFormat::XYf_STPf_RGBAub: return sizeof(XYf_STPf_RGBAub);
 	}
 	return 0;
 }
@@ -114,50 +101,108 @@ int getFormatPositionComponents(CommonFormat format)
 	return 0;
 }
 
+// Order here relies on order of DataFormat enum.
+static const DataFormatInfo dataFormatInfo[]
+{
+	// baseType, isMatrix, components, rows, columns, componentSize, size
+	{ DATA_BASETYPE_FLOAT, false, 1, 0, 0, 4, 4  }, // DATAFORMAT_FLOAT
+	{ DATA_BASETYPE_FLOAT, false, 2, 0, 0, 4, 8  }, // DATAFORMAT_FLOAT_VEC2
+	{ DATA_BASETYPE_FLOAT, false, 3, 0, 0, 4, 12 }, // DATAFORMAT_FLOAT_VEC3
+	{ DATA_BASETYPE_FLOAT, false, 4, 0, 0, 4, 16 }, // DATAFORMAT_FLOAT_VEC4
+
+	{ DATA_BASETYPE_FLOAT, true, 0, 2, 2, 4, 16 }, // DATAFORMAT_FLOAT_MAT2X2
+	{ DATA_BASETYPE_FLOAT, true, 0, 2, 3, 4, 24 }, // DATAFORMAT_FLOAT_MAT2X3
+	{ DATA_BASETYPE_FLOAT, true, 0, 2, 4, 4, 32 }, // DATAFORMAT_FLOAT_MAT2X4
+
+	{ DATA_BASETYPE_FLOAT, true, 0, 3, 2, 4, 24 }, // DATAFORMAT_FLOAT_MAT3X2
+	{ DATA_BASETYPE_FLOAT, true, 0, 3, 3, 4, 36 }, // DATAFORMAT_FLOAT_MAT3X3
+	{ DATA_BASETYPE_FLOAT, true, 0, 3, 4, 4, 48 }, // DATAFORMAT_FLOAT_MAT3X4
+
+	{ DATA_BASETYPE_FLOAT, true, 0, 4, 2, 4, 32 }, // DATAFORMAT_FLOAT_MAT4X2
+	{ DATA_BASETYPE_FLOAT, true, 0, 4, 3, 4, 48 }, // DATAFORMAT_FLOAT_MAT4X3
+	{ DATA_BASETYPE_FLOAT, true, 0, 4, 4, 4, 64 }, // DATAFORMAT_FLOAT_MAT4X4
+
+	{ DATA_BASETYPE_INT, false, 1, 0, 0, 4, 4  }, // DATAFORMAT_INT32
+	{ DATA_BASETYPE_INT, false, 2, 0, 0, 4, 8  }, // DATAFORMAT_INT32_VEC2
+	{ DATA_BASETYPE_INT, false, 3, 0, 0, 4, 12 }, // DATAFORMAT_INT32_VEC3
+	{ DATA_BASETYPE_INT, false, 4, 0, 0, 4, 16 }, // DATAFORMAT_INT32_VEC4
+
+	{ DATA_BASETYPE_UINT, false, 1, 0, 0, 4, 4  }, // DATAFORMAT_UINT32
+	{ DATA_BASETYPE_UINT, false, 2, 0, 0, 4, 8  }, // DATAFORMAT_UINT32_VEC2
+	{ DATA_BASETYPE_UINT, false, 3, 0, 0, 4, 12 }, // DATAFORMAT_UINT32_VEC3
+	{ DATA_BASETYPE_UINT, false, 4, 0, 0, 4, 16 }, // DATAFORMAT_UINT32_VEC4
+
+	{ DATA_BASETYPE_SNORM, false, 4, 0, 0, 1, 4 }, // DATAFORMAT_SNORM8_VEC4
+	{ DATA_BASETYPE_UNORM, false, 4, 0, 0, 1, 4 }, // DATAFORMAT_UNORM8_VEC4
+	{ DATA_BASETYPE_INT,   false, 4, 0, 0, 1, 4 }, // DATAFORMAT_INT8_VEC4
+	{ DATA_BASETYPE_UINT,  false, 4, 0, 0, 1, 4 }, // DATAFORMAT_UINT8_VEC4
+
+	{ DATA_BASETYPE_SNORM, false, 2, 0, 0, 2, 4 }, // DATAFORMAT_SNORM16_VEC2
+	{ DATA_BASETYPE_SNORM, false, 4, 0, 0, 2, 8 }, // DATAFORMAT_SNORM16_VEC4
+
+	{ DATA_BASETYPE_UNORM, false, 2, 0, 0, 2, 4 }, // DATAFORMAT_UNORM16_VEC2
+	{ DATA_BASETYPE_UNORM, false, 4, 0, 0, 2, 8 }, // DATAFORMAT_UNORM16_VEC4
+
+	{ DATA_BASETYPE_INT, false, 2, 0, 0, 2, 4 }, // DATAFORMAT_INT16_VEC2
+	{ DATA_BASETYPE_INT, false, 4, 0, 0, 2, 8 }, // DATAFORMAT_INT16_VEC4
+
+	{ DATA_BASETYPE_UINT, false, 1, 0, 0, 2, 2 }, // DATAFORMAT_UINT16
+	{ DATA_BASETYPE_UINT, false, 2, 0, 0, 2, 4 }, // DATAFORMAT_UINT16_VEC2
+	{ DATA_BASETYPE_UINT, false, 4, 0, 0, 2, 8 }, // DATAFORMAT_UINT16_VEC4
+
+	{ DATA_BASETYPE_BOOL, false, 1, 0, 0, 4, 4  }, // DATAFORMAT_BOOL
+	{ DATA_BASETYPE_BOOL, false, 2, 0, 0, 4, 8  }, // DATAFORMAT_BOOL_VEC2
+	{ DATA_BASETYPE_BOOL, false, 3, 0, 0, 4, 12 }, // DATAFORMAT_BOOL_VEC3
+	{ DATA_BASETYPE_BOOL, false, 4, 0, 0, 4, 16 }, // DATAFORMAT_BOOL_VEC4
+};
+
+static_assert((sizeof(dataFormatInfo) / sizeof(DataFormatInfo)) == DATAFORMAT_MAX_ENUM, "dataFormatInfo array size must match number of DataFormat enum values.");
+
+const DataFormatInfo &getDataFormatInfo(DataFormat format)
+{
+	return dataFormatInfo[format];
+}
+
 size_t getIndexDataSize(IndexDataType type)
 {
 	switch (type)
 	{
-	case INDEX_UINT16:
-		return sizeof(uint16);
-	case INDEX_UINT32:
-		return sizeof(uint32);
-	default:
-		return 0;
-	}
-}
-
-size_t getDataTypeSize(DataType datatype)
-{
-	switch (datatype)
-	{
-	case DATA_UNORM8:
-		return sizeof(uint8);
-	case DATA_UNORM16:
-		return sizeof(uint16);
-	case DATA_FLOAT:
-		return sizeof(float);
-	default:
-		return 0;
+		case INDEX_UINT16: return sizeof(uint16);
+		case INDEX_UINT32: return sizeof(uint32);
+		default: return 0;
 	}
 }
 
 IndexDataType getIndexDataTypeFromMax(size_t maxvalue)
 {
-	IndexDataType types[] = {INDEX_UINT16, INDEX_UINT32};
-	return types[maxvalue > LOVE_UINT16_MAX ? 1 : 0];
+	return maxvalue > LOVE_UINT16_MAX ? INDEX_UINT32 : INDEX_UINT16;
+}
+
+DataFormat getIndexDataFormat(IndexDataType type)
+{
+	return type == INDEX_UINT32 ? DATAFORMAT_UINT32 : DATAFORMAT_UINT16;
+}
+
+IndexDataType getIndexDataType(DataFormat format)
+{
+	switch (format)
+	{
+		case DATAFORMAT_UINT16: return INDEX_UINT16;
+		case DATAFORMAT_UINT32: return INDEX_UINT32;
+		default: return INDEX_MAX_ENUM;
+	}
 }
 
 int getIndexCount(TriangleIndexMode mode, int vertexCount)
 {
 	switch (mode)
 	{
-	case TriangleIndexMode::NONE:
+	case TRIANGLEINDEX_NONE:
 		return 0;
-	case TriangleIndexMode::STRIP:
-	case TriangleIndexMode::FAN:
+	case TRIANGLEINDEX_STRIP:
+	case TRIANGLEINDEX_FAN:
 		return 3 * (vertexCount - 2);
-	case TriangleIndexMode::QUADS:
+	case TRIANGLEINDEX_QUADS:
 		return vertexCount * 6 / 4;
 	}
 	return 0;
@@ -168,9 +213,9 @@ static void fillIndicesT(TriangleIndexMode mode, T vertexStart, T vertexCount, T
 {
 	switch (mode)
 	{
-	case TriangleIndexMode::NONE:
+	case TRIANGLEINDEX_NONE:
 		break;
-	case TriangleIndexMode::STRIP:
+	case TRIANGLEINDEX_STRIP:
 		{
 			int i = 0;
 			for (T index = 0; index < vertexCount - 2; index++)
@@ -181,7 +226,7 @@ static void fillIndicesT(TriangleIndexMode mode, T vertexStart, T vertexCount, T
 			}
 		}
 		break;
-	case TriangleIndexMode::FAN:
+	case TRIANGLEINDEX_FAN:
 		{
 			int i = 0;
 			for (T index = 2; index < vertexCount; index++)
@@ -192,7 +237,7 @@ static void fillIndicesT(TriangleIndexMode mode, T vertexStart, T vertexCount, T
 			}
 		}
 		break;
-	case TriangleIndexMode::QUADS:
+	case TRIANGLEINDEX_QUADS:
 		{
 			// 0---2
 			// | / |
@@ -226,7 +271,7 @@ void fillIndices(TriangleIndexMode mode, uint32 vertexStart, uint32 vertexCount,
 	fillIndicesT(mode, vertexStart, vertexCount, indices);
 }
 
-void Attributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
+void VertexAttributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
 {
 	setBufferLayout(bufferindex, (uint16) getFormatStride(format));
 
@@ -235,234 +280,212 @@ void Attributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
 	case CommonFormat::NONE:
 		break;
 	case CommonFormat::XYf:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
 		break;
 	case CommonFormat::XYZf:
-		set(ATTRIB_POS, DATA_FLOAT, 3, 0, bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC3, 0, bufferindex);
 		break;
 	case CommonFormat::RGBAub:
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, 0, bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, 0, bufferindex);
 		break;
 	case CommonFormat::STf_RGBAub:
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 2), bufferindex);
 		break;
 	case CommonFormat::STPf_RGBAub:
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, 0, bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 3), bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC3, 0, bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 3), bufferindex);
 		break;
 	case CommonFormat::XYf_STf:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC2, uint16(sizeof(float) * 2), bufferindex);
 		break;
 	case CommonFormat::XYf_STPf:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC3, uint16(sizeof(float) * 2), bufferindex);
 		break;
 	case CommonFormat::XYf_STf_RGBAub:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 2, uint16(sizeof(float) * 2), bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 4), bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC2, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 4), bufferindex);
 		break;
 	case CommonFormat::XYf_STus_RGBAub:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_UNORM16, 2, uint16(sizeof(float) * 2), bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 2 + sizeof(uint16) * 2), bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_UNORM16_VEC2, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 2 + sizeof(uint16) * 2), bufferindex);
 		break;
 	case CommonFormat::XYf_STPf_RGBAub:
-		set(ATTRIB_POS, DATA_FLOAT, 2, 0, bufferindex);
-		set(ATTRIB_TEXCOORD, DATA_FLOAT, 3, uint16(sizeof(float) * 2), bufferindex);
-		set(ATTRIB_COLOR, DATA_UNORM8, 4, uint16(sizeof(float) * 5), bufferindex);
+		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
+		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC3, uint16(sizeof(float) * 2), bufferindex);
+		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 5), bufferindex);
 		break;
 	}
 }
 
-static StringMap<BuiltinVertexAttribute, ATTRIB_MAX_ENUM>::Entry attribNameEntries[] =
+bool VertexAttributes::operator == (const VertexAttributes &other) const
+{
+	if (enableBits != other.enableBits || instanceBits != other.instanceBits)
+		return false;
+
+	uint32 allbits = enableBits;
+	uint32 i = 0;
+
+	while (allbits)
+	{
+		if (isEnabled(i))
+		{
+			const auto &a = attribs[i];
+			const auto &b = other.attribs[i];
+			if (a.bufferIndex != b.bufferIndex || a.format != b.format || a.offsetFromVertex != b.offsetFromVertex)
+				return false;
+
+			if (bufferLayouts[a.bufferIndex].stride != other.bufferLayouts[a.bufferIndex].stride)
+				return false;
+		}
+
+		i++;
+		allbits >>= 1;
+	}
+
+	return true;
+}
+
+STRINGMAP_BEGIN(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
 {
 	{ "VertexPosition", ATTRIB_POS           },
 	{ "VertexTexCoord", ATTRIB_TEXCOORD      },
 	{ "VertexColor",    ATTRIB_COLOR         },
-	{ "ConstantColor",  ATTRIB_CONSTANTCOLOR },
-};
+}
+STRINGMAP_END(BuiltinVertexAttribute, ATTRIB_MAX_ENUM, attribName)
 
-static StringMap<BuiltinVertexAttribute, ATTRIB_MAX_ENUM> attribNames(attribNameEntries, sizeof(attribNameEntries));
+const char *getConstant(BuiltinVertexAttribute attrib)
+{
+	const char *name = nullptr;
+	getConstant(attrib, name);
+	return name;
+}
 
-static StringMap<IndexDataType, INDEX_MAX_ENUM>::Entry indexTypeEntries[] =
+STRINGMAP_BEGIN(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsageName)
+{
+	{ "vertex",            BUFFERUSAGE_VERTEX             },
+	{ "index",             BUFFERUSAGE_INDEX              },
+	{ "texel",             BUFFERUSAGE_TEXEL              },
+	{ "shaderstorage",     BUFFERUSAGE_SHADER_STORAGE     },
+	{ "indirectarguments", BUFFERUSAGE_INDIRECT_ARGUMENTS },
+}
+STRINGMAP_END(BufferUsage, BUFFERUSAGE_MAX_ENUM, bufferUsageName)
+
+STRINGMAP_BEGIN(IndexDataType, INDEX_MAX_ENUM, indexType)
 {
 	{ "uint16", INDEX_UINT16 },
 	{ "uint32", INDEX_UINT32 },
-};
+}
+STRINGMAP_END(IndexDataType, INDEX_MAX_ENUM, indexType)
 
-static StringMap<IndexDataType, INDEX_MAX_ENUM> indexTypes(indexTypeEntries, sizeof(indexTypeEntries));
-
-static StringMap<Usage, USAGE_MAX_ENUM>::Entry usageEntries[] =
+STRINGMAP_BEGIN(BufferDataUsage, BUFFERDATAUSAGE_MAX_ENUM, bufferDataUsage)
 {
-	{ "stream",  USAGE_STREAM  },
-	{ "dynamic", USAGE_DYNAMIC },
-	{ "static",  USAGE_STATIC  },
-};
+	{ "stream",   BUFFERDATAUSAGE_STREAM   },
+	{ "dynamic",  BUFFERDATAUSAGE_DYNAMIC  },
+	{ "static",   BUFFERDATAUSAGE_STATIC   },
+	{ "readback", BUFFERDATAUSAGE_READBACK },
+}
+STRINGMAP_END(BufferDataUsage, BUFFERDATAUSAGE_MAX_ENUM, bufferDataUsage)
 
-static StringMap<Usage, USAGE_MAX_ENUM> usages(usageEntries, sizeof(usageEntries));
-
-static StringMap<PrimitiveType, PRIMITIVE_MAX_ENUM>::Entry primitiveTypeEntries[] =
+STRINGMAP_BEGIN(PrimitiveType, PRIMITIVE_MAX_ENUM, primitiveType)
 {
 	{ "fan",       PRIMITIVE_TRIANGLE_FAN   },
 	{ "strip",     PRIMITIVE_TRIANGLE_STRIP },
 	{ "triangles", PRIMITIVE_TRIANGLES      },
 	{ "points",    PRIMITIVE_POINTS         },
-};
+}
+STRINGMAP_END(PrimitiveType, PRIMITIVE_MAX_ENUM, primitiveType)
 
-static StringMap<PrimitiveType, PRIMITIVE_MAX_ENUM> primitiveTypes(primitiveTypeEntries, sizeof(primitiveTypeEntries));
-
-static StringMap<AttributeStep, STEP_MAX_ENUM>::Entry attributeStepEntries[] =
+STRINGMAP_BEGIN(AttributeStep, STEP_MAX_ENUM, attributeStep)
 {
 	{ "pervertex",   STEP_PER_VERTEX   },
 	{ "perinstance", STEP_PER_INSTANCE },
-};
+}
+STRINGMAP_END(AttributeStep, STEP_MAX_ENUM, attributeStep)
 
-static StringMap<AttributeStep, STEP_MAX_ENUM> attributeSteps(attributeStepEntries, sizeof(attributeStepEntries));
-
-static StringMap<DataType, DATA_MAX_ENUM>::Entry dataTypeEntries[] =
+STRINGMAP_BEGIN(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
 {
-	{ "byte",    DATA_UNORM8  }, // Legacy / more user-friendly name...
-	{ "unorm16", DATA_UNORM16 },
-	{ "float",   DATA_FLOAT   },
-};
+	{ "float",     DATAFORMAT_FLOAT      },
+	{ "floatvec2", DATAFORMAT_FLOAT_VEC2 },
+	{ "floatvec3", DATAFORMAT_FLOAT_VEC3 },
+	{ "floatvec4", DATAFORMAT_FLOAT_VEC4 },
 
-static StringMap<DataType, DATA_MAX_ENUM> dataTypes(dataTypeEntries, sizeof(dataTypeEntries));
+	{ "floatmat2x2", DATAFORMAT_FLOAT_MAT2X2 },
+	{ "floatmat2x3", DATAFORMAT_FLOAT_MAT2X3 },
+	{ "floatmat2x4", DATAFORMAT_FLOAT_MAT2X4 },
 
-static StringMap<CullMode, CULL_MAX_ENUM>::Entry cullModeEntries[] =
+	{ "floatmat3x2", DATAFORMAT_FLOAT_MAT3X2 },
+	{ "floatmat3x3", DATAFORMAT_FLOAT_MAT3X3 },
+	{ "floatmat3x4", DATAFORMAT_FLOAT_MAT3X4 },
+
+	{ "floatmat4x2", DATAFORMAT_FLOAT_MAT4X2 },
+	{ "floatmat4x3", DATAFORMAT_FLOAT_MAT4X3 },
+	{ "floatmat4x4", DATAFORMAT_FLOAT_MAT4X4 },
+
+	{ "int32",     DATAFORMAT_INT32      },
+	{ "int32vec2", DATAFORMAT_INT32_VEC2 },
+	{ "int32vec3", DATAFORMAT_INT32_VEC3 },
+	{ "int32vec4", DATAFORMAT_INT32_VEC4 },
+
+	{ "uint32",     DATAFORMAT_UINT32      },
+	{ "uint32vec2", DATAFORMAT_UINT32_VEC2 },
+	{ "uint32vec3", DATAFORMAT_UINT32_VEC3 },
+	{ "uint32vec4", DATAFORMAT_UINT32_VEC4 },
+
+	{ "snorm8vec4", DATAFORMAT_SNORM8_VEC4 },
+	{ "unorm8vec4", DATAFORMAT_UNORM8_VEC4 },
+	{ "int8vec4",   DATAFORMAT_INT8_VEC4   },
+	{ "uint8vec4",  DATAFORMAT_UINT8_VEC4  },
+
+	{ "snorm16vec2", DATAFORMAT_SNORM16_VEC2 },
+	{ "snorm16vec4", DATAFORMAT_SNORM16_VEC4 },
+
+	{ "unorm16vec2", DATAFORMAT_UNORM16_VEC2 },
+	{ "unorm16vec4", DATAFORMAT_UNORM16_VEC4 },
+
+	{ "int16vec2", DATAFORMAT_INT16_VEC2 },
+	{ "int16vec4", DATAFORMAT_INT16_VEC4 },
+
+	{ "uint16",     DATAFORMAT_UINT16      },
+	{ "uint16vec2", DATAFORMAT_UINT16_VEC2 },
+	{ "uint16vec4", DATAFORMAT_UINT16_VEC4 },
+
+	{ "bool",     DATAFORMAT_BOOL      },
+	{ "boolvec2", DATAFORMAT_BOOL_VEC2 },
+	{ "boolvec3", DATAFORMAT_BOOL_VEC3 },
+	{ "boolvec4", DATAFORMAT_BOOL_VEC4 },
+}
+STRINGMAP_END(DataFormat, DATAFORMAT_MAX_ENUM, dataFormat)
+
+STRINGMAP_BEGIN(DataBaseType, DATA_BASETYPE_MAX_ENUM, dataBaseType)
+{
+	{ "float", DATA_BASETYPE_FLOAT },
+	{ "int",   DATA_BASETYPE_INT   },
+	{ "uint",  DATA_BASETYPE_UINT  },
+	{ "snorm", DATA_BASETYPE_SNORM },
+	{ "unorm", DATA_BASETYPE_UNORM },
+	{ "bool",  DATA_BASETYPE_BOOL  },
+}
+STRINGMAP_END(DataBaseType, DATA_BASETYPE_MAX_ENUM, dataBaseType)
+
+STRINGMAP_BEGIN(CullMode, CULL_MAX_ENUM, cullMode)
 {
 	{ "none",  CULL_NONE  },
 	{ "back",  CULL_BACK  },
 	{ "front", CULL_FRONT },
-};
+}
+STRINGMAP_END(CullMode, CULL_MAX_ENUM, cullMode)
 
-static StringMap<CullMode, CULL_MAX_ENUM> cullModes(cullModeEntries, sizeof(cullModeEntries));
-
-static StringMap<Winding, WINDING_MAX_ENUM>::Entry windingEntries[] =
+STRINGMAP_BEGIN(Winding, WINDING_MAX_ENUM, winding)
 {
 	{ "cw",  WINDING_CW  },
 	{ "ccw", WINDING_CCW },
-};
-
-static StringMap<Winding, WINDING_MAX_ENUM> windings(windingEntries, sizeof(windingEntries));
-
-bool getConstant(const char *in, BuiltinVertexAttribute &out)
-{
-	return attribNames.find(in, out);
 }
+STRINGMAP_END(Winding, WINDING_MAX_ENUM, winding)
 
-bool getConstant(BuiltinVertexAttribute in, const char *&out)
-{
-	return attribNames.find(in, out);
-}
-
-bool getConstant(const char *in, IndexDataType &out)
-{
-	return indexTypes.find(in, out);
-}
-
-bool getConstant(IndexDataType in, const char *&out)
-{
-	return indexTypes.find(in, out);
-}
-
-std::vector<std::string> getConstants(IndexDataType)
-{
-	return indexTypes.getNames();
-}
-
-bool getConstant(const char *in, Usage &out)
-{
-	return usages.find(in, out);
-}
-
-bool getConstant(Usage in, const char *&out)
-{
-	return usages.find(in, out);
-}
-
-std::vector<std::string> getConstants(Usage)
-{
-	return usages.getNames();
-}
-
-bool getConstant(const char *in, PrimitiveType &out)
-{
-	return primitiveTypes.find(in, out);
-}
-
-bool getConstant(PrimitiveType in, const char *&out)
-{
-	return primitiveTypes.find(in, out);
-}
-
-std::vector<std::string> getConstants(PrimitiveType)
-{
-	return primitiveTypes.getNames();
-}
-
-bool getConstant(const char *in, AttributeStep &out)
-{
-	return attributeSteps.find(in, out);
-}
-
-bool getConstant(AttributeStep in, const char *&out)
-{
-	return attributeSteps.find(in, out);
-}
-
-std::vector<std::string> getConstants(AttributeStep)
-{
-	return attributeSteps.getNames();
-}
-
-bool getConstant(const char *in, DataType &out)
-{
-	return dataTypes.find(in, out);
-}
-
-bool getConstant(DataType in, const char *&out)
-{
-	return dataTypes.find(in, out);
-}
-
-std::vector<std::string> getConstants(DataType)
-{
-	return dataTypes.getNames();
-}
-
-bool getConstant(const char *in, CullMode &out)
-{
-	return cullModes.find(in, out);
-}
-
-bool getConstant(CullMode in, const char *&out)
-{
-	return cullModes.find(in, out);
-}
-
-std::vector<std::string> getConstants(CullMode)
-{
-	return cullModes.getNames();
-}
-
-bool getConstant(const char *in, Winding &out)
-{
-	return windings.find(in, out);
-}
-
-bool getConstant(Winding in, const char *&out)
-{
-	return windings.find(in, out);
-}
-
-std::vector<std::string> getConstants(Winding)
-{
-	return windings.getNames();
-}
-
-} // vertex
 } // graphics
 } // love

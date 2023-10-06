@@ -36,12 +36,13 @@ static void loveSTBIAssert(bool test, const char *teststr)
 #endif
 
 // stb_image
- #define STBI_ONLY_JPEG
+#define STBI_ONLY_JPEG
 // #define STBI_ONLY_PNG
 #define STBI_ONLY_BMP
 #define STBI_ONLY_TGA
 #define STBI_ONLY_HDR
 #define STBI_NO_STDIO
+#define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ASSERT(A) loveSTBIAssert((A), #A)
 #include "libraries/stb/stb_image.h"
@@ -72,7 +73,7 @@ bool STBHandler::canDecode(Data *data)
 
 bool STBHandler::canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat)
 {
-	return encodedFormat == ENCODED_TGA && rawFormat == PIXELFORMAT_RGBA8;
+	return encodedFormat == ENCODED_TGA && rawFormat == PIXELFORMAT_RGBA8_UNORM;
 }
 
 FormatHandler::DecodedImage STBHandler::decode(Data *data)
@@ -87,13 +88,13 @@ FormatHandler::DecodedImage STBHandler::decode(Data *data)
 	{
 		img.data = (unsigned char *) stbi_loadf_from_memory(buffer, bufferlen, &img.width, &img.height, &comp, 4);
 		img.size = img.width * img.height * 4 * sizeof(float);
-		img.format = PIXELFORMAT_RGBA32F;
+		img.format = PIXELFORMAT_RGBA32_FLOAT;
 	}
 	else
 	{
 		img.data = stbi_load_from_memory(buffer, bufferlen, &img.width, &img.height, &comp, 4);
 		img.size = img.width * img.height * 4;
-		img.format = PIXELFORMAT_RGBA8;
+		img.format = PIXELFORMAT_RGBA8_UNORM;
 	}
 
 	if (img.data == nullptr || img.width <= 0 || img.height <= 0)
@@ -122,15 +123,14 @@ FormatHandler::EncodedImage STBHandler::encode(const DecodedImage &img, EncodedF
 
 	encimg.size = (img.width * img.height * bpp) + headerlen;
 
-	// We need to use malloc because we use stb_image_free (which uses free())
-	// as our custom free() function, which is called by the ImageData after
-	// encode() is complete.
-	// stb_image's source code is compiled with this source, so calling malloc()
-	// directly is fine.
-	encimg.data = (unsigned char *) malloc(encimg.size);
-
-	if (encimg.data == nullptr)
+	try
+	{
+		encimg.data = new unsigned char[encimg.size];
+	}
+	catch (std::exception &)
+	{
 		throw love::Exception("Out of memory.");
+	}
 
 	// here's the header for the Targa file format.
 	encimg.data[0]  = 0; // ID field size
@@ -173,6 +173,11 @@ void STBHandler::freeRawPixels(unsigned char *mem)
 	// The STB decoder gave memory allocated directly by stb_image to the
 	// ImageData, so we use stb_image_free to delete it.
 	stbi_image_free(mem);
+}
+
+void STBHandler::freeEncodedImage(unsigned char *mem)
+{
+	delete[] mem;
 }
 
 } // magpie

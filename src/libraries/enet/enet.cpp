@@ -111,13 +111,6 @@ static size_t find_peer_index(lua_State *l, ENetHost *enet_host, ENetPeer *peer)
 	return peer_index;
 }
 
-// VS2013 doesn't support alignof
-#if defined(_MSC_VER) && _MSC_VER <= 1800
-#define ENET_ALIGNOF(x) __alignof(x)
-#else
-#define ENET_ALIGNOF(x) alignof(x)
-#endif
-
 static bool supports_full_lightuserdata(lua_State *L)
 {
 	static bool checked = false;
@@ -156,7 +149,7 @@ static uintptr_t compute_peer_key(lua_State *L, ENetPeer *peer)
 	// Please see these for the reason of this ternary operator:
 	// * https://github.com/love2d/love/issues/1916
 	// * https://github.com/love2d/love/commit/4ab9a1ce8c
-	const size_t minalign = sizeof(void*) == 8 ? std::min(ENET_ALIGNOF(ENetPeer), ENET_ALIGNOF(std::max_align_t)) : 1;
+	const size_t minalign = sizeof(void*) == 8 ? std::min(alignof(ENetPeer), alignof(std::max_align_t)) : 1;
 	uintptr_t key = (uintptr_t) peer;
 
 	if ((key & (minalign - 1)) != 0)
@@ -252,12 +245,21 @@ static void push_event(lua_State *l, ENetEvent *event) {
 
 /**
  * Read a packet off the stack as a string
- * idx is position of string
+ * idx is position of string or lightuserdata
  */
 static ENetPacket *read_packet(lua_State *l, int idx, enet_uint8 *channel_id) {
 	size_t size;
 	int argc = lua_gettop(l);
-	const void *data = luaL_checklstring(l, idx, &size);
+	const void* data;
+
+	if (lua_islightuserdata(l, idx)) {
+		data = lua_touserdata(l, idx);
+		size = (size_t) luaL_checknumber(l, idx + 1);
+		idx++;
+	}
+	else {
+		data = luaL_checklstring(l, idx, &size);
+	}
 	ENetPacket *packet;
 
 	enet_uint32 flags = ENET_PACKET_FLAG_RELIABLE;

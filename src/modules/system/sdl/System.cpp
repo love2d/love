@@ -25,6 +25,11 @@
 // SDL
 #include <SDL_clipboard.h>
 #include <SDL_cpuinfo.h>
+#include <SDL_version.h>
+
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+#include <SDL_locale.h>
+#endif
 
 namespace love
 {
@@ -88,6 +93,30 @@ love::system::System::PowerState System::getPowerInfo(int &seconds, int &percent
 	powerStates.find(sdlstate, state);
 
 	return state;
+}
+
+std::vector<std::string> System::getPreferredLocales() const
+{
+	std::vector<std::string> result;
+
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	SDL_Locale *locales = SDL_GetPreferredLocales();
+
+	if (locales)
+	{
+		for (SDL_Locale* locale = locales; locale->language != nullptr; locale++)
+		{
+			if (locale->country)
+				result.push_back(std::string(locale->language) + "_" + std::string(locale->country));
+			else
+				result.push_back(locale->language);
+		}
+
+		SDL_free(locales);
+	}
+#endif
+
+	return result;
 }
 
 EnumMap<System::PowerState, SDL_PowerState, System::POWER_MAX_ENUM>::Entry System::powerEntries[] =

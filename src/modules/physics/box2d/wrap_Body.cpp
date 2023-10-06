@@ -125,6 +125,21 @@ int w_Body_getAngularVelocity(lua_State *L)
 	return 1;
 }
 
+int w_Body_getKinematicState(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	b2Vec2 pos_o, vel_o;
+	float a_o, da_o;
+	t->getKinematicState(pos_o, a_o, vel_o, da_o);
+	lua_pushnumber(L, pos_o.x);
+	lua_pushnumber(L, pos_o.y);
+	lua_pushnumber(L, a_o);
+	lua_pushnumber(L, vel_o.x);
+	lua_pushnumber(L, vel_o.y);
+	lua_pushnumber(L, da_o);
+	return 6;
+}
+
 int w_Body_getMass(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
@@ -313,6 +328,19 @@ int w_Body_setPosition(lua_State *L)
 	return 0;
 }
 
+int w_Body_setKinematicState(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	float x = (float)luaL_checknumber(L, 2);
+	float y = (float)luaL_checknumber(L, 3);
+	float a = (float)luaL_checknumber(L, 4);
+	float dx = (float)luaL_checknumber(L, 5);
+	float dy = (float)luaL_checknumber(L, 6);
+	float da = (float)luaL_checknumber(L, 7);
+	luax_catchexcept(L, [&](){ t->setKinematicState(b2Vec2(x, y), a, b2Vec2(dx, dy), da); });
+	return 0;
+}
+
 int w_Body_resetMassData(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
@@ -497,7 +525,7 @@ int w_Body_setBullet(lua_State *L)
 int w_Body_isActive(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
-	luax_pushboolean(L, t->isActive());
+	luax_pushboolean(L, t->isEnabled());
 	return 1;
 }
 
@@ -527,7 +555,7 @@ int w_Body_setActive(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	bool b = luax_checkboolean(L, 2);
-	luax_catchexcept(L, [&](){ t->setActive(b); });
+	luax_catchexcept(L, [&](){ t->setEnabled(b); });
 	return 0;
 }
 
@@ -626,24 +654,6 @@ int w_Body_getUserData(lua_State *L)
 	return t->getUserData(L);
 }
 
-int w_Body_getFixtureList(lua_State *L)
-{
-	luax_markdeprecated(L, "Body:getFixtureList", API_METHOD, DEPRECATED_RENAMED, "Body:getFixtures");
-	return w_Body_getFixtures(L);
-}
-
-int w_Body_getJointList(lua_State *L)
-{
-	luax_markdeprecated(L, "Body:getJointList", API_METHOD, DEPRECATED_RENAMED, "Body:getJoints");
-	return w_Body_getJoints(L);
-}
-
-int w_Body_getContactList(lua_State *L)
-{
-	luax_markdeprecated(L, "Body:getContactList", API_METHOD, DEPRECATED_RENAMED, "Body:getContacts");
-	return w_Body_getContacts(L);
-}
-
 static const luaL_Reg w_Body_functions[] =
 {
 	{ "getX", w_Body_getX },
@@ -656,6 +666,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "getWorldCenter", w_Body_getWorldCenter },
 	{ "getLocalCenter", w_Body_getLocalCenter },
 	{ "getAngularVelocity", w_Body_getAngularVelocity },
+	{ "getKinematicState", w_Body_getKinematicState },
 	{ "getMass", w_Body_getMass },
 	{ "getInertia", w_Body_getInertia },
 	{ "getMassData", w_Body_getMassData },
@@ -673,6 +684,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "setAngle", w_Body_setAngle },
 	{ "setAngularVelocity", w_Body_setAngularVelocity },
 	{ "setPosition", w_Body_setPosition },
+	{ "setKinematicState", w_Body_setKinematicState },
 	{ "resetMassData", w_Body_resetMassData },
 	{ "setMassData", w_Body_setMassData },
 	{ "setMass", w_Body_setMass },
@@ -708,11 +720,6 @@ static const luaL_Reg w_Body_functions[] =
 	{ "isDestroyed", w_Body_isDestroyed },
 	{ "setUserData", w_Body_setUserData },
 	{ "getUserData", w_Body_getUserData },
-
-	// Deprectaed
-	{ "getFixtureList", w_Body_getFixtureList },
-	{ "getJointList", w_Body_getJointList },
-	{ "getContactList", w_Body_getContactList },
 
 	{ 0, 0 }
 };

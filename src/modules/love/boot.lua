@@ -37,6 +37,7 @@ end
 
 local no_game_code = false
 local invalid_game_path = nil
+local main_file = "main.lua"
 
 -- This can't be overridden.
 function love.boot()
@@ -44,7 +45,9 @@ function love.boot()
 	-- This is absolutely needed.
 	require("love.filesystem")
 
-	local arg0 = love.arg.getLow(arg)
+	love.rawGameArguments = arg
+
+	local arg0 = love.arg.getLow(love.rawGameArguments)
 	love.filesystem.init(arg0)
 
 	local exepath = love.filesystem.getExecutablePath()
@@ -65,7 +68,10 @@ function love.boot()
 	end
 
 	-- Parse options now that we know which options we're looking for.
-	love.arg.parseOptions()
+	love.arg.parseOptions(love.rawGameArguments)
+
+	-- parseGameArguments can only be called after parseOptions.
+	love.parsedGameArguments = love.arg.parseGameArguments(love.rawGameArguments)
 
 	local o = love.arg.options
 
@@ -74,6 +80,9 @@ function love.boot()
 	love.filesystem.setFused(is_fused_game)
 
 	love.setDeprecationOutput(not love.filesystem.isFused())
+
+	main_file = "main.lua"
+	local custom_main_file = false
 
 	local identity = ""
 	if not can_has_game and o.game.set and o.game.arg[1] then
@@ -84,6 +93,14 @@ function love.boot()
 		end
 
 		local full_source = love.path.getFull(nouri)
+		local source_leaf = love.path.leaf(full_source)
+
+		if source_leaf:match("%.lua$") then
+			main_file = source_leaf
+			custom_main_file = true
+			full_source = love.path.getFull(full_source:sub(1, -(#source_leaf + 1)))
+		end
+
 		can_has_game = pcall(love.filesystem.setSource, full_source)
 
 		if not can_has_game then
@@ -99,7 +116,7 @@ function love.boot()
 
 	-- Try to use the archive containing main.lua as the identity name. It
 	-- might not be available, in which case the fallbacks above are used.
-	local realdir = love.filesystem.getRealDirectory("main.lua")
+	local realdir = love.filesystem.getRealDirectory(main_file)
 	if realdir then
 		identity = love.path.leaf(realdir)
 	end
@@ -113,11 +130,22 @@ function love.boot()
 	-- before the save directory (the identity should be appended.)
 	pcall(love.filesystem.setIdentity, identity, true)
 
-	if can_has_game and not (love.filesystem.getInfo("main.lua") or love.filesystem.getInfo("conf.lua")) then
+	if can_has_game and not (love.filesystem.getInfo(main_file) or (not custom_main_file and love.filesystem.getInfo("conf.lua"))) then
 		no_game_code = true
 	end
 
 	if not can_has_game then
+        -- when editing this message, change it at love.cpp too
+        print([[LÖVE is an *awesome* framework you can use to make 2D games in Lua
+https://love2d.org
+
+usage:
+    love --version                  prints LÖVE version and quits
+    love --help                     prints this message and quits
+    love path/to/gamedir            runs the game from the given directory which contains a main.lua file
+    love path/to/packagedgame.love  runs the packaged game from the provided .love file
+    love path/to/file.lua           runs the game from the given .lua file
+]]);
 		local nogame = require("love.nogame")
 		nogame()
 	end
@@ -140,13 +168,12 @@ function love.init()
 			minheight = 1,
 			fullscreen = false,
 			fullscreentype = "desktop",
-			display = 1,
+			displayindex = 1,
 			vsync = 1,
 			msaa = 0,
 			borderless = false,
 			resizable = false,
 			centered = true,
-			highdpi = false,
 			usedpiscale = true,
 		},
 		modules = {
@@ -162,6 +189,7 @@ function love.init()
 			audio = true,
 			math = true,
 			physics = true,
+			sensor = true,
 			sound = true,
 			system = true,
 			font = true,
@@ -177,8 +205,11 @@ function love.init()
 		identity = false,
 		appendidentity = false,
 		externalstorage = false, -- Only relevant for Android.
-		accelerometerjoystick = true, -- Only relevant for Android / iOS.
+		accelerometerjoystick = nil, -- Only relevant for Android / iOS, deprecated.
 		gammacorrect = false,
+		highdpi = false,
+		renderers = nil,
+		excluderenderers = nil,
 	}
 
 	-- Console hack, part 1.
@@ -216,6 +247,49 @@ function love.init()
 		love._setGammaCorrect(c.gammacorrect)
 	end
 
+	if love._setRenderers then
+		local renderers = love._getDefaultRenderers()
+		if type(c.renderers) == "table" then
+			renderers = {}
+			for i,v in ipairs(c.renderers) do
+				renderers[i] = v
+			end
+		end
+
+		if love.arg.options.renderers.set then
+			local renderersstr = love.arg.options.renderers.arg[1]
+			renderers = {}
+			for r in renderersstr:gmatch("[^,]+") do
+				table.insert(renderers, r)
+			end
+		end
+		local excluderenderers = c.excluderenderers
+		if love.arg.options.excluderenderers.set then
+			local excludestr = love.arg.options.excluderenderers.arg[1]
+			excluderenderers = {}
+			for r in excludestr:gmatch("[^,]+") do
+				table.insert(excluderenderers, r)
+			end
+		end
+
+		if type(excluderenderers) == "table" then
+			for i,v in ipairs(excluderenderers) do
+				for j=#renderers, 1, -1 do
+					if renderers[j] == v then
+						table.remove(renderers, j)
+						break
+					end
+				end
+			end
+		end
+
+		love._setRenderers(renderers)
+	end
+
+	if love._setHighDPIAllowed then
+		love._setHighDPIAllowed(c.highdpi)
+	end
+
 	if love._setAudioMixWithSystem then
 		if c.audio and c.audio.mixwithsystem ~= nil then
 			love._setAudioMixWithSystem(c.audio.mixwithsystem)
@@ -238,6 +312,7 @@ function love.init()
 		"touch",
 		"sound",
 		"system",
+		"sensor",
 		"audio",
 		"image",
 		"video",
@@ -292,8 +367,9 @@ function love.init()
 			minheight = c.window.minheight,
 			borderless = c.window.borderless,
 			centered = c.window.centered,
-			display = c.window.display,
-			highdpi = c.window.highdpi,
+			displayindex = c.window.displayindex,
+			display = c.window.display, -- deprecated
+			highdpi = c.window.highdpi, -- deprecated
 			usedpiscale = c.window.usedpiscale,
 			x = c.window.x,
 			y = c.window.y,
@@ -319,13 +395,16 @@ function love.init()
 	if love.filesystem then
 		love.filesystem._setAndroidSaveExternal(c.externalstorage)
 		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.appendidentity)
-		if love.filesystem.getInfo("main.lua") then
-			require("main")
+		if love.filesystem.getInfo(main_file) then
+			require(main_file:gsub("%.lua$", ""))
 		end
 	end
 
 	if no_game_code then
-		error("No code to run\nYour game might be packaged incorrectly.\nMake sure main.lua is at the top level of the zip.")
+		local opts = love.arg.options
+		local gamepath = opts.game.set and opts.game.arg[1] or ""
+		local gamestr = gamepath == "" and "" or " at "..gamepath
+		error("No code to run"..gamestr.."\nYour game might be packaged incorrectly.\nMake sure "..main_file.." is at the top level of the zip or folder.")
 	elseif invalid_game_path then
 		error("Cannot load game at path '" .. invalid_game_path .. "'.\nMake sure a folder exists at the specified path.")
 	end
@@ -374,8 +453,8 @@ return function()
 	func = earlyinit
 
 	while func do
-		local _, retval = xpcall(func, deferErrhand)
-		if retval then return retval end
+		local _, retval, restartvalue = xpcall(func, deferErrhand)
+		if retval then return retval, restartvalue end
 		coroutine.yield()
 	end
 

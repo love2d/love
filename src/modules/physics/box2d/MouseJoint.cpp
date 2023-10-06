@@ -49,6 +49,7 @@ MouseJoint::MouseJoint(Body *body1, float x, float y)
 	def.bodyB = body1->body;
 	def.maxForce = 1000.0f * body1->body->GetMass();
 	def.target = Physics::scaleDown(b2Vec2(x,y));
+	Physics::computeLinearStiffness(def.stiffness, def.damping, 5.0, 0.7, def.bodyA, def.bodyB);
 	joint = (b2MouseJoint *)createJoint(&def);
 }
 
@@ -78,30 +79,30 @@ float MouseJoint::getMaxForce() const
 	return Physics::scaleUp(joint->GetMaxForce());
 }
 
-void MouseJoint::setFrequency(float hz)
+void MouseJoint::setStiffness(float k)
 {
-	// This is kind of a crappy check. The frequency is used in an internal
+	// This is kind of a crappy check. The Stiffness is used in an internal
 	// box2d calculation whose result must be > FLT_EPSILON, but other variables
 	// go into that calculation...
-	if (hz <= FLT_EPSILON * 2)
-		throw love::Exception("MouseJoint frequency must be a positive number.");
+	if (k <= FLT_EPSILON * 2)
+		throw love::Exception("MouseJoint Stiffness must be a positive number.");
 
-	joint->SetFrequency(hz);
+	joint->SetStiffness(k);
 }
 
-float MouseJoint::getFrequency() const
+float MouseJoint::getStiffness() const
 {
-	return joint->GetFrequency();
+	return joint->GetStiffness();
 }
 
-void MouseJoint::setDampingRatio(float d)
+void MouseJoint::setDamping(float d)
 {
-	joint->SetDampingRatio(d);
+	joint->SetDamping(d);
 }
 
-float MouseJoint::getDampingRatio() const
+float MouseJoint::getDamping() const
 {
-	return joint->GetDampingRatio();
+	return joint->GetDamping();
 }
 
 Body *MouseJoint::getBodyA() const

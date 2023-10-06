@@ -20,8 +20,7 @@
 
 // LOVE
 #include "wrap_SpriteBatch.h"
-#include "Image.h"
-#include "Canvas.h"
+#include "Texture.h"
 #include "wrap_Texture.h"
 
 namespace love
@@ -153,16 +152,7 @@ int w_SpriteBatch_setTexture(lua_State *L)
 int w_SpriteBatch_getTexture(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	Texture *tex = t->getTexture();
-
-	// FIXME: big hack right here.
-	if (dynamic_cast<Image *>(tex) != nullptr)
-		luax_pushtype(L, Image::type, tex);
-	else if (dynamic_cast<Canvas *>(tex) != nullptr)
-		luax_pushtype(L, Canvas::type, tex);
-	else
-		return luaL_error(L, "Unable to determine texture type.");
-
+	luax_pushtype(L, t->getTexture());
 	return 1;
 }
 
@@ -171,12 +161,7 @@ int w_SpriteBatch_setColor(lua_State *L)
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	Colorf c;
 
-	if (lua_gettop(L) <= 1)
-	{
-		t->setColor();
-		return 0;
-	}
-	else if (lua_istable(L, 2))
+	if (lua_istable(L, 2))
 	{
 		for (int i = 1; i <= 4; i++)
 			lua_rawgeti(L, 2, i);
@@ -204,18 +189,12 @@ int w_SpriteBatch_setColor(lua_State *L)
 int w_SpriteBatch_getColor(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	bool active = false;
-	Colorf color = t->getColor(active);
-
-	// getColor returns null if no color is set.
-	if (!active)
-		return 0;
+	Colorf color = t->getColor();
 
 	lua_pushnumber(L, color.r);
 	lua_pushnumber(L, color.g);
 	lua_pushnumber(L, color.b);
 	lua_pushnumber(L, color.a);
-
 	return 4;
 }
 
@@ -237,9 +216,22 @@ int w_SpriteBatch_attachAttribute(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
 	const char *name = luaL_checkstring(L, 2);
-	Mesh *m = luax_checktype<Mesh>(L, 3);
 
-	luax_catchexcept(L, [&](){ t->attachAttribute(name, m); });
+	Buffer *buffer = nullptr;
+	Mesh *mesh = nullptr;
+	if (luax_istype(L, 3, Buffer::type))
+	{
+		buffer = luax_checktype<Buffer>(L, 3);
+	}
+	else
+	{
+		mesh = luax_checktype<Mesh>(L, 3);
+		buffer = mesh->getVertexBuffer();
+		if (buffer == nullptr)
+			return luaL_error(L, "Mesh does not have its own vertex buffer.");
+	}
+
+	luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer, mesh); });
 	return 0;
 }
 

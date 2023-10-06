@@ -48,6 +48,7 @@ public:
 	bool hasKeyRepeat() const;
 	bool isDown(const std::vector<Key> &keylist) const;
 	bool isScancodeDown(const std::vector<Scancode> &scancodelist) const;
+	bool isModifierActive(ModifierKey key) const;
 
 	Key getKeyFromScancode(Scancode scancode) const;
 	Scancode getScancodeFromKey(Key key) const;

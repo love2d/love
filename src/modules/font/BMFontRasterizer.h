@@ -47,11 +47,14 @@ public:
 
 	// Implements Rasterizer.
 	int getLineHeight() const override;
-	GlyphData *getGlyphData(uint32 glyph) const override;
+	int getGlyphSpacing(uint32 glyph) const override;
+	int getGlyphIndex(uint32 glyph) const override;
+	GlyphData *getGlyphDataForIndex(int index) const override;
 	int getGlyphCount() const override;
 	bool hasGlyph(uint32 glyph) const override;
 	float getKerning(uint32 leftglyph, uint32 rightglyph) const override;
 	DataType getDataType() const override;
+	TextShaper *newTextShaper() override;
 
 	static bool accepts(love::filesystem::FileData *fontdef);
 
@@ -63,6 +66,7 @@ private:
 		int y;
 		int page;
 		GlyphMetrics metrics;
+		uint32 glyph;
 	};
 
 	void parseConfig(const std::string &config);
@@ -72,8 +76,10 @@ private:
 	// Image pages, indexed by their page id.
 	std::unordered_map<int, StrongRef<image::ImageData>> images;
 
-	// Glyph characters, indexed by their glyph id.
-	std::unordered_map<uint32, BMFontCharacter> characters;
+	std::vector<BMFontCharacter> characters;
+
+	// Glyph character indices, indexed by their glyph id.
+	std::unordered_map<uint32, int> characterIndices;
 
 	// Kerning information, indexed by two (packed) characters.
 	std::unordered_map<uint64, int> kerning;
