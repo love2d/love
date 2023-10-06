@@ -71,3 +71,4 @@ stamp-h1
 .vscode/
 /testing/output/*.xml
 /testing/output/*.html
+/testing/output/*.md

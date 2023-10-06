@@ -17,6 +17,8 @@ TestSuite = {
       time = 0,
       xml = '',
       html = '',
+      mdrows = '',
+      mdfailures = '',
       fakequit = false,
       windowmode = true,
 
@@ -124,10 +126,23 @@ TestSuite = {
 
   -- @method - TestSuite:printResult()
   -- @desc - prints the result of the whole test suite as well as writes
-  --         the XML + HTML of the testsuite output
+  --         the MD, XML + HTML of the testsuite output
   -- @return {nil}
   printResult = function(self)
     local finaltime = UtilTimeFormat(self.time)
+    
+    local md = '<!-- PASSED ' .. tostring(self.totals[1]) ..
+      ' || FAILED ' .. tostring(self.totals[2]) ..
+      ' || SKIPPED ' .. tostring(self.totals[3]) ..
+      ' || TIME ' .. finaltime .. ' -->\n\n' ..
+      '**' .. tostring(self.totals[1] + self.totals[2] + self.totals[3]) .. '** tests were completed in **' ..
+      finaltime .. 's** with **' ..
+      tostring(self.totals[1]) .. '** passed, **' ..
+      tostring(self.totals[2]) .. '** failed, and **' ..
+      tostring(self.totals[3]) .. '** skipped\n\n### Report\n' ..
+      '| Module                | Passed | Failed | Skipped | Time   |\n' ..
+      '| --------------------- | ------ | ------ | ------- | ------ |\n' ..
+      self.mdrows .. '\n\n### Failures\n' .. self.mdfailures
 
     local xml = '<testsuites name="love.test" tests="' .. tostring(self.totals[1]) .. 
       '" failures="' .. tostring(self.totals[2]) .. 
@@ -147,6 +162,7 @@ TestSuite = {
     love.filesystem.mountFullPath(love.filesystem.getSource() .. "/output", "tempoutput", "readwrite")
     love.filesystem.write('tempoutput/' .. self.output .. '.xml', xml .. self.xml .. '</testsuites>')
     love.filesystem.write('tempoutput/' .. self.output .. '.html', html .. self.html .. '</div></body></html>')
+    love.filesystem.write('tempoutput/' .. self.output .. '.md', md)
 
     self.module:log('grey', '\nFINISHED - ' .. finaltime .. 's\n')
     local failedcol = '\27[31m'

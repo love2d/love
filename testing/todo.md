@@ -1,9 +1,8 @@
 `/Applications/love_12.app/Contents/MacOS/love ./testing`
 
 ## Todo
-- fix XML format
 - check test runs for windows setup
-- add runs for linux + ios
+- add runs for linux + ios?
 - finish graphics state methods
 - start graphics drawing methods
 - start object methods

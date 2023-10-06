@@ -84,6 +84,15 @@ TestModule = {
   -- @return {nil}
   printResult = function(self)
     local finaltime = UtilTimeFormat(self.time)
+    local status = '🔴'
+    if self.failed == 0 then status = '🟢' end
+    -- add md row to main output
+    love.test.mdrows = love.test.mdrows .. '| ' .. status .. 
+      ' love.' .. self.module .. 
+      ' | ' .. tostring(self.passed) .. 
+      ' | ' .. tostring(self.failed) .. 
+      ' | ' .. tostring(self.skipped) .. 
+      ' | ' .. finaltime .. 's |' .. '\n'
     -- add xml to main output
     love.test.xml = love.test.xml .. '\t<testsuite name="love.' .. self.module .. 
       '" tests="' .. tostring(self.passed) .. 
@@ -91,8 +100,6 @@ TestModule = {
       '" skipped="' .. tostring(self.skipped) ..
       '" time="' .. finaltime .. '">\n' .. self.xml .. '\t</testsuite>\n'
     -- add html to main output
-    local status = '🔴'
-    if self.failed == 0 then status = '🟢' end
     love.test.html = love.test.html .. '<h2>' .. status .. '&nbsp;love.' .. self.module .. '</h2><ul class="summary">' ..
       '<li>🟢&nbsp;' .. tostring(self.passed) .. ' Tests</li>' ..
       '<li>🔴&nbsp;' .. tostring(self.failed) .. ' Failures</li>' ..
