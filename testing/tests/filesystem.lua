@@ -231,10 +231,11 @@ end
 -- love.filesystem.openFile
 -- @NOTE this is just basic nil checking, full obj test are in objects.lua
 love.test.filesystem.openFile = function(test)
-  test:assertNotNil(love.filesystem.openFile('file2', 'r'))
-  test:assertNotNil(love.filesystem.openFile('file2', 'w'))
-  test:assertNotNil(love.filesystem.openFile('file2', 'a'))
-  test:assertNotNil(love.filesystem.openFile('file2', 'c'))
+  test:assertNotNil(love.filesystem.openFile('file2.txt', 'w'))
+  test:assertNotNil(love.filesystem.openFile('file2.txt', 'r'))
+  test:assertNotNil(love.filesystem.openFile('file2.txt', 'a'))
+  test:assertNotNil(love.filesystem.openFile('file2.txt', 'c'))
+  love.filesystem.remove('file2.txt')
 end
 
 

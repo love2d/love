@@ -206,9 +206,9 @@ jobs:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
         path: pdb/Release/*.pdb
     - name: Build Test Exe
-      run: cmake --build build --config Release --target install
+      run: cmake --build build --config Release --target testbuild
     - name: Run All Tests
-      run: install\love.exe testing --console --runAllTests
+      run: testbuild\love.exe ./testing/main.lua --console
     - name: Love Test Report
       uses: ellraiser/love-test-report@main
       with:
@@ -244,7 +244,7 @@ jobs:
         name: love-macos
         path: love-macos.zip
     - name: Run All Tests
-      run: love-macos/love.app/Contents/MacOS/love testing --runAllTests
+      run: love-macos/love.app/Contents/MacOS/love testing
     - name: Love Test Report
       uses: ellraiser/love-test-report@main
       with:
