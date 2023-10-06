@@ -2,8 +2,7 @@
 
 ## CI
 - [ ] ignore test suite for windows AMD
-- [ ] add test run to linux + ios builds
-- [ ] add metal/vulkan runs
+- [ ] add test run to linux (opengl+vulkan) + ios builds (opengl+metal)
 
 ## TESTSUITE
 - [ ] finish graphics state methods

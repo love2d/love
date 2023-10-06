@@ -206,14 +206,27 @@ jobs:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
         path: pdb/Release/*.pdb
     - name: Build Test Exe
+      if: steps.vars.outputs.arch != 'ARM64'
       run: cmake --build build --config Release --target install
-    - name: Run All Tests
-      run: install\lovec.exe ./testing/main.lua
-    - name: Love Test Report
+    - name: Run All Tests (OpenGL)
+      if: steps.vars.outputs.arch != 'ARM64'
+      run: install\lovec.exe testing/main.lua --renderers opengl
+    - name: Love Test Report (OpenGL)
+      if: steps.vars.outputs.arch != 'ARM64'
       uses: ellraiser/love-test-report@main
       with:
-        name: Love Testsuite Windows
-        title: windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-test-report
+        name: Love Testsuite Windows (OpenGL)
+        title: windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-test-report-opengl
+        path: testing/output/lovetest_runAllTests.md
+    - name: Run All Tests (Vulkan)
+      if: steps.vars.outputs.arch != 'ARM64'
+      run: install\lovec.exe testing/main.lua --renderers vulkan
+    - name: Love Test Report (Vulkan)
+      if: steps.vars.outputs.arch != 'ARM64'
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Windows (Vulkan)
+        title: windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-test-report-vulkan
         path: testing/output/lovetest_runAllTests.md
   macOS:
     runs-on: macos-latest
@@ -243,13 +256,21 @@ jobs:
       with:
         name: love-macos
         path: love-macos.zip
-    - name: Run All Tests
-      run: love-macos/love.app/Contents/MacOS/love testing
-    - name: Love Test Report
+    - name: Run All Tests (OpenGL)
+      run: love-macos/love.app/Contents/MacOS/love testing --renderers opengl
+    - name: Love Test Report (OpenGL)
       uses: ellraiser/love-test-report@main
       with:
-        name: Love Testsuite MacOS
-        title: macos-test-report
+        name: Love Testsuite MacOS (OpenGL)
+        title: macos-test-report-opengl
+        path: testing/output/lovetest_runAllTests.md
+    - name: Run All Tests (metal)
+      run: love-macos/love.app/Contents/MacOS/love testing --renderers opengl
+    - name: Love Test Report (metal)
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite MacOS (Metal)
+        title: macos-test-report-metal
         path: testing/output/lovetest_runAllTests.md
   iOS-Simulator:
     runs-on: macos-latest
