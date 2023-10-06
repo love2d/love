@@ -210,7 +210,7 @@ jobs:
       run: cmake --build build --config Release --target install
     - name: Run All Tests (OpenGL)
       if: steps.vars.outputs.arch != 'ARM64'
-      run: install\lovec.exe testing/main.lua --renderers opengl
+      run: install\lovec.exe testing/main.lua
     - name: Love Test Report (OpenGL)
       if: steps.vars.outputs.arch != 'ARM64'
       uses: ellraiser/love-test-report@main
@@ -257,7 +257,7 @@ jobs:
         name: love-macos
         path: love-macos.zip
     - name: Run All Tests (OpenGL)
-      run: love-macos/love.app/Contents/MacOS/love testing --renderers opengl
+      run: love-macos/love.app/Contents/MacOS/love testing
     - name: Love Test Report (OpenGL)
       uses: ellraiser/love-test-report@main
       with:
@@ -265,7 +265,7 @@ jobs:
         title: macos-test-report-opengl
         path: testing/output/lovetest_runAllTests.md
     - name: Run All Tests (metal)
-      run: love-macos/love.app/Contents/MacOS/love testing --renderers opengl
+      run: love-macos/love.app/Contents/MacOS/love testing --renderers metal
     - name: Love Test Report (metal)
       uses: ellraiser/love-test-report@main
       with:
