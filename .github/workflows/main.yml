@@ -206,9 +206,9 @@ jobs:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
         path: pdb/Release/*.pdb
     - name: Build Test Exe
-      run: cmake --build build --config Release --target testbuild
+      run: cmake --build build --config Release --target install
     - name: Run All Tests
-      run: testbuild\love.exe ./testing/main.lua --console
+      run: install\lovec.exe ./testing/main.lua
     - name: Love Test Report
       uses: ellraiser/love-test-report@main
       with:
