@@ -34,8 +34,8 @@ namespace box2d
 
 love::Type PolygonShape::type("PolygonShape", &Shape::type);
 
-PolygonShape::PolygonShape(b2PolygonShape *p, bool own)
-	: Shape(p, own)
+PolygonShape::PolygonShape(Body *body, const b2PolygonShape &p)
+	: Shape(body, p)
 {
 }
 
@@ -45,6 +45,7 @@ PolygonShape::~PolygonShape()
 
 int PolygonShape::getPoints(lua_State *L)
 {
+	throwIfShapeNotValid();
 	love::luax_assert_argc(L, 0);
 	b2PolygonShape *p = (b2PolygonShape *)shape;
 	int count = p->m_count;
@@ -59,6 +60,7 @@ int PolygonShape::getPoints(lua_State *L)
 
 bool PolygonShape::validate() const
 {
+	throwIfShapeNotValid();
 	b2PolygonShape *p = (b2PolygonShape *)shape;
 	return p->Validate();
 }

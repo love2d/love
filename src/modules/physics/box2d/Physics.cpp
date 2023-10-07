@@ -35,6 +35,7 @@ namespace box2d
 float Physics::meter = Physics::DEFAULT_METER;
 
 Physics::Physics()
+	: blockAllocator()
 {
 	meter = DEFAULT_METER;
 }
@@ -66,8 +67,7 @@ Body *Physics::newBody(World *world, Body::Type type)
 Body *Physics::newCircleBody(World *world, Body::Type type, float x, float y, float radius)
 {
 	StrongRef<Body> body(newBody(world, x, y, type), Acquire::NORETAIN);
-	StrongRef<CircleShape> shape(newCircleShape(0, 0, radius), Acquire::NORETAIN);
-	StrongRef<Fixture> fixture(newFixture(body, shape, 1.0f), Acquire::NORETAIN);
+	StrongRef<CircleShape> shape(newCircleShape(body, 0, 0, radius), Acquire::NORETAIN);
 	body->retain();
 	return body.get();
 }
@@ -75,8 +75,7 @@ Body *Physics::newCircleBody(World *world, Body::Type type, float x, float y, fl
 Body *Physics::newRectangleBody(World *world, Body::Type type, float x, float y, float w, float h, float angle)
 {
 	StrongRef<Body> body(newBody(world, x, y, type), Acquire::NORETAIN);
-	StrongRef<PolygonShape> shape(newRectangleShape(0, 0, w, h, angle), Acquire::NORETAIN);
-	StrongRef<Fixture> fixture(newFixture(body, shape, 1.0f), Acquire::NORETAIN);
+	StrongRef<PolygonShape> shape(newRectangleShape(body, 0, 0, w, h, angle), Acquire::NORETAIN);
 	body->retain();
 	return body.get();
 }
@@ -93,8 +92,7 @@ Body *Physics::newPolygonBody(World *world, Body::Type type, const Vector2 *coor
 		localcoords.push_back(coords[i] - origin);
 
 	StrongRef<Body> body(newBody(world, origin.x, origin.y, type), Acquire::NORETAIN);
-	StrongRef<PolygonShape> shape(newPolygonShape(localcoords.data(), count), Acquire::NORETAIN);
-	StrongRef<Fixture> fixture(newFixture(body, shape, 1.0f), Acquire::NORETAIN);
+	StrongRef<PolygonShape> shape(newPolygonShape(body, localcoords.data(), count), Acquire::NORETAIN);
 	body->retain();
 	return body.get();
 }
@@ -104,8 +102,7 @@ Body *Physics::newEdgeBody(World *world, Body::Type type, float x1, float y1, fl
 	float wx = (x2 - x1) / 2.0f;
 	float wy = (y2 - y1) / 2.0f;
 	StrongRef<Body> body(newBody(world, wx, wy, type), Acquire::NORETAIN);
-	StrongRef<EdgeShape> shape(newEdgeShape(x1 - wx, y1 - wy, x2 - wx, y2 - wy, oneSided), Acquire::NORETAIN);
-	StrongRef<Fixture> fixture(newFixture(body, shape, 1.0f), Acquire::NORETAIN);
+	StrongRef<EdgeShape> shape(newEdgeShape(body, x1 - wx, y1 - wy, x2 - wx, y2 - wy, oneSided), Acquire::NORETAIN);
 	body->retain();
 	return body.get();
 }
@@ -122,44 +119,75 @@ Body *Physics::newChainBody(World *world, Body::Type type, bool loop, const Vect
 		localcoords.push_back(coords[i] - origin);
 
 	StrongRef<Body> body(newBody(world, origin.x, origin.y, type), Acquire::NORETAIN);
-	StrongRef<ChainShape> shape(newChainShape(loop, localcoords.data(), count), Acquire::NORETAIN);
-	StrongRef<Fixture> fixture(newFixture(body, shape, 1.0f), Acquire::NORETAIN);
+	StrongRef<ChainShape> shape(newChainShape(body, loop, localcoords.data(), count), Acquire::NORETAIN);
 	body->retain();
 	return body.get();
 }
 
-CircleShape *Physics::newCircleShape(float x, float y, float radius)
+Shape *Physics::newAttachedShape(Body *body, Shape *prototype, float density)
 {
-	b2CircleShape *s = new b2CircleShape();
-	s->m_p = Physics::scaleDown(b2Vec2(x, y));
-	s->m_radius = Physics::scaleDown(radius);
-	return new CircleShape(s);
+	if (prototype->isValid())
+		throw love::Exception("The given Shape must not be part of the World.");
+
+	Shape *shape = nullptr;
+
+	switch (prototype->getType())
+	{
+	case Shape::SHAPE_CIRCLE:
+		shape = new CircleShape(body, *(b2CircleShape *) prototype->shape);
+		break;
+	case Shape::SHAPE_POLYGON:
+		shape = new PolygonShape(body, *(b2PolygonShape *) prototype->shape);
+		break;
+	case Shape::SHAPE_EDGE:
+		shape = new EdgeShape(body, *(b2EdgeShape *) prototype->shape);
+		break;
+	case Shape::SHAPE_CHAIN:
+		shape = new ChainShape(body, *(b2ChainShape *) prototype->shape);
+		break;
+	default:
+		throw love::Exception("Unknown shape type.");
+		break;
+	}
+
+	shape->setDensity(density);
+	body->resetMassData();
+
+	return shape;
 }
 
-PolygonShape *Physics::newRectangleShape(float x, float y, float w, float h, float angle)
+CircleShape *Physics::newCircleShape(Body *body, float x, float y, float radius)
 {
-	b2PolygonShape *s = new b2PolygonShape();
-	s->SetAsBox(Physics::scaleDown(w/2.0f), Physics::scaleDown(h/2.0f), Physics::scaleDown(b2Vec2(x, y)), angle);
-	return new PolygonShape(s);
+	b2CircleShape s;
+	s.m_p = Physics::scaleDown(b2Vec2(x, y));
+	s.m_radius = Physics::scaleDown(radius);
+	return new CircleShape(body, s);
 }
 
-EdgeShape *Physics::newEdgeShape(float x1, float y1, float x2, float y2, bool oneSided)
+PolygonShape *Physics::newRectangleShape(Body *body, float x, float y, float w, float h, float angle)
 {
-	b2EdgeShape *s = new b2EdgeShape();
+	b2PolygonShape s;
+	s.SetAsBox(Physics::scaleDown(w/2.0f), Physics::scaleDown(h/2.0f), Physics::scaleDown(b2Vec2(x, y)), angle);
+	return new PolygonShape(body, s);
+}
+
+EdgeShape *Physics::newEdgeShape(Body *body, float x1, float y1, float x2, float y2, bool oneSided)
+{
+	b2EdgeShape s;
 	if (oneSided)
 	{
 		b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
 		b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
-		s->SetOneSided(v1, v1, v2, v2);
+		s.SetOneSided(v1, v1, v2, v2);
 	}
 	else
 	{
-		s->SetTwoSided(Physics::scaleDown(b2Vec2(x1, y1)), Physics::scaleDown(b2Vec2(x2, y2)));
+		s.SetTwoSided(Physics::scaleDown(b2Vec2(x1, y1)), Physics::scaleDown(b2Vec2(x2, y2)));
 	}
-	return new EdgeShape(s);
+	return new EdgeShape(body, s);
 }
 
-PolygonShape *Physics::newPolygonShape(const Vector2 *coords, int count)
+PolygonShape *Physics::newPolygonShape(Body *body, const Vector2 *coords, int count)
 {
 	// 3 to 8 (b2_maxPolygonVertices) vertices
 	if (count < 3)
@@ -172,44 +200,28 @@ PolygonShape *Physics::newPolygonShape(const Vector2 *coords, int count)
 	for (int i = 0; i < count; i++)
 		vecs[i] = Physics::scaleDown(b2Vec2(coords[i].x, coords[i].y));
 
-	b2PolygonShape *s = new b2PolygonShape();
+	b2PolygonShape s;
 
-	try
-	{
-		s->Set(vecs, count);
-	}
-	catch (love::Exception &)
-	{
-		delete s;
-		throw;
-	}
+	s.Set(vecs, count);
 
-	return new PolygonShape(s);
+	return new PolygonShape(body, s);
 }
 
-ChainShape *Physics::newChainShape(bool loop, const Vector2 *coords, int count)
+ChainShape *Physics::newChainShape(Body *body, bool loop, const Vector2 *coords, int count)
 {
 	std::vector<b2Vec2> vecs;
 
 	for (int i = 0; i < count; i++)
 		vecs.push_back(Physics::scaleDown(b2Vec2(coords[i].x, coords[i].y)));
 
-	b2ChainShape *s = new b2ChainShape();
+	b2ChainShape s;
 
-	try
-	{
-		if (loop)
-			s->CreateLoop(vecs.data(), count);
-		else
-			s->CreateChain(vecs.data(), count, vecs[0], vecs[count - 1]);
-	}
-	catch (love::Exception &)
-	{
-		delete s;
-		throw;
-	}
+	if (loop)
+		s.CreateLoop(vecs.data(), count);
+	else
+		s.CreateChain(vecs.data(), count, vecs[0], vecs[count - 1]);
 
-	return new ChainShape(s);
+	return new ChainShape(body, s);
 }
 
 DistanceJoint *Physics::newDistanceJoint(Body *body1, Body *body2, float x1, float y1, float x2, float y2, bool collideConnected)
@@ -287,16 +299,10 @@ MotorJoint *Physics::newMotorJoint(Body *body1, Body *body2, float correctionFac
 	return new MotorJoint(body1, body2, correctionFactor, collideConnected);
 }
 
-
-Fixture *Physics::newFixture(Body *body, Shape *shape, float density)
-{
-	return new Fixture(body, shape, density);
-}
-
 int Physics::getDistance(lua_State *L)
 {
-	Fixture *fixtureA = luax_checktype<Fixture>(L, 1);
-	Fixture *fixtureB = luax_checktype<Fixture>(L, 2);
+	Shape *shapeA = luax_checktype<Shape>(L, 1);
+	Shape *shapeB = luax_checktype<Shape>(L, 2);
 	b2DistanceProxy pA, pB;
 	b2DistanceInput i;
 	b2DistanceOutput o;
@@ -304,12 +310,15 @@ int Physics::getDistance(lua_State *L)
 	c.count = 0;
 
 	luax_catchexcept(L, [&]() {
-		pA.Set(fixtureA->fixture->GetShape(), 0);
-		pB.Set(fixtureB->fixture->GetShape(), 0);
+		if (!shapeA->isValid() || !shapeB->isValid())
+			throw love::Exception("The given Shape is not active in the physics World.");
+
+		pA.Set(shapeA->fixture->GetShape(), 0);
+		pB.Set(shapeB->fixture->GetShape(), 0);
 		i.proxyA = pA;
 		i.proxyB = pB;
-		i.transformA = fixtureA->fixture->GetBody()->GetTransform();
-		i.transformB = fixtureB->fixture->GetBody()->GetTransform();
+		i.transformA = shapeA->fixture->GetBody()->GetTransform();
+		i.transformB = shapeB->fixture->GetBody()->GetTransform();
 		i.useRadii = true;
 		b2Distance(&o, &c, &i);
 	});

@@ -34,8 +34,8 @@ namespace box2d
 
 love::Type ChainShape::type("ChainShape", &Shape::type);
 
-ChainShape::ChainShape(b2ChainShape *c, bool own)
-	: Shape(c, own)
+ChainShape::ChainShape(Body *body, const b2ChainShape &c)
+	: Shape(body, c)
 {
 }
 
@@ -45,6 +45,7 @@ ChainShape::~ChainShape()
 
 void ChainShape::setNextVertex(float x, float y)
 {
+	throwIfShapeNotValid();
 	b2Vec2 v(x, y);
 	b2ChainShape *c = (b2ChainShape *)shape;
 	c->m_nextVertex = Physics::scaleDown(v);
@@ -52,6 +53,7 @@ void ChainShape::setNextVertex(float x, float y)
 
 void ChainShape::setPreviousVertex(float x, float y)
 {
+	throwIfShapeNotValid();
 	b2Vec2 v(x, y);
 	b2ChainShape *c = (b2ChainShape *)shape;
 	c->m_prevVertex = Physics::scaleDown(v);
@@ -59,44 +61,40 @@ void ChainShape::setPreviousVertex(float x, float y)
 
 b2Vec2 ChainShape::getNextVertex() const
 {
+	throwIfShapeNotValid();
 	b2ChainShape *c = (b2ChainShape *)shape;
-
 	return Physics::scaleUp(c->m_nextVertex);
 }
 
 b2Vec2 ChainShape::getPreviousVertex() const
 {
+	throwIfShapeNotValid();
 	b2ChainShape *c = (b2ChainShape *)shape;
-
 	return Physics::scaleUp(c->m_prevVertex);
 }
 
 EdgeShape *ChainShape::getChildEdge(int index) const
 {
+	throwIfShapeNotValid();
+
 	b2ChainShape *c = (b2ChainShape *)shape;
-	b2EdgeShape *e = new b2EdgeShape;
 
-	try
-	{
-		c->GetChildEdge(e, index);
-	}
-	catch (love::Exception &)
-	{
-		delete e;
-		throw;
-	}
+	b2EdgeShape e;
+	c->GetChildEdge(&e, index);
 
-	return new EdgeShape(e, true);
+	return new EdgeShape(nullptr, e);
 }
 
 int ChainShape::getVertexCount() const
 {
+	throwIfShapeNotValid();
 	b2ChainShape *c = (b2ChainShape *)shape;
 	return c->m_count;
 }
 
 b2Vec2 ChainShape::getPoint(int index) const
 {
+	throwIfShapeNotValid();
 	b2ChainShape *c = (b2ChainShape *)shape;
 	if (index < 0 || index >= c->m_count)
 		throw love::Exception("Physics error: index out of bounds");
@@ -106,6 +104,7 @@ b2Vec2 ChainShape::getPoint(int index) const
 
 const b2Vec2 *ChainShape::getPoints() const
 {
+	throwIfShapeNotValid();
 	b2ChainShape *c = (b2ChainShape *)shape;
 	return c->m_vertices;
 }

@@ -23,12 +23,12 @@
 #include "common/math.h"
 
 #include "Shape.h"
-#include "Fixture.h"
 #include "World.h"
 #include "Physics.h"
 
 // Needed for luax_pushjoint.
 #include "wrap_Joint.h"
+#include "wrap_Shape.h"
 
 namespace love
 {
@@ -461,20 +461,20 @@ World *Body::getWorld() const
 	return world;
 }
 
-Fixture *Body::getFixture() const
+Shape *Body::getShape() const
 {
 	b2Fixture *f = body->GetFixtureList();
 	if (f == nullptr)
 		return nullptr;
 
-	Fixture *fixture = (Fixture *)(f->GetUserData().pointer);
-	if (!fixture)
-		throw love::Exception("A fixture has escaped Memoizer!");
+	Shape *shape = (Shape *)(f->GetUserData().pointer);
+	if (!shape)
+		throw love::Exception("A Shape has escaped Memoizer!");
 
-	return fixture;
+	return shape;
 }
 
-int Body::getFixtures(lua_State *L) const
+int Body::getShapes(lua_State *L) const
 {
 	lua_newtable(L);
 	b2Fixture *f = body->GetFixtureList();
@@ -483,10 +483,10 @@ int Body::getFixtures(lua_State *L) const
 	{
 		if (!f)
 			break;
-		Fixture *fixture = (Fixture *)(f->GetUserData().pointer);
-		if (!fixture)
-			throw love::Exception("A fixture has escaped Memoizer!");
-		luax_pushtype(L, fixture);
+		Shape *shape = (Shape *)(f->GetUserData().pointer);
+		if (!shape)
+			throw love::Exception("A Shape has escaped Memoizer!");
+		luax_pushshape(L, shape);
 		lua_rawseti(L, -2, i);
 		i++;
 	}

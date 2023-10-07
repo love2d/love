@@ -42,7 +42,6 @@ namespace box2d
 
 class Contact;
 class Body;
-class Fixture;
 class Joint;
 
 /**
@@ -65,7 +64,7 @@ public:
 	friend class DistanceJoint;
 	friend class MouseJoint;
 	friend class Body;
-	friend class Fixture;
+	friend class Shape;
 
 	static love::Type type;
 
@@ -87,7 +86,7 @@ public:
 		lua_State *L;
 		ContactFilter();
 		~ContactFilter();
-		bool process(Fixture *a, Fixture *b);
+		bool process(Shape *a, Shape *b);
 	};
 
 	class QueryCallback : public b2QueryCallback
@@ -302,14 +301,14 @@ public:
 	b2Body *getGroundBody() const;
 
 	/**
-	 * Calls a callback on all fixtures that overlap a given bounding box.
+	 * Calls a callback on all Shapes that overlap a given bounding box.
 	 **/
-	int queryFixturesInArea(lua_State *L);
+	int queryShapesInArea(lua_State *L);
 
 	/**
-	 * Gets all fixtures that overlap a given bounding box.
+	 * Gets all Shapes that overlap a given bounding box.
 	 **/
-	int getFixturesInArea(lua_State *L);
+	int getShapesInArea(lua_State *L);
 
 	/**
 	 * Raycasts the World for all Fixtures in the path of the ray.
@@ -338,7 +337,7 @@ private:
 
 	// The list of to be destructed bodies.
 	std::vector<Body *> destructBodies;
-	std::vector<Fixture *> destructFixtures;
+	std::vector<Shape *> destructShapes;
 	std::vector<Joint *> destructJoints;
 	bool destructWorld;
 

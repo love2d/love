@@ -48,7 +48,7 @@ public:
 	 * Create a new PolygonShape from a Box2D polygon definition.
 	 * @param p The polygon definition.
 	 **/
-	PolygonShape(b2PolygonShape *p, bool own = true);
+	PolygonShape(Body *body, const b2PolygonShape &p);
 
 	virtual ~PolygonShape();
 

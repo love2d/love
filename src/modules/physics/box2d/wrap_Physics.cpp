@@ -23,7 +23,6 @@
 #include "wrap_World.h"
 #include "wrap_Contact.h"
 #include "wrap_Body.h"
-#include "wrap_Fixture.h"
 #include "wrap_Shape.h"
 #include "wrap_CircleShape.h"
 #include "wrap_PolygonShape.h"
@@ -256,36 +255,56 @@ int w_newChainBody(lua_State *L)
 
 int w_newFixture(lua_State *L)
 {
+	luax_markdeprecated(L, 1, "love.physics.newFixture", API_FUNCTION, DEPRECATED_REPLACED, "love.physics.newCircle/Rectangle/Polygon/Edge/ChainShape");
+
 	Body *body = luax_checkbody(L, 1);
 	Shape *shape = luax_checkshape(L, 2);
 	float density = (float)luaL_optnumber(L, 3, 1.0f);
-	Fixture *fixture;
-	luax_catchexcept(L, [&](){ fixture = instance()->newFixture(body, shape, density); });
-	luax_pushtype(L, fixture);
-	fixture->release();
+
+	Shape *newShape;
+	luax_catchexcept(L, [&]() {
+		newShape = instance()->newAttachedShape(body, shape, density);
+		newShape->setDensity(density);
+		body->resetMassData();
+	});
+
+	luax_pushshape(L, newShape);
+	newShape->release();
 	return 1;
+}
+
+static Body *luax_optbodyforshape(lua_State *L, int idx, const char *name)
+{
+	if (luax_istype(L, idx, Body::type))
+		return luax_checkbody(L, idx);
+
+	luax_markdeprecated(L, 1, name, API_FUNCTION_VARIANT, DEPRECATED_REPLACED, "variant with Body parameter");
+	return nullptr;
 }
 
 int w_newCircleShape(lua_State *L)
 {
-	int top = lua_gettop(L);
+	Body *body = luax_optbodyforshape(L, 1, "love.physics.newCircleShape");
+	int bodyidx = body ? 1 : 0;
+
+	int top = lua_gettop(L) - bodyidx;
 
 	if (top == 1)
 	{
-		float radius = (float)luaL_checknumber(L, 1);
+		float radius = (float)luaL_checknumber(L, bodyidx + 1);
 		CircleShape *shape;
-		luax_catchexcept(L, [&](){ shape = instance()->newCircleShape(0, 0, radius); });
+		luax_catchexcept(L, [&](){ shape = instance()->newCircleShape(body, 0, 0, radius); });
 		luax_pushtype(L, shape);
 		shape->release();
 		return 1;
 	}
 	else if (top == 3)
 	{
-		float x = (float)luaL_checknumber(L, 1);
-		float y = (float)luaL_checknumber(L, 2);
-		float radius = (float)luaL_checknumber(L, 3);
+		float x = (float)luaL_checknumber(L, bodyidx + 1);
+		float y = (float)luaL_checknumber(L, bodyidx + 2);
+		float radius = (float)luaL_checknumber(L, bodyidx + 3);
 		CircleShape *shape;
-		luax_catchexcept(L, [&](){ shape = instance()->newCircleShape(x, y, radius); });
+		luax_catchexcept(L, [&](){ shape = instance()->newCircleShape(body, x, y, radius); });
 		luax_pushtype(L, shape);
 		shape->release();
 		return 1;
@@ -296,27 +315,30 @@ int w_newCircleShape(lua_State *L)
 
 int w_newRectangleShape(lua_State *L)
 {
-	int top = lua_gettop(L);
+	Body *body = luax_optbodyforshape(L, 1, "love.physics.newRectangleShape");
+	int bodyidx = body ? 1 : 0;
+
+	int top = lua_gettop(L) - bodyidx;
 
 	if (top == 2)
 	{
-		float w = (float)luaL_checknumber(L, 1);
-		float h = (float)luaL_checknumber(L, 2);
+		float w = (float)luaL_checknumber(L, bodyidx + 1);
+		float h = (float)luaL_checknumber(L, bodyidx + 2);
 		PolygonShape *shape;
-		luax_catchexcept(L, [&](){ shape = instance()->newRectangleShape(0, 0, w, h, 0); });
+		luax_catchexcept(L, [&](){ shape = instance()->newRectangleShape(body, 0, 0, w, h, 0); });
 		luax_pushtype(L, shape);
 		shape->release();
 		return 1;
 	}
 	else if (top == 4 || top == 5)
 	{
-		float x = (float)luaL_checknumber(L, 1);
-		float y = (float)luaL_checknumber(L, 2);
-		float w = (float)luaL_checknumber(L, 3);
-		float h = (float)luaL_checknumber(L, 4);
-		float angle = (float)luaL_optnumber(L, 5, 0);
+		float x = (float)luaL_checknumber(L, bodyidx + 1);
+		float y = (float)luaL_checknumber(L, bodyidx + 2);
+		float w = (float)luaL_checknumber(L, bodyidx + 3);
+		float h = (float)luaL_checknumber(L, bodyidx + 4);
+		float angle = (float)luaL_optnumber(L, bodyidx + 5, 0);
 		PolygonShape *shape;
-		luax_catchexcept(L, [&](){ shape = instance()->newRectangleShape(x, y, w, h, angle); });
+		luax_catchexcept(L, [&](){ shape = instance()->newRectangleShape(body, x, y, w, h, angle); });
 		luax_pushtype(L, shape);
 		shape->release();
 		return 1;
@@ -327,13 +349,16 @@ int w_newRectangleShape(lua_State *L)
 
 int w_newEdgeShape(lua_State *L)
 {
-	float x1 = (float)luaL_checknumber(L, 1);
-	float y1 = (float)luaL_checknumber(L, 2);
-	float x2 = (float)luaL_checknumber(L, 3);
-	float y2 = (float)luaL_checknumber(L, 4);
-	bool oneSided = luax_optboolean(L, 5, false);
+	Body *body = luax_optbodyforshape(L, 1, "love.physics.newEdgeShape");
+	int bodyidx = body ? 1 : 0;
+
+	float x1 = (float)luaL_checknumber(L, bodyidx + 1);
+	float y1 = (float)luaL_checknumber(L, bodyidx + 2);
+	float x2 = (float)luaL_checknumber(L, bodyidx + 3);
+	float y2 = (float)luaL_checknumber(L, bodyidx + 4);
+	bool oneSided = luax_optboolean(L, bodyidx + 5, false);
 	EdgeShape *shape;
-	luax_catchexcept(L, [&](){ shape = instance()->newEdgeShape(x1, y1, x2, y2, oneSided); });
+	luax_catchexcept(L, [&](){ shape = instance()->newEdgeShape(body, x1, y1, x2, y2, oneSided); });
 	luax_pushtype(L, shape);
 	shape->release();
 	return 1;
@@ -341,12 +366,15 @@ int w_newEdgeShape(lua_State *L)
 
 int w_newPolygonShape(lua_State *L)
 {
-	int argc = lua_gettop(L);
+	Body *body = luax_optbodyforshape(L, 1, "love.physics.newPolygonShape");
+	int bodyidx = body ? 1 : 0;
 
-	bool istable = lua_istable(L, 1);
+	int argc = lua_gettop(L) - bodyidx;
+
+	bool istable = lua_istable(L, bodyidx + 1);
 
 	if (istable)
-		argc = (int)luax_objlen(L, 1);
+		argc = (int)luax_objlen(L, bodyidx + 1);
 
 	if (argc % 2 != 0)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
@@ -358,8 +386,8 @@ int w_newPolygonShape(lua_State *L)
 	{
 		for (int i = 0; i < vcount; i++)
 		{
-			lua_rawgeti(L, 1, 1 + i * 2);
-			lua_rawgeti(L, 1, 2 + i * 2);
+			lua_rawgeti(L, bodyidx + 1, 1 + i * 2);
+			lua_rawgeti(L, bodyidx + 1, 2 + i * 2);
 			float x = (float)luaL_checknumber(L, -2);
 			float y = (float)luaL_checknumber(L, -1);
 			coords.emplace_back(x, y);
@@ -370,14 +398,14 @@ int w_newPolygonShape(lua_State *L)
 	{
 		for (int i = 0; i < vcount; i++)
 		{
-			float x = (float)luaL_checknumber(L, 1 + i * 2);
-			float y = (float)luaL_checknumber(L, 2 + i * 2);
+			float x = (float)luaL_checknumber(L, bodyidx + 1 + i * 2);
+			float y = (float)luaL_checknumber(L, bodyidx + 2 + i * 2);
 			coords.emplace_back(x, y);
 		}
 	}
 
 	PolygonShape *shape = nullptr;
-	luax_catchexcept(L, [&](){ shape = instance()->newPolygonShape(coords.data(), (int)coords.size()); });
+	luax_catchexcept(L, [&](){ shape = instance()->newPolygonShape(body, coords.data(), (int)coords.size()); });
 	luax_pushtype(L, shape);
 	shape->release();
 	return 1;
@@ -385,26 +413,29 @@ int w_newPolygonShape(lua_State *L)
 
 int w_newChainShape(lua_State *L)
 {
-	int argc = lua_gettop(L) - 1; // first argument is looping
+	Body *body = luax_optbodyforshape(L, 1, "love.physics.newChainShape");
+	int bodyidx = body ? 1 : 0;
 
-	bool istable = lua_istable(L, 2);
+	int argc = lua_gettop(L) - 1 - bodyidx; // first argument is looping
+
+	bool istable = lua_istable(L, bodyidx + 2);
 
 	if (istable)
-		argc = (int)luax_objlen(L, 2);
+		argc = (int)luax_objlen(L, bodyidx + 2);
 
 	if (argc == 0 || argc % 2 != 0)
 		return luaL_error(L, "Number of vertex components must be a multiple of two.");
 
 	int vcount = argc / 2;
-	bool loop = luax_checkboolean(L, 1);
+	bool loop = luax_checkboolean(L, bodyidx + 1);
 	std::vector<Vector2> coords;
 
 	if (istable)
 	{
 		for (int i = 0; i < vcount; i++)
 		{
-			lua_rawgeti(L, 2, 1 + i * 2);
-			lua_rawgeti(L, 2, 2 + i * 2);
+			lua_rawgeti(L, bodyidx + 2, 1 + i * 2);
+			lua_rawgeti(L, bodyidx + 2, 2 + i * 2);
 			float x = (float)lua_tonumber(L, -2);
 			float y = (float)lua_tonumber(L, -1);
 			coords.emplace_back(x, y);
@@ -415,14 +446,14 @@ int w_newChainShape(lua_State *L)
 	{
 		for (int i = 0; i < vcount; i++)
 		{
-			float x = (float)luaL_checknumber(L, 2 + i * 2);
-			float y = (float)luaL_checknumber(L, 3 + i * 2);
+			float x = (float)luaL_checknumber(L, bodyidx + 2 + i * 2);
+			float y = (float)luaL_checknumber(L, bodyidx + 3 + i * 2);
 			coords.emplace_back(x, y);
 		}
 	}
 
 	ChainShape *shape = nullptr;
-	luax_catchexcept(L, [&]() { shape = instance()->newChainShape(loop, coords.data(), coords.size()); });
+	luax_catchexcept(L, [&]() { shape = instance()->newChainShape(body, loop, coords.data(), coords.size()); });
 	luax_pushtype(L, shape);
 	shape->release();
 	return 1;
@@ -824,7 +855,6 @@ static const luaL_Reg functions[] =
 	{ "newPolygonBody", w_newPolygonBody },
 	{ "newEdgeBody", w_newEdgeBody },
 	{ "newChainBody", w_newChainBody },
-	{ "newFixture", w_newFixture },
 	{ "newCircleShape", w_newCircleShape },
 	{ "newRectangleShape", w_newRectangleShape },
 	{ "newPolygonShape", w_newPolygonShape },
@@ -848,6 +878,10 @@ static const luaL_Reg functions[] =
 	{ "computeLinearFrequency", w_computeLinearFrequency },
 	{ "computeAngularStiffness", w_computeAngularStiffness },
 	{ "computeAngularFrequency", w_computeAngularFrequency },
+
+	// Deprecated
+	{ "newFixture", w_newFixture },
+
 	{ 0, 0 },
 };
 
@@ -856,7 +890,6 @@ static const lua_CFunction types[] =
 	luaopen_world,
 	luaopen_contact,
 	luaopen_body,
-	luaopen_fixture,
 	luaopen_shape,
 	luaopen_circleshape,
 	luaopen_polygonshape,

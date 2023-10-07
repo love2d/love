@@ -107,8 +107,12 @@ std::string getDeprecationNotice(const DeprecationInfo &info, bool usewhere)
 
 	if (info.apiType == API_FUNCTION)
 		notice << "function ";
+	else if (info.apiType == API_FUNCTION_VARIANT)
+		notice << "function variant in ";
 	else if (info.apiType == API_METHOD)
 		notice << "method ";
+	else if (info.apiType == API_METHOD_VARIANT)
+		notice << "method variant in ";
 	else if (info.apiType == API_CALLBACK)
 		notice << "callback ";
 	else if (info.apiType == API_FIELD)
@@ -188,7 +192,9 @@ MarkDeprecated::~MarkDeprecated()
 STRINGMAP_BEGIN(APIType, API_MAX_ENUM, apiType)
 {
 	{ "function", API_FUNCTION },
+	{ "functionvariant", API_FUNCTION_VARIANT },
 	{ "method",   API_METHOD   },
+	{ "methodvariant", API_METHOD_VARIANT },
 	{ "callback", API_CALLBACK },
 	{ "field",    API_FIELD    },
 	{ "constant", API_CONSTANT },

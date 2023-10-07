@@ -39,7 +39,6 @@ namespace box2d
 // Forward declarations.
 class World;
 class Shape;
-class Fixture;
 
 /**
  * A Body is an entity which has position and orientation
@@ -57,7 +56,6 @@ public:
 	friend class CircleShape;
 	friend class PolygonShape;
 	friend class Shape;
-	friend class Fixture;
 
 	// Public because joints et al ask for b2body
 	b2Body *body;
@@ -391,15 +389,14 @@ public:
 	World *getWorld() const;
 
 	/**
-	 * Gets the first Fixture attached to this Body.
+	 * Gets the first Shape attached to this Body.
 	 **/
-	Fixture *getFixture() const;
+	Shape *getShape() const;
 
 	/**
-	 * Get an array of all the Fixtures attached to this Body.
-	 * @return An array of Fixtures.
+	 * Get an array of all the Shapes attached to this Body.
 	 **/
-	int getFixtures(lua_State *L) const;
+	int getShapes(lua_State *L) const;
 
 	/**
 	 * Get an array of all Joints attached to this Body.

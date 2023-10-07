@@ -35,7 +35,9 @@ CircleShape *luax_checkcircleshape(lua_State *L, int idx)
 int w_CircleShape_getRadius(lua_State *L)
 {
 	CircleShape *c = luax_checkcircleshape(L, 1);
-	lua_pushnumber(L, c->getRadius());
+	float r = 0;
+	luax_catchexcept(L, [&]() { r = c->getRadius(); });
+	lua_pushnumber(L, r);
 	return 1;
 }
 
@@ -43,7 +45,7 @@ int w_CircleShape_setRadius(lua_State *L)
 {
 	CircleShape *c = luax_checkcircleshape(L, 1);
 	float r = (float)luaL_checknumber(L, 2);
-	c->setRadius(r);
+	luax_catchexcept(L, [&]() { c->setRadius(r); });
 	return 0;
 }
 
@@ -51,7 +53,7 @@ int w_CircleShape_getPoint(lua_State *L)
 {
 	CircleShape *c = luax_checkcircleshape(L, 1);
 	float x, y;
-	c->getPoint(x, y);
+	luax_catchexcept(L, [&]() { c->getPoint(x, y); });
 	lua_pushnumber(L, x);
 	lua_pushnumber(L, y);
 	return 2;
