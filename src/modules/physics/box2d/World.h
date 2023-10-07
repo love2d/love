@@ -42,6 +42,7 @@ namespace box2d
 
 class Contact;
 class Body;
+class Shape;
 class Joint;
 
 /**
