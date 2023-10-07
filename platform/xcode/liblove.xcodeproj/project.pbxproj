@@ -51,6 +51,9 @@
 		217DFC111D9F6D490055D849 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		217DFC121D9F6D490055D849 /* usocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD61D9F6D490055D849 /* usocket.h */; };
 		D923E7D3296B85B9002FF1B3 /* harfbuzz.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */; };
+		D943E58E2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
+		D943E58F2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
+		D943E5902A24D56000D80361 /* PhysfsIo.h in Headers */ = {isa = PBXBuildFile; fileRef = D943E58D2A24D56000D80361 /* PhysfsIo.h */; };
 		D9DAB9222961F0EE00C64820 /* HarfbuzzShaper.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DAB9202961F0EE00C64820 /* HarfbuzzShaper.h */; };
 		D9DAB9232961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */; };
 		D9DAB9242961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */; };
@@ -61,9 +64,6 @@
 		D9DAB92D2961F10000C64820 /* TextShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9282961F10000C64820 /* TextShaper.cpp */; };
 		D9DAB92E2961F10000C64820 /* TextShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9282961F10000C64820 /* TextShaper.cpp */; };
 		D9DAB9322963CD7500C64820 /* harfbuzz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9DAB9312963CD7500C64820 /* harfbuzz.framework */; };
-		D943E58E2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
-		D943E58F2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
-		D943E5902A24D56000D80361 /* PhysfsIo.h in Headers */ = {isa = PBXBuildFile; fileRef = D943E58D2A24D56000D80361 /* PhysfsIo.h */; };
 		FA0A3A5F23366CE9001C269E /* floattypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0A3A5D23366CE9001C269E /* floattypes.h */; };
 		FA0A3A6023366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
 		FA0A3A6123366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
@@ -407,9 +407,6 @@
 		FA0B7E091A95902C000E1D17 /* EdgeShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C291A95902C000E1D17 /* EdgeShape.cpp */; };
 		FA0B7E0A1A95902C000E1D17 /* EdgeShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C291A95902C000E1D17 /* EdgeShape.cpp */; };
 		FA0B7E0B1A95902C000E1D17 /* EdgeShape.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C2A1A95902C000E1D17 /* EdgeShape.h */; };
-		FA0B7E0C1A95902C000E1D17 /* Fixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C2B1A95902C000E1D17 /* Fixture.cpp */; };
-		FA0B7E0D1A95902C000E1D17 /* Fixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C2B1A95902C000E1D17 /* Fixture.cpp */; };
-		FA0B7E0E1A95902C000E1D17 /* Fixture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C2C1A95902C000E1D17 /* Fixture.h */; };
 		FA0B7E0F1A95902C000E1D17 /* FrictionJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C2D1A95902C000E1D17 /* FrictionJoint.cpp */; };
 		FA0B7E101A95902C000E1D17 /* FrictionJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C2D1A95902C000E1D17 /* FrictionJoint.cpp */; };
 		FA0B7E111A95902C000E1D17 /* FrictionJoint.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C2E1A95902C000E1D17 /* FrictionJoint.h */; };
@@ -473,9 +470,6 @@
 		FA0B7E4B1A95902C000E1D17 /* wrap_EdgeShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C551A95902C000E1D17 /* wrap_EdgeShape.cpp */; };
 		FA0B7E4C1A95902C000E1D17 /* wrap_EdgeShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C551A95902C000E1D17 /* wrap_EdgeShape.cpp */; };
 		FA0B7E4D1A95902C000E1D17 /* wrap_EdgeShape.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C561A95902C000E1D17 /* wrap_EdgeShape.h */; };
-		FA0B7E4E1A95902C000E1D17 /* wrap_Fixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C571A95902C000E1D17 /* wrap_Fixture.cpp */; };
-		FA0B7E4F1A95902C000E1D17 /* wrap_Fixture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C571A95902C000E1D17 /* wrap_Fixture.cpp */; };
-		FA0B7E501A95902C000E1D17 /* wrap_Fixture.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C581A95902C000E1D17 /* wrap_Fixture.h */; };
 		FA0B7E511A95902C000E1D17 /* wrap_FrictionJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C591A95902C000E1D17 /* wrap_FrictionJoint.cpp */; };
 		FA0B7E521A95902C000E1D17 /* wrap_FrictionJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0B7C591A95902C000E1D17 /* wrap_FrictionJoint.cpp */; };
 		FA0B7E531A95902C000E1D17 /* wrap_FrictionJoint.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0B7C5A1A95902C000E1D17 /* wrap_FrictionJoint.h */; };
@@ -1406,6 +1400,8 @@
 		217DFBD51D9F6D490055D849 /* usocket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = usocket.c; sourceTree = "<group>"; };
 		217DFBD61D9F6D490055D849 /* usocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = usocket.h; sourceTree = "<group>"; };
 		D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = harfbuzz.xcframework; path = ios/libraries/harfbuzz.xcframework; sourceTree = "<group>"; };
+		D943E58C2A24D56000D80361 /* PhysfsIo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PhysfsIo.cpp; sourceTree = "<group>"; };
+		D943E58D2A24D56000D80361 /* PhysfsIo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PhysfsIo.h; sourceTree = "<group>"; };
 		D9DAB9202961F0EE00C64820 /* HarfbuzzShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HarfbuzzShaper.h; sourceTree = "<group>"; };
 		D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HarfbuzzShaper.cpp; sourceTree = "<group>"; };
 		D9DAB9252961F0FF00C64820 /* GenericShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GenericShaper.h; sourceTree = "<group>"; };
@@ -1413,8 +1409,6 @@
 		D9DAB9272961F0FF00C64820 /* TextShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextShaper.h; sourceTree = "<group>"; };
 		D9DAB9282961F10000C64820 /* TextShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextShaper.cpp; sourceTree = "<group>"; };
 		D9DAB9312963CD7500C64820 /* harfbuzz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = harfbuzz.framework; path = macosx/Frameworks/harfbuzz.framework; sourceTree = "<group>"; };
-		D943E58C2A24D56000D80361 /* PhysfsIo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PhysfsIo.cpp; sourceTree = "<group>"; };
-		D943E58D2A24D56000D80361 /* PhysfsIo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PhysfsIo.h; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "liblove-macosx.plist"; path = "macosx/liblove-macosx.plist"; sourceTree = "<group>"; };
 		FA0A3A5D23366CE9001C269E /* floattypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = floattypes.h; sourceTree = "<group>"; };
 		FA0A3A5E23366CE9001C269E /* floattypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = floattypes.cpp; sourceTree = "<group>"; };
@@ -1652,8 +1646,6 @@
 		FA0B7C281A95902C000E1D17 /* DistanceJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DistanceJoint.h; sourceTree = "<group>"; };
 		FA0B7C291A95902C000E1D17 /* EdgeShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EdgeShape.cpp; sourceTree = "<group>"; };
 		FA0B7C2A1A95902C000E1D17 /* EdgeShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EdgeShape.h; sourceTree = "<group>"; };
-		FA0B7C2B1A95902C000E1D17 /* Fixture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fixture.cpp; sourceTree = "<group>"; };
-		FA0B7C2C1A95902C000E1D17 /* Fixture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fixture.h; sourceTree = "<group>"; };
 		FA0B7C2D1A95902C000E1D17 /* FrictionJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FrictionJoint.cpp; sourceTree = "<group>"; };
 		FA0B7C2E1A95902C000E1D17 /* FrictionJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrictionJoint.h; sourceTree = "<group>"; };
 		FA0B7C2F1A95902C000E1D17 /* GearJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GearJoint.cpp; sourceTree = "<group>"; };
@@ -1696,8 +1688,6 @@
 		FA0B7C541A95902C000E1D17 /* wrap_DistanceJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_DistanceJoint.h; sourceTree = "<group>"; };
 		FA0B7C551A95902C000E1D17 /* wrap_EdgeShape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_EdgeShape.cpp; sourceTree = "<group>"; };
 		FA0B7C561A95902C000E1D17 /* wrap_EdgeShape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_EdgeShape.h; sourceTree = "<group>"; };
-		FA0B7C571A95902C000E1D17 /* wrap_Fixture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Fixture.cpp; sourceTree = "<group>"; };
-		FA0B7C581A95902C000E1D17 /* wrap_Fixture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Fixture.h; sourceTree = "<group>"; };
 		FA0B7C591A95902C000E1D17 /* wrap_FrictionJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_FrictionJoint.cpp; sourceTree = "<group>"; };
 		FA0B7C5A1A95902C000E1D17 /* wrap_FrictionJoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_FrictionJoint.h; sourceTree = "<group>"; };
 		FA0B7C5B1A95902C000E1D17 /* wrap_GearJoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_GearJoint.cpp; sourceTree = "<group>"; };
@@ -3165,8 +3155,6 @@
 				FA0B7C281A95902C000E1D17 /* DistanceJoint.h */,
 				FA0B7C291A95902C000E1D17 /* EdgeShape.cpp */,
 				FA0B7C2A1A95902C000E1D17 /* EdgeShape.h */,
-				FA0B7C2B1A95902C000E1D17 /* Fixture.cpp */,
-				FA0B7C2C1A95902C000E1D17 /* Fixture.h */,
 				FA0B7C2D1A95902C000E1D17 /* FrictionJoint.cpp */,
 				FA0B7C2E1A95902C000E1D17 /* FrictionJoint.h */,
 				FA0B7C2F1A95902C000E1D17 /* GearJoint.cpp */,
@@ -3209,8 +3197,6 @@
 				FA0B7C541A95902C000E1D17 /* wrap_DistanceJoint.h */,
 				FA0B7C551A95902C000E1D17 /* wrap_EdgeShape.cpp */,
 				FA0B7C561A95902C000E1D17 /* wrap_EdgeShape.h */,
-				FA0B7C571A95902C000E1D17 /* wrap_Fixture.cpp */,
-				FA0B7C581A95902C000E1D17 /* wrap_Fixture.h */,
 				FA0B7C591A95902C000E1D17 /* wrap_FrictionJoint.cpp */,
 				FA0B7C5A1A95902C000E1D17 /* wrap_FrictionJoint.h */,
 				FA0B7C5B1A95902C000E1D17 /* wrap_GearJoint.cpp */,
@@ -4272,7 +4258,6 @@
 				FAFEB29B28F210550025D7D0 /* unixdgram.h in Headers */,
 				FA0B7E051A95902C000E1D17 /* Contact.h in Headers */,
 				FA4F2BE41DE6650600CA37D7 /* Transform.h in Headers */,
-				FA0B7E0E1A95902C000E1D17 /* Fixture.h in Headers */,
 				FA6A2B661F5F7B6B0074C308 /* wrap_Data.h in Headers */,
 				FA18CEE423DBC6E000263725 /* Graphics.h in Headers */,
 				217DFBE81D9F6D490055D849 /* inet.h in Headers */,
@@ -4467,7 +4452,6 @@
 				FA4F2B7A1DE0125B00CA37D7 /* xxhash.h in Headers */,
 				FA0B7DDE1A95902C000E1D17 /* wrap_BezierCurve.h in Headers */,
 				FA0B7DED1A95902C000E1D17 /* Cursor.h in Headers */,
-				FA0B7E501A95902C000E1D17 /* wrap_Fixture.h in Headers */,
 				FA28EBD71E352DB5003446F4 /* FenceSync.h in Headers */,
 				FADF542C1E3DAADA00012CC0 /* wrap_Mesh.h in Headers */,
 				FAA3A9B01B7D465A00CED060 /* android.h in Headers */,
@@ -4707,7 +4691,6 @@
 				FA3C5E431F8C368C0003C579 /* ShaderStage.cpp in Sources */,
 				FA0B7E191A95902C000E1D17 /* MotorJoint.cpp in Sources */,
 				FAF1406F1E20934C00F898D2 /* Initialize.cpp in Sources */,
-				FA0B7E4F1A95902C000E1D17 /* wrap_Fixture.cpp in Sources */,
 				FA0B7EBF1A95902C000E1D17 /* Thread.cpp in Sources */,
 				FACA02F91F5E39790084B28F /* Compressor.cpp in Sources */,
 				FABDAA002552448300B5C523 /* b2_time_of_impact.cpp in Sources */,
@@ -4725,7 +4708,6 @@
 				FA4F2C111DE936FE00CA37D7 /* unix.c in Sources */,
 				FA1BA0A31E16D97500AA2803 /* wrap_Font.cpp in Sources */,
 				FABDA9842552448200B5C523 /* b2_chain_polygon_contact.cpp in Sources */,
-				FA0B7E0D1A95902C000E1D17 /* Fixture.cpp in Sources */,
 				FADF53FE1E3D74F200012CC0 /* TextBatch.cpp in Sources */,
 				FA0B7D191A95902C000E1D17 /* TrueTypeRasterizer.cpp in Sources */,
 				FAC271E723B5B5B400C200D3 /* renderstate.cpp in Sources */,
@@ -5140,7 +5122,6 @@
 				FAF140971E20934C00F898D2 /* PpTokens.cpp in Sources */,
 				FAF140A91E20934C00F898D2 /* SymbolTable.cpp in Sources */,
 				FA0B7E181A95902C000E1D17 /* MotorJoint.cpp in Sources */,
-				FA0B7E4E1A95902C000E1D17 /* wrap_Fixture.cpp in Sources */,
 				FA18CEC523D3AE6700263725 /* wrap_Buffer.cpp in Sources */,
 				FAF6C9F423C2DE2900D7B5BC /* Logger.cpp in Sources */,
 				FABDA9FF2552448300B5C523 /* b2_time_of_impact.cpp in Sources */,
@@ -5159,7 +5140,6 @@
 				FABDA9832552448200B5C523 /* b2_chain_polygon_contact.cpp in Sources */,
 				FA0B7AD61A958EA3000E1D17 /* win32.c in Sources */,
 				FADF54341E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp in Sources */,
-				FA0B7E0C1A95902C000E1D17 /* Fixture.cpp in Sources */,
 				FA0B7D181A95902C000E1D17 /* TrueTypeRasterizer.cpp in Sources */,
 				FA84DE6627791C36002674C6 /* GraphicsReadback.cpp in Sources */,
 				FA0B7CFA1A95902C000E1D17 /* Filesystem.cpp in Sources */,
