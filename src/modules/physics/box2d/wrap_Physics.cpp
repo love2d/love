@@ -275,7 +275,7 @@ int w_newFixture(lua_State *L)
 
 static Body *luax_optbodyforshape(lua_State *L, int idx, const char *name)
 {
-	if (luax_istype(L, idx, Body::type))
+	if (lua_isnoneornil(L, idx) || luax_istype(L, idx, Object::type))
 		return luax_checkbody(L, idx);
 
 	luax_markdeprecated(L, 1, name, API_FUNCTION_VARIANT, DEPRECATED_REPLACED, "variant with Body parameter");
