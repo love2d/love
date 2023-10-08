@@ -50,9 +50,9 @@ jobs:
         name: love-x86_64-AppImage-debug
         path: love-${{ github.sha }}.AppImage-debug.tar.gz
     - name: Make Runnable
-      run: chmod a+x love-linux-x86_64.AppImage
+      run: chmod a+x love-${{ github.sha }}.AppImage
     - name: Run All Tests
-      run: xvfb-run love-linux-x86_64.AppImage testing
+      run: xvfb-run love-${{ github.sha }}.AppImage testing
     - name: Love Test Report
       uses: ellraiser/love-test-report@main
       with:
@@ -218,13 +218,11 @@ jobs:
     - name: Build Test Exe
       if: steps.vars.outputs.arch != 'ARM64'
       run: cmake --build build --config Release --target install
-    - name: Install Mesa
+    - name: Install Mesa 
       if: steps.vars.outputs.arch != 'ARM64'
-      run: |
-        curl.exe -L --output mesa.7z --url https://github.com/pal1000/mesa-dist-win/releases/download/23.2.1/mesa3d-23.2.1-release-msvc.7z
-        7z x mesa.7z
-        mklink opengl32.dll "x64\opengl32.dll"
-        mklink libglapi.dll "x64\libglapi.dll"
+      uses: ssciwr/setup-mesa-dist-win@v1
+      with:
+        version: '23.2.1'
     - name: Run All Tests
       if: steps.vars.outputs.arch != 'ARM64'
       run: install\lovec.exe testing/main.lua

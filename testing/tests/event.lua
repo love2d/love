@@ -69,5 +69,5 @@ end
 -- love.event.wait
 -- @NOTE not sure best way to test this one
 love.test.event.wait = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end

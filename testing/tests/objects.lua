@@ -1,6 +1,93 @@
 -- objects put in their own test methods to test all attributes and class methods
 
 
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+------------------------------------AUDIO---------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+-- RecordingDevice (love.audio.getRecordingDevices)
+love.test.objects.RecordingDevice = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Source (love.audio.newSource)
+love.test.objects.Source = function(test)
+  test:skipTest('test class needs writing')
+  -- local source1 = love.audio.newSource('resources/click.ogg', 'static')
+  --source1:clone()
+  --source1:getChannelCount()
+  --source1:getDuration()
+  --source1:isRelative()
+  --source1:queue()
+  --source1:getFreeBufferCount()
+  --source1:getType()
+  --source1:isPlaying()
+  --source1:play()
+  --source1:pause()
+  --source1:stop()
+  --source1:seek()
+  --source1:tell()
+  --source1:isLooping()
+  --source1:setLooping()
+  --source1:setAirAbsorption()
+  --source1:getAirAbsorption()
+  --source1:setAttenuationDistances()
+  --source1:getAttenuationDistances()
+  --source1:setCone()
+  --source1:getCone()
+  --source1:setDirection()
+  --source1:getDirection()
+  --source1:setEffect()
+  --source1:getEffect()
+  --source1:getActiveEffects()
+  --source1:setFilter()
+  --source1:getFilter()
+  --source1:setPitch()
+  --source1:getPitch()
+  --source1:setPosition()
+  --source1:getPosition()
+  --source1:setRelative()
+  --source1:setRolloff()
+  --source1:getRolloff()
+  --source1:setVelocity()
+  --source1:getVelocity()
+  --source1:setVolume()
+  --source1:getVolume()
+  --source1:setVolumeLimits()
+  --source1:getVolumeLimits()
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+------------------------------------DATA----------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+-- ByteData (love.data.newByteData)
+love.test.objects.ByteData = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- CompressedData (love.data.compress)
+love.test.objects.CompressedData = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+---------------------------------FILESYSTEM-------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
 -- File (love.filesystem.newFile)
 love.test.objects.File = function(test)
 
@@ -88,88 +175,237 @@ love.test.objects.File = function(test)
 end
 
 
--- Source (love.audio.newSource)
--- love.test.objects.Source = function(test)
-  -- local source1 = love.audio.newSource('resources/click.ogg', 'static')
-  --source1:clone()
-  --source1:getChannelCount()
-  --source1:getDuration()
-  --source1:isRelative()
-  --source1:queue()
-  --source1:getFreeBufferCount()
-  --source1:getType()
-  --source1:isPlaying()
-  --source1:play()
-  --source1:pause()
-  --source1:stop()
-  --source1:seek()
-  --source1:tell()
-  --source1:isLooping()
-  --source1:setLooping()
-  --source1:setAirAbsorption()
-  --source1:getAirAbsorption()
-  --source1:setAttenuationDistances()
-  --source1:getAttenuationDistances()
-  --source1:setCone()
-  --source1:getCone()
-  --source1:setDirection()
-  --source1:getDirection()
-  --source1:setEffect()
-  --source1:getEffect()
-  --source1:getActiveEffects()
-  --source1:setFilter()
-  --source1:getFilter()
-  --source1:setPitch()
-  --source1:getPitch()
-  --source1:setPosition()
-  --source1:getPosition()
-  --source1:setRelative()
-  --source1:setRolloff()
-  --source1:getRolloff()
-  --source1:setVelocity()
-  --source1:getVelocity()
-  --source1:setVolume()
-  --source1:getVolume()
-  --source1:setVolumeLimits()
-  --source1:getVolumeLimits()
--- end
-
 -- FileData (love.filesystem.newFileData)
+love.test.objects.FileData = function(test)
+  test:skipTest('test class needs writing')
+end
 
--- ByteData (love.data.newByteData)
--- DataView (love.data.newDataView)
 
--- FontData (love.font.newFontData)
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+------------------------------------FONT----------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
 -- GlyphData (love.font.newGlyphData)
+love.test.objects.GlyphData = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
 -- Rasterizer (love.font.newRasterizer)
+love.test.objects.Rasterizer = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+---------------------------------GRAPHICS---------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+-- Canvas (love.graphics.newCanvas)
+love.test.objects.Canvas = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Font (love.graphics.newFont)
+love.test.objects.Font = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Image (love.graphics.newImage)
+love.test.objects.Image = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Mesh (love.graphics.newMesh)
+love.test.objects.Mesh = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- ParticleSystem (love.graphics.newParticleSystem)
+love.test.objects.ParticleSystem = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Quad (love.graphics.newQuad)
+love.test.objects.Quad = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Shader (love.graphics.newShader)
+love.test.objects.Shader = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- SpriteBatch (love.graphics.newSpriteBatch)
+love.test.objects.SpriteBatch = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Text (love.graphics.newTextBatch)
+love.test.objects.Text = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Texture (love.graphics.newTexture)
+love.test.objects.Texture = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Video (love.graphics.newVideo)
+love.test.objects.Video = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-----------------------------------IMAGE----------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
 
 -- CompressedImageData (love.image.newCompressedImageData)
+love.test.objects.CompressedImageData = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
 -- ImageData (love.image.newImageData)
+love.test.objects.ImageData = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+------------------------------------MATH----------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
 
 -- BezierCurve (love.math.newBezierCurve)
+love.test.objects.BezierCurve = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
 -- RandomGenerator (love.math.RandomGenerator)
+love.test.objects.RandomGenerator = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
 -- Transform (love.math.Transform)
+love.test.objects.Transform = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+----------------------------------PHYSICS---------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+-- Body (love.physics.newBody)
+love.test.objects.Body = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Contact (love.physics.World:getContacts)
+love.test.objects.Contact = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Fixture (love.physics.newFixture)
+love.test.objects.Fixture = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Joint (love.physics.newDistanceJoint)
+love.test.objects.Joint = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Shape (love.physics.newCircleShape)
+love.test.objects.Shape = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- World (love.physics.newWorld)
+love.test.objects.World = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-----------------------------------SOUND----------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
 
 -- Decoder (love.sound.newDecoder)
+love.test.objects.Decoder = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
 -- SoundData (love.sound.newSoundData)
+love.test.objects.SoundData = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+----------------------------------THREAD----------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
 
 -- Channel (love.thread.newChannel)
+love.test.objects.Channel = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
 -- Thread (love.thread.newThread)
+love.test.objects.Thread = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-----------------------------------VIDEO----------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
 
 -- VideoStream (love.thread.newVideoStream)
-
--- all the stuff from love.physics! barf
-
--- (love.graphics objs)
--- Canvas
--- Font
--- Image
--- Framebugger
--- Mesh
--- ParticleSystem
--- PixelEffect
--- Quad
--- Shader
--- SpriteBatch
--- Text
--- Video
+love.test.objects.VideoStream = function(test)
+  test:skipTest('test class needs writing')
+end

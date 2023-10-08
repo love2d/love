@@ -10,91 +10,91 @@
 
 -- love.graphics.arc
 love.test.graphics.arc = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.circle
 love.test.graphics.circle = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.clear
 love.test.graphics.clear = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.discard
 love.test.graphics.discard = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.draw
 love.test.graphics.draw = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.drawInstanced
 love.test.graphics.drawInstanced = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.drawLayer
 love.test.graphics.drawLayer = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.ellipse
 love.test.graphics.ellipse = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.flushBatch
 love.test.graphics.flushBatch = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.line
 love.test.graphics.line = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.points
 love.test.graphics.points = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.polygon
 love.test.graphics.polygon = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.present
 love.test.graphics.present = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.print
 love.test.graphics.print = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.graphics.printf
 love.test.graphics.printf = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 

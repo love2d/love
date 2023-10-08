@@ -121,7 +121,7 @@ end
 -- love.data.getPackedSize
 -- @NOTE I don't really get what lua packing types are so skipping for now - ell
 love.test.data.getPackedSize = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
@@ -161,12 +161,12 @@ end
 -- love.data.pack
 -- @NOTE I don't really get what lua packing types are so skipping for now - ell
 love.test.data.pack = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
 
 
 -- love.data.unpack
 -- @NOTE I don't really get what lua packing types are so skipping for now - ell
 love.test.data.unpack = function(test)
-  test:skipTest('test method needs writing')
+  test:skipTest('test class needs writing')
 end
