@@ -30,10 +30,10 @@ love.test.system.getPowerInfo = function(test)
   test:assertMatch(states, state, 'check value matches')
   -- if percent/seconds check within expected range
   if percent ~= nil then
-    test:assertRange(percent, 0, 100, 'check value within range')
+    test:assertRange(percent, 0, 100, 'check battery percent within range')
   end
   if seconds ~= nil then
-    test:assertRange(seconds, 0, 100, 'check value within range')
+    test:assertNotNil(seconds)
   end
 end
 

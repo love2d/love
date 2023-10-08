@@ -10,6 +10,7 @@ TestSuite = {
       -- testsuite internals
       modules = {},
       module = nil,
+      test = nil,
       testcanvas = nil,
       current = 1,
       output = '',
@@ -19,6 +20,7 @@ TestSuite = {
       html = '',
       mdrows = '',
       mdfailures = '',
+      delayed = nil,
       fakequit = false,
       windowmode = true,
 
@@ -70,7 +72,8 @@ TestSuite = {
             if self.module.called[self.module.index] == nil then
               self.module.called[self.module.index] = true
               local method = self.module.running[self.module.index]
-              local test = TestMethod:new(method, self.module)
+              self.test = TestMethod:new(method, self.module)
+              TextRun:set('love.' .. self.module.module .. '.' .. method)
 
               -- check method exists in love first
               if self.module.module ~= 'objects' and (love[self.module.module] == nil or love[self.module.module][method] == nil) then
@@ -80,26 +83,52 @@ TestSuite = {
                   tested .. matching,
                   ' ==> FAIL (0/0) - call failed - method does not exist'
                 )
-              -- otherwise run the test method then eval the asserts
+              -- otherwise run the test method
               else
-                local ok, chunk, err = pcall(self[self.module.module][method], test)
+                local ok, chunk, err = pcall(self[self.module.module][method], self.test)
                 if ok == false then
                   print("FATAL", chunk, err)
-                  test.fatal = tostring(chunk) .. tostring(err)
-                end
-                local ok, chunk, err = pcall(test.evaluateTest, test)
-                if ok == false then
-                  print("FATAL", chunk, err)
-                  test.fatal = tostring(chunk) .. tostring(err)
+                  self.test.fatal = tostring(chunk) .. tostring(err)
                 end
               end
-              -- save having to :release() anything we made in the last test
-              -- 7251ms > 7543ms
-              collectgarbage("collect")
-              -- move onto the next test
-              self.module.index = self.module.index + 1
+
+            -- once we've run check delay + eval
+            else
+
+              -- @TODO use coroutines?
+              -- if we have a test method that needs a delay
+              -- we wait for the delay to run out first
+              if self.delayed ~= nil then
+                self.delayed.delay = self.delayed.delay - 1
+                -- re-run the test method again when delay ends
+                -- its up to the test to handle the :isDelayed() property
+                if self.delayed.delay <= 0 then
+                  local ok, chunk, err = pcall(self[self.module.module][self.delayed.method], self.test)
+                  if ok == false then
+                    print("FATAL", chunk, err)
+                    self.test.fatal = tostring(chunk) .. tostring(err)
+                  end
+                  self.delayed = nil
+                end
+              else
+
+                -- now we're all done evaluate the test 
+                local ok, chunk, err = pcall(self.test.evaluateTest, self.test)
+                if ok == false then
+                  print("FATAL", chunk, err)
+                  self.test.fatal = tostring(chunk) .. tostring(err)
+                end
+                -- save having to :release() anything we made in the last test
+                -- 7251ms > 7543ms
+                collectgarbage("collect")
+                -- move onto the next test
+                self.module.index = self.module.index + 1
+
+              end
+
             end
 
+          -- once all tests have run
           else
 
             -- print module results and add to output

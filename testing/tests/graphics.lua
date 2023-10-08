@@ -112,11 +112,10 @@ love.test.graphics.rectangle = function(test)
   love.graphics.setCanvas()
   local imgdata1 = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
   -- test, check red bg and blue central square
-  local comparepixels = {
+  test:assertPixels(imgdata1, {
     red = {{0,0},{15,0},{15,15},{0,15}},
     blue = {{6,6},{9,6},{9,9},{6,9}}
-  }
-  test:assertPixels(imgdata1, comparepixels, 'fill')
+  }, 'fill')
   -- clear canvas to do some line testing
   love.graphics.setCanvas(canvas)
     love.graphics.clear(0, 0, 0, 1)
@@ -126,16 +125,19 @@ love.test.graphics.rectangle = function(test)
     love.graphics.rectangle('line', 1, 1, 2, 15) -- 3x16 left aligned blue outline
     love.graphics.setColor(0, 1, 0, 1)
     love.graphics.rectangle('line', 11, 1, 5, 15) -- 6x16 right aligned green outline
+    love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
   local imgdata2 = love.graphics.readbackTexture(canvas, {1, 1, 0, 0, 16, 16})
   -- -- check corners and inner corners
-  comparepixels = {
+  test:assertPixels(imgdata2, {
     red = {{3,0},{9,0},{3,15,9,15}},
     blue = {{0,0},{2,0},{0,15},{2,15}},
     green = {{10,0},{15,0},{10,15},{15,15}},
-    black = {{1,1},{1,14},{3,1},{9,1},{3,14},{9,14},{11,1},{14,1},{11,14},{14,14}}
-  }
-  test:assertPixels(imgdata2, comparepixels, 'line')
+    black = {
+      {1,1},{1,14},{3,1},{9,1},{3,14},
+      {9,14},{11,1},{14,1},{11,14},{14,14}
+    }
+  }, 'line')
 end
 
 
@@ -147,10 +149,15 @@ end
 
 
 -- love.graphics.captureScreenshot
--- @NOTE could test this but not with current setup as we need to wait for the 
--- draw frame to finish before we could assert the file was created
 love.test.graphics.captureScreenshot = function(test)
-  test:skipTest('cant test this worked (easily)')
+  if test:isDelayed() == false then
+    love.graphics.captureScreenshot('example-screenshot.png')
+    test:setDelay(10)
+  -- need to wait until end of the frame for the screenshot
+  else
+    test:assertNotNil(love.filesystem.openFile('example-screenshot.png', 'r'))
+    love.filesystem.remove('example-screenshot.png')
+  end
 end
 
 
@@ -611,34 +618,117 @@ love.test.graphics.setBackgroundColor = function(test)
   test:assertEquals(0, g, 'check set bg g')
   test:assertEquals(0, b, 'check set bg b')
   test:assertEquals(1, a, 'check set bg a')
+  love.graphics.setBackgroundColor(0, 0, 0, 1)
 end
 
 
 -- love.graphics.setBlendMode
 love.test.graphics.setBlendMode = function(test)
-  -- set mode, write to canvas, check output
-  test:skipTest('test method needs writing')
+  -- create fully white canvas, then draw diff. pixels through blendmodes
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0.5, 0.5, 0.5, 1)
+    love.graphics.setBlendMode('add', 'alphamultiply')
+    love.graphics.setColor(1, 0, 0, 1)
+    love.graphics.points({1,1})
+    love.graphics.setBlendMode('subtract', 'alphamultiply')
+    love.graphics.setColor(1, 1, 1, 0.5)
+    love.graphics.points({16,1})
+    love.graphics.setBlendMode('multiply', 'premultiplied')
+    love.graphics.setColor(0, 1, 0, 1)
+    love.graphics.points({16,16})
+    love.graphics.setBlendMode('replace', 'premultiplied')
+    love.graphics.setColor(0, 0, 1, 0.5)
+    love.graphics.points({1,16})
+    love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  -- check the 4 corners
+  test:assertPixels(imgdata, {
+    redpale = {{0,0}},
+    black = {{15,0}},
+    greenhalf = {{15,15}},
+    bluefade = {{0,15}}
+  }, 'blend mode')
+  love.graphics.setBlendMode('alpha', 'alphamultiply') -- reset 
 end
 
 
 -- love.graphics.setCanvas
 love.test.graphics.setCanvas = function(test)
   -- make 2 canvas, set to each, draw one to the other, check output
-  test:skipTest('test method needs writing')
+  local canvas1 = love.graphics.newCanvas(16, 16)
+  local canvas2 = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas(canvas1)
+    test:assertEquals(canvas1, love.graphics.getCanvas(), 'check canvas 1 set')
+    love.graphics.clear(1, 0, 0, 1)
+  love.graphics.setCanvas(canvas2)
+    test:assertEquals(canvas2, love.graphics.getCanvas(), 'check canvas 2 set')
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.draw(canvas1, 0, 0)
+  love.graphics.setCanvas()
+  test:assertEquals(nil, love.graphics.getCanvas(), 'check no canvas set')
+  local imgdata = love.graphics.readbackTexture(canvas2, {16, 0, 0, 0, 16, 16})
+  -- check 2nd canvas is red
+  test:assertPixels(imgdata, {
+    red = {{0,0},{15,0},{15,15},{0,15}}
+  }, 'set canvas')
 end
 
 
 -- love.graphics.setColor
 love.test.graphics.setColor = function(test)
   -- set colors, draw rect, check color 
-  test:skipTest('test method needs writing')
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.setColor(1, 0, 0, 1)
+    local r, g, b, a = love.graphics.getColor()
+    test:assertEquals(1, r, 'check r set')
+    test:assertEquals(0, g, 'check g set')
+    test:assertEquals(0, b, 'check b set')
+    test:assertEquals(1, a, 'check a set')
+    love.graphics.points({{1,1},{6,1},{11,1},{16,1}})
+    love.graphics.setColor(1, 1, 0, 1)
+    love.graphics.points({{1,2},{6,2},{11,2},{16,2}})
+    love.graphics.setColor(0, 1, 0, 0.5)
+    love.graphics.points({{1,3},{6,3},{11,3},{16,3}})
+    love.graphics.setColor(0, 0, 1, 1)
+    love.graphics.points({{1,4},{6,4},{11,4},{16,4}})
+    love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, {
+    red = {{0,0},{5,0},{10,0},{15,0}},
+    yellow = {{0,1},{5,1},{10,1},{15,1}},
+    greenhalf = {{0,2},{5,2},{10,2},{15,2}},
+    blue = {{0,3},{5,3},{10,3},{15,3}}
+  }, 'set color')
 end
 
 
 -- love.graphics.setColorMask
 love.test.graphics.setColorMask = function(test)
   -- set mask, draw stuff, check output pixels
-  test:skipTest('test method needs writing')
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    -- mask off blue
+    love.graphics.setColorMask(true, true, false, true)
+    local r, g, b, a = love.graphics.getColorMask()
+    test:assertEquals(r, true, 'check r mask')
+    test:assertEquals(g, true, 'check g mask')
+    test:assertEquals(b, false, 'check b mask')
+    test:assertEquals(a, true, 'check a mask')
+    -- draw "black" which should then turn to yellow
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.rectangle('fill', 0, 0, 16, 16)
+    love.graphics.setColorMask(true, true, true, true)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, {
+    yellow = {{0,0},{0,15},{15,15},{15,0}}
+  }, 'set color mask')
 end
 
 
@@ -656,67 +746,243 @@ end
 
 -- love.graphics.setDepthMode
 love.test.graphics.setDepthMode = function(test)
-  test:skipTest('test method needs writing')
+  -- check documented modes are valid
+  local comparemode, write = love.graphics.getDepthMode()
+  local modes = {
+    'equal', 'notequal', 'less', 'lequal', 'gequal',
+    'greater', 'never', 'always'
+  }
+  for m=1,#modes do
+    love.graphics.setDepthMode(modes[m], true)
+    test:assertEquals(modes[m], love.graphics.getDepthMode(), 'check depth mode ' .. modes[m] .. ' set')
+  end
+  love.graphics.setDepthMode(comparemode, write)
+  -- @TODO better graphics drawing specific test
 end
 
 
 -- love.graphics.setFont
 love.test.graphics.setFont = function(test)
-  test:skipTest('test method needs writing')
+  -- set font doesnt return anything so draw with the test font
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setFont(Font)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.setColor(1, 0, 0, 1)
+    love.graphics.print('love', 0, 3)
+    love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, {
+    red = {
+      {0,0},{0,6},{2,6},{6,2},
+      {4,4},{8,4},{6,6},{10,2},
+      {14,2},{12,6}
+    }
+  }, 'set font for print')
 end
 
 
 -- love.graphics.setFrontFaceWinding
 love.test.graphics.setFrontFaceWinding = function(test)
-  test:skipTest('test method needs writing')
+  -- check documented modes are valid
+  local original = love.graphics.getFrontFaceWinding()
+  love.graphics.setFrontFaceWinding('cw')
+  test:assertEquals('cw', love.graphics.getFrontFaceWinding(), 'check ffw cw set')
+  love.graphics.setFrontFaceWinding('ccw')
+  test:assertEquals('ccw', love.graphics.getFrontFaceWinding(), 'check ffw ccw set')
+  love.graphics.setFrontFaceWinding(original)
+  -- @TODO better graphics drawing specific test
 end
 
 
 -- love.graphics.setLineJoin
 love.test.graphics.setLineJoin = function(test)
-  test:skipTest('test method needs writing')
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setFont(Font)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    local line = {0,1,8,1,8,8}
+    love.graphics.setLineStyle('rough')
+    love.graphics.setLineWidth(2)
+    love.graphics.setColor(1, 0, 0)
+    love.graphics.setLineJoin('bevel')
+    love.graphics.line(line)
+    love.graphics.translate(0, 4)
+    love.graphics.setColor(1, 1, 0)
+    love.graphics.setLineJoin('none')
+    love.graphics.line(line)
+    love.graphics.translate(0, 4)
+    love.graphics.setColor(0, 0, 1)
+    love.graphics.setLineJoin('miter')
+    love.graphics.line(line)
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.setLineWidth(1)
+    love.graphics.origin()
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, {
+    black = {{8,0}},
+    red = {{8,4}},
+    yellow = {{8,7}},
+    blue = {{8,8}}
+  }, 'set line join')
 end
 
 
 -- love.graphics.setLineStyle
 love.test.graphics.setLineStyle = function(test)
-  test:skipTest('test method needs writing')
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setFont(Font)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.setColor(1, 0, 0)
+    local line = {0,1,16,1}
+    love.graphics.setLineStyle('rough')
+    love.graphics.line(line)
+    love.graphics.translate(0, 4)
+    love.graphics.setLineStyle('smooth')
+    love.graphics.line(line)
+    love.graphics.setLineStyle('rough')
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.origin()
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, {
+    red = {{0,0},{7,0},{15,0}},
+    red07 = {{0,4},{7,4},{15,4}}
+  }, 'set line style')
 end
 
 
 -- love.graphics.setLineWidth
 love.test.graphics.setLineWidth = function(test)
-  test:skipTest('test method needs writing')
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setFont(Font)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    local line = {0,1,8,1,8,8}
+    love.graphics.setColor(1, 0, 0)
+    love.graphics.setLineWidth(2)
+    love.graphics.line(line)
+    love.graphics.translate(0, 4)
+    love.graphics.setColor(1, 1, 0)
+    love.graphics.setLineWidth(3)
+    love.graphics.line(line)
+    love.graphics.translate(0, 4)
+    love.graphics.setColor(0, 0, 1)
+    love.graphics.setLineWidth(4)
+    love.graphics.line(line)
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.setLineWidth(1)
+    love.graphics.origin()
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, {
+    black = {{0,2},{6,2},{0,6},{5,6},{0,11},{5,11}},
+    red = {{0,0},{0,1},{7,2},{8,2}},
+    yellow = {{0,3},{0,5},{6,6},{8,6}},
+    blue = {{0,7},{0,10},{6,15},{9,15}}
+  }, 'set line width')
 end
 
 
 -- love.graphics.setMeshCullMode
 love.test.graphics.setMeshCullMode = function(test)
-  test:skipTest('test method needs writing')
+  -- check documented modes are valid
+  local original = love.graphics.getMeshCullMode()
+  local modes = {'back', 'front', 'none'}
+  for m=1,#modes do
+    love.graphics.setMeshCullMode(modes[m])
+    test:assertEquals(modes[m], love.graphics.getMeshCullMode(), 'check mesh cull mode ' .. modes[m] .. ' was set')
+  end
+  love.graphics.setMeshCullMode(original)
+  -- @TODO better graphics drawing specific test
 end
 
 
 -- love.graphics.setScissor
 love.test.graphics.setScissor = function(test)
-  test:skipTest('test method needs writing')
+  -- make a scissor for the left half
+  -- then we should be able to fill the canvas with red and only left is filled
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.origin()
+    love.graphics.setScissor(0, 0, 8, 16)
+    love.graphics.clear(1, 0, 0, 1)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setScissor()
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, { 
+    red = {{0,0},{7,0},{0,15},{7,15}},
+    black ={{8,0},{8,15},{15,0},{15,15}}
+  }, 'set scissor')
 end
 
 
 -- love.graphics.setShader
 love.test.graphics.setShader = function(test)
-  test:skipTest('test method needs writing')
+  -- make a shader that will only ever draw yellow
+  local pixelcode = 'vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { vec4 texturecolor = Texel(tex, texture_coords); return vec4(1.0,1.0,0.0,1.0);}'
+  local vertexcode = 'vec4 position(mat4 transform_projection, vec4 vertex_position) { return transform_projection * vertex_position; }'
+  local shader = love.graphics.newShader(pixelcode, vertexcode)
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.setShader(shader)
+      -- draw red rectangle
+      love.graphics.setColor(1, 0, 0, 1)
+      love.graphics.rectangle('fill', 0, 0, 16, 16)
+    love.graphics.setShader()
+    love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, { 
+    yellow = {{0,0},{15,0},{0,15},{15,15}},
+  }, 'check shader set to yellow')
 end
 
 
 -- love.graphics.setStencilTest
-love.test.graphics.setStencilMode = function(test)
-  test:skipTest('test method needs writing')
+love.test.graphics.setStencilTest = function(test)
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas({canvas, stencil=true})
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.stencil(function()
+      love.graphics.circle('fill', 8, 8, 6)
+    end, 'replace', 1)
+    love.graphics.setStencilTest('greater', 0)
+    love.graphics.setColor(1, 0, 0, 1)
+    love.graphics.rectangle('fill', 0, 0, 16, 16)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setStencilTest()
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, { 
+    red = {{6,2},{9,2},{2,6},{2,9},{13,6},{9,6},{6,13},{9,13}}
+  }, 'check stencil test')
 end
 
 
 -- love.graphics.setWireframe
 love.test.graphics.setWireframe = function(test)
-  test:skipTest('test method needs writing')
+  -- check wireframe outlines
+  love.graphics.setWireframe(true)
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.setColor(1, 1, 0, 1)
+    love.graphics.rectangle('fill', 2, 2, 13, 13)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setWireframe(false)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, { 
+    yellow = {{1,14},{14,1},{14,14},{2,2},{13,13}},
+    black = {{2,13},{13,2}}
+  }, 'set wireframe')
 end
 
 
@@ -860,7 +1126,6 @@ love.test.graphics.rotate = function(test)
   love.graphics.setCanvas()
   local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
   test:assertPixels(imgdata, { red = {{0,0},{3,0},{3,3},{0,3}} }, 'rotate 90')
-  imgdata:encode('png', 'rotate.png')
 end
 
 

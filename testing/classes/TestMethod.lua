@@ -25,11 +25,19 @@ TestMethod = {
       result = {},
       colors = {
         red = {1, 0, 0, 1},
+        redpale = {1, 0.5, 0.5, 1},
+        red07 = {0.7, 0, 0, 1},
         green = {0, 1, 0, 1},
+        greenhalf = {0, 0.5, 0, 1},
+        greenfade = {0, 1, 0, 0.5},
         blue = {0, 0, 1, 1},
+        bluefade = {0, 0, 1, 0.5},
+        yellow = {1, 1, 0, 1},
         black = {0, 0, 0, 1},
         white = {1, 1, 1, 1}
-      }
+      },
+      delay = 0,
+      delayed = false
     }
     setmetatable(test, self)
     self.__index = self
@@ -69,6 +77,11 @@ TestMethod = {
         local coord = pixels[p]
         local tr, tg, tb, ta = imgdata:getPixel(coord[1], coord[2])
         local compare_id = tostring(coord[1]) .. ',' .. tostring(coord[2])
+        -- prevent us getting stuff like 0.501960785 for 0.5 red 
+        tr = math.floor((tr*10)+0.5)/10
+        tg = math.floor((tg*10)+0.5)/10
+        tb = math.floor((tb*10)+0.5)/10
+        ta = math.floor((ta*10)+0.5)/10
         -- @TODO add some sort pixel tolerance to the coords
         self:assertEquals(col[1], tr, 'check pixel r for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
         self:assertEquals(col[2], tg, 'check pixel g for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
@@ -201,10 +214,17 @@ TestMethod = {
   -- @desc - quick assert for value not nil 
   -- @param {any} value - value to check not nil
   -- @return {nil}
-  assertNotNil = function (self, value)
+  assertNotNil = function (self, value, err)
     self:assertNotEquals(nil, value, 'check not nil')
+    if err ~= nil then
+      table.insert(self.asserts, {
+        key = 'assert #' .. tostring(self.count),
+        passed = false,
+        message = err,
+        test = 'assert not nil catch'
+      })
+    end
   end,
-
 
 
   -- @method - TestMethod:skipTest()
@@ -214,6 +234,17 @@ TestMethod = {
   skipTest = function(self, reason)
     self.skipped = true
     self.skipreason = reason
+  end,
+
+
+  -- currently unused
+  setDelay = function(self, frames)
+    self.delay = frames
+    self.delayed = true
+    love.test.delayed = self
+  end,
+  isDelayed = function(self)
+    return self.delayed
   end,
 
 

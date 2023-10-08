@@ -12,6 +12,7 @@ Currently written for löve 12
 - [x] No platform-specific dependencies / scripts
 - [x] Ability to run a subset of tests
 - [x] Ability to easily run an individual test.
+- [x] Automatic testing that happens after every commit
 
 ---
 
@@ -81,27 +82,25 @@ For sanity-checking, if it's currently not covered or we're not sure how to test
 ## Coverage
 This is the status of all module tests currently.  
 "objects" is a special module to cover any object specific tests, i.e. testing a File object functions as expected
-```lua
--- [x] audio        26 PASSED |  0 FAILED |  0 SKIPPED
--- [x] data          7 PASSED |  0 FAILED |  3 SKIPPED      [SEE BELOW]
--- [x] event         4 PASSED |  0 FAILED |  2 SKIPPED      [SEE BELOW]
--- [x] filesystem   27 PASSED |  0 FAILED |  2 SKIPPED
--- [x] font          4 PASSED |  0 FAILED |  1 SKIPPED      [SEE BELOW]
--- [ ] graphics     65 PASSED |  0 FAILED | 31 SKIPPED      [SEE BELOW]
--- [x] image         3 PASSED |  0 FAILED |  0 SKIPPED
--- [x] math         17 PASSED |  0 FAILED |  0 SKIPPED
--- [x] physics      22 PASSED |  0 FAILED |  0 SKIPPED
--- [x] sound         2 PASSED |  0 FAILED |  0 SKIPPED
--- [x] system        6 PASSED |  0 FAILED |  2 SKIPPED
--- [x] thread        3 PASSED |  0 FAILED |  0 SKIPPED
--- [x] timer         6 PASSED |  0 FAILED |  0 SKIPPED
--- [x] video         1 PASSED |  0 FAILED |  0 SKIPPED
--- [x] window       32 PASSED |  2 FAILED |  2 SKIPPED      [SEE BELOW]
-
--- [ ] objects      STILL TO BE DONE
---------------------------------------------------------------------------------
--- [x] totals      226 PASSED |  4 FAILED | 43 SKIPPED
-```
+| Module                | Passed | Failed | Skipped | Time   |
+| --------------------- | ------ | ------ | ------- | ------ |
+| 🟢 love.audio | 26 | 0 | 0 | 2.602s |
+| 🟢 love.data | 7 | 0 | 3 | 1.003s |
+| 🟢 love.event | 4 | 0 | 2 | 0.599s |
+| 🟢 love.filesystem | 27 | 0 | 2 | 2.900s |
+| 🟢 love.font | 4 | 0 | 1 | 0.500s |
+| 🟢 love.graphics | 81 | 0 | 15 | 10.678s |
+| 🟢 love.image | 3 | 0 | 0 | 0.300s |
+| 🟢 love.math | 17 | 0 | 0 | 1.678s |
+| 🟢 love.objects | 1 | 0 | 0 | 0.121s |
+| 🟢 love.physics | 22 | 0 | 0 | 2.197s |
+| 🟢 love.sound | 2 | 0 | 0 | 0.200s |
+| 🟢 love.system | 6 | 0 | 2 | 0.802s |
+| 🟢 love.thread | 3 | 0 | 0 | 0.300s |
+| 🟢 love.timer | 6 | 0 | 0 | 2.358s |
+| 🟢 love.video | 1 | 0 | 0 | 0.100s |
+| 🟢 love.window | 34 | 0 | 2 | 8.050s |
+**271** tests were completed in **34.387s** with **244** passed, **0** failed, and **27** skipped
 
 The following modules are not covered as we can't really emulate input nicely:  
 `joystick`, `keyboard`, `mouse`, and `touch`
@@ -113,23 +112,17 @@ Modules with some small bits needed or needing sense checking:
 - **love.data** - packing methods need writing cos i dont really get what they are
 - **love.event** - love.event.wait or love.event.pump need writing if possible I dunno how to check
 - **love.font** - newBMFontRasterizer() wiki entry is wrong so not sure whats expected
-- **love.graphics** - still need to do tests for the drawing and state methods
+- **love.graphics** - still need to do tests for the main drawing methods
 - **love.image** - ideally isCompressed should have an example of all compressed files love can take
 - **love.math** - linearToGamma + gammaToLinear using direct formulas don't get same value back
 - **love.objects** - not started properly yet
-
----
-
-## Failures
-- **love.window.isMaximized()** - returns false after calling love.window.maximize?
-- **love.window.maximize()** - same as above
+- **love.graphics.setStencilTest** - deprecated, replaced by setStencilMode()
 
 ---
 
 ## Stretch Goals
 - [ ] Tests can compare visual results to a reference image
 - [ ] Ability to see all visual results at a glance
-- [ ] Automatic testing that happens after every commit
 - [ ] Ability to test loading different combinations of modules
 - [ ] Performance tests
 

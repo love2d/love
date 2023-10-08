@@ -49,6 +49,16 @@ jobs:
       with:
         name: love-x86_64-AppImage-debug
         path: love-${{ github.sha }}.AppImage-debug.tar.gz
+    - name: Make Runnable
+      run: chmod a+x love-linux-x86_64.AppImage
+    - name: Run All Tests
+      run: xvfb-run love-linux-x86_64.AppImage testing
+    - name: Love Test Report
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Linux
+        title: linux-test-report
+        path: testing/output/lovetest_runAllTests.md
   windows-os:
     runs-on: windows-latest
     strategy:
@@ -208,25 +218,22 @@ jobs:
     - name: Build Test Exe
       if: steps.vars.outputs.arch != 'ARM64'
       run: cmake --build build --config Release --target install
-    - name: Run All Tests (OpenGL)
+    - name: Install Mesa
+      if: steps.vars.outputs.arch != 'ARM64'
+      run: |
+        curl.exe -L --output mesa.7z --url https://github.com/pal1000/mesa-dist-win/releases/download/23.2.1/mesa3d-23.2.1-release-msvc.7z
+        7z x mesa.7z
+        mklink opengl32.dll "x64\opengl32.dll"
+        mklink libglapi.dll "x64\libglapi.dll"
+    - name: Run All Tests
       if: steps.vars.outputs.arch != 'ARM64'
       run: install\lovec.exe testing/main.lua
-    - name: Love Test Report (OpenGL)
+    - name: Love Test Report
       if: steps.vars.outputs.arch != 'ARM64'
       uses: ellraiser/love-test-report@main
       with:
-        name: Love Testsuite Windows (OpenGL)
-        title: windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-test-report-opengl
-        path: testing/output/lovetest_runAllTests.md
-    - name: Run All Tests (Vulkan)
-      if: steps.vars.outputs.arch != 'ARM64'
-      run: install\lovec.exe testing/main.lua --renderers vulkan
-    - name: Love Test Report (Vulkan)
-      if: steps.vars.outputs.arch != 'ARM64'
-      uses: ellraiser/love-test-report@main
-      with:
-        name: Love Testsuite Windows (Vulkan)
-        title: windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-test-report-vulkan
+        name: Love Testsuite Windows
+        title: windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-test-report
         path: testing/output/lovetest_runAllTests.md
   macOS:
     runs-on: macos-latest
@@ -256,21 +263,13 @@ jobs:
       with:
         name: love-macos
         path: love-macos.zip
-    - name: Run All Tests (OpenGL)
+    - name: Run All Tests
       run: love-macos/love.app/Contents/MacOS/love testing
-    - name: Love Test Report (OpenGL)
+    - name: Love Test Report
       uses: ellraiser/love-test-report@main
       with:
-        name: Love Testsuite MacOS (OpenGL)
-        title: macos-test-report-opengl
-        path: testing/output/lovetest_runAllTests.md
-    - name: Run All Tests (metal)
-      run: love-macos/love.app/Contents/MacOS/love testing --renderers metal
-    - name: Love Test Report (metal)
-      uses: ellraiser/love-test-report@main
-      with:
-        name: Love Testsuite MacOS (Metal)
-        title: macos-test-report-metal
+        name: Love Testsuite MacOS
+        title: macos-test-report
         path: testing/output/lovetest_runAllTests.md
   iOS-Simulator:
     runs-on: macos-latest

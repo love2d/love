@@ -33,7 +33,7 @@ love.load = function(args)
 
   -- setup basic img to display
   if love.window ~= nil then
-    love.window.setMode(256, 256, {
+    love.window.setMode(360, 240, {
       fullscreen = false,
       resizable = true,
       centered = true
@@ -47,6 +47,9 @@ love.load = function(args)
         img = nil
       }
       Logo.img = love.graphics.newQuad(0, 0, 64, 64, Logo.texture)
+      Font = love.graphics.newFont('resources/font.ttf', 8, 'normal')
+      TextCommand = love.graphics.newTextBatch(Font, 'Loading...')
+      TextRun = love.graphics.newTextBatch(Font, '')
     end
   end
 
@@ -63,6 +66,7 @@ love.load = function(args)
   local testcmd = '--runAllTests'
   local module = ''
   local method = ''
+  local cmderr = 'Invalid flag used'
   local modules = {
     'audio', 'data', 'event', 'filesystem', 'font', 'graphics',
     'image', 'math', 'objects', 'physics', 'sound', 'system',
@@ -97,9 +101,14 @@ love.load = function(args)
   if testcmd == '--runSpecificMethod' then
     local testmodule = TestModule:new(module, method)
     table.insert(love.test.modules, testmodule)
-    love.test.module = testmodule
-    love.test.module:log('grey', '--runSpecificMethod "' .. module .. '" "' .. method .. '"')
-    love.test.output = 'lovetest_runSpecificMethod_' .. module .. '_' .. method
+    if module ~= '' and method ~= '' then
+      love.test.module = testmodule
+      love.test.module:log('grey', '--runSpecificMethod "' .. module .. '" "' .. method .. '"')
+      love.test.output = 'lovetest_runSpecificMethod_' .. module .. '_' .. method
+    else
+      if method == '' then cmderr = 'No valid method specified' end
+      if module == '' then cmderr = 'No valid module specified' end
+    end
   end
 
   -- runSpecificModules runs all methods for all the modules given
@@ -110,10 +119,13 @@ love.load = function(args)
       table.insert(love.test.modules, testmodule)
       table.insert(modulelist, modules[m])
     end
-    
-    love.test.module = love.test.modules[1]
-    love.test.module:log('grey', '--runSpecificModules "' .. table.concat(modulelist, '" "') .. '"')
-    love.test.output = 'lovetest_runSpecificModules_' .. table.concat(modulelist, '_')
+    if #modulelist > 0 then
+      love.test.module = love.test.modules[1]
+      love.test.module:log('grey', '--runSpecificModules "' .. table.concat(modulelist, '" "') .. '"')
+      love.test.output = 'lovetest_runSpecificModules_' .. table.concat(modulelist, '_')
+    else
+      cmderr = 'No modules specified'
+    end
   end
 
   -- otherwise default runs all methods for all modules
@@ -129,11 +141,13 @@ love.load = function(args)
 
   -- invalid command
   if love.test.module == nil then
-    print("Wrong flags used")
+    print(cmderr)
+    love.event.quit(0)
+  else 
+    -- start first module
+    TextCommand:set(testcmd)
+    love.test.module:runTests()
   end
-
-  -- start first module
-  love.test.module:runTests()
 
 end
 
@@ -147,7 +161,11 @@ end
 -- love.draw
 -- draw a little logo to the screen
 love.draw = function()
-  love.graphics.draw(Logo.texture, Logo.img, 64, 64, 0, 2, 2)
+  local lw = (love.graphics.getPixelWidth() - 128) / 2
+  local lh = (love.graphics.getPixelHeight() - 128) / 2
+  love.graphics.draw(Logo.texture, Logo.img, lw, lh, 0, 2, 2)
+  love.graphics.draw(TextCommand, 4, 12, 0, 2, 2)
+  love.graphics.draw(TextRun, 4, 32, 0, 2, 2)
 end
 
 

@@ -5,14 +5,12 @@
 love.test.window.close = function(test)
   -- closing window should cause graphics to not be active
   love.window.close()
-  local active = false
-  if love.graphics ~= nil then 
-    active = love.graphics.isActive() 
-  end
-  test:assertEquals(false, active, 'check window active')
-  love.window.setMode(256, 256) -- reset 
+  local active = love.graphics.isActive()
+  test:assertEquals(false, active, 'check window not active')
+  love.window.updateMode(360, 240) -- reset
+  active = love.graphics.isActive() 
+  test:assertEquals(true, active, 'check window active again')
 end
-
 
 -- love.window.fromPixels
 love.test.window.fromPixels = function(test)
@@ -93,8 +91,8 @@ end
 -- @NOTE could prob add more checks on the flags here based on conf.lua
 love.test.window.getMode = function(test)
   local w, h, flags = love.window.getMode()
-  test:assertEquals(256, w, 'check w')
-  test:assertEquals(256, h, 'check h')
+  test:assertEquals(360, w, 'check w')
+  test:assertEquals(240, h, 'check h')
   test:assertEquals(false, flags["fullscreen"], 'check fullscreen')
 end
 
@@ -169,13 +167,14 @@ end
 
 -- love.window.isMaximized
 love.test.window.isMaximized = function(test)
-  -- check minimized to start
-  love.window.minimize()
-  test:assertEquals(false, love.window.isMaximized(), 'check window maximized')
-  -- try to mazimize
-  love.window.maximize()
-  test:assertEquals(true, love.window.isMaximized(), 'check window not maximized')
-  love.window.restore()
+  if test:isDelayed() == false then
+    love.window.maximize()
+    test:setDelay(10)
+  else
+    -- on MACOS maximize wont get recognised immedietely so wait a few frames
+    test:assertEquals(true, love.window.isMaximized(), 'check window now maximized')
+    love.window.restore()
+  end
 end
 
 
@@ -197,7 +196,7 @@ love.test.window.isOpen = function(test)
   -- try closing
   love.window.close()
   test:assertEquals(false, love.window.isOpen(), 'check window closed')
-  love.window.setMode(256, 256) -- reset 
+  love.window.updateMode(360, 240) -- reset 
 end
 
 
@@ -208,16 +207,21 @@ love.test.window.isVisible = function(test)
   -- check closing makes window not visible
   love.window.close()
   test:assertEquals(false, love.window.isVisible(), 'check window not visible')
-  love.window.setMode(256, 256) -- reset 
+  love.window.updateMode(360, 240) -- reset 
 end
 
 
 -- love.window.maximize
 love.test.window.maximize = function(test)
-  -- check maximizing is set
-  love.window.maximize()
-  test:assertEquals(true, love.window.isMaximized(), 'check window maximized')
-  love.window.restore()
+  if test:isDelayed() == false then
+    -- check maximizing is set
+    love.window.maximize()
+    test:setDelay(10)
+  else
+    -- on macos we need to wait a few frames
+    test:assertEquals(true, love.window.isMaximized(), 'check window maximized')
+    love.window.restore()
+  end
 end
 
 
@@ -293,7 +297,7 @@ love.test.window.setMode = function(test)
   test:assertEquals(512, height, 'check window h match')
   test:assertEquals(false, flags["fullscreen"], 'check window not fullscreen')
   test:assertEquals(false, flags["resizable"], 'check window not resizeable')
-  love.window.setMode(256, 256, {
+  love.window.setMode(360, 240, {
     fullscreen = false,
     resizable = true
   })
@@ -353,14 +357,14 @@ love.test.window.updateMode = function(test)
     resizable = false
   })
   -- update mode with some props but not others
-  love.window.updateMode(256, 256, nil)
+  love.window.updateMode(360, 240, nil)
   -- check only changed values changed
   local width, height, flags = love.window.getMode()
-  test:assertEquals(256, width, 'check window w match')
-  test:assertEquals(256, height, 'check window h match')
+  test:assertEquals(360, width, 'check window w match')
+  test:assertEquals(240, height, 'check window h match')
   test:assertEquals(false, flags["fullscreen"], 'check window not fullscreen')
   test:assertEquals(false, flags["resizable"], 'check window not resizeable')
-  love.window.setMode(256, 256, { -- reset
+  love.window.setMode(360, 240, { -- reset
     fullscreen = false,
     resizable = true
   })
