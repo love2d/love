@@ -12,7 +12,7 @@ TestModule = {
     local testmodule = {
       timer = 0,
       time = 0,
-      delay = 0.1,
+      delay = 0.01,
       spacer = '                                        ',
       colors = {
         PASS = 'green', FAIL = 'red', SKIP = 'grey'

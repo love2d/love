@@ -52,7 +52,7 @@ jobs:
     - name: Make Runnable
       run: chmod a+x love-${{ github.sha }}.AppImage
     - name: Run All Tests
-      run: xvfb-run love-${{ github.sha }}.AppImage testing
+      run: xvfb-run ./love-${{ github.sha }}.AppImage testing
     - name: Love Test Report
       uses: ellraiser/love-test-report@main
       with:
@@ -215,17 +215,18 @@ jobs:
       with:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
         path: pdb/Release/*.pdb
+    - name: Install Mesa 
+      if: steps.vars.outputs.arch != 'ARM64'
+      run: |
+        curl -L --output mesa.7z --url https://github.com/pal1000/mesa-dist-win/releases/download/23.2.1/mesa3d-23.2.1-release-msvc.7z
+        7z x mesa.7z -o*
+        powershell.exe mesa\systemwidedeploy.cmd 1
     - name: Build Test Exe
       if: steps.vars.outputs.arch != 'ARM64'
       run: cmake --build build --config Release --target install
-    - name: Install Mesa 
-      if: steps.vars.outputs.arch != 'ARM64'
-      uses: ssciwr/setup-mesa-dist-win@v1
-      with:
-        version: '23.2.1'
     - name: Run All Tests
       if: steps.vars.outputs.arch != 'ARM64'
-      run: install\lovec.exe testing/main.lua
+      run: powershell.exe install/lovec.exe testing
     - name: Love Test Report
       if: steps.vars.outputs.arch != 'ARM64'
       uses: ellraiser/love-test-report@main

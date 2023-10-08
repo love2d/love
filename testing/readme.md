@@ -35,9 +35,10 @@ If you want to specify only 1 specific method only you can use:
 
 All results will be printed in the console per method as PASS, FAIL, or SKIP with total assertions met on a module level and overall level.  
 
-An `XML` file in the style of [JUnit XML](https://www.ibm.com/docs/en/developer-for-zos/14.1?topic=formats-junit-xml-format) will be generated in the `/output` directory, along with a `HTML` file with a summary of all tests (including visuals for love.graphics tests) - you will need to make sure the command is run with read/write permissions for the source directory.
-> Note that this can only be viewed properly locally as the generated images are written to the save directory.   
-> An example of both types of output can be found in the `/examples` folder
+An `XML` file in the style of [JUnit XML](https://www.ibm.com/docs/en/developer-for-zos/14.1?topic=formats-junit-xml-format) will be generated in the `/output` directory, along with a `HTML` and a `Markdown` file with a summary of all tests (including visuals for love.graphics tests).  
+> An example of both types of output can be found in the `/examples` folder  
+
+The Markdown file can be used with [this github action](https://github.com/ellraiser/love-test-report) if you want to output the report results to your CI.
 
 ---
 
@@ -81,7 +82,6 @@ For sanity-checking, if it's currently not covered or we're not sure how to test
 
 ## Coverage
 This is the status of all module tests currently.  
-"objects" is a special module to cover any object specific tests, i.e. testing a File object functions as expected
 | Module                | Passed | Failed | Skipped | Time   |
 | --------------------- | ------ | ------ | ------- | ------ |
 | 🟢 love.audio | 26 | 0 | 0 | 2.602s |
@@ -92,22 +92,20 @@ This is the status of all module tests currently.
 | 🟢 love.graphics | 81 | 0 | 15 | 10.678s |
 | 🟢 love.image | 3 | 0 | 0 | 0.300s |
 | 🟢 love.math | 17 | 0 | 0 | 1.678s |
-| 🟢 love.objects | 1 | 0 | 0 | 0.121s |
 | 🟢 love.physics | 22 | 0 | 0 | 2.197s |
 | 🟢 love.sound | 2 | 0 | 0 | 0.200s |
 | 🟢 love.system | 6 | 0 | 2 | 0.802s |
 | 🟢 love.thread | 3 | 0 | 0 | 0.300s |
 | 🟢 love.timer | 6 | 0 | 0 | 2.358s |
 | 🟢 love.video | 1 | 0 | 0 | 0.100s |
-| 🟢 love.window | 34 | 0 | 2 | 8.050s |
-**271** tests were completed in **34.387s** with **244** passed, **0** failed, and **27** skipped
+| 🟢 love.window | 34 | 0 | 2 | 8.050s |  
 
 The following modules are not covered as we can't really emulate input nicely:  
 `joystick`, `keyboard`, `mouse`, and `touch`
 
 ---
 
-## Todo / Skipped
+## Todo 
 Modules with some small bits needed or needing sense checking:
 - **love.data** - packing methods need writing cos i dont really get what they are
 - **love.event** - love.event.wait or love.event.pump need writing if possible I dunno how to check
@@ -115,7 +113,7 @@ Modules with some small bits needed or needing sense checking:
 - **love.graphics** - still need to do tests for the main drawing methods
 - **love.image** - ideally isCompressed should have an example of all compressed files love can take
 - **love.math** - linearToGamma + gammaToLinear using direct formulas don't get same value back
-- **love.objects** - not started properly yet
+- **love.*.objects** - all objects tests still to be done
 - **love.graphics.setStencilTest** - deprecated, replaced by setStencilMode()
 
 ---

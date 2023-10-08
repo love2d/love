@@ -58,7 +58,7 @@ TestSuite = {
   -- @return {nil}
   runSuite = function(self, delta)
 
-      -- stagger 0.1s between tests
+      -- stagger between tests
     if self.module ~= nil then
       self.module.timer = self.module.timer + delta
       if self.module.timer >= self.module.delay then
