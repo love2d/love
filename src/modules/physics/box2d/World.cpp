@@ -114,22 +114,6 @@ World::ContactFilter::~ContactFilter()
 
 bool World::ContactFilter::process(Shape *a, Shape *b)
 {
-	// Handle masks, reimplemented from the manual
-	int filterA[3], filterB[3];
-	// [0] categoryBits
-	// [1] maskBits
-	// [2] groupIndex
-	a->getFilterData(filterA);
-	b->getFilterData(filterB);
-
-	if (filterA[2] != 0 && // 0 is the default group, so this does not count
-		filterA[2] == filterB[2]) // if they are in the same group
-		return filterA[2] > 0; // Negative indexes mean you don't collide
-
-	if ((filterA[1] & filterB[0]) == 0 ||
-		(filterB[1] & filterA[0]) == 0)
-		return false; // A and B aren't set to collide
-
 	if (ref != nullptr && L != nullptr)
 	{
 		ref->push(L);
@@ -138,6 +122,7 @@ bool World::ContactFilter::process(Shape *a, Shape *b)
 		lua_call(L, 2, 1);
 		return luax_toboolean(L, -1);
 	}
+
 	return true;
 }
 
@@ -384,11 +369,24 @@ void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse)
 
 bool World::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB)
 {
+	const b2Filter &filterA = fixtureA->GetFilterData();
+	const b2Filter &filterB = fixtureB->GetFilterData();
+
+	// From b2_world_callbacks.cpp
+	// 0 is the default group index. If they're customized to be the same group,
+	// allow collisions if it's positive and disallow if it's negative.
+	if (filterA.groupIndex != 0 && filterA.groupIndex == filterB.groupIndex)
+		return filterA.groupIndex > 0;
+
+	if ((filterA.maskBits & filterB.categoryBits) == 0 || (filterA.categoryBits & filterB.maskBits) == 0)
+		return false;
+
 	// Shapes should be memoized, if we created them
 	Shape *a = (Shape *)(fixtureA->GetUserData().pointer);
 	Shape *b = (Shape *)(fixtureB->GetUserData().pointer);
 	if (!a || !b)
 		throw love::Exception("A Shape has escaped Memoizer!");
+
 	return filter.process(a, b);
 }
 
