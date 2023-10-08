@@ -47,9 +47,16 @@ Shape::Shape(Body *body, const b2Shape &shape)
 		b2FixtureDef def;
 		def.shape = &shape;
 		def.userData.pointer = (uintptr_t)this;
-		def.density = 1.0f;
+
+		// 0 density stops CreateFixture from calling b2Body::ResetMassData().
+		def.density = body->hasCustomMassData() ? 0.0f : 1.0f;
+
 		fixture = body->body->CreateFixture(&def);
 		this->shape = fixture->GetShape();
+
+		if (body->hasCustomMassData())
+			setDensity(1.0f);
+
 		retain(); // Shape::destroy does the release().
 	}
 	else
@@ -188,6 +195,8 @@ void Shape::setDensity(float density)
 {
 	throwIfFixtureNotValid();
 	fixture->SetDensity(density);
+	if (!body->hasCustomMassData())
+		body->resetMassData();
 }
 
 void Shape::setSensor(bool sensor)

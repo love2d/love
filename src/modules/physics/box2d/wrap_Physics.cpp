@@ -262,11 +262,7 @@ int w_newFixture(lua_State *L)
 	float density = (float)luaL_optnumber(L, 3, 1.0f);
 
 	Shape *newShape;
-	luax_catchexcept(L, [&]() {
-		newShape = instance()->newAttachedShape(body, shape, density);
-		newShape->setDensity(density);
-		body->resetMassData();
-	});
+	luax_catchexcept(L, [&]() { newShape = instance()->newAttachedShape(body, shape, density); });
 
 	luax_pushshape(L, newShape);
 	newShape->release();

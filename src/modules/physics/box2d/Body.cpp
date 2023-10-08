@@ -39,6 +39,7 @@ namespace box2d
 
 Body::Body(World *world, b2Vec2 p, Body::Type type)
 	: world(world)
+	, hasCustomMass(false)
 {
 	b2BodyDef def;
 	def.position = Physics::scaleDown(p);
@@ -249,6 +250,7 @@ void Body::setLinearDamping(float d)
 void Body::resetMassData()
 {
 	body->ResetMassData();
+	hasCustomMass = false;
 }
 
 void Body::setMassData(float x, float y, float m, float i)
@@ -258,6 +260,7 @@ void Body::setMassData(float x, float y, float m, float i)
 	massData.mass = m;
 	massData.I = Physics::scaleDown(Physics::scaleDown(i));
 	body->SetMassData(&massData);
+	hasCustomMass = true;
 }
 
 void Body::setMass(float m)
@@ -266,6 +269,7 @@ void Body::setMass(float m)
 	body->GetMassData(&data);
 	data.mass = m;
 	body->SetMassData(&data);
+	hasCustomMass = true;
 }
 
 void Body::setInertia(float i)
@@ -275,6 +279,7 @@ void Body::setInertia(float i)
 	massData.mass = body->GetMass();
 	massData.I = Physics::scaleDown(Physics::scaleDown(i));
 	body->SetMassData(&massData);
+	hasCustomMass = true;
 }
 
 void Body::setGravityScale(float scale)

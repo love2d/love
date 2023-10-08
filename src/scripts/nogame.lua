@@ -3042,7 +3042,6 @@ function love.nogame()
 			link.body:setAngularDamping(0.5)
 			link.shape = love.physics.newCircleShape(link.body, link.radius)
 			link.shape:setDensity(0.1 / i)
-			link.body:resetMassData()
 			link.state = State(link.body)
 
 			-- Note: every link must also be attached to the Duckloon. Otherwise the

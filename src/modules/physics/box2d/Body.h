@@ -137,6 +137,8 @@ public:
 	 **/
 	int getMassData(lua_State *L);
 
+	bool hasCustomMassData() const { return hasCustomMass; }
+
 	/**
 	 * Gets the Body's angular damping.
 	 **/
@@ -432,6 +434,8 @@ private:
 	// FIXME: This should be a weak reference, rather than being completely
 	// unowned?
 	World *world;
+
+	bool hasCustomMass;
 
 	// Reference to arbitrary data.
 	Reference* ref = nullptr;

@@ -162,6 +162,13 @@ int w_Body_getMassData(lua_State *L)
 	return t->getMassData(L);
 }
 
+int w_Body_hasCustomMassData(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	luax_pushboolean(L, t->hasCustomMassData());
+	return 1;
+}
+
 int w_Body_getAngularDamping(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
@@ -688,6 +695,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "getMass", w_Body_getMass },
 	{ "getInertia", w_Body_getInertia },
 	{ "getMassData", w_Body_getMassData },
+	{ "hasCustomMassData", w_Body_hasCustomMassData },
 	{ "getAngularDamping", w_Body_getAngularDamping },
 	{ "getLinearDamping", w_Body_getLinearDamping },
 	{ "getGravityScale", w_Body_getGravityScale },
