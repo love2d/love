@@ -614,6 +614,9 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::
 
 		std::string name = basename + comp.get_member_name(type.self, uindex);
 
+		if (name == "Debug")
+			float x = 1.0f;
+
 		switch (memberType.basetype)
 		{
 		case SPIRType::Struct:
@@ -656,6 +659,9 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::
 		if (reflectionIt != validationReflection.localUniforms.end())
 		{
 			const auto &localUniform = reflectionIt->second;
+			if (localUniform.dataType == DATA_BASETYPE_BOOL)
+				u.baseType = UNIFORM_BOOL;
+
 			const auto &values = localUniform.initializerValues;
 			if (!values.empty())
 				memcpy(
