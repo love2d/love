@@ -551,7 +551,8 @@ int Shader::getVertexAttributeIndex(const std::string &name)
 
 const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
 {
-	return &uniformInfos.at(name);
+	const auto it = uniformInfos.find(name);
+	return it != uniformInfos.end() ? &(it->second) : nullptr;
 }
 
 const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
