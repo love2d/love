@@ -150,7 +150,7 @@ bool Texture::loadVolatile()
 	createTextureImageView();
 	textureSampler = vgfx->getCachedSampler(samplerState);
 
-	if (!isPixelFormatDepthStencil(format) && mipmapCount > 1 && getMipmapsMode() != MIPMAPS_NONE)
+	if (!isPixelFormatDepthStencil(format) && slices.getMipmapCount() <= 1 && getMipmapsMode() != MIPMAPS_NONE)
 		generateMipmaps();
 
 	if (renderTarget)
