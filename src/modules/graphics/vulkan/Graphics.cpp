@@ -151,6 +151,7 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
+	defaultConstantTexCoord.set(nullptr);
 	defaultConstantColor.set(nullptr);
 	defaultTexture.set(nullptr);
 
