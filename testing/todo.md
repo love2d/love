@@ -1,16 +1,17 @@
 `/Applications/love_12.app/Contents/MacOS/love ./testing`
 
 ## TESTSUITE
-- [ ] setStencilMode to replace setStencilTest
-- [ ] start graphics drawing methods
 - [ ] move object methods to respective modules
 - [ ] start object methods
+- [ ] setStencilMode to replace setStencilTest
 
 ## GRAPHICS
 Methods that need a actual graphic pixel checks if possible:
 - [ ] setDepthMode
 - [ ] setFrontFaceWinding
 - [ ] setMeshCullMode
+- [ ] present
+- [ ] drawInstanced
 
 ## FUTURE
 - [ ] need a platform: format table somewhere for compressed formats (i.e. DXT not supported)

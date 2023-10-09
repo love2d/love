@@ -53,6 +53,9 @@ love.load = function(args)
     end
   end
 
+  -- mount for output later
+  love.filesystem.mountFullPath(love.filesystem.getSource() .. "/output", "tempoutput", "readwrite")
+
   -- get all args with any comma lists split out as seperate
   local arglist = {}
   for a=1,#args do

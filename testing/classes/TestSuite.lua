@@ -187,8 +187,6 @@ TestSuite = {
       '<li>🟡&nbsp;' .. tostring(self.totals[3]) .. ' Skipped</li>' ..
       '<li>' .. finaltime .. 's</li></ul><br/><br/>'
 
-    -- @TODO use mountFullPath to write output to src?
-    love.filesystem.mountFullPath(love.filesystem.getSource() .. "/output", "tempoutput", "readwrite")
     love.filesystem.write('tempoutput/' .. self.output .. '.xml', xml .. self.xml .. '</testsuites>')
     love.filesystem.write('tempoutput/' .. self.output .. '.html', html .. self.html .. '</div></body></html>')
     love.filesystem.write('tempoutput/' .. self.output .. '.md', md)

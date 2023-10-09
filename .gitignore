@@ -72,3 +72,4 @@ stamp-h1
 /testing/output/*.xml
 /testing/output/*.html
 /testing/output/*.md
+/testing/output/actual/*.png

@@ -33,9 +33,13 @@ TestMethod = {
         blue = {0, 0, 1, 1},
         bluefade = {0, 0, 1, 0.5},
         yellow = {1, 1, 0, 1},
+        pink = {1, 0, 1, 1},
         black = {0, 0, 0, 1},
-        white = {1, 1, 1, 1}
+        white = {1, 1, 1, 1},
+        lovepink = {214/255, 86/255, 151/255, 1},
+        loveblue = {83/255, 168/255, 220/255, 1}
       },
+      imgs = 1,
       delay = 0,
       delayed = false
     }
@@ -82,6 +86,10 @@ TestMethod = {
         tg = math.floor((tg*10)+0.5)/10
         tb = math.floor((tb*10)+0.5)/10
         ta = math.floor((ta*10)+0.5)/10
+        col[1] = math.floor((col[1]*10)+0.5)/10
+        col[2] = math.floor((col[2]*10)+0.5)/10
+        col[3] = math.floor((col[3]*10)+0.5)/10
+        col[4] = math.floor((col[4]*10)+0.5)/10
         -- @TODO add some sort pixel tolerance to the coords
         self:assertEquals(col[1], tr, 'check pixel r for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
         self:assertEquals(col[2], tg, 'check pixel g for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
@@ -227,6 +235,14 @@ TestMethod = {
   end,
 
 
+  exportImg = function(self, imgdata)
+    local path = 'tempoutput/actual/love.test.graphics.' .. 
+      self.method .. '-' .. tostring(self.imgs) .. '.png'
+    imgdata:encode('png', path)
+    self.imgs = self.imgs + 1
+  end,
+
+
   -- @method - TestMethod:skipTest()
   -- @desc - used to mark this test as skipped for a specific reason
   -- @param {string} reason - reason why method is being skipped
@@ -356,11 +372,21 @@ TestMethod = {
 
     -- unused currently, adds a preview image for certain graphics methods to the output
     local preview = ''
-    -- if self.testmodule.module == 'graphics' then
-    --   local filename = 'love_test_graphics_rectangle'
-    --   preview = '<div class="preview">' .. '<img src="' .. filename .. '_expected.png"/><p>Expected</p></div>' ..
-    --     '<div class="preview"><img src="' .. filename .. '_actual.png"/><p>Actual</p></div>'
-    -- end
+    if self.testmodule.module == 'graphics' then
+      local filename = 'love.test.graphics.' .. self.method
+      if love.filesystem.openFile('tempoutput/actual/' .. filename .. '-1.png', 'r') then
+        preview = '<div class="preview">' .. '<img src="expected/' .. filename .. '-1.png"/><p>Expected</p></div>' ..
+          '<div class="preview">' .. '<img src="actual/' .. filename .. '-1.png"/><p>Actual</p></div>'
+      end
+      if love.filesystem.openFile('tempoutput/actual/' .. filename .. '-2.png', 'r') then
+        preview = preview .. '<div class="preview">' .. '<img src="expected/' .. filename .. '-2.png"/><p>Expected</p></div>' ..
+          '<div class="preview">' .. '<img src="actual/' .. filename .. '-2.png"/><p>Actual</p></div>'
+      end
+      if love.filesystem.openFile('tempoutput/actual/' .. filename .. '-3.png', 'r') then
+        preview = preview .. '<div class="preview">' .. '<img src="expected/' .. filename .. '-3.png"/><p>Expected</p></div>' ..
+          '<div class="preview">' .. '<img src="actual/' .. filename .. '-3.png"/><p>Actual</p></div>'
+      end
+    end
 
     -- append HTML for the test class result 
     local status = '🔴'

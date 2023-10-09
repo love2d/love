@@ -4,6 +4,7 @@ on: [push, pull_request]
 jobs:
   linux-os:
     runs-on: ubuntu-20.04
+    timeout-minutes: 60
     steps:
     - name: Update APT
       run: sudo apt-get update
@@ -50,9 +51,12 @@ jobs:
         name: love-x86_64-AppImage-debug
         path: love-${{ github.sha }}.AppImage-debug.tar.gz
     - name: Make Runnable
-      run: chmod a+x love-${{ github.sha }}.AppImage
+      run: |
+        chmod a+x love-${{ github.sha }}.AppImage
+        echo "ready to run"
+        ls
     - name: Run All Tests
-      run: xvfb-run ./love-${{ github.sha }}.AppImage testing
+      run: xvfb-run ./love-${{ github.sha }}.AppImage ./testing/main.lua
     - name: Love Test Report
       uses: ellraiser/love-test-report@main
       with:
@@ -61,6 +65,7 @@ jobs:
         path: testing/output/lovetest_runAllTests.md
   windows-os:
     runs-on: windows-latest
+    timeout-minutes: 60
     strategy:
       matrix:
         platform: [Win32, x64, ARM64]
@@ -214,9 +219,21 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
-        path: pdb/Release/*.pdb
+        path: pdb/Release/*.pdb  
+    - name: Install Scream
+      shell: powershell
+      run: |
+        Start-Service audio*
+        Invoke-WebRequest https://github.com/duncanthrax/scream/releases/download/3.6/Scream3.6.zip -OutFile C:\Scream3.6.zip
+        Extract-7Zip -Path C:\Scream3.6.zip -DestinationPath C:\Scream
+        $cert = (Get-AuthenticodeSignature C:\Scream\Install\driver\Scream.sys).SignerCertificate
+        $store = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher", "LocalMachine")
+        $store.Open("ReadWrite")
+        $store.Add($cert)
+        $store.Close()
+        cd C:\Scream\Install\driver
+        C:\Scream\Install\helpers\devcon install Scream.inf *Scream 
     - name: Install Mesa 
-      if: steps.vars.outputs.arch != 'ARM64'
       run: |
         curl -L --output mesa.7z --url https://github.com/pal1000/mesa-dist-win/releases/download/23.2.1/mesa3d-23.2.1-release-msvc.7z
         7z x mesa.7z -o*
@@ -226,7 +243,9 @@ jobs:
       run: cmake --build build --config Release --target install
     - name: Run All Tests
       if: steps.vars.outputs.arch != 'ARM64'
-      run: powershell.exe install/lovec.exe testing
+      run: |
+        dir
+        powershell.exe ./install/lovec.exe ./testing/main.lua
     - name: Love Test Report
       if: steps.vars.outputs.arch != 'ARM64'
       uses: ellraiser/love-test-report@main
@@ -236,6 +255,7 @@ jobs:
         path: testing/output/lovetest_runAllTests.md
   macOS:
     runs-on: macos-latest
+    timeout-minutes: 60
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -263,7 +283,7 @@ jobs:
         name: love-macos
         path: love-macos.zip
     - name: Run All Tests
-      run: love-macos/love.app/Contents/MacOS/love testing
+      run: love-macos/love.app/Contents/MacOS/love testing/main.lua
     - name: Love Test Report
       uses: ellraiser/love-test-report@main
       with:
@@ -272,6 +292,7 @@ jobs:
         path: testing/output/lovetest_runAllTests.md
   iOS-Simulator:
     runs-on: macos-latest
+    timeout-minutes: 60
     steps:
     - name: Checkout
       uses: actions/checkout@v3

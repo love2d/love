@@ -88,7 +88,7 @@ TestModule = {
     if self.failed == 0 then status = '🟢' end
     -- add md row to main output
     love.test.mdrows = love.test.mdrows .. '| ' .. status .. 
-      ' love.' .. self.module .. 
+      ' ' .. self.module .. 
       ' | ' .. tostring(self.passed) .. 
       ' | ' .. tostring(self.failed) .. 
       ' | ' .. tostring(self.skipped) .. 
