@@ -256,6 +256,14 @@ struct ScreenshotReadbackBuffer
 	VmaAllocation imageAllocation;
 };
 
+enum SubmitMode
+{
+	SUBMIT_PRESENT,
+	SUBMIT_NOPRESENT,
+	SUBMIT_RESTART,
+	SUBMIT_MAXENUM,
+};
+
 class Graphics final : public love::graphics::Graphics
 {
 public:
@@ -300,12 +308,12 @@ public:
 
 	// internal functions.
 
-	const VkDevice getDevice() const;
-	const VmaAllocator getVmaAllocator() const;
+	VkDevice getDevice() const;
+	VmaAllocator getVmaAllocator() const;
 	VkCommandBuffer getCommandBufferForDataTransfer();
 	void queueCleanUp(std::function<void()> cleanUp);
 	void addReadbackCallback(std::function<void()> callback);
-	void submitGpuCommands(bool present, void *screenshotCallbackData = nullptr);
+	void submitGpuCommands(SubmitMode, void *screenshotCallbackData = nullptr);
 	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	VkSampler getCachedSampler(const SamplerState &sampler);
 	void setComputeShader(Shader *computeShader);
@@ -326,7 +334,6 @@ protected:
 	void setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture) override;
 
 private:
-	void createVulkanInstance();
 	bool checkValidationSupport();
 	void pickPhysicalDevice();
 	int rateDeviceSuitability(VkPhysicalDevice device);

@@ -44,7 +44,7 @@ GraphicsReadback::GraphicsReadback(love::graphics::Graphics *gfx, ReadbackMethod
 
 	if (method == READBACK_IMMEDIATE)
 	{
-		vgfx->submitGpuCommands(false);
+		vgfx->submitGpuCommands(SUBMIT_RESTART);
 		if (stagingBuffer.get()) {
 			status = readbackBuffer(stagingBuffer, 0, size);
 			gfx->releaseTemporaryBuffer(stagingBuffer);
@@ -79,7 +79,7 @@ GraphicsReadback::GraphicsReadback(love::graphics::Graphics *gfx, ReadbackMethod
 	});
 
 	if (method == READBACK_IMMEDIATE)
-		vgfx->submitGpuCommands(false);
+		vgfx->submitGpuCommands(SUBMIT_RESTART);
 }
 
 GraphicsReadback::~GraphicsReadback()
@@ -89,7 +89,7 @@ GraphicsReadback::~GraphicsReadback()
 void GraphicsReadback::wait()
 {
 	if (status == STATUS_WAITING)
-		vgfx->submitGpuCommands(false);
+		vgfx->submitGpuCommands(SUBMIT_RESTART);
 }
 
 void GraphicsReadback::update()
