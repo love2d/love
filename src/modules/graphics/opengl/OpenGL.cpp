@@ -98,31 +98,31 @@ OpenGL::CleanClearState::CleanClearState(GLbitfield clearFlags)
 	, depthWrites(gl.hasDepthWrites())
 	, scissor(gl.isStateEnabled(ENABLE_SCISSOR_TEST))
 {
-	if (clearFlags & GL_COLOR_BUFFER_BIT)
+	if ((clearFlags & GL_COLOR_BUFFER_BIT) != 0 && colorWriteMask != LOVE_UINT32_MAX)
 		gl.setColorWriteMask(LOVE_UINT32_MAX);
 
-	if (clearFlags & GL_DEPTH_BUFFER_BIT)
+	if ((clearFlags & GL_DEPTH_BUFFER_BIT) != 0 && depthWrites)
 		gl.setDepthWrites(false);
 
-	if (clearFlags & GL_STENCIL_BUFFER_BIT)
+	if ((clearFlags & GL_STENCIL_BUFFER_BIT) != 0 && (stencilWriteMask & 0xFF) != 0xFF)
 		gl.setStencilWriteMask(LOVE_UINT32_MAX);
 
-	if (clearFlags != 0)
+	if (clearFlags != 0 && scissor)
 		gl.setEnableState(ENABLE_SCISSOR_TEST, false);
 }
 
 OpenGL::CleanClearState::~CleanClearState()
 {
-	if (clearFlags & GL_COLOR_BUFFER_BIT)
+	if ((clearFlags & GL_COLOR_BUFFER_BIT) != 0 && colorWriteMask != LOVE_UINT32_MAX)
 		gl.setColorWriteMask(colorWriteMask);
 
-	if (clearFlags & GL_DEPTH_BUFFER_BIT)
+	if ((clearFlags & GL_DEPTH_BUFFER_BIT) != 0 && depthWrites)
 		gl.setDepthWrites(depthWrites);
 
-	if (clearFlags & GL_STENCIL_BUFFER_BIT)
+	if ((clearFlags & GL_STENCIL_BUFFER_BIT) != 0 && (stencilWriteMask & 0xFF) != 0xFF)
 		gl.setStencilWriteMask(stencilWriteMask);
 
-	if (clearFlags != 0)
+	if (clearFlags != 0 && scissor)
 		gl.setEnableState(ENABLE_SCISSOR_TEST, scissor);
 }
 
