@@ -1010,8 +1010,16 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 						values[i].u = convertData<uint32>((*constarray)[i]);
 				}
 				break;
-			case glslang::EbtInt:
 			case glslang::EbtBool:
+				u.dataType = DATA_BASETYPE_BOOL;
+				if (constarray != nullptr)
+				{
+					values.resize(constarray->size());
+					for (int i = 0; i < constarray->size(); i++)
+						values[i].u = convertData<uint32>((*constarray)[i]);
+				}
+				break;
+			case glslang::EbtInt:
 			default:
 				u.dataType = DATA_BASETYPE_INT;
 				if (constarray != nullptr)

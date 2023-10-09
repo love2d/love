@@ -551,7 +551,8 @@ int Shader::getVertexAttributeIndex(const std::string &name)
 
 const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
 {
-	return &uniformInfos.at(name);
+	const auto it = uniformInfos.find(name);
+	return it != uniformInfos.end() ? &(it->second) : nullptr;
 }
 
 const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
@@ -656,6 +657,9 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::
 		if (reflectionIt != validationReflection.localUniforms.end())
 		{
 			const auto &localUniform = reflectionIt->second;
+			if (localUniform.dataType == DATA_BASETYPE_BOOL)
+				u.baseType = UNIFORM_BOOL;
+
 			const auto &values = localUniform.initializerValues;
 			if (!values.empty())
 				memcpy(
