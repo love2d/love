@@ -80,31 +80,22 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 
 					if (clear)
 					{
-						if (isPixelFormatDepthStencil(format))
+						bool ds = isPixelFormatDepthStencil(format);
+
+						GLbitfield clearflags = ds ? GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT : GL_COLOR_BUFFER_BIT;
+						OpenGL::CleanClearState cleanClearState(clearflags);
+
+						if (ds)
 						{
-							bool hadDepthWrites = gl.hasDepthWrites();
-							if (!hadDepthWrites) // glDepthMask also affects glClear.
-								gl.setDepthWrites(true);
-
-							uint32 stencilwrite = gl.getStencilWriteMask();
-							if (stencilwrite != LOVE_UINT32_MAX)
-								gl.setStencilWriteMask(LOVE_UINT32_MAX);
-
 							gl.clearDepth(1.0);
 							glClearStencil(0);
-							glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-							if (!hadDepthWrites)
-								gl.setDepthWrites(hadDepthWrites);
-
-							if (stencilwrite != LOVE_UINT32_MAX)
-								gl.setStencilWriteMask(stencilwrite);
 						}
 						else
 						{
 							glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-							glClear(GL_COLOR_BUFFER_BIT);
 						}
+
+						glClear(clearflags);
 					}
 				}
 			}
@@ -167,25 +158,23 @@ static GLenum newRenderbuffer(int width, int height, int &samples, PixelFormat p
 
 	if (status == GL_FRAMEBUFFER_COMPLETE)
 	{
-		if (isPixelFormatDepthStencil(pixelformat))
-		{
-			bool hadDepthWrites = gl.hasDepthWrites();
-			if (!hadDepthWrites) // glDepthMask also affects glClear.
-				gl.setDepthWrites(true);
+		bool ds = isPixelFormatDepthStencil(pixelformat);
 
+		GLbitfield clearflags = ds ? GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT : GL_COLOR_BUFFER_BIT;
+		OpenGL::CleanClearState cleanClearState(clearflags);
+
+		if (ds)
+		{
 			gl.clearDepth(1.0);
 			glClearStencil(0);
-			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-			if (!hadDepthWrites)
-				gl.setDepthWrites(hadDepthWrites);
 		}
 		else
 		{
 			// Initialize the buffer to transparent black.
 			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
 		}
+
+		glClear(clearflags);
 	}
 	else
 	{

@@ -91,12 +91,49 @@ OpenGL::TempDebugGroup::~TempDebugGroup()
 	}
 }
 
+OpenGL::CleanClearState::CleanClearState(GLbitfield clearFlags)
+	: clearFlags(clearFlags)
+	, colorWriteMask(gl.getColorWriteMask())
+	, stencilWriteMask(gl.getStencilWriteMask())
+	, depthWrites(gl.hasDepthWrites())
+	, scissor(gl.isStateEnabled(ENABLE_SCISSOR_TEST))
+{
+	if (clearFlags & GL_COLOR_BUFFER_BIT)
+		gl.setColorWriteMask(LOVE_UINT32_MAX);
+
+	if (clearFlags & GL_DEPTH_BUFFER_BIT)
+		gl.setDepthWrites(false);
+
+	if (clearFlags & GL_STENCIL_BUFFER_BIT)
+		gl.setStencilWriteMask(LOVE_UINT32_MAX);
+
+	if (clearFlags != 0)
+		gl.setEnableState(ENABLE_SCISSOR_TEST, false);
+}
+
+OpenGL::CleanClearState::~CleanClearState()
+{
+	if (clearFlags & GL_COLOR_BUFFER_BIT)
+		gl.setColorWriteMask(colorWriteMask);
+
+	if (clearFlags & GL_DEPTH_BUFFER_BIT)
+		gl.setDepthWrites(depthWrites);
+
+	if (clearFlags & GL_STENCIL_BUFFER_BIT)
+		gl.setStencilWriteMask(stencilWriteMask);
+
+	if (clearFlags != 0)
+		gl.setEnableState(ENABLE_SCISSOR_TEST, scissor);
+}
+
 OpenGL::OpenGL()
 	: stats()
+	, bugs()
 	, contextInitialized(false)
 	, pixelShaderHighpSupported(false)
 	, baseVertexSupported(false)
 	, maxAnisotropy(1.0f)
+	, maxLODBias(0.0f)
 	, max2DTextureSize(0)
 	, max3DTextureSize(0)
 	, maxCubeTextureSize(0)
@@ -284,6 +321,7 @@ void OpenGL::setupContext()
 
 	setDepthWrites(state.depthWritesEnabled);
 	setStencilWriteMask(state.stencilWriteMask);
+	setColorWriteMask(state.colorWriteMask);
 
 	createDefaultTexture();
 
@@ -1123,6 +1161,17 @@ void OpenGL::setStencilWriteMask(uint32 mask)
 uint32 OpenGL::getStencilWriteMask() const
 {
 	return state.stencilWriteMask;
+}
+
+void OpenGL::setColorWriteMask(uint32 mask)
+{
+	glColorMask(mask & (1 << 0), mask & (1 << 1), mask & (1 << 2), mask & (1 << 3));
+	state.colorWriteMask = mask;
+}
+
+uint32 OpenGL::getColorWriteMask() const
+{
+	return state.colorWriteMask;
 }
 
 void OpenGL::useProgram(GLuint program)

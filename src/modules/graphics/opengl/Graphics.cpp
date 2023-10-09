@@ -922,36 +922,23 @@ void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth
 		flags |= GL_COLOR_BUFFER_BIT;
 	}
 
-	uint32 stencilwrites = gl.getStencilWriteMask();
-
 	if (stencil.hasValue)
 	{
-		if (stencilwrites != LOVE_UINT32_MAX)
-			gl.setStencilWriteMask(LOVE_UINT32_MAX);
-
 		glClearStencil(stencil.value);
 		flags |= GL_STENCIL_BUFFER_BIT;
 	}
 
-	bool hadDepthWrites = gl.hasDepthWrites();
-
 	if (depth.hasValue)
 	{
-		if (!hadDepthWrites) // glDepthMask also affects glClear.
-			gl.setDepthWrites(true);
-
 		gl.clearDepth(depth.value);
 		flags |= GL_DEPTH_BUFFER_BIT;
 	}
 
 	if (flags != 0)
+	{
+		OpenGL::CleanClearState cs(flags);
 		glClear(flags);
-
-	if (stencil.hasValue && stencilwrites != LOVE_UINT32_MAX)
-		gl.setStencilWriteMask(stencilwrites);
-
-	if (depth.hasValue && !hadDepthWrites)
-		gl.setDepthWrites(hadDepthWrites);
+	}
 
 	if (c.hasValue && gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
 	{
@@ -1041,36 +1028,23 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 	GLbitfield flags = 0;
 
-	uint32 stencilwrites = gl.getStencilWriteMask();
-
 	if (stencil.hasValue)
 	{
-		if (stencilwrites != LOVE_UINT32_MAX)
-			gl.setStencilWriteMask(LOVE_UINT32_MAX);
-
 		glClearStencil(stencil.value);
 		flags |= GL_STENCIL_BUFFER_BIT;
 	}
 
-	bool hadDepthWrites = gl.hasDepthWrites();
-
 	if (depth.hasValue)
 	{
-		if (!hadDepthWrites) // glDepthMask also affects glClear.
-			gl.setDepthWrites(true);
-
 		gl.clearDepth(depth.value);
 		flags |= GL_DEPTH_BUFFER_BIT;
 	}
 
 	if (flags != 0)
+	{
+		OpenGL::CleanClearState cs(flags);
 		glClear(flags);
-
-	if (stencil.hasValue && stencilwrites != LOVE_UINT32_MAX)
-		gl.setStencilWriteMask(stencilwrites);
-
-	if (depth.hasValue && !hadDepthWrites)
-		gl.setDepthWrites(hadDepthWrites);
+	}
 
 	if (gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
 	{
@@ -1568,7 +1542,11 @@ void Graphics::setColorMask(ColorChannelMask mask)
 {
 	flushBatchedDraws();
 
-	glColorMask(mask.r, mask.g, mask.b, mask.a);
+	uint32 maskbits =
+		((mask.r ? 1 : 0) << 1) | ((mask.g ? 1 : 0) << 2) |
+		((mask.g ? 1 : 0) << 3) | ((mask.a ? 1 : 0) << 4);
+
+	gl.setColorWriteMask(maskbits);
 	states.back().colorMask = mask;
 }
 

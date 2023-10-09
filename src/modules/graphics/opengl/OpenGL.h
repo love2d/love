@@ -124,6 +124,21 @@ public:
 		~TempDebugGroup();
 	};
 
+	// glClear() is affected by various OpenGL state...
+	class CleanClearState
+	{
+	public:
+		CleanClearState(GLbitfield clearFlags);
+		~CleanClearState();
+
+	private:
+		GLenum clearFlags;
+		uint32 colorWriteMask;
+		uint32 stencilWriteMask;
+		bool depthWrites;
+		bool scissor;
+	};
+
 	struct Stats
 	{
 		int shaderSwitches;
@@ -300,6 +315,9 @@ public:
 
 	void setStencilWriteMask(uint32 mask);
 	uint32 getStencilWriteMask() const;
+
+	void setColorWriteMask(uint32 mask);
+	uint32 getColorWriteMask() const;
 
 	/**
 	 * Calls glUseProgram.
@@ -528,6 +546,7 @@ private:
 
 		bool depthWritesEnabled = true;
 		uint32 stencilWriteMask = LOVE_UINT32_MAX;
+		uint32 colorWriteMask = LOVE_UINT32_MAX;
 
 		GLuint boundFramebuffers[2];
 
