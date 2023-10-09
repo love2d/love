@@ -1567,8 +1567,8 @@ void Graphics::setColorMask(ColorChannelMask mask)
 	flushBatchedDraws();
 
 	uint32 maskbits =
-		((mask.r ? 1 : 0) << 1) | ((mask.g ? 1 : 0) << 2) |
-		((mask.g ? 1 : 0) << 3) | ((mask.a ? 1 : 0) << 4);
+		((mask.r ? 1 : 0) << 0) | ((mask.g ? 1 : 0) << 1) |
+		((mask.g ? 1 : 0) << 2) | ((mask.a ? 1 : 0) << 3);
 
 	gl.setColorWriteMask(maskbits);
 	states.back().colorMask = mask;
