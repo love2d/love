@@ -78,7 +78,21 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 						gl.framebufferTexture(attachment, texType, texture, mip, layer, face);
 					}
 
-					if (clear)
+					if (clear && isPixelFormatInteger(format))
+					{
+						PixelFormatType datatype = getPixelFormatInfo(format).dataType;
+						if (datatype == PIXELFORMATTYPE_SINT)
+						{
+							const GLint carray[] = { 0, 0, 0, 0 };
+							glClearBufferiv(GL_COLOR, 0, carray);
+						}
+						else
+						{
+							const GLuint carray[] = { 0, 0, 0, 0 };
+							glClearBufferuiv(GL_COLOR, 0, carray);
+						}
+					}
+					else if (clear)
 					{
 						bool ds = isPixelFormatDepthStencil(format);
 
@@ -158,23 +172,40 @@ static GLenum newRenderbuffer(int width, int height, int &samples, PixelFormat p
 
 	if (status == GL_FRAMEBUFFER_COMPLETE)
 	{
-		bool ds = isPixelFormatDepthStencil(pixelformat);
-
-		GLbitfield clearflags = ds ? GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT : GL_COLOR_BUFFER_BIT;
-		OpenGL::CleanClearState cleanClearState(clearflags);
-
-		if (ds)
+		if (isPixelFormatInteger(pixelformat))
 		{
-			gl.clearDepth(1.0);
-			glClearStencil(0);
+			PixelFormatType datatype = getPixelFormatInfo(pixelformat).dataType;
+			if (datatype == PIXELFORMATTYPE_SINT)
+			{
+				const GLint carray[] = { 0, 0, 0, 0 };
+				glClearBufferiv(GL_COLOR, 0, carray);
+			}
+			else
+			{
+				const GLuint carray[] = { 0, 0, 0, 0 };
+				glClearBufferuiv(GL_COLOR, 0, carray);
+			}
 		}
 		else
 		{
-			// Initialize the buffer to transparent black.
-			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		}
+			bool ds = isPixelFormatDepthStencil(pixelformat);
 
-		glClear(clearflags);
+			GLbitfield clearflags = ds ? GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT : GL_COLOR_BUFFER_BIT;
+			OpenGL::CleanClearState cleanClearState(clearflags);
+
+			if (ds)
+			{
+				gl.clearDepth(1.0);
+				glClearStencil(0);
+			}
+			else
+			{
+				// Initialize the buffer to transparent black.
+				glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			}
+
+			glClear(clearflags);
+		}
 	}
 	else
 	{

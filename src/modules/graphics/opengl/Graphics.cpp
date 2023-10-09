@@ -909,6 +909,30 @@ void Graphics::endPass(bool presenting)
 
 void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth)
 {
+	if (c.hasValue)
+	{
+		bool hasintegerformat = false;
+
+		const auto &rts = states.back().renderTargets;
+		for (const auto &rt : rts.colors)
+		{
+			if (rt.texture.get() && isPixelFormatInteger(rt.texture->getPixelFormat()))
+				hasintegerformat = true;
+		}
+
+		// This variant of clear() uses glClear() which can't clear integer formats,
+		// so we switch to the MRT variant if needed.
+		if (hasintegerformat)
+		{
+			std::vector<OptionalColorD> colors(rts.colors.size());
+			for (size_t i = 0; i < colors.size(); i++)
+				colors[i] = c;
+
+			clear(colors, stencil, depth);
+			return;
+		}
+	}
+
 	if (c.hasValue || stencil.hasValue || depth.hasValue)
 		flushBatchedDraws();
 
