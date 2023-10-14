@@ -35,7 +35,6 @@ TestSuite = {
       joystick = {},
       math = {},
       mouse = {},
-      objects = {}, -- special for all object class contructor tests
       physics = {},
       sound = {},
       system = {},
@@ -76,7 +75,7 @@ TestSuite = {
               TextRun:set('love.' .. self.module.module .. '.' .. method)
 
               -- check method exists in love first
-              if self.module.module ~= 'objects' and (love[self.module.module] == nil or love[self.module.module][method] == nil) then
+              if love[self.module.module] == nil then
                 local tested = 'love.' .. self.module.module .. '.' .. method .. '()' 
                 local matching = string.sub(self.module.spacer, string.len(tested), 40)
                 self.module:log(self.module.colors['FAIL'],
@@ -87,7 +86,7 @@ TestSuite = {
               else
                 local ok, chunk, err = pcall(self[self.module.module][method], self.test)
                 if ok == false then
-                  print("FATAL", chunk, err)
+                  self.test.passed = false
                   self.test.fatal = tostring(chunk) .. tostring(err)
                 end
               end
@@ -105,7 +104,7 @@ TestSuite = {
                 if self.delayed.delay <= 0 then
                   local ok, chunk, err = pcall(self[self.module.module][self.delayed.method], self.test)
                   if ok == false then
-                    print("FATAL", chunk, err)
+                    self.test.passed = false
                     self.test.fatal = tostring(chunk) .. tostring(err)
                   end
                   self.delayed = nil
@@ -115,7 +114,7 @@ TestSuite = {
                 -- now we're all done evaluate the test 
                 local ok, chunk, err = pcall(self.test.evaluateTest, self.test)
                 if ok == false then
-                  print("FATAL", chunk, err)
+                  self.test.passed = false
                   self.test.fatal = tostring(chunk) .. tostring(err)
                 end
                 -- save having to :release() anything we made in the last test
@@ -169,7 +168,7 @@ TestSuite = {
       tostring(self.totals[1]) .. '** passed, **' ..
       tostring(self.totals[2]) .. '** failed, and **' ..
       tostring(self.totals[3]) .. '** skipped\n\n### Report\n' ..
-      '| Module                | Passed | Failed | Skipped | Time   |\n' ..
+      '| Module                | Pass | Fail | Skip | Time   |\n' ..
       '| --------------------- | ------ | ------ | ------- | ------ |\n' ..
       self.mdrows .. '\n\n### Failures\n' .. self.mdfailures
 

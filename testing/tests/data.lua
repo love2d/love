@@ -1,6 +1,61 @@
 -- love.data
 
 
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+------------------------------------OBJECTS-------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+-- ByteData (love.data.newByteData)
+love.test.data.ByteData = function(test)
+  -- create new obj
+  local data = love.data.newByteData('helloworld')
+  test:assertObject(data)
+  -- check properties match expected
+  test:assertEquals('helloworld', data:getString(), 'check data string')
+  test:assertEquals(10, data:getSize(), 'check data size')
+  -- check cloning the bytedata
+  local cloneddata = data:clone()
+  test:assertObject(cloneddata)
+  test:assertEquals('helloworld', cloneddata:getString(), 'check cloned data')
+  test:assertEquals(10, cloneddata:getSize(), 'check cloned size')
+  -- check pointer access if allowed
+  if data:getFFIPointer() ~= nil and ffi ~= nil then
+    local pointer = data:getFFIPointer()
+    local ptr = ffi.cast('uint8_t*', pointer)
+    local byte5 = ptr[4]
+    test:assertEquals('o', byte5)
+  end
+end
+
+
+-- CompressedData (love.data.compress)
+love.test.data.CompressedData = function(test)
+  -- create new compressed data
+  local cdata = love.data.compress('data', 'zlib', 'helloworld', -1)
+  test:assertObject(cdata)
+  test:assertEquals('zlib', cdata:getFormat(), 'check format used')
+  -- check properties match expected
+  test:assertEquals(18, cdata:getSize())
+  test:assertEquals('helloworld', love.data.decompress('data', cdata):getString())
+  -- check cloning the data
+  local clonedcdata = cdata:clone()
+  test:assertObject(clonedcdata)
+  test:assertEquals('zlib', clonedcdata:getFormat())
+  test:assertEquals(18, clonedcdata:getSize())
+  test:assertEquals('helloworld', love.data.decompress('data', clonedcdata):getString())
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+------------------------------------METHODS-------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
 -- love.data.compress
 love.test.data.compress = function(test)
   -- here just testing each combo 'works' - in decompress's test method
@@ -119,9 +174,13 @@ end
 
 
 -- love.data.getPackedSize
--- @NOTE I don't really get what lua packing types are so skipping for now - ell
 love.test.data.getPackedSize = function(test)
-  test:skipTest('test class needs writing')
+  local pack1 = love.data.getPackedSize('>xI3b')
+  local pack2 = love.data.getPackedSize('>I2B')
+  local pack3 = love.data.getPackedSize('>I4I4I4I4x')
+  test:assertEquals(5, pack1, 'check pack size 1')
+  test:assertEquals(3, pack2, 'check pack size 2')
+  test:assertEquals(17, pack3, 'check pack size 3')
 end
 
 
@@ -145,28 +204,39 @@ end
 
 
 -- love.data.newByteData
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.data.newByteData = function(test)
   test:assertObject(love.data.newByteData('helloworld'))
 end
 
 
 -- love.data.newDataView
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.data.newDataView = function(test)
   test:assertObject(love.data.newDataView(love.data.newByteData('helloworld'), 0, 10))
 end
 
 
 -- love.data.pack
--- @NOTE I don't really get what lua packing types are so skipping for now - ell
 love.test.data.pack = function(test)
-  test:skipTest('test class needs writing')
+  local packed1 = love.data.pack('string', '>I4I4I4I4', 9999, 1000, 1010, 2030)
+  local packed2 = love.data.pack('data', '>I4I4I4I4', 9999, 1000, 1010, 2030)
+  local a, b, c, d = love.data.unpack('>I4I4I4I4', packed1)
+  local e, f, g, h = love.data.unpack('>I4I4I4I4', packed2)
+  test:assertEquals(9999+9999, a+e, 'check packed 1')
+  test:assertEquals(1000+1000, b+f, 'check packed 2')
+  test:assertEquals(1010+1010, c+g, 'check packed 3')
+  test:assertEquals(2030+2030, d+h, 'check packed 4')
 end
 
 
 -- love.data.unpack
--- @NOTE I don't really get what lua packing types are so skipping for now - ell
 love.test.data.unpack = function(test)
-  test:skipTest('test class needs writing')
+  local packed1 = love.data.pack('string', '>s5s4I3', 'hello', 'love', 100)
+  local packed2 = love.data.pack('data', '>s5I2', 'world', 20)
+  local a, b, c = love.data.unpack('>s5s4I3', packed1)
+  local d, e = love.data.unpack('>s5I2', packed2)
+  test:assertEquals(a .. ' ' .. d, 'hello world', 'check unpack 1')
+  test:assertEquals(b, 'love', 'check unpack 2')
+  test:assertEquals(c - e, 80, 'check unpack 3')
 end

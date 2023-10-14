@@ -3,8 +3,10 @@ on: [push, pull_request]
 
 jobs:
   linux-os:
-    runs-on: ubuntu-20.04
-    timeout-minutes: 60
+    runs-on: ubuntu-22.04
+    env:
+      ALSOFT_CONF: resources/alsoft.conf
+      DISPLAY: :99
     steps:
     - name: Update APT
       run: sudo apt-get update
@@ -16,7 +18,9 @@ jobs:
                                           libxfixes-dev libxi-dev libxinerama-dev libxxf86vm-dev libxss-dev \
                                           libgl1-mesa-dev libdbus-1-dev libudev-dev libgles2-mesa-dev \
                                           libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
-                                          libsndio-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev
+                                          libsndio-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev \
+                                          libfuse2 wmctrl openbox mesa-vulkan-drivers libvulkan1 vulkan-tools \
+                                          vulkan-validationlayers
     - name: Checkout love-appimage-source
       uses: actions/checkout@v3
       with:
@@ -55,17 +59,82 @@ jobs:
         chmod a+x love-${{ github.sha }}.AppImage
         echo "ready to run"
         ls
-    - name: Run All Tests
+    - name: Start xvfb and openbox
+      run: |
+        echo "Starting XVFB on $DISPLAY"
+        Xvfb $DISPLAY -screen 0, 360x240x24 &
+        echo "XVFBPID=$!" >> $GITHUB_ENV
+        # wait for xvfb to startup (3s is the same amount xvfb-run waits by default)
+        sleep 3
+        openbox &
+        echo "OPENBOXPID=$!" >> $GITHUB_ENV
+    # linux opengl tests
+    - name: Run All Tests (opengl)
       run: xvfb-run ./love-${{ github.sha }}.AppImage ./testing/main.lua
-    - name: Love Test Report
+    - name: Love Test Report (opengl)
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite Linux
-        title: linux-test-report
+        title: test-report-linux-opengl
         path: testing/output/lovetest_runAllTests.md
+    - name: Zip Test Output (opengl)
+      run: |
+        7z a -tzip test-output-linux-opengl.zip testing/output/
+    - name: Artifact Test Output (opengl)
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-linux-opengl
+        path: test-output-linux-opengl.zip
+    # linux opengles tests
+    - name: Run Test Suite (opengles)
+      run: |
+        export LOVE_GRAPHICS_USE_OPENGLES=1
+        xvfb-run ./love-${{ github.sha }}.AppImage ./testing/main.lua
+    - name: Love Test Report (opengles)
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Linux
+        title: test-report-linux-opengles
+        path: testing/output/lovetest_runAllTests.md
+    - name: Zip Test Output (opengles)
+      run: |
+        7z a -tzip test-output-linux-opengles.zip testing/output/
+    - name: Artifact Test Output (opengles)
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-linux-opengles
+        path: test-output-linux-opengles.zip
+    # linux vulkan tests
+    - name: Run Test Suite (vulkan)
+      run: |
+        export LOVE_GRAPHICS_DEBUG=1
+        xvfb-run ./love-${{ github.sha }}.AppImage ./testing/main.lua --runAllTests --renderers vulkan
+    - name: Love Test Report (vulkan)
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Linux
+        title: test-report-linux-vulkan
+        path: testing/output/lovetest_runAllTests.md
+    - name: Zip Test Output (vulkan)
+      run: |
+        7z a -tzip test-output-linux-vulkan.zip testing/output/
+    - name: Artifact Test Output (vulkan)
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-linux-vulkan
+        path: test-output-linux-vulkan.zip
+    - name: Stop xvfb and openbox
+      # should always stop xvfb and openbox even if other steps failed
+      if: always()
+      run: |
+        kill $XVFBPID
+        kill $OPENBOXPID
   windows-os:
     runs-on: windows-latest
-    timeout-minutes: 60
+    env: 
+      ALSOFT_CONF: resources/alsoft.conf
+      VK_ICD_FILENAMES: ${{ github.workspace }}\mesa\x64\lvp_icd.x86_64.json
+      VULKAN_SDK: C:/VulkanSDK/1.3.231.1
     strategy:
       matrix:
         platform: [Win32, x64, ARM64]
@@ -220,19 +289,6 @@ jobs:
       with:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
         path: pdb/Release/*.pdb  
-    - name: Install Scream
-      shell: powershell
-      run: |
-        Start-Service audio*
-        Invoke-WebRequest https://github.com/duncanthrax/scream/releases/download/3.6/Scream3.6.zip -OutFile C:\Scream3.6.zip
-        Extract-7Zip -Path C:\Scream3.6.zip -DestinationPath C:\Scream
-        $cert = (Get-AuthenticodeSignature C:\Scream\Install\driver\Scream.sys).SignerCertificate
-        $store = [System.Security.Cryptography.X509Certificates.X509Store]::new("TrustedPublisher", "LocalMachine")
-        $store.Open("ReadWrite")
-        $store.Add($cert)
-        $store.Close()
-        cd C:\Scream\Install\driver
-        C:\Scream\Install\helpers\devcon install Scream.inf *Scream 
     - name: Install Mesa 
       run: |
         curl -L --output mesa.7z --url https://github.com/pal1000/mesa-dist-win/releases/download/23.2.1/mesa3d-23.2.1-release-msvc.7z
@@ -241,21 +297,78 @@ jobs:
     - name: Build Test Exe
       if: steps.vars.outputs.arch != 'ARM64'
       run: cmake --build build --config Release --target install
-    - name: Run All Tests
+    - name: Run Tests (opengl)
       if: steps.vars.outputs.arch != 'ARM64'
       run: |
         dir
         powershell.exe ./install/lovec.exe ./testing/main.lua
-    - name: Love Test Report
+    # windows opengl test
+    - name: Love Test Report (opengl)
       if: steps.vars.outputs.arch != 'ARM64'
       uses: ellraiser/love-test-report@main
       with:
-        name: Love Testsuite Windows
-        title: windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-test-report
+        name: Love Testsuite Windows (opengl)
+        title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl
         path: testing/output/lovetest_runAllTests.md
+    - name: Zip Test Output (opengl)
+      run: |
+        7z a -tzip test-output-windows-opengl.zip testing/output/
+    - name: Artifact Test Output (opengl)
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-windows-opengl
+        path: test-output-windows-opengl.zip
+    # windows opengles test
+    - name: Run Tests (opengles)
+      run: |
+        $ENV:LOVE_GRAPHICS_USE_OPENGLES=1
+        powershell.exe ./install/lovec.exe ./testing/main.lua
+    - name: Love Test Report (opengles)
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Windows (opengles)
+        title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles
+        path: testing/output/lovetest_runAllTests.md
+    - name: Zip Test Output (opengles)
+      run: |
+        7z a -tzip test-output-windows-opengles.zip testing/output/
+    - name: Artifact Test Output (opengles)
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-windows-opengles
+        path: test-output-windows-opengles.zip
+    - name: Install Vulkan
+      run: |
+        curl -L --show-error --output VulkanSDK.exe https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe
+        ./VulkanSDK.exe --root C:/VulkanSDK/1.3.231.1 --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan.core com.lunarg.vulkan.vma 
+        curl -L --show-error --output vulkan-runtime.zip https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/vulkan-runtime-components.zip
+        7z e vulkan-runtime.zip -o"C:/VulkanSDK/1.3.231.1/runtime/x64" */x64
+        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "mesa/x64"
+        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "C:/Windows/System32"
+        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "love-12.0-win64/love-12.0-win64"
+        reg add HKEY_LOCAL_MACHINE\SOFTWARE\Khronos\Vulkan\Drivers /v "${{ github.workspace }}\mesa\x64\lvp_icd.x86_64.json" /t REG_DWORD /d 0
+        powershell.exe C:/VulkanSDK/1.3.231.1/runtime/x64/vulkaninfo.exe --summary
+    # windows vulkan tests
+    - name: Run Tests (vulkan)
+      run: |
+        $ENV:LOVE_GRAPHICS_DEBUG=1
+        powershell.exe ./install/lovec.exe ./testing/main.lua --runAllTests --renderers vulkan
+    - name: Love Test Report (vulkan)
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Windows (vulkan)
+        title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
+        path: testing/output/lovetest_runAllTests.md
+    - name: Zip Test Output (vulkan)
+      run: |
+        7z a -tzip test-output-windows-vulkan.zip testing/output
+    - name: Artifact Test Output (vulkan)
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-windows-vulkan
+        path: test-output-windows-vulkan.zip
   macOS:
     runs-on: macos-latest
-    timeout-minutes: 60
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -282,17 +395,25 @@ jobs:
       with:
         name: love-macos
         path: love-macos.zip
-    - name: Run All Tests
+    # macos opengl tests
+    - name: Run Tests
       run: love-macos/love.app/Contents/MacOS/love testing/main.lua
     - name: Love Test Report
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite MacOS
-        title: macos-test-report
+        title: test-report-macos
         path: testing/output/lovetest_runAllTests.md
+    - name: Zip Test Output
+      run: |
+        7z a -tzip test-output-macos-opengl.zip testing/output/
+    - name: Artifact Test Output
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-macos-opengl
+        path: test-output-macos-opengl.zip
   iOS-Simulator:
     runs-on: macos-latest
-    timeout-minutes: 60
     steps:
     - name: Checkout
       uses: actions/checkout@v3

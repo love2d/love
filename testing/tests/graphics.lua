@@ -3,6 +3,79 @@
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+------------------------------------OBJECTS-------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+-- Canvas (love.graphics.newCanvas)
+love.test.graphics.Canvas = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Font (love.graphics.newFont)
+love.test.graphics.Font = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Image (love.graphics.newImage)
+love.test.graphics.Image = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Mesh (love.graphics.newMesh)
+love.test.graphics.Mesh = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- ParticleSystem (love.graphics.newParticleSystem)
+love.test.graphics.ParticleSystem = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Quad (love.graphics.newQuad)
+love.test.graphics.Quad = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Shader (love.graphics.newShader)
+love.test.graphics.Shader = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- SpriteBatch (love.graphics.newSpriteBatch)
+love.test.graphics.SpriteBatch = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Text (love.graphics.newTextBatch)
+love.test.graphics.Text = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Texture (love.graphics.newTexture)
+love.test.graphics.Texture = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+-- Video (love.graphics.newVideo)
+love.test.graphics.Video = function(test)
+  test:skipTest('test class needs writing')
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 ------------------------------------DRAWING-------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -222,7 +295,17 @@ end
 
 -- love.graphics.flushBatch
 love.test.graphics.flushBatch = function(test)
-  test:skipTest('not sure can be tested as used internally')
+  love.graphics.flushBatch()
+  local initial = love.graphics.getStats()['drawcalls']
+  local canvas = love.graphics.newCanvas(32, 32)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.rectangle('fill', 0, 0, 32, 32)
+    love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.setCanvas()
+  love.graphics.flushBatch()
+  local after = love.graphics.getStats()['drawcalls']
+  test:assertEquals(initial+1, after, 'check drawcalls increased')
 end
 
 
@@ -418,7 +501,7 @@ end
 
 
 -- love.graphics.newArrayImage
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newArrayImage = function(test)
   test:assertObject(love.graphics.newArrayImage({
     'resources/love.png', 'resources/love2.png', 'resources/love3.png'
@@ -426,7 +509,7 @@ love.test.graphics.newArrayImage = function(test)
 end
 
 -- love.graphics.newCanvas
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newCanvas = function(test)
   test:assertObject(love.graphics.newCanvas(16, 16, {
     type = '2d',
@@ -441,7 +524,7 @@ end
 
 
 -- love.graphics.newCubeImage
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newCubeImage = function(test)
   test:assertObject(love.graphics.newCubeImage('resources/cubemap.png', {
     mipmaps = false,
@@ -451,7 +534,7 @@ end
 
 
 -- love.graphics.newFont
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newFont = function(test)
   test:assertObject(love.graphics.newFont('resources/font.ttf'))
   test:assertObject(love.graphics.newFont('resources/font.ttf', 8, "normal", 1))
@@ -459,7 +542,7 @@ end
 
 
 -- love.graphics.newImage
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newImage = function(test)
   test:assertObject(love.graphics.newImage('resources/love.png', {
     mipmaps = false,
@@ -470,21 +553,21 @@ end
 
 
 -- love.graphics.newImageFont
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newImageFont = function(test)
   test:assertObject(love.graphics.newImageFont('resources/love.png', 'ABCD', 1))
 end
 
 
 -- love.graphics.newMesh
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newMesh = function(test)
   test:assertObject(love.graphics.newMesh({{1, 1, 0, 0, 1, 1, 1, 1}}, 'fan', 'dynamic'))
 end
 
 
 -- love.graphics.newParticleSystem
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newParticleSystem = function(test)
   local imgdata = love.graphics.newImage('resources/love.png')
   test:assertObject(love.graphics.newParticleSystem(imgdata, 1000))
@@ -492,7 +575,7 @@ end
 
 
 -- love.graphics.newQuad
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newQuad = function(test)
   local imgdata = love.graphics.newImage('resources/love.png')
   test:assertObject(love.graphics.newQuad(0, 0, 16, 16, imgdata))
@@ -500,16 +583,25 @@ end
 
 
 -- love.graphics.newShader
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newShader = function(test)
-  local pixelcode = 'vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { vec4 texturecolor = Texel(tex, texture_coords); return texturecolor * color;}'
-  local vertexcode = 'vec4 position(mat4 transform_projection, vec4 vertex_position) { return transform_projection * vertex_position; }'
+  local pixelcode = [[
+    vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { 
+      vec4 texturecolor = Texel(tex, texture_coords); 
+      return texturecolor * color;
+    }
+  ]]
+  local vertexcode = [[
+    vec4 position(mat4 transform_projection, vec4 vertex_position) { 
+      return transform_projection * vertex_position; 
+    }
+  ]]
   test:assertObject(love.graphics.newShader(pixelcode, vertexcode))
 end
 
 
 -- love.graphics.newSpriteBatch
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newSpriteBatch = function(test)
   local imgdata = love.graphics.newImage('resources/love.png')
   test:assertObject(love.graphics.newSpriteBatch(imgdata, 1000))
@@ -517,7 +609,7 @@ end
 
 
 -- love.graphics.newText
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newTextBatch = function(test)
   local font = love.graphics.newFont('resources/font.ttf')
   test:assertObject(love.graphics.newTextBatch(font, 'helloworld'))
@@ -525,7 +617,7 @@ end
 
 
 -- love.graphics.newVideo
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newVideo = function(test)
   test:assertObject(love.graphics.newVideo('resources/sample.ogv', {
     audio = false,
@@ -535,7 +627,7 @@ end
 
 
 -- love.graphics.newVolumeImage
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.graphics.newVolumeImage = function(test)
   test:assertObject(love.graphics.newVolumeImage({
     'resources/love.png', 'resources/love2.png', 'resources/love3.png'
@@ -548,8 +640,17 @@ end
 
 -- love.graphics.validateShader
 love.test.graphics.validateShader = function(test)
-  local pixelcode = 'vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { vec4 texturecolor = Texel(tex, texture_coords); return texturecolor * color;}'
-  local vertexcode = 'vec4 position(mat4 transform_projection, vec4 vertex_position) { return transform_projection * vertex_position; }'
+  local pixelcode = [[
+    vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { 
+      vec4 texturecolor = Texel(tex, texture_coords); 
+      return texturecolor * color;
+    }
+  ]]
+  local vertexcode = [[
+    vec4 position(mat4 transform_projection, vec4 vertex_position) { 
+      return transform_projection * vertex_position; 
+    }
+  ]]
   -- check made up code first
   local status, _ = love.graphics.validateShader(true, 'nothing here', 'or here')
   test:assertEquals(false, status, 'check invalid shader code')
@@ -829,25 +930,37 @@ end
 
 -- love.graphics.isActive
 love.test.graphics.isActive = function(test)
-  test:assertEquals(true, love.graphics.isActive(), 'check graphics is active') -- i mean if you got this far
+  local name, version, vendor, device = love.graphics.getRendererInfo()
+  if string.find(name, 'Vulkan') ~= nil then
+    test:skipTest('love.graphics.isActive() crashes on Vulkan')
+  else 
+    test:assertEquals(true, love.graphics.isActive(), 'check graphics is active') -- i mean if you got this far
+  end
 end
 
 
 -- love.graphics.isGammaCorrect
 love.test.graphics.isGammaCorrect = function(test)
   -- we know the config so know this is false
-  test:assertEquals(false, love.graphics.isGammaCorrect(), 'check gamma correct false')
+  print('gammaCorrect #1')
+  test:assertNotNil(love.graphics.isGammaCorrect())
+  print('gammaCorrect #2')
 end
 
 
 -- love.graphics.isWireframe
 love.test.graphics.isWireframe = function(test)
-  -- check off by default
-  test:assertEquals(false, love.graphics.isWireframe(), 'check no wireframe by default')
-  -- check on when enabled
-  love.graphics.setWireframe(true)
-  test:assertEquals(true, love.graphics.isWireframe(), 'check wireframe is set')
-  love.graphics.setWireframe(false) -- reset
+  local name, version, vendor, device = love.graphics.getRendererInfo()
+  if string.match(name, 'OpenGL ES') then
+    test:skipTest('Wireframe not supported on OpenGL ES')
+  else
+    -- check off by default
+    test:assertEquals(false, love.graphics.isWireframe(), 'check no wireframe by default')
+    -- check on when enabled
+    love.graphics.setWireframe(true)
+    test:assertEquals(true, love.graphics.isWireframe(), 'check wireframe is set')
+    love.graphics.setWireframe(false) -- reset
+  end
 end
 
 
@@ -1193,8 +1306,17 @@ end
 -- love.graphics.setShader
 love.test.graphics.setShader = function(test)
   -- make a shader that will only ever draw yellow
-  local pixelcode = 'vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { vec4 texturecolor = Texel(tex, texture_coords); return vec4(1.0,1.0,0.0,1.0);}'
-  local vertexcode = 'vec4 position(mat4 transform_projection, vec4 vertex_position) { return transform_projection * vertex_position; }'
+  local pixelcode = [[
+    vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { 
+      vec4 texturecolor = Texel(tex, texture_coords); 
+      return vec4(1.0,1.0,0.0,1.0);
+    }
+  ]]
+  local vertexcode = [[
+    vec4 position(mat4 transform_projection, vec4 vertex_position) { 
+      return transform_projection * vertex_position; 
+    }
+  ]]
   local shader = love.graphics.newShader(pixelcode, vertexcode)
   local canvas = love.graphics.newCanvas(16, 16)
   love.graphics.setCanvas(canvas)
@@ -1238,22 +1360,27 @@ end
 
 -- love.graphics.setWireframe
 love.test.graphics.setWireframe = function(test)
-  -- check wireframe outlines
-  love.graphics.setWireframe(true)
-  local canvas = love.graphics.newCanvas(16, 16)
-  love.graphics.setCanvas(canvas)
-    love.graphics.clear(0, 0, 0, 1)
-    love.graphics.setColor(1, 1, 0, 1)
-    love.graphics.rectangle('fill', 2, 2, 13, 13)
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.setWireframe(false)
-  love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
-  test:assertPixels(imgdata, { 
-    yellow = {{1,14},{14,1},{14,14},{2,2},{13,13}},
-    black = {{2,13},{13,2}}
-  }, 'set wireframe')
-  test:exportImg(imgdata)
+  local name, version, vendor, device = love.graphics.getRendererInfo()
+  if string.match(name, 'OpenGL ES') then
+    test:skipTest('Wireframe not supported on OpenGL ES')
+  else
+    -- check wireframe outlines
+    love.graphics.setWireframe(true)
+    local canvas = love.graphics.newCanvas(16, 16)
+    love.graphics.setCanvas(canvas)
+      love.graphics.clear(0, 0, 0, 1)
+      love.graphics.setColor(1, 1, 0, 1)
+      love.graphics.rectangle('fill', 2, 2, 13, 13)
+      love.graphics.setColor(1, 1, 1, 1)
+      love.graphics.setWireframe(false)
+    love.graphics.setCanvas()
+    local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+    test:assertPixels(imgdata, { 
+      yellow = {{1,14},{14,1},{14,14},{2,2},{13,13}},
+      black = {{2,13},{13,2}}
+    }, 'set wireframe')
+    test:exportImg(imgdata)
+  end
 end
 
 

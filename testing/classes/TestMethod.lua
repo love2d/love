@@ -41,7 +41,8 @@ TestMethod = {
       },
       imgs = 1,
       delay = 0,
-      delayed = false
+      delayed = false,
+      store = {}
     }
     setmetatable(test, self)
     self.__index = self
@@ -58,11 +59,11 @@ TestMethod = {
   assertEquals = function(self, expected, actual, label)
     self.count = self.count + 1
     table.insert(self.asserts, {
-      key = 'assert #' .. tostring(self.count),
+      key = 'assert ' .. tostring(self.count),
       passed = expected == actual,
       message = 'expected \'' .. tostring(expected) .. '\' got \'' .. 
         tostring(actual) .. '\'',
-      test = label
+      test = label or 'no label given'
     })
   end,
 
@@ -109,11 +110,11 @@ TestMethod = {
   assertNotEquals = function(self, expected, actual, label)
     self.count = self.count + 1
     table.insert(self.asserts, {
-      key = 'assert #' .. tostring(self.count),
+      key = 'assert ' .. tostring(self.count),
       passed = expected ~= actual,
       message = 'avoiding \'' .. tostring(expected) .. '\' got \'' ..
         tostring(actual) .. '\'',
-      test = label
+      test = label or 'no label given'
     })
   end,
 
@@ -128,11 +129,11 @@ TestMethod = {
   assertRange = function(self, actual, min, max, label)
     self.count = self.count + 1
     table.insert(self.asserts, {
-      key = 'assert #' .. tostring(self.count),
+      key = 'assert ' .. tostring(self.count),
       passed = actual >= min and actual <= max,
       message = 'value \'' .. tostring(actual) .. '\' out of range \'' ..
         tostring(min) .. '-' .. tostring(max) .. '\'',
-      test = label
+      test = label or 'no label given'
     })
   end,
 
@@ -150,11 +151,11 @@ TestMethod = {
       if list[l] == actual then found = true end;
     end
     table.insert(self.asserts, {
-      key = 'assert #' .. tostring(self.count),
+      key = 'assert ' .. tostring(self.count),
       passed = found == true,
       message = 'value \'' .. tostring(actual) .. '\' not found in \'' ..
         table.concat(list, ',') .. '\'',
-      test = label
+      test = label or 'no label given'
     })
   end,
 
@@ -172,11 +173,11 @@ TestMethod = {
       passing = actual >= target
     end
     table.insert(self.asserts, {
-      key = 'assert #' .. tostring(self.count),
+      key = 'assert ' .. tostring(self.count),
       passed = passing,
       message = 'value \'' .. tostring(actual) .. '\' not >= \'' ..
         tostring(target) .. '\'',
-      test = label
+      test = label or 'no label given'
     })
   end,
 
@@ -194,11 +195,11 @@ TestMethod = {
       passing = actual <= target
     end
     table.insert(self.asserts, {
-      key = 'assert #' .. tostring(self.count),
+      key = 'assert ' .. tostring(self.count),
       passed = passing,
       message = 'value \'' .. tostring(actual) .. '\' not <= \'' ..
         tostring(target) .. '\'',
-      test = label
+      test = label or 'no label given'
     })
   end,
 
@@ -206,7 +207,7 @@ TestMethod = {
   -- @method - TestMethod:assertObject()
   -- @desc - used to check a table is a love object, this runs 3 seperate 
   --         tests to check table has the basic properties of an object
-  -- @note - actual object functionality tests are done in the objects module
+  -- @note - actual object functionality tests have their own methods
   -- @param {table} obj - table to check is a valid love object
   -- @return {nil}
   assertObject = function(self, obj)
@@ -218,6 +219,29 @@ TestMethod = {
   end,
 
 
+  -- @method - TestMethod:assertCoords()
+  -- @desc - used to check a pair of values (usually coordinates)
+  -- @param {table} obj - table to check is a valid love object
+  -- @return {nil}
+  assertCoords = function(self, expected, actual, label)
+    self.count = self.count + 1
+    local passing = false
+    if expected ~= nil and actual ~= nil then
+      if expected[1] == actual[1] and expected[2] == actual[2] then
+        passing = true
+      end
+    end
+    table.insert(self.asserts, {
+      key = 'assert ' .. tostring(self.count),
+      passed = passing,
+      message = 'expected \'' .. tostring(expected[1]) .. 'x,' .. 
+        tostring(expected[2]) .. 'y\' got \'' ..
+        tostring(actual[1]) .. 'x,' .. tostring(actual[2]) .. 'y\'',
+      test = label or 'no label given'
+    })
+  end,
+
+
   -- @method - TestMethod:assertNotNil()
   -- @desc - quick assert for value not nil 
   -- @param {any} value - value to check not nil
@@ -226,7 +250,7 @@ TestMethod = {
     self:assertNotEquals(nil, value, 'check not nil')
     if err ~= nil then
       table.insert(self.asserts, {
-        key = 'assert #' .. tostring(self.count),
+        key = 'assert ' .. tostring(self.count),
         passed = false,
         message = err,
         test = 'assert not nil catch'
@@ -235,6 +259,10 @@ TestMethod = {
   end,
 
 
+  -- @method - TestMethod:exportImg()
+  -- @desc - used to export actual test img results to compare to the expected
+  -- @param {table} imgdata - imgdata to save as a png
+  -- @return {nil}
   exportImg = function(self, imgdata)
     local path = 'tempoutput/actual/love.test.graphics.' .. 
       self.method .. '-' .. tostring(self.imgs) .. '.png'
@@ -320,12 +348,17 @@ TestMethod = {
           if failure['test'] ~= nil then
             key = key .. ' [' .. failure['test'] .. ']'
           end
+          local msg = failure['message']
+          if self.fatal ~= '' then 
+            key = 'code'
+            msg = self.fatal
+          end
           self.result = { 
             total = total, 
             result = 'FAIL', 
             passed = false, 
             key = key,
-            message = failure['message']
+            message = msg
           }
         end
       end

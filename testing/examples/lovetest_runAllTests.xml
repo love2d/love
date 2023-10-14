@@ -1,578 +1,693 @@
-<testsuites name="love.test" tests="226" failures="2" skipped="43" time="7.563">
-	<testsuite name="love.audio" tests="26" failures="0" skipped="0" time="0.006">
-		<testclass classname="getActiveEffects" name="getActiveEffects" time="0.000">
-		</testclass>
-		<testclass classname="getActiveSourceCount" name="getActiveSourceCount" time="0.001">
-		</testclass>
-		<testclass classname="getDistanceModel" name="getDistanceModel" time="0.000">
-		</testclass>
-		<testclass classname="getDopplerScale" name="getDopplerScale" time="0.000">
-		</testclass>
-		<testclass classname="getEffect" name="getEffect" time="0.000">
-		</testclass>
-		<testclass classname="getMaxSceneEffects" name="getMaxSceneEffects" time="0.000">
-		</testclass>
-		<testclass classname="getMaxSourceEffects" name="getMaxSourceEffects" time="0.000">
-		</testclass>
-		<testclass classname="getOrientation" name="getOrientation" time="0.000">
-		</testclass>
-		<testclass classname="getPosition" name="getPosition" time="0.000">
-		</testclass>
-		<testclass classname="getRecordingDevices" name="getRecordingDevices" time="0.000">
-		</testclass>
-		<testclass classname="getVelocity" name="getVelocity" time="0.000">
-		</testclass>
-		<testclass classname="getVolume" name="getVolume" time="0.000">
-		</testclass>
-		<testclass classname="isEffectsSupported" name="isEffectsSupported" time="0.000">
-		</testclass>
-		<testclass classname="newQueueableSource" name="newQueueableSource" time="0.000">
-		</testclass>
-		<testclass classname="newSource" name="newSource" time="0.001">
-		</testclass>
-		<testclass classname="pause" name="pause" time="0.001">
-		</testclass>
-		<testclass classname="play" name="play" time="0.001">
-		</testclass>
-		<testclass classname="setDistanceModel" name="setDistanceModel" time="0.000">
-		</testclass>
-		<testclass classname="setDopplerScale" name="setDopplerScale" time="0.000">
-		</testclass>
-		<testclass classname="setEffect" name="setEffect" time="0.000">
-		</testclass>
-		<testclass classname="setMixWithSystem" name="setMixWithSystem" time="0.000">
-		</testclass>
-		<testclass classname="setOrientation" name="setOrientation" time="0.000">
-		</testclass>
-		<testclass classname="setPosition" name="setPosition" time="0.000">
-		</testclass>
-		<testclass classname="setVelocity" name="setVelocity" time="0.000">
-		</testclass>
-		<testclass classname="setVolume" name="setVolume" time="0.000">
-		</testclass>
-		<testclass classname="stop" name="stop" time="0.001">
-		</testclass>
+<testsuites name="love.test" tests="254" failures="1" skipped="50" time="12.195">
+	<testsuite name="love.audio" tests="26" failures="0" skipped="2" time="0.473">
+		<testcase classname="RecordingDevice" name="RecordingDevice" assertions="0" time="0.024">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Source" name="Source" assertions="0" time="0.017">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="getActiveEffects" name="getActiveEffects" assertions="3" time="0.016">
+		</testcase>
+		<testcase classname="getActiveSourceCount" name="getActiveSourceCount" assertions="3" time="0.016">
+		</testcase>
+		<testcase classname="getDistanceModel" name="getDistanceModel" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="getDopplerScale" name="getDopplerScale" assertions="2" time="0.016">
+		</testcase>
+		<testcase classname="getEffect" name="getEffect" assertions="4" time="0.016">
+		</testcase>
+		<testcase classname="getMaxSceneEffects" name="getMaxSceneEffects" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="getMaxSourceEffects" name="getMaxSourceEffects" assertions="1" time="0.015">
+		</testcase>
+		<testcase classname="getOrientation" name="getOrientation" assertions="6" time="0.017">
+		</testcase>
+		<testcase classname="getPosition" name="getPosition" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="getRecordingDevices" name="getRecordingDevices" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="getVelocity" name="getVelocity" assertions="3" time="0.016">
+		</testcase>
+		<testcase classname="getVolume" name="getVolume" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="isEffectsSupported" name="isEffectsSupported" assertions="1" time="0.016">
+		</testcase>
+		<testcase classname="newQueueableSource" name="newQueueableSource" assertions="3" time="0.015">
+		</testcase>
+		<testcase classname="newSource" name="newSource" assertions="6" time="0.014">
+		</testcase>
+		<testcase classname="pause" name="pause" assertions="2" time="0.016">
+		</testcase>
+		<testcase classname="play" name="play" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="setDistanceModel" name="setDistanceModel" assertions="7" time="0.019">
+		</testcase>
+		<testcase classname="setDopplerScale" name="setDopplerScale" assertions="2" time="0.017">
+		</testcase>
+		<testcase classname="setEffect" name="setEffect" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="setMixWithSystem" name="setMixWithSystem" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="setOrientation" name="setOrientation" assertions="6" time="0.017">
+		</testcase>
+		<testcase classname="setPosition" name="setPosition" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="setVelocity" name="setVelocity" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="setVolume" name="setVolume" assertions="1" time="0.016">
+		</testcase>
+		<testcase classname="stop" name="stop" assertions="2" time="0.018">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.data" tests="7" failures="0" skipped="3" time="0.001">
-		<testclass classname="compress" name="compress" time="0.000">
-		</testclass>
-		<testclass classname="decode" name="decode" time="0.000">
-		</testclass>
-		<testclass classname="decompress" name="decompress" time="0.000">
-		</testclass>
-		<testclass classname="encode" name="encode" time="0.000">
-		</testclass>
-		<testclass classname="getPackedSize" name="getPackedSize" time="0.000">
-		</testclass>
-		<testclass classname="hash" name="hash" time="0.000">
-		</testclass>
-		<testclass classname="newByteData" name="newByteData" time="0.000">
-		</testclass>
-		<testclass classname="newDataView" name="newDataView" time="0.000">
-		</testclass>
-		<testclass classname="pack" name="pack" time="0.000">
-		</testclass>
-		<testclass classname="unpack" name="unpack" time="0.000">
-		</testclass>
+	<testsuite name="love.data" tests="7" failures="0" skipped="5" time="0.212">
+		<testcase classname="ByteData" name="ByteData" assertions="0" time="0.016">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="CompressedData" name="CompressedData" assertions="0" time="0.017">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="compress" name="compress" assertions="45" time="0.017">
+		</testcase>
+		<testcase classname="decode" name="decode" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="decompress" name="decompress" assertions="18" time="0.018">
+		</testcase>
+		<testcase classname="encode" name="encode" assertions="15" time="0.019">
+		</testcase>
+		<testcase classname="getPackedSize" name="getPackedSize" assertions="0" time="0.019">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="hash" name="hash" assertions="6" time="0.017">
+		</testcase>
+		<testcase classname="newByteData" name="newByteData" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newDataView" name="newDataView" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="pack" name="pack" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="unpack" name="unpack" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
 	</testsuite>
-	<testsuite name="love.event" tests="4" failures="0" skipped="2" time="0.000">
-		<testclass classname="clear" name="clear" time="0.000">
-		</testclass>
-		<testclass classname="poll" name="poll" time="0.000">
-		</testclass>
-		<testclass classname="pump" name="pump" time="0.000">
-		</testclass>
-		<testclass classname="push" name="push" time="0.000">
-		</testclass>
-		<testclass classname="quit" name="quit" time="0.000">
-		</testclass>
-		<testclass classname="wait" name="wait" time="0.000">
-		</testclass>
+	<testsuite name="love.event" tests="4" failures="0" skipped="2" time="0.108">
+		<testcase classname="clear" name="clear" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="poll" name="poll" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="pump" name="pump" assertions="0" time="0.019">
+			<skipped message="not sure can be tested as used internally" />
+		</testcase>
+		<testcase classname="push" name="push" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="quit" name="quit" assertions="1" time="0.019">
+		</testcase>
+		<testcase classname="wait" name="wait" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
 	</testsuite>
-	<testsuite name="love.filesystem" tests="27" failures="0" skipped="2" time="0.018">
-		<testclass classname="append" name="append" time="0.002">
-		</testclass>
-		<testclass classname="areSymlinksEnabled" name="areSymlinksEnabled" time="0.000">
-		</testclass>
-		<testclass classname="createDirectory" name="createDirectory" time="0.001">
-		</testclass>
-		<testclass classname="getAppdataDirectory" name="getAppdataDirectory" time="0.000">
-		</testclass>
-		<testclass classname="getCRequirePath" name="getCRequirePath" time="0.000">
-		</testclass>
-		<testclass classname="getDirectoryItems" name="getDirectoryItems" time="0.002">
-		</testclass>
-		<testclass classname="getIdentity" name="getIdentity" time="0.000">
-		</testclass>
-		<testclass classname="getInfo" name="getInfo" time="0.002">
-		</testclass>
-		<testclass classname="getRealDirectory" name="getRealDirectory" time="0.001">
-		</testclass>
-		<testclass classname="getRequirePath" name="getRequirePath" time="0.000">
-		</testclass>
-		<testclass classname="getSaveDirectory" name="getSaveDirectory" time="0.000">
-		</testclass>
-		<testclass classname="getSource" name="getSource" time="0.000">
-		</testclass>
-		<testclass classname="getSourceBaseDirectory" name="getSourceBaseDirectory" time="0.000">
-		</testclass>
-		<testclass classname="getUserDirectory" name="getUserDirectory" time="0.000">
-		</testclass>
-		<testclass classname="getWorkingDirectory" name="getWorkingDirectory" time="0.000">
-		</testclass>
-		<testclass classname="isFused" name="isFused" time="0.000">
-		</testclass>
-		<testclass classname="lines" name="lines" time="0.001">
-		</testclass>
-		<testclass classname="load" name="load" time="0.001">
-		</testclass>
-		<testclass classname="mount" name="mount" time="0.002">
-		</testclass>
-		<testclass classname="newFileData" name="newFileData" time="0.000">
-		</testclass>
-		<testclass classname="openFile" name="openFile" time="0.000">
-		</testclass>
-		<testclass classname="read" name="read" time="0.000">
-		</testclass>
-		<testclass classname="remove" name="remove" time="0.002">
-		</testclass>
-		<testclass classname="setCRequirePath" name="setCRequirePath" time="0.000">
-		</testclass>
-		<testclass classname="setIdentity" name="setIdentity" time="0.000">
-		</testclass>
-		<testclass classname="setRequirePath" name="setRequirePath" time="0.000">
-		</testclass>
-		<testclass classname="setSource" name="setSource" time="0.000">
-		</testclass>
-		<testclass classname="unmount" name="unmount" time="0.002">
-		</testclass>
-		<testclass classname="write" name="write" time="0.002">
-		</testclass>
+	<testsuite name="love.filesystem" tests="28" failures="0" skipped="3" time="0.556">
+		<testcase classname="File" name="File" assertions="36" time="0.017">
+		</testcase>
+		<testcase classname="FileData" name="FileData" assertions="0" time="0.019">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="append" name="append" assertions="6" time="0.019">
+		</testcase>
+		<testcase classname="areSymlinksEnabled" name="areSymlinksEnabled" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="createDirectory" name="createDirectory" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="getAppdataDirectory" name="getAppdataDirectory" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getCRequirePath" name="getCRequirePath" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="getDirectoryItems" name="getDirectoryItems" assertions="2" time="0.018">
+		</testcase>
+		<testcase classname="getIdentity" name="getIdentity" assertions="1" time="0.019">
+		</testcase>
+		<testcase classname="getInfo" name="getInfo" assertions="3" time="0.019">
+		</testcase>
+		<testcase classname="getRealDirectory" name="getRealDirectory" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getRequirePath" name="getRequirePath" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getSaveDirectory" name="getSaveDirectory" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getSource" name="getSource" assertions="0" time="0.018">
+			<skipped message="not sure can be tested as used internally" />
+		</testcase>
+		<testcase classname="getSourceBaseDirectory" name="getSourceBaseDirectory" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getUserDirectory" name="getUserDirectory" assertions="1" time="0.019">
+		</testcase>
+		<testcase classname="getWorkingDirectory" name="getWorkingDirectory" assertions="1" time="0.019">
+		</testcase>
+		<testcase classname="isFused" name="isFused" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="lines" name="lines" assertions="6" time="0.018">
+		</testcase>
+		<testcase classname="load" name="load" assertions="4" time="0.016">
+		</testcase>
+		<testcase classname="mount" name="mount" assertions="5" time="0.019">
+		</testcase>
+		<testcase classname="newFileData" name="newFileData" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="openFile" name="openFile" assertions="4" time="0.019">
+		</testcase>
+		<testcase classname="read" name="read" assertions="6" time="0.017">
+		</testcase>
+		<testcase classname="remove" name="remove" assertions="5" time="0.018">
+		</testcase>
+		<testcase classname="setCRequirePath" name="setCRequirePath" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="setIdentity" name="setIdentity" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="setRequirePath" name="setRequirePath" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="setSource" name="setSource" assertions="0" time="0.018">
+			<skipped message="not sure can be tested as used internally" />
+		</testcase>
+		<testcase classname="unmount" name="unmount" assertions="2" time="0.018">
+		</testcase>
+		<testcase classname="write" name="write" assertions="3" time="0.019">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.font" tests="4" failures="0" skipped="1" time="0.002">
-		<testclass classname="newBMFontRasterizer" name="newBMFontRasterizer" time="0.000">
-		</testclass>
-		<testclass classname="newGlyphData" name="newGlyphData" time="0.001">
-		</testclass>
-		<testclass classname="newImageRasterizer" name="newImageRasterizer" time="0.000">
-		</testclass>
-		<testclass classname="newRasterizer" name="newRasterizer" time="0.000">
-		</testclass>
-		<testclass classname="newTrueTypeRasterizer" name="newTrueTypeRasterizer" time="0.000">
-		</testclass>
+	<testsuite name="love.font" tests="4" failures="0" skipped="3" time="0.127">
+		<testcase classname="GlyphData" name="GlyphData" assertions="0" time="0.017">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Rasterizer" name="Rasterizer" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="newBMFontRasterizer" name="newBMFontRasterizer" assertions="0" time="0.018">
+			<skipped message="wiki and source dont match, not sure expected usage" />
+		</testcase>
+		<testcase classname="newGlyphData" name="newGlyphData" assertions="3" time="0.020">
+		</testcase>
+		<testcase classname="newImageRasterizer" name="newImageRasterizer" assertions="3" time="0.020">
+		</testcase>
+		<testcase classname="newRasterizer" name="newRasterizer" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newTrueTypeRasterizer" name="newTrueTypeRasterizer" assertions="6" time="0.017">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.graphics" tests="65" failures="0" skipped="31" time="0.079">
-		<testclass classname="applyTransform" name="applyTransform" time="0.002">
-		</testclass>
-		<testclass classname="arc" name="arc" time="0.000">
-		</testclass>
-		<testclass classname="captureScreenshot" name="captureScreenshot" time="0.000">
-		</testclass>
-		<testclass classname="circle" name="circle" time="0.000">
-		</testclass>
-		<testclass classname="clear" name="clear" time="0.000">
-		</testclass>
-		<testclass classname="discard" name="discard" time="0.000">
-		</testclass>
-		<testclass classname="draw" name="draw" time="0.000">
-		</testclass>
-		<testclass classname="drawInstanced" name="drawInstanced" time="0.000">
-		</testclass>
-		<testclass classname="drawLayer" name="drawLayer" time="0.000">
-		</testclass>
-		<testclass classname="ellipse" name="ellipse" time="0.000">
-		</testclass>
-		<testclass classname="flushBatch" name="flushBatch" time="0.000">
-		</testclass>
-		<testclass classname="getBackgroundColor" name="getBackgroundColor" time="0.000">
-		</testclass>
-		<testclass classname="getBlendMode" name="getBlendMode" time="0.000">
-		</testclass>
-		<testclass classname="getCanvas" name="getCanvas" time="0.000">
-		</testclass>
-		<testclass classname="getColor" name="getColor" time="0.000">
-		</testclass>
-		<testclass classname="getColorMask" name="getColorMask" time="0.000">
-		</testclass>
-		<testclass classname="getDPIScale" name="getDPIScale" time="0.000">
-		</testclass>
-		<testclass classname="getDefaultFilter" name="getDefaultFilter" time="0.000">
-		</testclass>
-		<testclass classname="getDepthMode" name="getDepthMode" time="0.000">
-		</testclass>
-		<testclass classname="getDimensions" name="getDimensions" time="0.000">
-		</testclass>
-		<testclass classname="getFont" name="getFont" time="0.001">
-		</testclass>
-		<testclass classname="getFrontFaceWinding" name="getFrontFaceWinding" time="0.000">
-		</testclass>
-		<testclass classname="getHeight" name="getHeight" time="0.000">
-		</testclass>
-		<testclass classname="getLineJoin" name="getLineJoin" time="0.000">
-		</testclass>
-		<testclass classname="getLineStyle" name="getLineStyle" time="0.000">
-		</testclass>
-		<testclass classname="getLineWidth" name="getLineWidth" time="0.000">
-		</testclass>
-		<testclass classname="getMeshCullMode" name="getMeshCullMode" time="0.000">
-		</testclass>
-		<testclass classname="getPixelDimensions" name="getPixelDimensions" time="0.000">
-		</testclass>
-		<testclass classname="getPixelHeight" name="getPixelHeight" time="0.000">
-		</testclass>
-		<testclass classname="getPixelWidth" name="getPixelWidth" time="0.000">
-		</testclass>
-		<testclass classname="getPointSize" name="getPointSize" time="0.000">
-		</testclass>
-		<testclass classname="getRendererInfo" name="getRendererInfo" time="0.000">
-		</testclass>
-		<testclass classname="getScissor" name="getScissor" time="0.000">
-		</testclass>
-		<testclass classname="getShader" name="getShader" time="0.000">
-		</testclass>
-		<testclass classname="getStackDepth" name="getStackDepth" time="0.000">
-		</testclass>
-		<testclass classname="getStats" name="getStats" time="0.000">
-		</testclass>
-		<testclass classname="getStencilMode" name="getStencilMode" time="0.000">
-		</testclass>
-		<testclass classname="getSupported" name="getSupported" time="0.000">
-		</testclass>
-		<testclass classname="getSystemLimits" name="getSystemLimits" time="0.000">
-		</testclass>
-		<testclass classname="getTextureFormats" name="getTextureFormats" time="0.001">
-		</testclass>
-		<testclass classname="getTextureTypes" name="getTextureTypes" time="0.000">
-		</testclass>
-		<testclass classname="getWidth" name="getWidth" time="0.000">
-		</testclass>
-		<testclass classname="intersectScissor" name="intersectScissor" time="0.003">
-		</testclass>
-		<testclass classname="inverseTransformPoint" name="inverseTransformPoint" time="0.000">
-		</testclass>
-		<testclass classname="isActive" name="isActive" time="0.000">
-		</testclass>
-		<testclass classname="isGammaCorrect" name="isGammaCorrect" time="0.000">
-		</testclass>
-		<testclass classname="isWireframe" name="isWireframe" time="0.000">
-		</testclass>
-		<testclass classname="line" name="line" time="0.000">
-		</testclass>
-		<testclass classname="newArrayImage" name="newArrayImage" time="0.002">
-		</testclass>
-		<testclass classname="newCanvas" name="newCanvas" time="0.001">
-		</testclass>
-		<testclass classname="newCubeImage" name="newCubeImage" time="0.003">
-		</testclass>
-		<testclass classname="newFont" name="newFont" time="0.001">
-		</testclass>
-		<testclass classname="newImage" name="newImage" time="0.001">
-		</testclass>
-		<testclass classname="newImageFont" name="newImageFont" time="0.001">
-		</testclass>
-		<testclass classname="newMesh" name="newMesh" time="0.000">
-		</testclass>
-		<testclass classname="newParticleSystem" name="newParticleSystem" time="0.002">
-		</testclass>
-		<testclass classname="newQuad" name="newQuad" time="0.002">
-		</testclass>
-		<testclass classname="newShader" name="newShader" time="0.015">
-		</testclass>
-		<testclass classname="newSpriteBatch" name="newSpriteBatch" time="0.001">
-		</testclass>
-		<testclass classname="newTextBatch" name="newTextBatch" time="0.002">
-		</testclass>
-		<testclass classname="newVideo" name="newVideo" time="0.004">
-		</testclass>
-		<testclass classname="newVolumeImage" name="newVolumeImage" time="0.001">
-		</testclass>
-		<testclass classname="origin" name="origin" time="0.000">
-		</testclass>
-		<testclass classname="points" name="points" time="0.000">
-		</testclass>
-		<testclass classname="polygon" name="polygon" time="0.000">
-		</testclass>
-		<testclass classname="pop" name="pop" time="0.001">
-		</testclass>
-		<testclass classname="present" name="present" time="0.000">
-		</testclass>
-		<testclass classname="print" name="print" time="0.000">
-		</testclass>
-		<testclass classname="printf" name="printf" time="0.000">
-		</testclass>
-		<testclass classname="push" name="push" time="0.002">
-		</testclass>
-		<testclass classname="rectangle" name="rectangle" time="0.007">
-		</testclass>
-		<testclass classname="replaceTransform" name="replaceTransform" time="0.002">
-		</testclass>
-		<testclass classname="reset" name="reset" time="0.001">
-		</testclass>
-		<testclass classname="rotate" name="rotate" time="0.004">
-		</testclass>
-		<testclass classname="scale" name="scale" time="0.002">
-		</testclass>
-		<testclass classname="setBackgroundColor" name="setBackgroundColor" time="0.000">
-		</testclass>
-		<testclass classname="setBlendMode" name="setBlendMode" time="0.001">
-		</testclass>
-		<testclass classname="setCanvas" name="setCanvas" time="0.000">
-		</testclass>
-		<testclass classname="setColor" name="setColor" time="0.000">
-		</testclass>
-		<testclass classname="setColorMask" name="setColorMask" time="0.000">
-		</testclass>
-		<testclass classname="setDefaultFilter" name="setDefaultFilter" time="0.000">
-		</testclass>
-		<testclass classname="setDepthMode" name="setDepthMode" time="0.000">
-		</testclass>
-		<testclass classname="setFont" name="setFont" time="0.000">
-		</testclass>
-		<testclass classname="setFrontFaceWinding" name="setFrontFaceWinding" time="0.000">
-		</testclass>
-		<testclass classname="setLineJoin" name="setLineJoin" time="0.000">
-		</testclass>
-		<testclass classname="setLineStyle" name="setLineStyle" time="0.000">
-		</testclass>
-		<testclass classname="setLineWidth" name="setLineWidth" time="0.000">
-		</testclass>
-		<testclass classname="setMeshCullMode" name="setMeshCullMode" time="0.000">
-		</testclass>
-		<testclass classname="setScissor" name="setScissor" time="0.000">
-		</testclass>
-		<testclass classname="setShader" name="setShader" time="0.000">
-		</testclass>
-		<testclass classname="setStencilMode" name="setStencilMode" time="0.000">
-		</testclass>
-		<testclass classname="setWireframe" name="setWireframe" time="0.000">
-		</testclass>
-		<testclass classname="shear" name="shear" time="0.002">
-		</testclass>
-		<testclass classname="transformPoint" name="transformPoint" time="0.000">
-		</testclass>
-		<testclass classname="translate" name="translate" time="0.001">
-		</testclass>
-		<testclass classname="validateShader" name="validateShader" time="0.010">
-		</testclass>
+	<testsuite name="love.graphics" tests="91" failures="1" skipped="15" time="2.091">
+		<testcase classname="Canvas" name="Canvas" assertions="0" time="0.016">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Font" name="Font" assertions="0" time="0.017">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Image" name="Image" assertions="0" time="0.019">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Mesh" name="Mesh" assertions="0" time="0.019">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="ParticleSystem" name="ParticleSystem" assertions="0" time="0.017">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Quad" name="Quad" assertions="0" time="0.019">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Shader" name="Shader" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="SpriteBatch" name="SpriteBatch" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Text" name="Text" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Texture" name="Texture" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Video" name="Video" assertions="0" time="0.019">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="applyTransform" name="applyTransform" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="arc" name="arc" assertions="264" time="0.018">
+		</testcase>
+		<testcase classname="captureScreenshot" name="captureScreenshot" assertions="1" time="0.183">
+		</testcase>
+		<testcase classname="circle" name="circle" assertions="192" time="0.017">
+		</testcase>
+		<testcase classname="clear" name="clear" assertions="20" time="0.017">
+		</testcase>
+		<testcase classname="discard" name="discard" assertions="0" time="0.017">
+			<skipped message="cant test this worked" />
+		</testcase>
+		<testcase classname="draw" name="draw" assertions="112" time="0.018">
+		</testcase>
+		<testcase classname="drawInstanced" name="drawInstanced" assertions="0" time="0.020">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="drawLayer" name="drawLayer" assertions="144" time="0.018">
+		</testcase>
+		<testcase classname="ellipse" name="ellipse" assertions="80" time="0.018">
+		</testcase>
+		<testcase classname="flushBatch" name="flushBatch" assertions="0" time="0.018">
+			<skipped message="not sure can be tested as used internally" />
+		</testcase>
+		<testcase classname="getBackgroundColor" name="getBackgroundColor" assertions="8" time="0.018">
+		</testcase>
+		<testcase classname="getBlendMode" name="getBlendMode" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="getCanvas" name="getCanvas" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="getColor" name="getColor" assertions="8" time="0.017">
+		</testcase>
+		<testcase classname="getColorMask" name="getColorMask" assertions="8" time="0.018">
+		</testcase>
+		<testcase classname="getDPIScale" name="getDPIScale" assertions="1" time="0.019">
+		</testcase>
+		<testcase classname="getDefaultFilter" name="getDefaultFilter" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="getDepthMode" name="getDepthMode" assertions="2" time="0.018">
+		</testcase>
+		<testcase classname="getDimensions" name="getDimensions" assertions="2" time="0.017">
+		</testcase>
+		<testcase classname="getFont" name="getFont" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="getFrontFaceWinding" name="getFrontFaceWinding" assertions="2" time="0.019">
+		</testcase>
+		<testcase classname="getHeight" name="getHeight" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="getLineJoin" name="getLineJoin" assertions="2" time="0.018">
+		</testcase>
+		<testcase classname="getLineStyle" name="getLineStyle" assertions="2" time="0.017">
+		</testcase>
+		<testcase classname="getLineWidth" name="getLineWidth" assertions="2" time="0.019">
+		</testcase>
+		<testcase classname="getMeshCullMode" name="getMeshCullMode" assertions="2" time="0.018">
+		</testcase>
+		<testcase classname="getPixelDimensions" name="getPixelDimensions" assertions="2" time="0.018">
+		</testcase>
+		<testcase classname="getPixelHeight" name="getPixelHeight" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getPixelWidth" name="getPixelWidth" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getPointSize" name="getPointSize" assertions="2" time="0.019">
+		</testcase>
+		<testcase classname="getRendererInfo" name="getRendererInfo" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="getScissor" name="getScissor" assertions="8" time="0.018">
+		</testcase>
+		<testcase classname="getShader" name="getShader" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getStackDepth" name="getStackDepth" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="getStats" name="getStats" assertions="7" time="0.017">
+		</testcase>
+		<testcase classname="getStencilMode" name="getStencilMode" assertions="6" time="0.018">
+		</testcase>
+		<testcase classname="getSupported" name="getSupported" assertions="17" time="0.018">
+		</testcase>
+		<testcase classname="getSystemLimits" name="getSystemLimits" assertions="13" time="0.019">
+		</testcase>
+		<testcase classname="getTextureFormats" name="getTextureFormats" assertions="79" time="0.020">
+		</testcase>
+		<testcase classname="getTextureTypes" name="getTextureTypes" assertions="4" time="0.017">
+		</testcase>
+		<testcase classname="getWidth" name="getWidth" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="intersectScissor" name="intersectScissor" assertions="20" time="0.018">
+		</testcase>
+		<testcase classname="inverseTransformPoint" name="inverseTransformPoint" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="isActive" name="isActive" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="isGammaCorrect" name="isGammaCorrect" assertions="1" time="0.019">
+		</testcase>
+		<testcase classname="isWireframe" name="isWireframe" assertions="2" time="0.017">
+		</testcase>
+		<testcase classname="line" name="line" assertions="64" time="0.016">
+		</testcase>
+		<testcase classname="newArrayImage" name="newArrayImage" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newCanvas" name="newCanvas" assertions="6" time="0.019">
+		</testcase>
+		<testcase classname="newCubeImage" name="newCubeImage" assertions="3" time="0.019">
+		</testcase>
+		<testcase classname="newFont" name="newFont" assertions="6" time="0.019">
+		</testcase>
+		<testcase classname="newImage" name="newImage" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newImageFont" name="newImageFont" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newMesh" name="newMesh" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newParticleSystem" name="newParticleSystem" assertions="3" time="0.019">
+		</testcase>
+		<testcase classname="newQuad" name="newQuad" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newShader" name="newShader" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newSpriteBatch" name="newSpriteBatch" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newTextBatch" name="newTextBatch" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newVideo" name="newVideo" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newVolumeImage" name="newVolumeImage" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="origin" name="origin" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="points" name="points" assertions="48" time="0.018">
+		</testcase>
+		<testcase classname="polygon" name="polygon" assertions="56" time="0.018">
+		</testcase>
+		<testcase classname="pop" name="pop" assertions="4" time="0.019">
+		</testcase>
+		<testcase classname="present" name="present" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="print" name="print" assertions="148" time="0.017">
+		</testcase>
+		<testcase classname="printf" name="printf" assertions="180" time="0.018">
+		</testcase>
+		<testcase classname="push" name="push" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="rectangle" name="rectangle" assertions="116" time="0.018">
+		</testcase>
+		<testcase classname="replaceTransform" name="replaceTransform" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="reset" name="reset" assertions="3" time="0.019">
+		</testcase>
+		<testcase classname="rotate" name="rotate" assertions="16" time="0.019">
+		</testcase>
+		<testcase classname="scale" name="scale" assertions="16" time="0.017">
+		</testcase>
+		<testcase classname="setBackgroundColor" name="setBackgroundColor" assertions="4" time="0.017">
+		</testcase>
+		<testcase classname="setBlendMode" name="setBlendMode" assertions="16" time="0.017">
+		</testcase>
+		<testcase classname="setCanvas" name="setCanvas" assertions="19" time="0.018">
+		</testcase>
+		<testcase classname="setColor" name="setColor" assertions="68" time="0.018">
+		</testcase>
+		<testcase classname="setColorMask" name="setColorMask" assertions="20" time="0.018">
+			<failure message="assert #7 [check pixel b for yellow at 0,0(set color mask)] expected '0' got '1'">assert #7 [check pixel b for yellow at 0,0(set color mask)] expected '0' got '1'</failure>
+		</testcase>
+		<testcase classname="setDefaultFilter" name="setDefaultFilter" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="setDepthMode" name="setDepthMode" assertions="8" time="0.018">
+		</testcase>
+		<testcase classname="setFont" name="setFont" assertions="40" time="0.018">
+		</testcase>
+		<testcase classname="setFrontFaceWinding" name="setFrontFaceWinding" assertions="2" time="0.019">
+		</testcase>
+		<testcase classname="setLineJoin" name="setLineJoin" assertions="16" time="0.017">
+		</testcase>
+		<testcase classname="setLineStyle" name="setLineStyle" assertions="24" time="0.018">
+		</testcase>
+		<testcase classname="setLineWidth" name="setLineWidth" assertions="72" time="0.018">
+		</testcase>
+		<testcase classname="setMeshCullMode" name="setMeshCullMode" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="setScissor" name="setScissor" assertions="32" time="0.018">
+		</testcase>
+		<testcase classname="setShader" name="setShader" assertions="16" time="0.018">
+		</testcase>
+		<testcase classname="setStencilTest" name="setStencilTest" assertions="32" time="0.018">
+		</testcase>
+		<testcase classname="setWireframe" name="setWireframe" assertions="28" time="0.016">
+		</testcase>
+		<testcase classname="shear" name="shear" assertions="32" time="0.018">
+		</testcase>
+		<testcase classname="transformPoint" name="transformPoint" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="translate" name="translate" assertions="16" time="0.019">
+		</testcase>
+		<testcase classname="validateShader" name="validateShader" assertions="2" time="0.019">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.image" tests="3" failures="0" skipped="0" time="0.002">
-		<testclass classname="isCompressed" name="isCompressed" time="0.001">
-		</testclass>
-		<testclass classname="newCompressedData" name="newCompressedData" time="0.001">
-		</testclass>
-		<testclass classname="newImageData" name="newImageData" time="0.000">
-		</testclass>
+	<testsuite name="love.image" tests="3" failures="0" skipped="2" time="0.087">
+		<testcase classname="CompressedImageData" name="CompressedImageData" assertions="0" time="0.015">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="ImageData" name="ImageData" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="isCompressed" name="isCompressed" assertions="1" time="0.019">
+		</testcase>
+		<testcase classname="newCompressedData" name="newCompressedData" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newImageData" name="newImageData" assertions="6" time="0.018">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.math" tests="17" failures="0" skipped="0" time="0.003">
-		<testclass classname="colorFromBytes" name="colorFromBytes" time="0.000">
-		</testclass>
-		<testclass classname="colorToBytes" name="colorToBytes" time="0.001">
-		</testclass>
-		<testclass classname="gammaToLinear" name="gammaToLinear" time="0.000">
-		</testclass>
-		<testclass classname="getRandomSeed" name="getRandomSeed" time="0.000">
-		</testclass>
-		<testclass classname="getRandomState" name="getRandomState" time="0.000">
-		</testclass>
-		<testclass classname="isConvex" name="isConvex" time="0.000">
-		</testclass>
-		<testclass classname="linearToGamma" name="linearToGamma" time="0.000">
-		</testclass>
-		<testclass classname="newBezierCurve" name="newBezierCurve" time="0.000">
-		</testclass>
-		<testclass classname="newRandomGenerator" name="newRandomGenerator" time="0.000">
-		</testclass>
-		<testclass classname="newTransform" name="newTransform" time="0.000">
-		</testclass>
-		<testclass classname="perlinNoise" name="perlinNoise" time="0.000">
-		</testclass>
-		<testclass classname="random" name="random" time="0.000">
-		</testclass>
-		<testclass classname="randomNormal" name="randomNormal" time="0.000">
-		</testclass>
-		<testclass classname="setRandomSeed" name="setRandomSeed" time="0.000">
-		</testclass>
-		<testclass classname="setRandomState" name="setRandomState" time="0.000">
-		</testclass>
-		<testclass classname="simplexNoise" name="simplexNoise" time="0.000">
-		</testclass>
-		<testclass classname="triangulate" name="triangulate" time="0.000">
-		</testclass>
+	<testsuite name="love.math" tests="17" failures="0" skipped="3" time="0.358">
+		<testcase classname="BezierCurve" name="BezierCurve" assertions="0" time="0.016">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="RandomGenerator" name="RandomGenerator" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Transform" name="Transform" assertions="0" time="0.019">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="colorFromBytes" name="colorFromBytes" assertions="12" time="0.017">
+		</testcase>
+		<testcase classname="colorToBytes" name="colorToBytes" assertions="12" time="0.018">
+		</testcase>
+		<testcase classname="gammaToLinear" name="gammaToLinear" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="getRandomSeed" name="getRandomSeed" assertions="2" time="0.018">
+		</testcase>
+		<testcase classname="getRandomState" name="getRandomState" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="isConvex" name="isConvex" assertions="2" time="0.018">
+		</testcase>
+		<testcase classname="linearToGamma" name="linearToGamma" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newBezierCurve" name="newBezierCurve" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newRandomGenerator" name="newRandomGenerator" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newTransform" name="newTransform" assertions="3" time="0.020">
+		</testcase>
+		<testcase classname="perlinNoise" name="perlinNoise" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="random" name="random" assertions="10" time="0.019">
+		</testcase>
+		<testcase classname="randomNormal" name="randomNormal" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="setRandomSeed" name="setRandomSeed" assertions="2" time="0.018">
+		</testcase>
+		<testcase classname="setRandomState" name="setRandomState" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="simplexNoise" name="simplexNoise" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="triangulate" name="triangulate" assertions="2" time="0.018">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.objects" tests="1" failures="0" skipped="0" time="0.008">
-		<testclass classname="File" name="File" time="0.008">
-		</testclass>
+	<testsuite name="love.physics" tests="22" failures="0" skipped="6" time="0.492">
+		<testcase classname="Body" name="Body" assertions="0" time="0.015">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Contact" name="Contact" assertions="0" time="0.017">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Fixture" name="Fixture" assertions="0" time="0.017">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Joint" name="Joint" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Shape" name="Shape" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="World" name="World" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="getDistance" name="getDistance" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="getMeter" name="getMeter" assertions="1" time="0.016">
+		</testcase>
+		<testcase classname="newBody" name="newBody" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newChainShape" name="newChainShape" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newCircleShape" name="newCircleShape" assertions="3" time="0.019">
+		</testcase>
+		<testcase classname="newDistanceJoint" name="newDistanceJoint" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newEdgeShape" name="newEdgeShape" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newFixture" name="newFixture" assertions="3" time="0.019">
+		</testcase>
+		<testcase classname="newFrictionJoint" name="newFrictionJoint" assertions="3" time="0.019">
+		</testcase>
+		<testcase classname="newGearJoint" name="newGearJoint" assertions="3" time="0.019">
+		</testcase>
+		<testcase classname="newMotorJoint" name="newMotorJoint" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newMouseJoint" name="newMouseJoint" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newPolygonShape" name="newPolygonShape" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newPrismaticJoint" name="newPrismaticJoint" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newPulleyJoint" name="newPulleyJoint" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newRectangleShape" name="newRectangleShape" assertions="6" time="0.018">
+		</testcase>
+		<testcase classname="newRevoluteJoint" name="newRevoluteJoint" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="newRopeJoint" name="newRopeJoint" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newWeldJoint" name="newWeldJoint" assertions="3" time="0.019">
+		</testcase>
+		<testcase classname="newWheelJoint" name="newWheelJoint" assertions="3" time="0.016">
+		</testcase>
+		<testcase classname="newWorld" name="newWorld" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="setMeter" name="setMeter" assertions="2" time="0.018">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.physics" tests="22" failures="0" skipped="0" time="0.005">
-		<testclass classname="getDistance" name="getDistance" time="0.000">
-		</testclass>
-		<testclass classname="getMeter" name="getMeter" time="0.000">
-		</testclass>
-		<testclass classname="newBody" name="newBody" time="0.000">
-		</testclass>
-		<testclass classname="newChainShape" name="newChainShape" time="0.000">
-		</testclass>
-		<testclass classname="newCircleShape" name="newCircleShape" time="0.000">
-		</testclass>
-		<testclass classname="newDistanceJoint" name="newDistanceJoint" time="0.000">
-		</testclass>
-		<testclass classname="newEdgeShape" name="newEdgeShape" time="0.000">
-		</testclass>
-		<testclass classname="newFixture" name="newFixture" time="0.000">
-		</testclass>
-		<testclass classname="newFrictionJoint" name="newFrictionJoint" time="0.000">
-		</testclass>
-		<testclass classname="newGearJoint" name="newGearJoint" time="0.000">
-		</testclass>
-		<testclass classname="newMotorJoint" name="newMotorJoint" time="0.000">
-		</testclass>
-		<testclass classname="newMouseJoint" name="newMouseJoint" time="0.000">
-		</testclass>
-		<testclass classname="newPolygonShape" name="newPolygonShape" time="0.000">
-		</testclass>
-		<testclass classname="newPrismaticJoint" name="newPrismaticJoint" time="0.000">
-		</testclass>
-		<testclass classname="newPulleyJoint" name="newPulleyJoint" time="0.000">
-		</testclass>
-		<testclass classname="newRectangleShape" name="newRectangleShape" time="0.001">
-		</testclass>
-		<testclass classname="newRevoluteJoint" name="newRevoluteJoint" time="0.000">
-		</testclass>
-		<testclass classname="newRopeJoint" name="newRopeJoint" time="0.000">
-		</testclass>
-		<testclass classname="newWeldJoint" name="newWeldJoint" time="0.000">
-		</testclass>
-		<testclass classname="newWheelJoint" name="newWheelJoint" time="0.001">
-		</testclass>
-		<testclass classname="newWorld" name="newWorld" time="0.000">
-		</testclass>
-		<testclass classname="setMeter" name="setMeter" time="0.000">
-		</testclass>
+	<testsuite name="love.sound" tests="2" failures="0" skipped="2" time="0.072">
+		<testcase classname="Decoder" name="Decoder" assertions="0" time="0.016">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="SoundData" name="SoundData" assertions="0" time="0.019">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="newDecoder" name="newDecoder" assertions="3" time="0.020">
+		</testcase>
+		<testcase classname="newSoundData" name="newSoundData" assertions="6" time="0.017">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.sound" tests="2" failures="0" skipped="0" time="0.004">
-		<testclass classname="newDecoder" name="newDecoder" time="0.001">
-		</testclass>
-		<testclass classname="newSoundData" name="newSoundData" time="0.003">
-		</testclass>
+	<testsuite name="love.system" tests="6" failures="0" skipped="2" time="0.142">
+		<testcase classname="getClipboardText" name="getClipboardText" assertions="1" time="0.016">
+		</testcase>
+		<testcase classname="getOS" name="getOS" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="getPowerInfo" name="getPowerInfo" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getProcessorCount" name="getProcessorCount" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="hasBackgroundMusic" name="hasBackgroundMusic" assertions="1" time="0.019">
+		</testcase>
+		<testcase classname="openURL" name="openURL" assertions="0" time="0.018">
+			<skipped message="cant test this worked" />
+		</testcase>
+		<testcase classname="setClipboardText" name="setClipboardText" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="vibrate" name="vibrate" assertions="0" time="0.018">
+			<skipped message="cant test this worked" />
+		</testcase>
 	</testsuite>
-	<testsuite name="love.system" tests="6" failures="0" skipped="2" time="0.007">
-		<testclass classname="getClipboardText" name="getClipboardText" time="0.006">
-		</testclass>
-		<testclass classname="getOS" name="getOS" time="0.000">
-		</testclass>
-		<testclass classname="getPowerInfo" name="getPowerInfo" time="0.000">
-		</testclass>
-		<testclass classname="getProcessorCount" name="getProcessorCount" time="0.000">
-		</testclass>
-		<testclass classname="hasBackgroundMusic" name="hasBackgroundMusic" time="0.000">
-		</testclass>
-		<testclass classname="openURL" name="openURL" time="0.000">
-		</testclass>
-		<testclass classname="setClipboardText" name="setClipboardText" time="0.001">
-		</testclass>
-		<testclass classname="vibrate" name="vibrate" time="0.000">
-		</testclass>
+	<testsuite name="love.thread" tests="3" failures="0" skipped="2" time="0.088">
+		<testcase classname="Channel" name="Channel" assertions="0" time="0.015">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="Thread" name="Thread" assertions="0" time="0.018">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="getChannel" name="getChannel" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="newChannel" name="newChannel" assertions="3" time="0.019">
+		</testcase>
+		<testcase classname="newThread" name="newThread" assertions="3" time="0.018">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.thread" tests="3" failures="0" skipped="0" time="0.002">
-		<testclass classname="getChannel" name="getChannel" time="0.000">
-		</testclass>
-		<testclass classname="newChannel" name="newChannel" time="0.000">
-		</testclass>
-		<testclass classname="newThread" name="newThread" time="0.001">
-		</testclass>
+	<testsuite name="love.timer" tests="6" failures="0" skipped="0" time="2.086">
+		<testcase classname="getAverageDelta" name="getAverageDelta" assertions="1" time="0.015">
+		</testcase>
+		<testcase classname="getDelta" name="getDelta" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="getFPS" name="getFPS" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getTime" name="getTime" assertions="1" time="1.008">
+		</testcase>
+		<testcase classname="sleep" name="sleep" assertions="1" time="1.011">
+		</testcase>
+		<testcase classname="step" name="step" assertions="1" time="0.018">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.timer" tests="6" failures="0" skipped="0" time="2.002">
-		<testclass classname="getAverageDelta" name="getAverageDelta" time="0.000">
-		</testclass>
-		<testclass classname="getDelta" name="getDelta" time="0.000">
-		</testclass>
-		<testclass classname="getFPS" name="getFPS" time="0.000">
-		</testclass>
-		<testclass classname="getTime" name="getTime" time="1.001">
-		</testclass>
-		<testclass classname="sleep" name="sleep" time="1.001">
-		</testclass>
-		<testclass classname="step" name="step" time="0.000">
-		</testclass>
+	<testsuite name="love.video" tests="1" failures="0" skipped="1" time="0.031">
+		<testcase classname="VideoStream" name="VideoStream" assertions="0" time="0.014">
+			<skipped message="test class needs writing" />
+		</testcase>
+		<testcase classname="newVideoStream" name="newVideoStream" assertions="3" time="0.017">
+		</testcase>
 	</testsuite>
-	<testsuite name="love.video" tests="1" failures="0" skipped="0" time="0.005">
-		<testclass classname="newVideoStream" name="newVideoStream" time="0.005">
-		</testclass>
-	</testsuite>
-	<testsuite name="love.window" tests="32" failures="2" skipped="2" time="5.419">
-		<testclass classname="close" name="close" time="0.037">
-		</testclass>
-		<testclass classname="fromPixels" name="fromPixels" time="0.000">
-		</testclass>
-		<testclass classname="getDPIScale" name="getDPIScale" time="0.000">
-		</testclass>
-		<testclass classname="getDesktopDimensions" name="getDesktopDimensions" time="0.000">
-		</testclass>
-		<testclass classname="getDisplayCount" name="getDisplayCount" time="0.000">
-		</testclass>
-		<testclass classname="getDisplayName" name="getDisplayName" time="0.000">
-		</testclass>
-		<testclass classname="getDisplayOrientation" name="getDisplayOrientation" time="0.000">
-		</testclass>
-		<testclass classname="getFullscreen" name="getFullscreen" time="1.347">
-		</testclass>
-		<testclass classname="getFullscreenModes" name="getFullscreenModes" time="0.001">
-		</testclass>
-		<testclass classname="getIcon" name="getIcon" time="0.004">
-		</testclass>
-		<testclass classname="getMode" name="getMode" time="0.000">
-		</testclass>
-		<testclass classname="getPosition" name="getPosition" time="0.001">
-		</testclass>
-		<testclass classname="getSafeArea" name="getSafeArea" time="0.000">
-		</testclass>
-		<testclass classname="getTitle" name="getTitle" time="0.001">
-		</testclass>
-		<testclass classname="getVSync" name="getVSync" time="0.000">
-		</testclass>
-		<testclass classname="hasFocus" name="hasFocus" time="0.000">
-		</testclass>
-		<testclass classname="hasMouseFocus" name="hasMouseFocus" time="0.000">
-		</testclass>
-		<testclass classname="isDisplaySleepEnabled" name="isDisplaySleepEnabled" time="0.000">
-		</testclass>
-		<testclass classname="isMaximized" name="isMaximized" time="0.640">
-			<failure message="assert #2 [check window not maximized] expected 'true' got 'false'"></failure>
-		</testclass>
-		<testclass classname="isMinimized" name="isMinimized" time="0.645">
-		</testclass>
-		<testclass classname="isOpen" name="isOpen" time="0.036">
-		</testclass>
-		<testclass classname="isVisible" name="isVisible" time="0.031">
-		</testclass>
-		<testclass classname="maximize" name="maximize" time="0.000">
-			<failure message="assert #1 [check window maximized] expected 'true' got 'false'"></failure>
-		</testclass>
-		<testclass classname="minimize" name="minimize" time="0.646">
-		</testclass>
-		<testclass classname="requestAttention" name="requestAttention" time="0.000">
-		</testclass>
-		<testclass classname="restore" name="restore" time="0.642">
-		</testclass>
-		<testclass classname="setDisplaySleepEnabled" name="setDisplaySleepEnabled" time="0.000">
-		</testclass>
-		<testclass classname="setFullscreen" name="setFullscreen" time="1.370">
-		</testclass>
-		<testclass classname="setIcon" name="setIcon" time="0.002">
-		</testclass>
-		<testclass classname="setMode" name="setMode" time="0.008">
-		</testclass>
-		<testclass classname="setPosition" name="setPosition" time="0.001">
-		</testclass>
-		<testclass classname="setTitle" name="setTitle" time="0.000">
-		</testclass>
-		<testclass classname="setVSync" name="setVSync" time="0.000">
-		</testclass>
-		<testclass classname="showMessageBox" name="showMessageBox" time="0.000">
-		</testclass>
-		<testclass classname="toPixels" name="toPixels" time="0.000">
-		</testclass>
-		<testclass classname="updateMode" name="updateMode" time="0.006">
-		</testclass>
+	<testsuite name="love.window" tests="34" failures="0" skipped="2" time="5.273">
+		<testcase classname="close" name="close" assertions="2" time="0.035">
+		</testcase>
+		<testcase classname="fromPixels" name="fromPixels" assertions="1" time="0.002">
+		</testcase>
+		<testcase classname="getDPIScale" name="getDPIScale" assertions="1" time="0.002">
+		</testcase>
+		<testcase classname="getDesktopDimensions" name="getDesktopDimensions" assertions="2" time="0.016">
+		</testcase>
+		<testcase classname="getDisplayCount" name="getDisplayCount" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getDisplayName" name="getDisplayName" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="getDisplayOrientation" name="getDisplayOrientation" assertions="1" time="0.019">
+		</testcase>
+		<testcase classname="getFullscreen" name="getFullscreen" assertions="2" time="1.346">
+		</testcase>
+		<testcase classname="getFullscreenModes" name="getFullscreenModes" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="getIcon" name="getIcon" assertions="2" time="0.016">
+		</testcase>
+		<testcase classname="getMode" name="getMode" assertions="3" time="0.017">
+		</testcase>
+		<testcase classname="getPosition" name="getPosition" assertions="2" time="0.017">
+		</testcase>
+		<testcase classname="getSafeArea" name="getSafeArea" assertions="4" time="0.017">
+		</testcase>
+		<testcase classname="getTitle" name="getTitle" assertions="1" time="0.017">
+		</testcase>
+		<testcase classname="getVSync" name="getVSync" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="hasFocus" name="hasFocus" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="hasMouseFocus" name="hasMouseFocus" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="isDisplaySleepEnabled" name="isDisplaySleepEnabled" assertions="3" time="0.018">
+		</testcase>
+		<testcase classname="isMaximized" name="isMaximized" assertions="1" time="0.186">
+		</testcase>
+		<testcase classname="isMinimized" name="isMinimized" assertions="2" time="0.655">
+		</testcase>
+		<testcase classname="isOpen" name="isOpen" assertions="2" time="0.045">
+		</testcase>
+		<testcase classname="isVisible" name="isVisible" assertions="2" time="0.032">
+		</testcase>
+		<testcase classname="maximize" name="maximize" assertions="1" time="0.172">
+		</testcase>
+		<testcase classname="minimize" name="minimize" assertions="1" time="0.637">
+		</testcase>
+		<testcase classname="requestAttention" name="requestAttention" assertions="0" time="0.003">
+			<skipped message="cant test this worked" />
+		</testcase>
+		<testcase classname="restore" name="restore" assertions="2" time="0.650">
+		</testcase>
+		<testcase classname="setDisplaySleepEnabled" name="setDisplaySleepEnabled" assertions="2" time="0.012">
+		</testcase>
+		<testcase classname="setFullscreen" name="setFullscreen" assertions="2" time="1.122">
+		</testcase>
+		<testcase classname="setIcon" name="setIcon" assertions="1" time="0.006">
+		</testcase>
+		<testcase classname="setMode" name="setMode" assertions="4" time="0.018">
+		</testcase>
+		<testcase classname="setPosition" name="setPosition" assertions="2" time="0.017">
+		</testcase>
+		<testcase classname="setTitle" name="setTitle" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="setVSync" name="setVSync" assertions="2" time="0.017">
+		</testcase>
+		<testcase classname="showMessageBox" name="showMessageBox" assertions="0" time="0.017">
+			<skipped message="cant test this worked" />
+		</testcase>
+		<testcase classname="toPixels" name="toPixels" assertions="1" time="0.018">
+		</testcase>
+		<testcase classname="updateMode" name="updateMode" assertions="4" time="0.019">
+		</testcase>
 	</testsuite>
 </testsuites>

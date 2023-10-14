@@ -1,5 +1,5 @@
 -- & 'c:\Program Files\LOVE\love.exe' ./ --console 
--- /Applications/love.app/Contents/MacOS/love ./
+-- /Applications/love_12.app/Contents/MacOS/love ./testing
 
 -- load test objs
 require('classes.TestSuite')
@@ -25,7 +25,6 @@ if love.thread ~= nil then require('tests.thread') end
 if love.timer ~= nil then require('tests.timer') end
 if love.video ~= nil then require('tests.video') end
 if love.window ~= nil then require('tests.window') end
-require('tests.objects')
 
 -- love.load
 -- load given arguments and run the test suite
@@ -72,21 +71,21 @@ love.load = function(args)
   local cmderr = 'Invalid flag used'
   local modules = {
     'audio', 'data', 'event', 'filesystem', 'font', 'graphics',
-    'image', 'math', 'objects', 'physics', 'sound', 'system',
+    'image', 'math', 'physics', 'sound', 'system',
     'thread', 'timer', 'video', 'window'
   }
+  GITHUB_RUNNER = false
   for a=1,#arglist do
     if testcmd == '--runSpecificMethod' then
       if module == '' and love[ arglist[a] ] ~= nil then 
         module = arglist[a] 
         table.insert(modules, module)
-      end
-      if module ~= '' and love[module][ arglist[a] ] ~= nil and method == '' then 
-        method = arglist[a] 
+      elseif module ~= '' and love[module] ~= nil and method == '' then
+        if love.test[module][arglist[a]] ~= nil then method = arglist[a] end
       end
     end
     if testcmd == '--runSpecificModules' then
-      if love[ arglist[a] ] ~= nil or arglist[a] == 'objects' then 
+      if love[ arglist[a] ] ~= nil and arglist[a] ~= '--isRunner' then 
         table.insert(modules, arglist[a]) 
       end
     end
@@ -97,6 +96,9 @@ love.load = function(args)
     if arglist[a] == '--runSpecificModules' then
       testcmd = arglist[a]
       modules = {}
+    end
+    if arglist[a] == '--isRunner' then
+      GITHUB_RUNNER = true
     end
   end
 
@@ -142,6 +144,10 @@ love.load = function(args)
     love.test.output = 'lovetest_runAllTests'
   end
 
+  if GITHUB_RUNNER then
+    love.test.module:log('grey', '--isRunner')
+  end
+
   -- invalid command
   if love.test.module == nil then
     print(cmderr)
@@ -183,6 +189,10 @@ love.quit = function()
 end
 
 
+-- added so bad threads dont fail
+function love.threaderror(thread, errorstr) end
+
+
 -- string split helper
 function UtilStringSplit(str, splitter)
   local splits = {}
@@ -196,4 +206,8 @@ end
 -- string time formatter
 function UtilTimeFormat(seconds)
   return string.format("%.3f", tostring(seconds))
+end
+
+function UtilDebugLog(a, b, c)
+  if GITHUB_RUNNER == true then print("DEBUG ==> ", a, b, c) end
 end

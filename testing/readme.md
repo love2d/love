@@ -1,60 +1,87 @@
-# löve.test
-Basic testing suite for the löve APIs, based off of [this issue](https://github.com/love2d/love/issues/1745)
+# Lövetest
+Basic testing suite for the [Löve](https://github.com/love2d/love) APIs, based off of [this issue](https://github.com/love2d/love/issues/1745).
 
-Currently written for löve 12
+Currently written for [Löve 12](https://github.com/love2d/love/tree/12.0-development), which is still in development.
 
 ---
 
-## Primary Goals
+## Features
 - [x] Simple pass/fail tests in Lua with minimal setup 
-- [x] Ability to run all tests with a simple command.
+- [x] Ability to run all tests with a simple command
 - [x] Ability to see how many tests are passing/failing
-- [x] No platform-specific dependencies / scripts
 - [x] Ability to run a subset of tests
-- [x] Ability to easily run an individual test.
+- [x] Ability to easily run an individual test
+- [x] Ability to see all visual results at a glance
 - [x] Automatic testing that happens after every commit
+- [x] No platform-specific dependencies / scripts
+
+---
+
+## Coverage
+This is the status of all module tests currently.  
+| Module            | Done | Todo | Skip |
+| ----------------- | ---- | ---- | ---- |
+| 🟢 audio          |  28  |   0  |   0  |
+| 🟢 data           |  12  |   0  |   0  |
+| 🟡 event          |   4  |   1  |   1  |
+| 🟢 filesystem     |  28  |   0  |   2  |
+| 🟢 font           |   7  |   0  |   0  |
+| 🟡 graphics       |  93  |  14  |   1  |
+| 🟢 image          |   5  |   0  |   0  |
+| 🟢 math           |  20  |   0  |   0  |
+| 🟡 physics        |  22  |   6  |   0  |
+| 🟢 sound          |   4  |   0  |   0  |
+| 🟢 system         |   6  |   0  |   2  |
+| 🟢 thread         |   5  |   0  |   0  |
+| 🟢 timer          |   6  |   0  |   0  |
+| 🟢 video          |   2  |   0  |   0  |
+| 🟢 window         |  34  |   0  |   2  |
+
+> The following modules are not covered as we can't really emulate input nicely:  
+> `joystick`, `keyboard`, `mouse`, and `touch`
 
 ---
 
 ## Running Tests
-The initial pass is to keep things as simple as possible, and just run all the tests inside Löve to match how they'd be used by developers in-engine.
-To run the tests, download the repo and then run the main.lua as you would a löve game, i.e:
+The testsuite aims to keep things as simple as possible, and just runs all the tests inside Löve to match how they'd be used by developers in-engine.
+To run the tests, download the repo and then run the main.lua as you would a Löve game, i.e:
 
 WINDOWS: `& 'c:\Program Files\LOVE\love.exe' PATH_TO_TESTING_FOLDER --console`  
-MACOS: `/Applications/love.app/Contents/MacOS/love PATH_TO_TESTING_FOLDER`
+MACOS: `/Applications/love.app/Contents/MacOS/love PATH_TO_TESTING_FOLDER`  
+LINUX: `./love.AppImage PATH_TO_TESTING_FOLDER`
 
 By default all tests will be run for all modules.  
-
-If you want to specify a module you can add:  
-`--runSpecificModules filesystem`  
-For multiple modules, provide a comma seperate list:  
-`--runSpecificModules filesystem,audio,data"`
-
+If you want to specify a module/s you can use:  
+`--runSpecificModules filesystem,audio`  
 If you want to specify only 1 specific method only you can use:  
 `--runSpecificMethod filesystem write`
 
 All results will be printed in the console per method as PASS, FAIL, or SKIP with total assertions met on a module level and overall level.  
 
-An `XML` file in the style of [JUnit XML](https://www.ibm.com/docs/en/developer-for-zos/14.1?topic=formats-junit-xml-format) will be generated in the `/output` directory, along with a `HTML` and a `Markdown` file with a summary of all tests (including visuals for love.graphics tests).  
-> An example of both types of output can be found in the `/examples` folder  
-
-The Markdown file can be used with [this github action](https://github.com/ellraiser/love-test-report) if you want to output the report results to your CI.
+When finished, the following files will be generated in the `/output` directory with a summary of the test results:
+- an `XML` file in the style of [JUnit XML](https://www.ibm.com/docs/en/developer-for-zos/14.1?topic=formats-junit-xml-format)
+- a `HTML` file that shows any visual test results
+- a `Markdown` file for use with [this github action](https://github.com/ellraiser/love-test-report)
+> An example of all types of output can be found in the `/examples`  
+> The visual results of any graphic tests can be found in `/output/actual`
 
 ---
 
 ## Architecture
-Each method has it's own test method written in `/tests` under the matching module name.
+Each method and object has it's own test method written in `/tests` under the matching module name.
 
 When you run the tests, a single TestSuite object is created which handles the progress + totals for all the tests.  
 Each module has a TestModule object created, and each test method has a TestMethod object created which keeps track of assertions for that method. You can currently do the following assertions:
 - **assertNotNil**(value)
-- **assertEquals**(expected, actual)
-- **assertNotEquals**(expected, actual)
-- **assertRange**(actual, min, max)
-- **assertMatch**({option1, option2, option3 ...}, actual) 
-- **assertGreaterEqual**(expected, actual)
-- **assertLessEqual**(expected, actual)
+- **assertEquals**(expected, actual, label)
+- **assertNotEquals**(expected, actual, label)
+- **assertRange**(actual, min, max, label)
+- **assertMatch**({option1, option2, option3 ...}, actual, label) 
+- **assertGreaterEqual**(expected, actual, label)
+- **assertLessEqual**(expected, actual, label)
 - **assertObject**(table)
+- **assertPixels**(imgdata, pixeltable, label)
+- **assertCoords**(expected, actual, label)
 
 Example test method:
 ```lua
@@ -76,52 +103,22 @@ end
 
 After each test method is ran, the assertions are totalled up, printed, and we move onto the next method! Once all methods in the suite are run a total pass/fail/skip is given for that module and we move onto the next module (if any)
 
-For sanity-checking, if it's currently not covered or we're not sure how to test yet we can set the test to be skipped with `test:skipTest(reason)` - this way we still see the method listed in the tests without it affected the pass/fail totals
-
----
-
-## Coverage
-This is the status of all module tests currently.  
-| Module                | Passed | Failed | Skipped | Time   |
-| --------------------- | ------ | ------ | ------- | ------ |
-| 🟢 love.audio | 26 | 0 | 0 | 2.602s |
-| 🟢 love.data | 7 | 0 | 3 | 1.003s |
-| 🟢 love.event | 4 | 0 | 2 | 0.599s |
-| 🟢 love.filesystem | 27 | 0 | 2 | 2.900s |
-| 🟢 love.font | 4 | 0 | 1 | 0.500s |
-| 🟢 love.graphics | 81 | 0 | 15 | 10.678s |
-| 🟢 love.image | 3 | 0 | 0 | 0.300s |
-| 🟢 love.math | 17 | 0 | 0 | 1.678s |
-| 🟢 love.physics | 22 | 0 | 0 | 2.197s |
-| 🟢 love.sound | 2 | 0 | 0 | 0.200s |
-| 🟢 love.system | 6 | 0 | 2 | 0.802s |
-| 🟢 love.thread | 3 | 0 | 0 | 0.300s |
-| 🟢 love.timer | 6 | 0 | 0 | 2.358s |
-| 🟢 love.video | 1 | 0 | 0 | 0.100s |
-| 🟢 love.window | 34 | 0 | 2 | 8.050s |  
-
-The following modules are not covered as we can't really emulate input nicely:  
-`joystick`, `keyboard`, `mouse`, and `touch`
+For sanity-checking, if it's currently not covered or it's not possible to test the method we can set the test to be skipped with `test:skipTest(reason)` - this way we still see the method listed in the test output without it affected the pass/fail totals
 
 ---
 
 ## Todo 
 Modules with some small bits needed or needing sense checking:
-- **love.data** - packing methods need writing cos i dont really get what they are
 - **love.event** - love.event.wait or love.event.pump need writing if possible I dunno how to check
 - **love.font** - newBMFontRasterizer() wiki entry is wrong so not sure whats expected
 - **love.graphics** - still need to do tests for the main drawing methods
 - **love.image** - ideally isCompressed should have an example of all compressed files love can take
-- **love.math** - linearToGamma + gammaToLinear using direct formulas don't get same value back
 - **love.*.objects** - all objects tests still to be done
 - **love.graphics.setStencilTest** - deprecated, replaced by setStencilMode()
 
 ---
 
-## Stretch Goals
-- [ ] Tests can compare visual results to a reference image
-- [ ] Ability to see all visual results at a glance
+## Future Goals
+- [ ] Tests can compare visual results to a reference image (partially done)
 - [ ] Ability to test loading different combinations of modules
 - [ ] Performance tests
-
-There is some unused code in the Test.lua class to add preview vs actual images to the HTML output

@@ -1,6 +1,101 @@
 -- love.filesystem
 
 
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+------------------------------------OBJECTS-------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+-- File (love.filesystem.newFile)
+love.test.filesystem.File = function(test)
+  -- setup a file to play with
+  local file1 = love.filesystem.openFile('data.txt', 'w')
+  file1:write('helloworld')
+  test:assertObject(file1)
+  file1:close()
+  -- test read mode
+  file1:open('r')
+  test:assertEquals('r', file1:getMode(), 'check read mode')
+  local contents, size = file1:read()
+  test:assertEquals('helloworld', contents)
+  test:assertEquals(10, size, 'check file read')
+  test:assertEquals(10, file1:getSize())
+  local ok, err = file1:write('hello')
+  test:assertNotEquals(nil, err, 'check cant write in read mode')
+  local iterator = file1:lines()
+  test:assertNotEquals(nil, iterator, 'check can read lines')
+  test:assertEquals('data.txt', file1:getFilename(), 'check filename matches')
+  file1:close()
+  -- test write mode
+  file1:open('w')
+  test:assertEquals('w', file1:getMode(), 'check write mode')
+  contents, size = file1:read()
+  test:assertEquals(nil, contents, 'check cant read file in write mode')
+  test:assertEquals('string', type(size), 'check err message shown')
+  ok, err = file1:write('helloworld')
+  test:assertEquals(true, ok, 'check file write')
+  test:assertEquals(nil, err, 'check no err writing')
+  -- test open/closing
+  file1:open('r')
+  test:assertEquals(true, file1:isOpen(), 'check file is open')
+  file1:close()
+  test:assertEquals(false, file1:isOpen(), 'check file gets closed')
+  file1:close()
+  -- test buffering and flushing
+  file1:open('w')
+  ok, err = file1:setBuffer('full', 10000)
+  test:assertEquals(true, ok)
+  test:assertEquals('full', file1:getBuffer())
+  file1:write('replacedcontent')
+  file1:flush()
+  file1:close()
+  file1:open('r')
+  contents, size = file1:read()
+  test:assertEquals('replacedcontent', contents, 'check buffered content was written')
+  file1:close()
+  -- loop through file data with seek/tell until EOF
+  file1:open('r')
+  local counter = 0
+  for i=1,100 do
+    file1:seek(i)
+    test:assertEquals(i, file1:tell())
+    if file1:isEOF() == true then
+      counter = i
+      break
+    end
+  end
+  test:assertEquals(counter, 15)
+  file1:close()
+end
+
+
+-- FileData (love.filesystem.newFileData)
+love.test.filesystem.FileData = function(test)
+  -- create new obj
+  local fdata = love.filesystem.newFileData('helloworld', 'test.txt')
+  test:assertObject(fdata)
+  test:assertEquals('test.txt', fdata:getFilename())
+  test:assertEquals('txt', fdata:getExtension())
+  -- check properties match expected
+  test:assertEquals('helloworld', fdata:getString(), 'check data string')
+  test:assertEquals(10, fdata:getSize(), 'check data size')
+  -- check cloning the bytedata
+  local clonedfdata = fdata:clone()
+  test:assertObject(clonedfdata)
+  test:assertEquals('helloworld', clonedfdata:getString(), 'check cloned data')
+  test:assertEquals(10, clonedfdata:getSize(), 'check cloned size')
+end
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+------------------------------------METHODS-------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
 -- love.filesystem.append
 love.test.filesystem.append = function(test)
 	-- create a new file to test with
@@ -116,7 +211,7 @@ end
 -- love.filesystem.getSource
 -- @NOTE i dont think we can test this cos love calls it first
 love.test.filesystem.getSource = function(test)
-  test:skipTest('not sure can be tested as used internally')
+  test:skipTest('used internally')
 end
 
 
@@ -229,7 +324,7 @@ end
 
 
 -- love.filesystem.openFile
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.filesystem.openFile = function(test)
   test:assertNotNil(love.filesystem.openFile('file2.txt', 'w'))
   test:assertNotNil(love.filesystem.openFile('file2.txt', 'r'))
@@ -240,7 +335,7 @@ end
 
 
 -- love.filesystem.newFileData
--- @NOTE this is just basic nil checking, full obj test are in objects.lua
+-- @NOTE this is just basic nil checking, objs have their own test method
 love.test.filesystem.newFileData = function(test)
   test:assertNotNil(love.filesystem.newFileData('helloworld', 'file1'))
 end
@@ -307,9 +402,8 @@ end
 
 
 -- love.filesystem.setSource
--- @NOTE dont think can test this cos used internally?
 love.test.filesystem.setSource = function(test)
-  test:skipTest('not sure can be tested as used internally')
+  test:skipTest('used internally')
 end
 
 

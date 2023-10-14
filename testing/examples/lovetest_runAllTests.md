@@ -1,26 +1,28 @@
-<!-- PASSED 244 || FAILED 0 || SKIPPED 61 || TIME 37.853 -->
+<!-- PASSED 254 || FAILED 1 || SKIPPED 50 || TIME 12.195 -->
 
-**305** tests were completed in **37.853s** with **244** passed, **0** failed, and **61** skipped
+**305** tests were completed in **12.195s** with **254** passed, **1** failed, and **50** skipped
 
 ### Report
 | Module                | Passed | Failed | Skipped | Time   |
 | --------------------- | ------ | ------ | ------- | ------ |
-| 🟢 love.audio | 26 | 0 | 0 | 2.605s |
-| 🟢 love.data | 7 | 0 | 3 | 1.003s |
-| 🟢 love.event | 4 | 0 | 2 | 0.600s |
-| 🟢 love.filesystem | 27 | 0 | 2 | 3.030s |
-| 🟢 love.font | 4 | 0 | 1 | 0.511s |
-| 🟢 love.graphics | 81 | 0 | 15 | 10.599s |
-| 🟢 love.image | 3 | 0 | 0 | 0.299s |
-| 🟢 love.math | 17 | 0 | 0 | 1.821s |
-| 🟢 love.objects | 1 | 0 | 34 | 3.603s |
-| 🟢 love.physics | 22 | 0 | 0 | 2.222s |
-| 🟢 love.sound | 2 | 0 | 0 | 0.199s |
-| 🟢 love.system | 6 | 0 | 2 | 0.844s |
-| 🟢 love.thread | 3 | 0 | 0 | 0.318s |
-| 🟢 love.timer | 6 | 0 | 0 | 2.309s |
-| 🟢 love.video | 1 | 0 | 0 | 0.114s |
-| 🟢 love.window | 34 | 0 | 2 | 7.778s |
+| 🟢 audio | 26 | 0 | 2 | 0.473s |
+| 🟢 data | 7 | 0 | 5 | 0.212s |
+| 🟢 event | 4 | 0 | 2 | 0.108s |
+| 🟢 filesystem | 28 | 0 | 3 | 0.556s |
+| 🟢 font | 4 | 0 | 3 | 0.127s |
+| 🔴 graphics | 91 | 1 | 15 | 2.091s |
+| 🟢 image | 3 | 0 | 2 | 0.087s |
+| 🟢 math | 17 | 0 | 3 | 0.358s |
+| 🟢 physics | 22 | 0 | 6 | 0.492s |
+| 🟢 sound | 2 | 0 | 2 | 0.072s |
+| 🟢 system | 6 | 0 | 2 | 0.142s |
+| 🟢 thread | 3 | 0 | 2 | 0.088s |
+| 🟢 timer | 6 | 0 | 0 | 2.086s |
+| 🟢 video | 1 | 0 | 1 | 0.031s |
+| 🟢 window | 34 | 0 | 2 | 5.273s |
 
 
 ### Failures
+> 🔴 setColorMask  
+> assert #7 [check pixel b for yellow at 0,0(set color mask)] expected '0' got '1'  
+

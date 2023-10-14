@@ -1,31 +1,26 @@
 `/Applications/love_12.app/Contents/MacOS/love ./testing`
 
-## TESTSUITE
-- [ ] move object methods to respective modules
-- [ ] start object methods
-- [ ] setStencilMode to replace setStencilTest
+## GENERAL
+- [ ] check 12.0 wiki page for new methods
+- [ ] change delay system to use coroutines
+- [ ] need a platform: format table somewhere for compressed formats (i.e. DXT not supported)
 
-## GRAPHICS
+## OBJECT TESTS
+- [ ] physics.Body, physics.Contact, physics.Fixture,
+      physics.Joint, physics.Shape, physics.World
+- [ ] threads.Channel, threads.Thread
+
+## METHOD TESTS
+- [ ] event.wait
+- [ ] graphics.present 
+- [ ] graphics.drawInstanced
+
+## DEPRECATED
+- [ ] deprecated setStencilTest (use setStencilMode)
+- [ ] deprecated physics methods
+
+## GRAPHIC TESTS
 Methods that need a actual graphic pixel checks if possible:
 - [ ] setDepthMode
 - [ ] setFrontFaceWinding
 - [ ] setMeshCullMode
-- [ ] present
-- [ ] drawInstanced
-
-## FUTURE
-- [ ] need a platform: format table somewhere for compressed formats (i.e. DXT not supported)
-- [ ] use coroutines for the delay action? i.e. wrap each test call in coroutine 
-- [ ] could nil check some joystick and keyboard methods?
-
-## GITHUB ACTION CI
-- [ ] linux needs to run xvfb-run with the appimage
-- [ ] try vulkan on windows/linux
-- [ ] ios test run?
-
-## NOTES
-Can't run --renderers metal on github action images:
-Run love-macos/love.app/Contents/MacOS/love testing --renderers metal
-Cannot create Metal renderer: Metal is not supported on this system.
-Cannot create graphics: no supported renderer on this system.
-Error: Cannot create graphics: no supported renderer on this system.
