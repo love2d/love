@@ -1864,28 +1864,9 @@ void Graphics::setWireframe(bool enable)
 	}
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, bool /*readable*/) const
-{
-	switch (format)
-	{
-	case PIXELFORMAT_NORMAL:
-		if (isGammaCorrect())
-			return PIXELFORMAT_RGBA8_UNORM_sRGB;
-		else
-			return PIXELFORMAT_RGBA8_UNORM;
-	case PIXELFORMAT_HDR:
-		return PIXELFORMAT_RGBA16_FLOAT;
-	default:
-		return format;
-	}
-}
-
 bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
 {
-	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
-	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
-
-	format = getSizedFormat(format, rendertarget, readable);
+	format = getSizedFormat(format);
 
 	if (sRGB)
 		format = getSRGBPixelFormat(format);
@@ -1902,7 +1883,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 
 	uint32 flags = PIXELFORMATUSAGEFLAGS_NONE;
 
-	if (isPixelFormatCompressed(format) && rendertarget)
+	if (isPixelFormatCompressed(format) && (usage & rt) != 0)
 		return false;
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf

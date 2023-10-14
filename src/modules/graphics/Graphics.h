@@ -819,7 +819,7 @@ public:
 	/**
 	 * Converts PIXELFORMAT_NORMAL and PIXELFORMAT_HDR into a real format.
 	 **/
-	virtual PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const = 0;
+	PixelFormat getSizedFormat(PixelFormat format) const;
 
 	/**
 	 * Gets whether the specified pixel format usage is supported.

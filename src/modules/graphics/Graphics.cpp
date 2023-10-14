@@ -2389,6 +2389,22 @@ const Graphics::Capabilities &Graphics::getCapabilities() const
 	return capabilities;
 }
 
+PixelFormat Graphics::getSizedFormat(PixelFormat format) const
+{
+	switch (format)
+	{
+	case PIXELFORMAT_NORMAL:
+		if (isGammaCorrect())
+			return PIXELFORMAT_RGBA8_UNORM_sRGB;
+		else
+			return PIXELFORMAT_RGBA8_UNORM;
+	case PIXELFORMAT_HDR:
+		return PIXELFORMAT_RGBA16_FLOAT;
+	default:
+		return format;
+	}
+}
+
 Graphics::Stats Graphics::getStats() const
 {
 	Stats stats;

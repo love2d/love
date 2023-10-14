@@ -1057,28 +1057,9 @@ void Graphics::setWireframe(bool enable)
 	states.back().wireframe = enable;
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const
-{
-	switch (format)
-	{
-	case PIXELFORMAT_NORMAL:
-		if (isGammaCorrect())
-			return PIXELFORMAT_RGBA8_UNORM_sRGB;
-		else
-			return PIXELFORMAT_RGBA8_UNORM;
-	case PIXELFORMAT_HDR:
-		return PIXELFORMAT_RGBA16_FLOAT;
-	default:
-		return format;
-	}
-}
-
 bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
 {
-	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
-	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
-
-	format = getSizedFormat(format, rendertarget, readable);
+	format = getSizedFormat(format);
 
 	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
 

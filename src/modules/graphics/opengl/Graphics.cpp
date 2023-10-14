@@ -1734,31 +1734,6 @@ void Graphics::initCapabilities()
 	}
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const
-{
-	uint32 requiredflags = 0;
-	if (rendertarget)
-		requiredflags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
-	if (readable)
-		requiredflags |= PIXELFORMATUSAGEFLAGS_SAMPLE;
-
-	switch (format)
-	{
-	case PIXELFORMAT_NORMAL:
-		if (isGammaCorrect())
-			return PIXELFORMAT_RGBA8_UNORM_sRGB;
-		else if ((OpenGL::getPixelFormatUsageFlags(PIXELFORMAT_RGBA8_UNORM) & requiredflags) != requiredflags)
-			// 32-bit render targets don't have guaranteed support on GLES2.
-			return PIXELFORMAT_RGBA4_UNORM;
-		else
-			return PIXELFORMAT_RGBA8_UNORM;
-	case PIXELFORMAT_HDR:
-		return PIXELFORMAT_RGBA16_FLOAT;
-	default:
-		return format;
-	}
-}
-
 uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 {
 	uint32 usage = OpenGL::getPixelFormatUsageFlags(format);
@@ -1844,11 +1819,9 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 	if (sRGB)
 		format = getSRGBPixelFormat(format);
 
-	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
+	format = getSizedFormat(format);
+
 	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
-
-	format = getSizedFormat(format, rendertarget, readable);
-
 	return (usage & pixelFormatUsage[format][readable ? 1 : 0]) == usage;
 }
 
