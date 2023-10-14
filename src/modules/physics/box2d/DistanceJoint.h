@@ -39,6 +39,8 @@ class DistanceJoint : public Joint
 {
 public:
 
+	static love::Type type;
+
 	/**
 	 * Creates a DistanceJoint connecting body1 to body2.
 	 **/
