@@ -168,7 +168,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	, computeWrite(settings.computeWrite)
 	, readable(true)
 	, mipmapsMode(settings.mipmaps)
-	, sRGB(isGammaCorrect() && !settings.linear)
+	, sRGB(false)
 	, width(settings.width)
 	, height(settings.height)
 	, depth(settings.type == TEXTURE_VOLUME ? settings.layers : 1)
@@ -204,7 +204,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 		love::image::ImageDataBase *slice = slices->get(0, 0);
 
 		format = slice->getFormat();
-		if (sRGB)
+		if (isGammaCorrect() && !settings.linear)
 			format = getSRGBPixelFormat(format);
 
 		pixelWidth = slice->getWidth();
@@ -236,6 +236,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 		readable = !renderTarget || !isPixelFormatDepthStencil(format);
 
 	format = gfx->getSizedFormat(format, renderTarget, readable);
+	sRGB = isPixelFormatSRGB(format) || (isCompressed() && isGammaCorrect() && !settings.linear);
 
 	if (mipmapsMode == MIPMAPS_AUTO && isCompressed())
 		mipmapsMode = MIPMAPS_MANUAL;
