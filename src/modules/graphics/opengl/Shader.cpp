@@ -175,8 +175,7 @@ void Shader::mapActiveUniforms()
 			else if ((u.access & ACCESS_READ) != 0)
 				binding.access = GL_READ_ONLY;
 
-			bool sRGB = false;
-			auto fmt = OpenGL::convertPixelFormat(u.storageTextureFormat, false, sRGB);
+			auto fmt = OpenGL::convertPixelFormat(u.storageTextureFormat, false);
 			binding.internalFormat = fmt.internalformat;
 
 			for (int i = 0; i < u.count; i++)

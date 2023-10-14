@@ -168,7 +168,6 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	, computeWrite(settings.computeWrite)
 	, readable(true)
 	, mipmapsMode(settings.mipmaps)
-	, sRGB(false)
 	, width(settings.width)
 	, height(settings.height)
 	, depth(settings.type == TEXTURE_VOLUME ? settings.layers : 1)
@@ -236,7 +235,8 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 		readable = !renderTarget || !isPixelFormatDepthStencil(format);
 
 	format = gfx->getSizedFormat(format);
-	sRGB = isPixelFormatSRGB(format) || (isCompressed() && isGammaCorrect() && !settings.linear);
+	if (!isGammaCorrect() || settings.linear)
+		format = getLinearPixelFormat(format);
 
 	if (mipmapsMode == MIPMAPS_AUTO && isCompressed())
 		mipmapsMode = MIPMAPS_MANUAL;
@@ -291,7 +291,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	if (computeWrite)
 		usage |= PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
 
-	if (!gfx->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, sRGB))
+	if (!gfx->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage))
 	{
 		const char *fstr = "unknown";
 		love::getConstant(format, fstr);
@@ -622,7 +622,7 @@ bool Texture::isCompressed() const
 
 bool Texture::isFormatLinear() const
 {
-	return isGammaCorrect() && !sRGB && !isPixelFormatSRGB(format);
+	return isGammaCorrect() && !isPixelFormatSRGB(format);
 }
 
 bool Texture::isValidSlice(int slice, int mip) const

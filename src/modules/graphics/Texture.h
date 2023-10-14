@@ -325,8 +325,6 @@ protected:
 
 	MipmapsMode mipmapsMode;
 
-	bool sRGB;
-
 	int width;
 	int height;
 

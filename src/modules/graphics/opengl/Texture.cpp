@@ -56,8 +56,7 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 			glReadBuffer(GL_NONE);
 		}
 
-		bool unusedSRGB = false;
-		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, unusedSRGB);
+		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false);
 
 		int faces = texType == TEXTURE_CUBE ? 6 : 1;
 
@@ -125,8 +124,7 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 
 static GLenum newRenderbuffer(int width, int height, int &samples, PixelFormat pixelformat, GLuint &buffer)
 {
-	bool unusedSRGB = false;
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, true, unusedSRGB);
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, true);
 
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 
@@ -282,7 +280,7 @@ void Texture::createTexture()
 	// remember some driver issues on some old Android systems, maybe...
 	// For now, the base class enforces data on init for compressed textures.
 	if (!isCompressed())
-		gl.rawTexStorage(texType, mipcount, format, sRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
+		gl.rawTexStorage(texType, mipcount, format, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
 
 	// rawTexStorage handles this for uncompressed textures.
 	if (isCompressed() && (GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0))
@@ -292,7 +290,7 @@ void Texture::createTexture()
 	int h = pixelHeight;
 	int d = depth;
 
-	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false, sRGB);
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false);
 
 	for (int mip = 0; mip < mipcount; mip++)
 	{
@@ -460,7 +458,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 
 	gl.bindTextureToUnit(this, 0, false);
 
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, false, sRGB);
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, false);
 	GLenum gltarget = OpenGL::getGLTextureType(texType);
 
 	if (texType == TEXTURE_CUBE)
@@ -508,8 +506,7 @@ void Texture::readbackInternal(int slice, int mipmap, const Rect &rect, int dest
 
 	gl.bindTextureToUnit(this, 0, false);
 
-	bool isSRGB = false;
-	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false, isSRGB);
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false);
 
 	if (gl.isCopyTextureToBufferSupported())
 	{

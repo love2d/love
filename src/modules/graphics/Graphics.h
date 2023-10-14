@@ -824,7 +824,7 @@ public:
 	/**
 	 * Gets whether the specified pixel format usage is supported.
 	 **/
-	virtual bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) = 0;
+	virtual bool isPixelFormatSupported(PixelFormat format, uint32 usage) = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.

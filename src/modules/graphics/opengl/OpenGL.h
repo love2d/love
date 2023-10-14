@@ -381,7 +381,7 @@ public:
 	 * to glTexImage2D/3D for all levels and slices of a texture otherwise.
 	 * NOTE: this does not handle compressed texture formats.
 	 **/
-	bool rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, bool &isSRGB, int width, int height, int depth = 1);
+	bool rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, int width, int height, int depth = 1);
 
 	bool isTextureTypeSupported(TextureType type) const;
 	bool isBufferUsageSupported(BufferUsage usage) const;
@@ -475,7 +475,7 @@ public:
 	static GLint getGLWrapMode(SamplerState::WrapMode wmode);
 	static GLint getGLCompareMode(CompareMode mode);
 
-	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);
+	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer);
 	static bool isTexStorageSupported();
 	static uint32 getPixelFormatUsageFlags(PixelFormat pixelformat);
 

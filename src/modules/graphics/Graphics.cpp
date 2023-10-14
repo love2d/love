@@ -925,7 +925,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		PixelFormat dsformat = PIXELFORMAT_STENCIL8;
 		if (wantsdepth && wantsstencil)
 			dsformat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-		else if (wantsdepth && isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, PIXELFORMATUSAGEFLAGS_RENDERTARGET, false))
+		else if (wantsdepth && isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
 			dsformat = PIXELFORMAT_DEPTH24_UNORM;
 		else if (wantsdepth)
 			dsformat = PIXELFORMAT_DEPTH16_UNORM;
@@ -2395,7 +2395,7 @@ PixelFormat Graphics::getSizedFormat(PixelFormat format) const
 	{
 	case PIXELFORMAT_NORMAL:
 		if (isGammaCorrect())
-			return PIXELFORMAT_RGBA8_UNORM_sRGB;
+			return PIXELFORMAT_RGBA8_sRGB;
 		else
 			return PIXELFORMAT_RGBA8_UNORM;
 	case PIXELFORMAT_HDR:

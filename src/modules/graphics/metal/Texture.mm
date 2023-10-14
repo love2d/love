@@ -62,7 +62,7 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 	desc.mipmapLevelCount = mipmapCount;
 	desc.textureType = getMTLTextureType(texType, 1);
 
-	auto formatdesc = Metal::convertPixelFormat(device, format, sRGB);
+	auto formatdesc = Metal::convertPixelFormat(device, format);
 	desc.pixelFormat = formatdesc.format;
 	if (formatdesc.swizzled)
 	{

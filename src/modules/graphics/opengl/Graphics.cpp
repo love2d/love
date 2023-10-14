@@ -250,7 +250,7 @@ void Graphics::updateBackbuffer(int width, int height, int /*pixelwidth*/, int p
 		settings.renderTarget = true;
 		settings.readable.set(false);
 
-		settings.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_UNORM_sRGB : PIXELFORMAT_RGBA8_UNORM;
+		settings.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_sRGB : PIXELFORMAT_RGBA8_UNORM;
 		internalBackbuffer.set(newTexture(settings), Acquire::NORETAIN);
 
 		settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
@@ -1189,8 +1189,7 @@ GLuint Graphics::bindCachedFBO(const RenderTargets &targets)
 		auto attachRT = [&](const RenderTarget &rt)
 		{
 			bool renderbuffer = msaa > 1 || !rt.texture->isReadable();
-			bool srgb = false;
-			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.texture->getPixelFormat(), renderbuffer, srgb);
+			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.texture->getPixelFormat(), renderbuffer);
 
 			if (fmt.framebufferAttachments[0] == GL_COLOR_ATTACHMENT0)
 			{
@@ -1754,9 +1753,8 @@ uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 	{
 		GLuint texture = 0;
 		GLuint renderbuffer = 0;
-		bool sRGB = isPixelFormatSRGB(format);
 
-		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, !readable, sRGB);
+		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, !readable);
 
 		GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 
@@ -1778,7 +1776,7 @@ uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 			s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
 			gl.setSamplerState(TEXTURE_2D, s);
 
-			gl.rawTexStorage(TEXTURE_2D, 1, format, sRGB, 1, 1);
+			gl.rawTexStorage(TEXTURE_2D, 1, format, 1, 1);
 		}
 		else
 		{
@@ -1814,11 +1812,8 @@ uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 	return usage;
 }
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
+bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 {
-	if (sRGB)
-		format = getSRGBPixelFormat(format);
-
 	format = getSizedFormat(format);
 
 	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;

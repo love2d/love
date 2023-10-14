@@ -59,7 +59,7 @@ public:
 	static void resetShaderSwitches();
 
 	static VkFormat getVulkanVertexFormat(DataFormat format);
-	static TextureFormat getTextureFormat(PixelFormat, bool sRGB);
+	static TextureFormat getTextureFormat(PixelFormat format);
 	static std::string getVendorName(uint32_t vendorId);
 	static std::string getVulkanApiVersion(uint32_t apiVersion);
 	static VkPrimitiveTopology getPrimitiveTypeTopology(graphics::PrimitiveType);

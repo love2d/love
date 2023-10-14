@@ -297,7 +297,7 @@ public:
 	void setBlendState(const BlendState &blend) override;
 	void setPointSize(float size) override;
 	void setWireframe(bool enable) override;
-	bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB) override;
+	bool isPixelFormatSupported(PixelFormat format, uint32 usage) override;
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
