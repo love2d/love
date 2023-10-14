@@ -93,14 +93,14 @@ public:
 	 **/
 	PixelFormat getFormat() const;
 
-	bool isSRGB() const;
+	void setLinear(bool linear);
+	bool isLinear() const;
 
 	CompressedSlice *getSlice(int slice, int miplevel) const;
 
 protected:
 
 	PixelFormat format;
-	bool sRGB;
 
 	// Single block of memory containing all of the sub-images.
 	StrongRef<ByteData> memory;

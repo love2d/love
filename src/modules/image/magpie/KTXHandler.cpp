@@ -137,10 +137,8 @@ enum KTXGLInternalFormat
 	KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 0x93DD
 };
 
-PixelFormat convertFormat(uint32 glformat, bool &sRGB)
+PixelFormat convertFormat(uint32 glformat)
 {
-	sRGB = false;
-
 	// hnnngg ASTC...
 
 	switch (glformat)
@@ -160,18 +158,15 @@ PixelFormat convertFormat(uint32 glformat, bool &sRGB)
 	case KTX_GL_COMPRESSED_RGB8_ETC2:
 		return PIXELFORMAT_ETC2_RGB_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ETC2:
-		sRGB = true;
-		return PIXELFORMAT_ETC2_RGB_UNORM;
+		return PIXELFORMAT_ETC2_RGB_sRGB;
 	case KTX_GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2:
 		return PIXELFORMAT_ETC2_RGBA1_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2:
-		sRGB = true;
-		return PIXELFORMAT_ETC2_RGBA1_UNORM;
+		return PIXELFORMAT_ETC2_RGBA1_sRGB;
 	case KTX_GL_COMPRESSED_RGBA8_ETC2_EAC:
 		return PIXELFORMAT_ETC2_RGBA_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC:
-		sRGB = true;
-		return PIXELFORMAT_ETC2_RGBA_UNORM;
+		return PIXELFORMAT_ETC2_RGBA_sRGB;
 
 	// PVRTC.
 	case KTX_GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
@@ -185,15 +180,15 @@ PixelFormat convertFormat(uint32 glformat, bool &sRGB)
 
 	// DXT.
 	case KTX_GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:
-		sRGB = true;
+		return PIXELFORMAT_DXT1_sRGB;
 	case KTX_GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
 		return PIXELFORMAT_DXT1_UNORM;
 	case KTX_GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
-		sRGB = true;
+		return PIXELFORMAT_DXT3_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
 		return PIXELFORMAT_DXT3_UNORM;
 	case KTX_GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
-		sRGB = true;
+		return PIXELFORMAT_DXT5_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
 		return PIXELFORMAT_DXT5_UNORM;
 
@@ -209,7 +204,7 @@ PixelFormat convertFormat(uint32 glformat, bool &sRGB)
 
 	// BC6 and BC7.
 	case KTX_GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
-		sRGB = true;
+		return PIXELFORMAT_BC7_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_BPTC_UNORM:
 		return PIXELFORMAT_BC7_UNORM;
 	case KTX_GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
@@ -219,59 +214,59 @@ PixelFormat convertFormat(uint32 glformat, bool &sRGB)
 
 	// ASTC.
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_4x4_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_4x4_KHR:
 		return PIXELFORMAT_ASTC_4x4_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_5x4_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_5x4_KHR:
 		return PIXELFORMAT_ASTC_5x4_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_5x5_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_5x5_KHR:
 		return PIXELFORMAT_ASTC_5x5_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_6x5_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_6x5_KHR:
 		return PIXELFORMAT_ASTC_6x5_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_6x6_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_6x6_KHR:
 		return PIXELFORMAT_ASTC_6x6_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_8x5_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_8x5_KHR:
 		return PIXELFORMAT_ASTC_8x5_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_8x6_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_8x6_KHR:
 		return PIXELFORMAT_ASTC_8x6_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_8x8_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_8x8_KHR:
 		return PIXELFORMAT_ASTC_8x8_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_10x5_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_10x5_KHR:
 		return PIXELFORMAT_ASTC_10x5_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_10x6_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_10x6_KHR:
 		return PIXELFORMAT_ASTC_10x6_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_10x8_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_10x8_KHR:
 		return PIXELFORMAT_ASTC_10x8_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_10x10_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_10x10_KHR:
 		return PIXELFORMAT_ASTC_10x10_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_12x10_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_12x10_KHR:
 		return PIXELFORMAT_ASTC_12x10_UNORM;
 	case KTX_GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR:
-		sRGB = true;
+		return PIXELFORMAT_ASTC_12x12_sRGB;
 	case KTX_GL_COMPRESSED_RGBA_ASTC_12x12_KHR:
 		return PIXELFORMAT_ASTC_12x12_UNORM;
 	default:
@@ -298,7 +293,7 @@ bool KTXHandler::canParseCompressed(Data *data)
 	return true;
 }
 
-StrongRef<ByteData> KTXHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> KTXHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format)
 {
 	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not a KTX file?)");
@@ -314,8 +309,7 @@ StrongRef<ByteData> KTXHandler::parseCompressed(Data *filedata, std::vector<Stro
 
 	header.numberOfMipmapLevels = std::max(header.numberOfMipmapLevels, 1u);
 
-	bool isSRGB = false;
-	PixelFormat cformat = convertFormat(header.glInternalFormat, isSRGB);
+	PixelFormat cformat = convertFormat(header.glInternalFormat);
 
 	if (cformat == PIXELFORMAT_UNKNOWN)
 		throw love::Exception("Unsupported image format in KTX file.");
@@ -386,8 +380,6 @@ StrongRef<ByteData> KTXHandler::parseCompressed(Data *filedata, std::vector<Stro
 	}
 
 	format = cformat;
-	sRGB = isSRGB;
-
 	return memory;
 }
 

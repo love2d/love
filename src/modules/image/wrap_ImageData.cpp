@@ -66,6 +66,20 @@ int w_ImageData_getFormat(lua_State *L)
 	return 1;
 }
 
+int w_ImageData_setLinear(lua_State *L)
+{
+	ImageData *t = luax_checkimagedata(L, 1);
+	t->setLinear(luax_checkboolean(L, 2));
+	return 0;
+}
+
+int w_ImageData_isLinear(lua_State *L)
+{
+	ImageData *t = luax_checkimagedata(L, 1);
+	luax_pushboolean(L, t->isLinear());
+	return 1;
+}
+
 int w_ImageData_getWidth(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
@@ -314,6 +328,8 @@ static const luaL_Reg w_ImageData_functions[] =
 {
 	{ "clone", w_ImageData_clone },
 	{ "getFormat", w_ImageData_getFormat },
+	{ "setLinear", w_ImageData_setLinear },
+	{ "isLinear", w_ImageData_isLinear },
 	{ "getWidth", w_ImageData_getWidth },
 	{ "getHeight", w_ImageData_getHeight },
 	{ "getDimensions", w_ImageData_getDimensions },

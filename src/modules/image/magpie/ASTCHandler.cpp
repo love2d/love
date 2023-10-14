@@ -105,7 +105,7 @@ bool ASTCHandler::canParseCompressed(Data *data)
 	return true;
 }
 
-StrongRef<ByteData> ASTCHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> ASTCHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format)
 {
 	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not an .astc file?)");
@@ -138,8 +138,6 @@ StrongRef<ByteData> ASTCHandler::parseCompressed(Data *filedata, std::vector<Str
 	images.emplace_back(new CompressedSlice(cformat, sizeX, sizeY, memory, 0, totalsize), Acquire::NORETAIN);
 
 	format = cformat;
-	sRGB = false;
-
 	return memory;
 }
 

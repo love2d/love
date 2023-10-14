@@ -203,7 +203,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 		love::image::ImageDataBase *slice = slices->get(0, 0);
 
 		format = slice->getFormat();
-		if (isGammaCorrect() && !settings.linear)
+		if (isGammaCorrect() && !slice->isLinear())
 			format = getSRGBPixelFormat(format);
 
 		pixelWidth = slice->getWidth();
@@ -886,6 +886,7 @@ bool Texture::Slices::validate() const
 	int w = firstdata->getWidth();
 	int h = firstdata->getHeight();
 	PixelFormat format = firstdata->getFormat();
+	bool linear = firstdata->isLinear();
 
 	if (textureType == TEXTURE_CUBE && w != h)
 		throw love::Exception("Cube textures must have equal widths and heights for each cube face.");
@@ -925,6 +926,9 @@ bool Texture::Slices::validate() const
 
 			if (format != slicedata->getFormat())
 				throw love::Exception("All texture slices and mipmaps must have the same pixel format.");
+
+			if (linear != slicedata->isLinear())
+				throw love::Exception("All texture slices and mipmaps must have the same linear setting.");
 		}
 
 		mipw = std::max(mipw / 2, 1);

@@ -106,13 +106,12 @@ public:
 	 * @param[out] images The list of sub-images generated. Byte data is a
 	 *             pointer to the returned data.
 	 * @param[out] format The format of the Compressed Data.
-	 * @param[out] sRGB Whether the texture is sRGB-encoded.
 	 *
 	 * @return The single block of memory containing the parsed images.
 	 **/
 	virtual StrongRef<ByteData> parseCompressed(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
-	        PixelFormat &format, bool &sRGB);
+	        PixelFormat &format);
 
 	/**
 	 * Frees raw pixel memory allocated by the format handler.

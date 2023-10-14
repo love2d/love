@@ -29,6 +29,7 @@ ImageDataBase::ImageDataBase(PixelFormat format, int width, int height)
 	: format(format)
 	, width(width)
 	, height(height)
+	, linear(false)
 {
 }
 
@@ -45,6 +46,16 @@ int ImageDataBase::getWidth() const
 int ImageDataBase::getHeight() const
 {
 	return height;
+}
+
+void ImageDataBase::setLinear(bool linear)
+{
+	this->linear = linear;
+}
+
+bool ImageDataBase::isLinear() const
+{
+	return linear;
 }
 
 } // image

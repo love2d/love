@@ -475,7 +475,7 @@ bool PVRHandler::canParseCompressed(Data *data)
 	return false;
 }
 
-StrongRef<ByteData> PVRHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> PVRHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format)
 {
 	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not a PVR file?)");
@@ -509,6 +509,9 @@ StrongRef<ByteData> PVRHandler::parseCompressed(Data *filedata, std::vector<Stro
 	PVRV3ChannelType channeltype = (PVRV3ChannelType) header3.channelType;
 
 	PixelFormat cformat = convertFormat(pixelformat, channeltype);
+
+	if (header3.colorSpace == 1)
+		cformat == getSRGBPixelFormat(cformat);
 
 	if (cformat == PIXELFORMAT_UNKNOWN)
 		throw love::Exception("Could not parse PVR file: unsupported image format.");
@@ -551,8 +554,6 @@ StrongRef<ByteData> PVRHandler::parseCompressed(Data *filedata, std::vector<Stro
 	}
 
 	format = cformat;
-	sRGB = (header3.colorSpace == 1);
-
 	return memory;
 }
 

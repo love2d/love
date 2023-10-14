@@ -46,7 +46,6 @@ public:
 	CompressedSlice *clone() const override;
 	void *getData() const override { return (uint8 *) memory->getData() + offset; }
 	size_t getSize() const override { return dataSize; }
-	bool isSRGB() const override { return sRGB; }
 	size_t getOffset() const { return offset; }
 
 private:
@@ -54,7 +53,6 @@ private:
 	StrongRef<ByteData> memory;
 	size_t offset;
 	size_t dataSize;
-	bool sRGB;
 
 }; // CompressedSlice
 

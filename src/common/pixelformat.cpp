@@ -364,11 +364,8 @@ PixelFormat getSRGBPixelFormat(PixelFormat format)
 	case PIXELFORMAT_ASTC_10x10_UNORM: return PIXELFORMAT_ASTC_10x10_sRGB;
 	case PIXELFORMAT_ASTC_12x10_UNORM: return PIXELFORMAT_ASTC_12x10_sRGB;
 	case PIXELFORMAT_ASTC_12x12_UNORM: return PIXELFORMAT_ASTC_12x12_sRGB;
-	default:
-		break;
+	default: return format;
 	}
-
-	return format;
 }
 
 PixelFormat getLinearPixelFormat(PixelFormat format)
@@ -398,11 +395,8 @@ PixelFormat getLinearPixelFormat(PixelFormat format)
 	case PIXELFORMAT_ASTC_10x10_sRGB: return PIXELFORMAT_ASTC_10x10_UNORM;
 	case PIXELFORMAT_ASTC_12x10_sRGB: return PIXELFORMAT_ASTC_12x10_UNORM;
 	case PIXELFORMAT_ASTC_12x12_sRGB: return PIXELFORMAT_ASTC_12x12_UNORM;
-	default:
-		break;
+	default: return format;
 	}
-
-	return format;
 }
 
 size_t getPixelFormatBlockSize(PixelFormat format)
