@@ -24,6 +24,7 @@
 // LOVE
 #include "Rasterizer.h"
 #include "common/StringMap.h"
+#include "common/Optional.h"
 
 namespace love
 {
@@ -42,6 +43,12 @@ public:
 		HINTING_MONO,
 		HINTING_NONE,
 		HINTING_MAX_ENUM
+	};
+
+	struct Settings
+	{
+		Hinting hinting = HINTING_NORMAL;
+		OptionalFloat dpiScale;
 	};
 
 	virtual ~TrueTypeRasterizer() {}

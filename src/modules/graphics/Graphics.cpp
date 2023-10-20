@@ -294,13 +294,13 @@ Font *Graphics::newFont(love::font::Rasterizer *data)
 	return new Font(data, states.back().defaultSamplerState);
 }
 
-Font *Graphics::newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting)
+Font *Graphics::newDefaultFont(int size, const font::TrueTypeRasterizer::Settings &settings)
 {
 	auto fontmodule = Module::getInstance<font::Font>(M_FONT);
 	if (!fontmodule)
 		throw love::Exception("Font module has not been loaded.");
 
-	StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(size, hinting), Acquire::NORETAIN);
+	StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(size, settings), Acquire::NORETAIN);
 	return newFont(r.get());
 }
 
@@ -731,7 +731,10 @@ void Graphics::checkSetDefaultFont()
 
 	// Create a new default font if we don't have one yet.
 	if (!defaultFont.get())
-		defaultFont.set(newDefaultFont(13, font::TrueTypeRasterizer::HINTING_NORMAL), Acquire::NORETAIN);
+	{
+		font::TrueTypeRasterizer::Settings settings;
+		defaultFont.set(newDefaultFont(13, settings), Acquire::NORETAIN);
+	}
 
 	states.back().font.set(defaultFont.get());
 }

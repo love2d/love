@@ -64,6 +64,42 @@ int w_newRasterizer(lua_State *L)
 	}
 }
 
+static TrueTypeRasterizer::Settings luax_checktruetypesettings(lua_State* L, int startidx)
+{
+	TrueTypeRasterizer::Settings s;
+
+	if (lua_type(L, startidx) == LUA_TSTRING)
+	{
+		// Legacy parameters.
+		const char *hintstr = lua_isnoneornil(L, startidx) ? nullptr : luaL_checkstring(L, startidx);
+		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, s.hinting))
+			luax_enumerror(L, "TrueType font hinting mode", TrueTypeRasterizer::getConstants(s.hinting), hintstr);
+
+		if (!lua_isnoneornil(L, startidx + 1))
+			s.dpiScale.set((float)luaL_checknumber(L, startidx + 1));
+	}
+	else
+	{
+		luaL_checktype(L, startidx, LUA_TTABLE);
+
+		lua_getfield(L, startidx, "hinting");
+		if (!lua_isnoneornil(L, -1))
+		{
+			const char *hintstr = luaL_checkstring(L, -1);
+			if (!TrueTypeRasterizer::getConstant(hintstr, s.hinting))
+				luax_enumerror(L, "TrueType font hinting mode", TrueTypeRasterizer::getConstants(s.hinting), hintstr);
+		}
+		lua_pop(L, 1);
+
+		lua_getfield(L, startidx, "dpiscale");
+		if (!lua_isnoneornil(L, -1))
+			s.dpiScale.set((float)luaL_checknumber(L, -1));
+		lua_pop(L, 1);
+	}
+
+	return s;
+}
+
 int w_newTrueTypeRasterizer(lua_State *L)
 {
 	Rasterizer *t = nullptr;
@@ -74,20 +110,20 @@ int w_newTrueTypeRasterizer(lua_State *L)
 		// First argument is a number: use the default TrueType font.
 		int size = (int) luaL_optinteger(L, 1, 13);
 
-		const char *hintstr = lua_isnoneornil(L, 2) ? nullptr : luaL_checkstring(L, 2);
-		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, hinting))
-			return luax_enumerror(L, "TrueType font hinting mode", TrueTypeRasterizer::getConstants(hinting), hintstr);
+		TrueTypeRasterizer::Settings settings;
+		if (!lua_isnoneornil(L, 2))
+			settings = luax_checktruetypesettings(L, 2);
 
-		if (lua_isnoneornil(L, 3))
-			luax_catchexcept(L, [&](){ t = instance()->newTrueTypeRasterizer(size, hinting); });
-		else
-		{
-			float dpiscale = (float) luaL_checknumber(L, 3);
-			luax_catchexcept(L, [&](){ t = instance()->newTrueTypeRasterizer(size, dpiscale, hinting); });
-		}
+		luax_catchexcept(L, [&](){ t = instance()->newTrueTypeRasterizer(size, settings); });
 	}
 	else
 	{
+		int size = (int) luaL_optinteger(L, 2, 12);
+
+		TrueTypeRasterizer::Settings settings;
+		if (!lua_isnoneornil(L, 3))
+			settings = luax_checktruetypesettings(L, 3);
+
 		love::Data *d = nullptr;
 
 		if (luax_istype(L, 1, love::Data::type))
@@ -98,27 +134,10 @@ int w_newTrueTypeRasterizer(lua_State *L)
 		else
 			d = filesystem::luax_getfiledata(L, 1);
 
-		int size = (int) luaL_optinteger(L, 2, 12);
-
-		const char *hintstr = lua_isnoneornil(L, 3) ? nullptr : luaL_checkstring(L, 3);
-		if (hintstr && !TrueTypeRasterizer::getConstant(hintstr, hinting))
-			return luax_enumerror(L, "TrueType font hinting mode", TrueTypeRasterizer::getConstants(hinting), hintstr);
-
-		if (lua_isnoneornil(L, 4))
-		{
-			luax_catchexcept(L,
-				[&]() { t = instance()->newTrueTypeRasterizer(d, size, hinting); },
-				[&](bool) { d->release(); }
-			);
-		}
-		else
-		{
-			float dpiscale = (float) luaL_checknumber(L, 4);
-			luax_catchexcept(L,
-				[&]() { t = instance()->newTrueTypeRasterizer(d, size, dpiscale, hinting); },
-				[&](bool) { d->release(); }
-			);
-		}
+		luax_catchexcept(L,
+			[&]() { t = instance()->newTrueTypeRasterizer(d, size, settings); },
+			[&](bool) { d->release(); }
+		);
 	}
 
 	luax_pushtype(L, t);

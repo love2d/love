@@ -459,7 +459,7 @@ public:
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
 	Font *newFont(love::font::Rasterizer *data);
-	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting);
+	Font *newDefaultFont(int size, const font::TrueTypeRasterizer::Settings &settings);
 	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferDataUsage usage);
