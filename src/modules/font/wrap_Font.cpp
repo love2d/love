@@ -103,7 +103,6 @@ static TrueTypeRasterizer::Settings luax_checktruetypesettings(lua_State* L, int
 int w_newTrueTypeRasterizer(lua_State *L)
 {
 	Rasterizer *t = nullptr;
-	TrueTypeRasterizer::Hinting hinting = TrueTypeRasterizer::HINTING_NORMAL;
 
 	if (lua_type(L, 1) == LUA_TNUMBER || lua_isnone(L, 1))
 	{

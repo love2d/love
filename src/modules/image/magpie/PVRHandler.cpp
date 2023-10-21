@@ -511,7 +511,7 @@ StrongRef<ByteData> PVRHandler::parseCompressed(Data *filedata, std::vector<Stro
 	PixelFormat cformat = convertFormat(pixelformat, channeltype);
 
 	if (header3.colorSpace == 1)
-		cformat == getSRGBPixelFormat(cformat);
+		cformat = getSRGBPixelFormat(cformat);
 
 	if (cformat == PIXELFORMAT_UNKNOWN)
 		throw love::Exception("Could not parse PVR file: unsupported image format.");

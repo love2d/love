@@ -53,7 +53,7 @@ private:
 
 	struct BufferRange
 	{
-		int index;
+		size_t index;
 		int codepointStart;
 		Range range;
 	};

@@ -153,18 +153,18 @@ void HarfbuzzShaper::computeBufferRanges(const ColoredCodepoints &codepoints, Ra
 
 		hb_shape(hbFonts[rasti], hbb, nullptr, 0);
 
-		int glyphcount = (int)hb_buffer_get_length(hbb);
+		size_t glyphcount = (size_t)hb_buffer_get_length(hbb);
 		const hb_glyph_info_t *glyphinfos = hb_buffer_get_glyph_infos(hbb, nullptr);
 		hb_direction_t direction = hb_buffer_get_direction(hbb);
 
 		fallbackranges.clear();
 
-		for (int i = 0; i < glyphcount; i++)
+		for (size_t i = 0; i < glyphcount; i++)
 		{
 			if (isValidGlyph(glyphinfos[i].codepoint, codepoints.cps, glyphinfos[i].cluster))
 			{
 				if (bufferranges.empty() || bufferranges.back().index != rasti || bufferranges.back().range.getMax() + 1 != i)
-					bufferranges.push_back({(int)rasti, (int)glyphinfos[i].cluster, Range(i, 1)});
+					bufferranges.push_back({rasti, (int)glyphinfos[i].cluster, Range(i, 1)});
 				else
 					bufferranges.back().range.last++;
 			}
@@ -247,7 +247,7 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 			// TODO: this doesn't handle situations where the user inserted a color
 			// change in the middle of some characters that get combined into a single
 			// cluster.
-			if (colors && colorindex < ncolors && codepoints.colors[colorindex].index == info.cluster)
+			if (colors && colorindex < ncolors && codepoints.colors[colorindex].index == (int)info.cluster)
 			{
 				colorToAdd.set(codepoints.colors[colorindex].color);
 				colorindex++;
@@ -273,7 +273,7 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 				continue;
 
 			// This is a glyph index at this point, despite the name.
-			GlyphIndex gindex = { (int) info.codepoint, bufferrange.index };
+			GlyphIndex gindex = { (int) info.codepoint, (int)bufferrange.index };
 
 			if (clustercodepoint == '\t' && isUsingSpacesForTab())
 			{
@@ -390,7 +390,7 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ra
 				if (newwidth > wraplimit)
 				{
 					// If this is the first character, wrap from the next one instead of this one.
-					int wrapindex = info.cluster > (int) range.first ? info.cluster : (int) range.first + 1;
+					int wrapindex = (int)info.cluster > (int)range.first ? (int)info.cluster : (int)range.first + 1;
 
 					// Rewind to after the last seen space when wrapping.
 					if (firstindexafterspace != -1)
