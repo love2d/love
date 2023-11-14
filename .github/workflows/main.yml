@@ -20,12 +20,14 @@ jobs:
                                           libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
                                           libsndio-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev \
                                           libfuse2 wmctrl openbox mesa-vulkan-drivers libvulkan1 vulkan-tools \
-                                          vulkan-validationlayers
+                                          vulkan-validationlayers libcurl4-openssl-dev
     - name: Checkout love-appimage-source
       uses: actions/checkout@v3
       with:
         repository: love2d/love-appimage-source
         ref: 12.x
+    - name: Checkout Repo
+      uses: actions/checkout@v3
     - name: Checkout LÖVE
       uses: actions/checkout@v3
       with:
@@ -70,7 +72,9 @@ jobs:
         echo "OPENBOXPID=$!" >> $GITHUB_ENV
     # linux opengl tests
     - name: Run All Tests (opengl)
-      run: ./love-${{ github.sha }}.AppImage ./testing/main.lua
+      run: |
+        ls
+        ./love-${{ github.sha }}.AppImage ./testing/main.lua
     - name: Love Test Report (opengl)
       uses: ellraiser/love-test-report@main
       with:
@@ -225,6 +229,8 @@ jobs:
         with open(os.environ["GITHUB_OUTPUT"], "w", encoding="UTF-8") as f: f.write(f"commit={commit}")
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
       with:
         path: megasource/libs/love
     - name: Download ANGLE
@@ -297,7 +303,6 @@ jobs:
     - name: Build Test Exe
       if: steps.vars.outputs.arch != 'ARM64'
       run: cmake --build build --config Release --target install
-    - name: Checkout
       uses: actions/checkout@v3
     - name: Run Tests (opengl)
       if: steps.vars.outputs.arch != 'ARM64'
