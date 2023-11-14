@@ -70,7 +70,7 @@ jobs:
         echo "OPENBOXPID=$!" >> $GITHUB_ENV
     # linux opengl tests
     - name: Run All Tests (opengl)
-      run: xvfb-run ./love-${{ github.sha }}.AppImage ./testing/main.lua
+      run: ./love-${{ github.sha }}.AppImage ./testing/main.lua
     - name: Love Test Report (opengl)
       uses: ellraiser/love-test-report@main
       with:
@@ -89,7 +89,7 @@ jobs:
     - name: Run Test Suite (opengles)
       run: |
         export LOVE_GRAPHICS_USE_OPENGLES=1
-        xvfb-run ./love-${{ github.sha }}.AppImage ./testing/main.lua
+        ./love-${{ github.sha }}.AppImage ./testing/main.lua
     - name: Love Test Report (opengles)
       uses: ellraiser/love-test-report@main
       with:
@@ -108,7 +108,7 @@ jobs:
     - name: Run Test Suite (vulkan)
       run: |
         export LOVE_GRAPHICS_DEBUG=1
-        xvfb-run ./love-${{ github.sha }}.AppImage ./testing/main.lua --runAllTests --renderers vulkan
+        ./love-${{ github.sha }}.AppImage ./testing/main.lua --runAllTests --renderers vulkan
     - name: Love Test Report (vulkan)
       uses: ellraiser/love-test-report@main
       with:
@@ -297,9 +297,12 @@ jobs:
     - name: Build Test Exe
       if: steps.vars.outputs.arch != 'ARM64'
       run: cmake --build build --config Release --target install
+    - name: Checkout
+      uses: actions/checkout@v3
     - name: Run Tests (opengl)
       if: steps.vars.outputs.arch != 'ARM64'
       run: |
+        echo 'check dir'
         dir
         powershell.exe ./install/lovec.exe ./testing/main.lua
     # windows opengl test

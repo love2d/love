@@ -29,14 +29,14 @@ love.test.audio.RecordingDevice = function(test)
   -- start recording for a short time
   -- @TODO needs delay for VMs
   local startrecording = device:start(32000, 4000, 16, 1)
-  test:waitFrames(120)
+  test:waitFrames(10)
   test:assertEquals(true, startrecording, 'check recording started')
   test:assertEquals(true, device:isRecording(), 'check now recording')
   test:assertEquals(4000, device:getSampleRate(), 'check sample rate set')
   test:assertEquals(16, device:getBitDepth(), 'check bit depth set')
   test:assertEquals(1, device:getChannelCount(), 'check channel count set')
   local recording = device:stop()
-  test:waitFrames(120)
+  test:waitFrames(10)
   -- after recording 
   test:assertEquals(false, device:isRecording(), 'check not recording')
   test:assertEquals(nil, device:getData(), 'using stop should clear buffer')

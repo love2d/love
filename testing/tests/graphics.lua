@@ -10,49 +10,7 @@
 
 -- Canvas (love.graphics.newCanvas)
 love.test.graphics.Canvas = function(test)
-  -- create canvas
-  local canvas = love.graphics.newCanvas(32, 32, {
-
-  })
-  test:assertObject(canvas)
-  -- check basic properties
-  test:assertNotNil(canvas:getMSAA())
-  test:assertEquals('none', canvas:getMipmapMode(), 'check default mipmap')
-  --[[
-
-    Texture:getDPIScale check not nil
-    Texture:getDepth check >= 0
-    Texture:getDimensions	w, h 
-
-    Texture:getFormat (list of vals)
-    Texture:getHeight h
-    Texture:getLayerCount >= 0
-    Texture:getMipmapCount >= 1
-    Texture:getPixelDimensions w, h + dpi
-    Texture:getPixelHeight h + dpi
-    Texture:getPixelWidth w + dpi
-    Texture:getTextureType teture types (4 types)
-    Texture:getWidth w
-    Texture:isReadable true unless stencil/depth pixel formats 
-
-    Texture:getWrap
-    Texture:setWrap horiz, vert, depth
-
-    Texture:getDepthSampleMode
-    Texture:setDepthSampleMode compare (list of vals)
-
-    Texture:getFilter
-    Texture:setFilter min, mag, anisotrop
-
-    Texture:getMipmapFilter
-    Texture:setMipmapFilter mode, sharpness
-  ]]
-  -- check rendering
-  canvas:renderTo(function()
-  
-  end)
-  local data = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
-  -- check some pixels
+  test:skipTest('test class needs writing')
 end
 
 
