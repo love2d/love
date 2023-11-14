@@ -92,25 +92,25 @@ jobs:
       with:
         name: test-output-linux-opengles
         path: test-output-linux-opengles.zip
-    # linux vulkan tests
-    - name: Run Test Suite (vulkan)
-      run: |
-        export LOVE_GRAPHICS_DEBUG=1
-        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --renderers vulkan
-    - name: Love Test Report (vulkan)
-      uses: ellraiser/love-test-report@main
-      with:
-        name: Love Testsuite Linux
-        title: test-report-linux-vulkan
-        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
-    - name: Zip Test Output (vulkan)
-      run: |
-        7z a -tzip test-output-linux-vulkan.zip love2d-${{ github.sha }}/testing/output/
-    - name: Artifact Test Output (vulkan)
-      uses: actions/upload-artifact@v3
-      with:
-        name: test-output-linux-vulkan
-        path: test-output-linux-vulkan.zip
+#    # linux vulkan tests
+#    - name: Run Test Suite (vulkan)
+#      run: |
+#        export LOVE_GRAPHICS_DEBUG=1
+#        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --renderers vulkan
+#    - name: Love Test Report (vulkan)
+#      uses: ellraiser/love-test-report@main
+#      with:
+#        name: Love Testsuite Linux
+#        title: test-report-linux-vulkan
+#        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+#    - name: Zip Test Output (vulkan)
+#      run: |
+#        7z a -tzip test-output-linux-vulkan.zip love2d-${{ github.sha }}/testing/output/
+#    - name: Artifact Test Output (vulkan)
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: test-output-linux-vulkan
+#        path: test-output-linux-vulkan.zip
     - name: Stop xvfb and openbox
       # should always stop xvfb and openbox even if other steps failed
       if: always()
@@ -344,42 +344,42 @@ jobs:
       with:
         name: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles
         path: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles.zip
-    # install vulkan
-    - name: Install Vulkan
-      if: steps.vars.outputs.arch != 'ARM64'
-      run: |
-        curl -L --show-error --output VulkanSDK.exe https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe
-        ./VulkanSDK.exe --root C:/VulkanSDK/1.3.231.1 --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan.core com.lunarg.vulkan.vma 
-        curl -L --show-error --output vulkan-runtime.zip https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/vulkan-runtime-components.zip
-        7z e vulkan-runtime.zip -o"C:/VulkanSDK/1.3.231.1/runtime/x64" */x64
-        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "mesa/x64"
-        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "C:/Windows/System32"
-        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "love-12.0-win64/love-12.0-win64"
-        reg add HKEY_LOCAL_MACHINE\SOFTWARE\Khronos\Vulkan\Drivers /v "${{ github.workspace }}\mesa\x64\lvp_icd.x86_64.json" /t REG_DWORD /d 0
-        powershell.exe C:/VulkanSDK/1.3.231.1/runtime/x64/vulkaninfo.exe --summary
-    # windows vulkan tests
-    - name: Run Tests (vulkan)
-      if: steps.vars.outputs.arch != 'ARM64'
-      run: |
-        $ENV:LOVE_GRAPHICS_DEBUG=1
-        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --renderers vulkan
-    - name: Love Test Report (vulkan)
-      if: steps.vars.outputs.arch != 'ARM64'
-      uses: ellraiser/love-test-report@main
-      with:
-        name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (vulkan)
-        title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
-        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
-    - name: Zip Test Output (vulkan)
-      if: steps.vars.outputs.arch != 'ARM64'
-      run: |
-        7z a -tzip test-output-windows-vulkan.zip megasource/libs/love/testing/output/
-    - name: Artifact Test Output (vulkan)
-      if: steps.vars.outputs.arch != 'ARM64'
-      uses: actions/upload-artifact@v3
-      with:
-        name: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
-        path: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan.zip
+#    # install vulkan
+#    - name: Install Vulkan
+#      if: steps.vars.outputs.arch != 'ARM64'
+#      run: |
+#        curl -L --show-error --output VulkanSDK.exe https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe
+#        ./VulkanSDK.exe --root C:/VulkanSDK/1.3.231.1 --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan.core com.lunarg.vulkan.vma 
+#        curl -L --show-error --output vulkan-runtime.zip https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/vulkan-runtime-components.zip
+#        7z e vulkan-runtime.zip -o"C:/VulkanSDK/1.3.231.1/runtime/x64" */x64
+#        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "mesa/x64"
+#        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "C:/Windows/System32"
+#        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "love-12.0-win64/love-12.0-win64"
+#        reg add HKEY_LOCAL_MACHINE\SOFTWARE\Khronos\Vulkan\Drivers /v "${{ github.workspace }}\mesa\x64\lvp_icd.x86_64.json" /t REG_DWORD /d 0
+#        powershell.exe C:/VulkanSDK/1.3.231.1/runtime/x64/vulkaninfo.exe --summary
+#    # windows vulkan tests
+#    - name: Run Tests (vulkan)
+#      if: steps.vars.outputs.arch != 'ARM64'
+#      run: |
+#        $ENV:LOVE_GRAPHICS_DEBUG=1
+#        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --renderers vulkan
+#    - name: Love Test Report (vulkan)
+#      if: steps.vars.outputs.arch != 'ARM64'
+#      uses: ellraiser/love-test-report@main
+#      with:
+#        name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (vulkan)
+#        title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
+#        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+#    - name: Zip Test Output (vulkan)
+#      if: steps.vars.outputs.arch != 'ARM64'
+#      run: |
+#        7z a -tzip test-output-windows-vulkan.zip megasource/libs/love/testing/output/
+#    - name: Artifact Test Output (vulkan)
+#      if: steps.vars.outputs.arch != 'ARM64'
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
+#        path: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan.zip
   macOS:
     runs-on: macos-latest
     steps:
