@@ -43,6 +43,7 @@ jobs:
       run: make LOVE_BRANCH=${{ github.sha }}
     - name: Print LuaJIT branch
       run: git -C LuaJIT-v2.1 branch -v
+    # start xvfb for test running
     - name: Start xvfb and openbox
       run: |
         echo "Starting XVFB on $DISPLAY"
@@ -55,9 +56,6 @@ jobs:
     # linux opengl tests
     - name: Run Test Suite (opengl)
       run: |
-        echo 'run opengl tests'
-        ls
-        ls love2d-${{ github.sha }}
         chmod a+x love-${{ github.sha }}.AppImage
         ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua 
     - name: Love Test Report (opengl)
@@ -68,11 +66,29 @@ jobs:
         path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
     - name: Zip Test Output (opengl)
       run: |
-        7z a -tzip test-output-linux-opengl.zip output/
+        7z a -tzip test-output-linux-opengl.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (opengl)
       uses: actions/upload-artifact@v3
       with:
         name: test-output-linux-opengl
+    # linux opengles tests
+    - name: Run Test Suite (opengles)
+      run: |
+        export LOVE_GRAPHICS_USE_OPENGLES=1
+        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua 
+    - name: Love Test Report (opengles)
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Linux
+        title: test-report-linux-opengles
+        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+    - name: Zip Test Output (opengles)
+      run: |
+        7z a -tzip test-output-linux-opengles.zip love2d-${{ github.sha }}/testing/output/
+    - name: Artifact Test Output (opengles)
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-linux-opengles
     - name: Stop xvfb and openbox
       # should always stop xvfb and openbox even if other steps failed
       if: always()
@@ -249,14 +265,17 @@ jobs:
       with:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
         path: pdb/Release/*.pdb
+    # install mesa for graphic tests
     - name: Install Mesa 
       run: |
         curl -L --output mesa.7z --url https://github.com/pal1000/mesa-dist-win/releases/download/23.2.1/mesa3d-23.2.1-release-msvc.7z
         7z x mesa.7z -o*
         powershell.exe mesa\systemwidedeploy.cmd 1
+    # build love to use for the tests
     - name: Build Test Exe
       if: steps.vars.outputs.arch != 'ARM64'
       run: cmake --build build --config Release --target install
+    # windows opengl tests
     - name: Run Tests (opengl)
       if: steps.vars.outputs.arch != 'ARM64'
       run: |
@@ -273,13 +292,36 @@ jobs:
     - name: Zip Test Output (opengl)
       if: steps.vars.outputs.arch != 'ARM64'
       run: |
-        7z a -tzip test-output-windows-opengl.zip output\
+        7z a -tzip test-output-windows-opengl.zip megasource/libs/love/testing/output/
     - name: Artifact Test Output (opengl)
       if: steps.vars.outputs.arch != 'ARM64'
       uses: actions/upload-artifact@v3
       with:
         name: test-output-windows-opengl
         path: test-output-windows-opengl.zip
+    # windows opengles tests
+    - name: Run Tests (opengles)
+      if: steps.vars.outputs.arch != 'ARM64'
+      run: |
+        $ENV:LOVE_GRAPHICS_USE_OPENGLES=1
+        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua
+    - name: Love Test Report (opengles)
+      if: steps.vars.outputs.arch != 'ARM64'
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Windows (opengles)
+        title: test-report-windows-opengles
+        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+    - name: Zip Test Output (opengles)
+      if: steps.vars.outputs.arch != 'ARM64'
+      run: |
+        7z a -tzip test-output-windows-opengles.zip megasource/libs/love/testing/output/
+    - name: Artifact Test Output (opengles)
+      if: steps.vars.outputs.arch != 'ARM64'
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-windows-opengles
+        path: test-output-windows-opengles.zip
   macOS:
     runs-on: macos-latest
     steps:
@@ -308,6 +350,7 @@ jobs:
       with:
         name: love-macos
         path: love-macos.zip
+    # macos opengl tests (metal not supported on runners)
     - name: Run Test Suite
       run: |
         ls
@@ -320,7 +363,7 @@ jobs:
         path: testing/output/lovetest_runAllTests.md
     - name: Zip Test Output
       run: |
-        7z a -tzip test-output-macos-opengl.zip output/
+        7z a -tzip test-output-macos-opengl.zip ./testing/output/
     - name: Artifact Test Output
       uses: actions/upload-artifact@v3
       with:
