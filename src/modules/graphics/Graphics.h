@@ -459,7 +459,7 @@ public:
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
 	Font *newFont(love::font::Rasterizer *data);
-	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting);
+	Font *newDefaultFont(int size, const font::TrueTypeRasterizer::Settings &settings);
 	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferDataUsage usage);
@@ -819,12 +819,12 @@ public:
 	/**
 	 * Converts PIXELFORMAT_NORMAL and PIXELFORMAT_HDR into a real format.
 	 **/
-	virtual PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const = 0;
+	PixelFormat getSizedFormat(PixelFormat format) const;
 
 	/**
 	 * Gets whether the specified pixel format usage is supported.
 	 **/
-	virtual bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) = 0;
+	virtual bool isPixelFormatSupported(PixelFormat format, uint32 usage) = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.

@@ -65,14 +65,31 @@ const char *Graphics::getName() const
 	return "love.graphics.vulkan";
 }
 
-const VkDevice Graphics::getDevice() const
+VkDevice Graphics::getDevice() const
 {
 	return device;
 }
 
-const VmaAllocator Graphics::getVmaAllocator() const
+VmaAllocator Graphics::getVmaAllocator() const
 {
 	return vmaAllocator;
+}
+
+static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext)
+{
+	uint32_t count;
+
+	vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
+
+	std::vector<VkExtensionProperties> extensions(count);
+
+	vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data());
+
+	for (const auto& extension : extensions)
+	{
+		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
+			ext.physicalDeviceProperties2 = true;
+	}
 }
 
 Graphics::Graphics()
@@ -81,12 +98,66 @@ Graphics::Graphics()
 		throw love::Exception("could not find vulkan");
 
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
+
+	if (isDebugEnabled() && !checkValidationSupport())
+		throw love::Exception("validation layers requested, but not available");
+
+	VkApplicationInfo appInfo{};
+	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	appInfo.pApplicationName = "LOVE";
+	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	// get this version from somewhere else?
+	appInfo.pEngineName = "LOVE Game Framework";
+	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
+	appInfo.apiVersion = VK_API_VERSION_1_3;
+
+	VkInstanceCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	createInfo.pApplicationInfo = &appInfo;
+	createInfo.pNext = nullptr;
+
+	// GetInstanceExtensions works with a null window parameter as long as
+	// SDL_Vulkan_LoadLibrary has been called (which we do earlier).
+	unsigned int count;
+	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, nullptr) != SDL_TRUE)
+		throw love::Exception("couldn't retrieve sdl vulkan extensions");
+
+	std::vector<const char*> extensions = {};
+
+	checkOptionalInstanceExtensions(optionalInstanceExtensions);
+
+	if (optionalInstanceExtensions.physicalDeviceProperties2)
+		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
+	size_t additional_extension_count = extensions.size();
+	extensions.resize(additional_extension_count + count);
+
+	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, extensions.data() + additional_extension_count) != SDL_TRUE)
+		throw love::Exception("couldn't retrieve sdl vulkan extensions");
+
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+	createInfo.ppEnabledExtensionNames = extensions.data();
+
+	if (isDebugEnabled())
+	{
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
+	}
+
+	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+		throw love::Exception("couldn't create vulkan instance");
+
+	volkLoadInstance(instance);
 }
 
 Graphics::~Graphics()
 {
+	defaultConstantTexCoord.set(nullptr);
 	defaultConstantColor.set(nullptr);
 	defaultTexture.set(nullptr);
+
+	Volatile::unloadAll();
+	cleanup();
+	vkDestroyInstance(instance, nullptr);
 
 	SDL_Vulkan_UnloadLibrary();
 }
@@ -302,14 +373,14 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 	startRenderPass();
 }
 
-void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
+void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallbackData)
 {
 	flushBatchedDraws();
 
 	if (renderPassState.active)
 		endRenderPass();
 
-	if (present)
+	if (submitMode == SUBMIT_PRESENT)
 	{
 		if (pendingScreenshotCallbacks.empty())
 			Vulkan::cmdTransitionImageLayout(
@@ -435,7 +506,7 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 
 	VkFence fence = VK_NULL_HANDLE;
 
-	if (present)
+	if (submitMode == SUBMIT_PRESENT)
 	{
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
@@ -447,7 +518,7 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
 		throw love::Exception("failed to submit draw command buffer");
 	
-	if (!present)
+	if (submitMode == SUBMIT_NOPRESENT || submitMode == SUBMIT_RESTART)
 	{
 		vkQueueWaitIdle(graphicsQueue);
 
@@ -458,7 +529,8 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 			callbacks.clear();
 		}
 
-		startRecordingGraphicsCommands();
+		if (submitMode == SUBMIT_RESTART)
+			startRecordingGraphicsCommands();
 	}
 }
 
@@ -475,7 +547,7 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	deprecations.draw(this);
 
-	submitGpuCommands(true, screenshotCallbackdata);
+	submitGpuCommands(SUBMIT_PRESENT, screenshotCallbackdata);
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -540,64 +612,80 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	readbackCallbacks.clear();
 	readbackCallbacks.resize(MAX_FRAMES_IN_FLIGHT);
 
-	createVulkanInstance();
+	bool createBaseObjects = physicalDevice == VK_NULL_HANDLE;
+
 	createSurface();
-	pickPhysicalDevice();
-	createLogicalDevice();
-	createPipelineCache();
-	initVMA();
-	initCapabilities();
+
+	if (createBaseObjects)
+	{
+		pickPhysicalDevice();
+		createLogicalDevice();
+		createPipelineCache();
+		initVMA();
+		initCapabilities();
+	}
+
+	msaaSamples = getMsaaCount(requestedMsaa);
+
 	createSwapChain();
 	createImageViews();
 	createScreenshotCallbackBuffers();
-	createSyncObjects();
 	createColorResources();
 	createDepthResources();
 	transitionColorDepthLayouts = true;
-	createCommandPool();
-	createCommandBuffers();
+
+	if (createBaseObjects)
+	{
+		createCommandPool();
+		createCommandBuffers();
+		createSyncObjects();
+	}
 
 	beginFrame();
 
-	if (batchedDrawState.vb[0] == nullptr)
+	if (createBaseObjects)
 	{
-		// Initial sizes that should be good enough for most cases. It will
-		// resize to fit if needed, later.
-		batchedDrawState.vb[0] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
-		batchedDrawState.vb[1] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
-		batchedDrawState.indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
-	}
+		if (batchedDrawState.vb[0] == nullptr)
+		{
+			// Initial sizes that should be good enough for most cases. It will
+			// resize to fit if needed, later.
+			batchedDrawState.vb[0] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+			batchedDrawState.vb[1] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
+			batchedDrawState.indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		}
 
-	// sometimes the VertexTexCoord is not set, so we manually adjust it to (0, 0)
-	if (defaultConstantTexCoord == nullptr)
-	{
-		float zeroTexCoord[2] = { 0.0f, 0.0f };
-		Buffer::DataDeclaration format("ConstantTexCoord", DATAFORMAT_FLOAT_VEC2);
-		Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
-		defaultConstantTexCoord = newBuffer(settings, { format }, zeroTexCoord, sizeof(zeroTexCoord), 1);
-	}
+		// sometimes the VertexTexCoord is not set, so we manually adjust it to (0, 0)
+		if (defaultConstantTexCoord == nullptr)
+		{
+			float zeroTexCoord[2] = { 0.0f, 0.0f };
+			Buffer::DataDeclaration format("ConstantTexCoord", DATAFORMAT_FLOAT_VEC2);
+			Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
+			defaultConstantTexCoord = newBuffer(settings, { format }, zeroTexCoord, sizeof(zeroTexCoord), 1);
+		}
 
-	// sometimes the VertexColor is not set, so we manually adjust it to white color
-	if (defaultConstantColor == nullptr)
-	{
-		uint8 whiteColor[] = { 255, 255, 255, 255 };
-		Buffer::DataDeclaration format("ConstantColor", DATAFORMAT_UNORM8_VEC4);
-		Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
-		defaultConstantColor = newBuffer(settings, { format }, whiteColor, sizeof(whiteColor), 1);
-	}
+		// sometimes the VertexColor is not set, so we manually adjust it to white color
+		if (defaultConstantColor == nullptr)
+		{
+			uint8 whiteColor[] = { 255, 255, 255, 255 };
+			Buffer::DataDeclaration format("ConstantColor", DATAFORMAT_UNORM8_VEC4);
+			Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
+			defaultConstantColor = newBuffer(settings, { format }, whiteColor, sizeof(whiteColor), 1);
+		}
 
-	createDefaultTexture();
-	createDefaultShaders();
-	Shader::current = Shader::standardShaders[Shader::StandardShader::STANDARD_DEFAULT];
-	createQuadIndexBuffer();
-	createFanIndexBuffer();
+		createDefaultTexture();
+		createDefaultShaders();
+		Shader::current = Shader::standardShaders[Shader::StandardShader::STANDARD_DEFAULT];
+		createQuadIndexBuffer();
+		createFanIndexBuffer();
+
+		frameCounter = 0;
+		currentFrame = 0;
+	}
 
 	restoreState(states.back());
 
 	Vulkan::resetShaderSwitches();
 
-	frameCounter = 0;
-	currentFrame = 0;
 	created = true;
 	drawCalls = 0;
 	drawCallsBatched = 0;
@@ -659,14 +747,12 @@ void Graphics::getAPIStats(int &shaderswitches) const
 
 void Graphics::unSetMode()
 {
-	renderPassUsages.clear();
-	framebufferUsages.clear();
-	pipelineUsages.clear();
-	
+	submitGpuCommands(SUBMIT_NOPRESENT);
+
 	created = false;
-	vkDeviceWaitIdle(device);
-	Volatile::unloadAll();
-	cleanup();
+
+	cleanupSwapChain();
+	vkDestroySurfaceKHR(instance, surface, nullptr);
 }
 
 void Graphics::setActive(bool enable)
@@ -971,30 +1057,11 @@ void Graphics::setWireframe(bool enable)
 	states.back().wireframe = enable;
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const
+bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 {
-	switch (format)
-	{
-	case PIXELFORMAT_NORMAL:
-		if (isGammaCorrect())
-			return PIXELFORMAT_RGBA8_UNORM_sRGB;
-		else
-			return PIXELFORMAT_RGBA8_UNORM;
-	case PIXELFORMAT_HDR:
-		return PIXELFORMAT_RGBA16_FLOAT;
-	default:
-		return format;
-	}
-}
+	format = getSizedFormat(format);
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
-{
-	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
-	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
-
-	format = getSizedFormat(format, rendertarget, readable);
-
-	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
+	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkFormatProperties formatProperties;
 	vkGetPhysicalDeviceFormatProperties(physicalDevice, vulkanFormat.internalFormat, &formatProperties);
@@ -1332,75 +1399,6 @@ const OptionalDeviceExtensions &Graphics::getEnabledOptionalDeviceExtensions() c
 	return optionalDeviceExtensions;
 }
 
-static void checkOptionalInstanceExtensions(OptionalInstanceExtensions &ext)
-{
-	uint32_t count;
-
-	vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
-
-	std::vector<VkExtensionProperties> extensions(count);
-
-	vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data());
-
-	for (const auto &extension : extensions)
-	{
-		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
-			ext.physicalDeviceProperties2 = true;
-	}
-}
-
-void Graphics::createVulkanInstance()
-{
-	if (isDebugEnabled() && !checkValidationSupport())
-		throw love::Exception("validation layers requested, but not available");
-
-	VkApplicationInfo appInfo{};
-	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName = "LOVE";
-	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	// get this version from somewhere else?
-	appInfo.pEngineName = "LOVE Game Framework";
-	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
-	appInfo.apiVersion = VK_API_VERSION_1_3;
-
-	VkInstanceCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	createInfo.pApplicationInfo = &appInfo;
-	createInfo.pNext = nullptr;
-
-	// GetInstanceExtensions works with a null window parameter as long as
-	// SDL_Vulkan_LoadLibrary has been called (which we do earlier).
-	unsigned int count;
-	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, nullptr) != SDL_TRUE)
-		throw love::Exception("couldn't retrieve sdl vulkan extensions");
-
-	std::vector<const char*> extensions = {};
-
-	checkOptionalInstanceExtensions(optionalInstanceExtensions);
-
-	if (optionalInstanceExtensions.physicalDeviceProperties2)
-		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-
-	size_t additional_extension_count = extensions.size();
-	extensions.resize(additional_extension_count + count);
-
-	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, extensions.data() + additional_extension_count) != SDL_TRUE)
-		throw love::Exception("couldn't retrieve sdl vulkan extensions");
-
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-	createInfo.ppEnabledExtensionNames = extensions.data();
-
-	if (isDebugEnabled())
-	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
-	}
-
-	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
-		throw love::Exception("couldn't create vulkan instance");
-
-	volkLoadInstance(instance);
-}
-
 bool Graphics::checkValidationSupport()
 {
 	uint32_t layerCount;
@@ -1458,7 +1456,6 @@ void Graphics::pickPhysicalDevice()
 	minUniformBufferOffsetAlignment = properties.limits.minUniformBufferOffsetAlignment;
 	deviceApiVersion = properties.apiVersion;
 
-	msaaSamples = getMsaaCount(requestedMsaa);
 	depthStencilFormat = findDepthFormat();
 }
 
@@ -1573,7 +1570,7 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 			optionalDeviceExtensions.memoryRequirements2 = true;
 		if (strcmp(extension.extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.dedicatedAllocation = true;
-		if (strcmp(extension.extensionName, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) == 0)
+		if (strcmp(extension.extensionName, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.memoryBudget = true;
 		if (strcmp(extension.extensionName, VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.shaderFloatControls = true;
@@ -2447,12 +2444,12 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	RenderPassConfiguration renderPassConfiguration{};
 	for (const auto &color : rts.colors)
 		renderPassConfiguration.colorAttachments.push_back({ 
-			Vulkan::getTextureFormat(color.texture->getPixelFormat(), isPixelFormatSRGB(color.texture->getPixelFormat())).internalFormat,
+			Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat,
 			VK_ATTACHMENT_LOAD_OP_LOAD,
 			dynamic_cast<Texture*>(color.texture)->getMsaaSamples() });
 	if (rts.depthStencil.texture != nullptr)
 		renderPassConfiguration.staticData.depthStencilAttachment = {
-			Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat(), false).internalFormat,
+			Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat,
 			VK_ATTACHMENT_LOAD_OP_LOAD,
 			VK_ATTACHMENT_LOAD_OP_LOAD,
 			dynamic_cast<Texture*>(rts.depthStencil.texture)->getMsaaSamples() };
@@ -3040,8 +3037,6 @@ void Graphics::createDefaultTexture()
 
 void Graphics::cleanup()
 {
-	cleanupSwapChain();
-
 	for (auto &cleanUpFns : cleanUpFunctions)
 		for (auto &cleanUpFn : cleanUpFns)
 			cleanUpFn();
@@ -3076,8 +3071,6 @@ void Graphics::cleanup()
 	vkDestroyCommandPool(device, commandPool, nullptr);
 	vkDestroyPipelineCache(device, pipelineCache, nullptr);
 	vkDestroyDevice(device, nullptr);
-	vkDestroySurfaceKHR(instance, surface, nullptr);
-	vkDestroyInstance(instance, nullptr);
 }
 
 void Graphics::cleanupSwapChain()
@@ -3087,8 +3080,11 @@ void Graphics::cleanupSwapChain()
 		vmaDestroyBuffer(vmaAllocator, readbackBuffer.buffer, readbackBuffer.allocation);
 		vmaDestroyImage(vmaAllocator, readbackBuffer.image, readbackBuffer.imageAllocation);
 	}
-	vkDestroyImageView(device, colorImageView, nullptr);
-	vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
+	if (colorImage)
+	{
+		vkDestroyImageView(device, colorImageView, nullptr);
+		vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
+	}
 	vkDestroyImageView(device, depthImageView, nullptr);
 	vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
 	for (const auto &swapChainImageView : swapChainImageViews)

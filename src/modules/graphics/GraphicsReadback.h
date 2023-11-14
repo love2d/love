@@ -103,6 +103,7 @@ protected:
 	StrongRef<love::image::ImageData> imageData;
 	Rect rect = {};
 	PixelFormat textureFormat = PIXELFORMAT_UNKNOWN;
+	bool isFormatLinear = false;
 	int imageDataX = 0;
 	int imageDataY = 0;
 

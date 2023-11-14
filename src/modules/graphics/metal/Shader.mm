@@ -1087,8 +1087,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 
 		MTLRenderPipelineColorAttachmentDescriptor *attachment = desc.colorAttachments[i];
 
-		bool isSRGB = false;
-		auto formatdesc = Metal::convertPixelFormat(device, format, isSRGB);
+		auto formatdesc = Metal::convertPixelFormat(device, format);
 		attachment.pixelFormat = formatdesc.format;
 
 		if (key.blend.enable)
@@ -1124,8 +1123,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 		{
 			// We already don't really support metal on older systems, this just
 			// silences a compiler warning about it.
-			bool isSRGB = false;
-			auto formatdesc = Metal::convertPixelFormat(device, dsformat, isSRGB);
+			auto formatdesc = Metal::convertPixelFormat(device, dsformat);
 			if (isPixelFormatDepth(dsformat))
 				desc.depthAttachmentPixelFormat = formatdesc.format;
 			if (isPixelFormatStencil(dsformat))

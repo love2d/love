@@ -2355,7 +2355,11 @@ int w_setColorMask(lua_State *L)
 {
 	ColorChannelMask mask;
 
-	if (lua_gettop(L) <= 1)
+	if (lua_isnoneornil(L, 1))
+	{
+		mask.r = mask.g = mask.b = mask.a = true;
+	}
+	else if (lua_gettop(L) <= 1)
 	{
 		// Set all color components if a single argument is given.
 		mask.r = mask.g = mask.b = mask.a = luax_checkboolean(L, 1);
@@ -2783,7 +2787,6 @@ int w_getTextureFormats(lua_State *L)
 	luaL_checktype(L, 1, LUA_TTABLE);
 
 	bool rt = luax_checkboolflag(L, 1, Texture::getConstant(Texture::SETTING_RENDER_TARGET));
-	bool linear = luax_boolflag(L, 1, Texture::getConstant(Texture::SETTING_LINEAR), false);
 	bool computewrite = luax_boolflag(L, 1, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), false);
 
 	OptionalBool readable;
@@ -2808,8 +2811,6 @@ int w_getTextureFormats(lua_State *L)
 		if (rt && isPixelFormatDepth(format))
 			continue;
 
-		bool sRGB = isGammaCorrect() && !linear;
-
 		uint32 usage = PIXELFORMATUSAGEFLAGS_NONE;
 		if (rt)
 			usage |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
@@ -2818,7 +2819,7 @@ int w_getTextureFormats(lua_State *L)
 		if (computewrite)
 			usage |= PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
 
-		luax_pushboolean(L, instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, sRGB));
+		luax_pushboolean(L, instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage));
 		lua_setfield(L, -2, name);
 	}
 
@@ -2862,14 +2863,14 @@ int w_getCanvasFormats(lua_State *L)
 			supported = [](PixelFormat format) -> bool
 			{
 				const uint32 usage = PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
-				return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, false);
+				return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage);
 			};
 		}
 		else
 		{
 			supported = [](PixelFormat format) -> bool
 			{
-				return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_RENDERTARGET, false);
+				return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_RENDERTARGET);
 			};
 		}
 	}
@@ -2881,7 +2882,7 @@ int w_getCanvasFormats(lua_State *L)
 			uint32 usage = PIXELFORMATUSAGEFLAGS_RENDERTARGET;
 			if (readable)
 				usage |= PIXELFORMATUSAGEFLAGS_SAMPLE;
-			return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, false);
+			return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage);
 		};
 	}
 
@@ -2894,7 +2895,7 @@ int w_getImageFormats(lua_State *L)
 
 	const auto supported = [](PixelFormat format) -> bool
 	{
-		return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_SAMPLE, false);
+		return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_SAMPLE);
 	};
 
 	const auto ignore = [](PixelFormat format) -> bool

@@ -178,25 +178,25 @@ int w_World_getContacts(lua_State *L)
 	return ret;
 }
 
-int w_World_queryFixturesInArea(lua_State *L)
+int w_World_queryShapesInArea(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
-	return t->queryFixturesInArea(L);
+	return t->queryShapesInArea(L);
 }
 
 int w_World_queryBoundingBox(lua_State *L)
 {
-	luax_markdeprecated(L, 1, "World:queryBoundingBox", API_METHOD, DEPRECATED_RENAMED, "World:queryFixturesInArea");
-	return w_World_queryFixturesInArea(L);
+	luax_markdeprecated(L, 1, "World:queryBoundingBox", API_METHOD, DEPRECATED_RENAMED, "World:queryShapesInArea");
+	return w_World_queryShapesInArea(L);
 }
 
-int w_World_getFixturesInArea(lua_State *L)
+int w_World_getShapesInArea(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
-	luax_catchexcept(L, [&](){ ret = t->getFixturesInArea(L); });
+	luax_catchexcept(L, [&](){ ret = t->getShapesInArea(L); });
 	return ret;
 }
 
@@ -260,8 +260,8 @@ static const luaL_Reg w_World_functions[] =
 	{ "getBodies", w_World_getBodies },
 	{ "getJoints", w_World_getJoints },
 	{ "getContacts", w_World_getContacts },
-	{ "queryFixturesInArea", w_World_queryFixturesInArea },
-	{ "getFixturesInArea", w_World_getFixturesInArea },
+	{ "queryShapesInArea", w_World_queryShapesInArea },
+	{ "getShapesInArea", w_World_getShapesInArea },
 	{ "rayCast", w_World_rayCast },
 	{ "rayCastAny", w_World_rayCastAny },
 	{ "rayCastClosest", w_World_rayCastClosest },

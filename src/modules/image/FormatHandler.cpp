@@ -60,7 +60,7 @@ bool FormatHandler::canParseCompressed(Data* /*data*/)
 	return false;
 }
 
-StrongRef<ByteData> FormatHandler::parseCompressed(Data* /*filedata*/, std::vector<StrongRef<CompressedSlice>>& /*images*/, PixelFormat& /*format*/, bool& /*sRGB*/)
+StrongRef<ByteData> FormatHandler::parseCompressed(Data* /*filedata*/, std::vector<StrongRef<CompressedSlice>>& /*images*/, PixelFormat& /*format*/)
 {
 	throw love::Exception("Compressed image parsing is not implemented for this format backend.");
 }

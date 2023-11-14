@@ -40,7 +40,8 @@ public:
 	int getWidth() const;
 	int getHeight() const;
 
-	virtual bool isSRGB() const = 0;
+	void setLinear(bool linear);
+	bool isLinear() const;
 
 protected:
 
@@ -49,6 +50,8 @@ protected:
 	PixelFormat format;
 	int width;
 	int height;
+
+	bool linear;
 
 }; // ImageDataBase
 

@@ -81,6 +81,7 @@ GraphicsReadback::GraphicsReadback(Graphics *gfx, ReadbackMethod method, Texture
 	}
 
 	textureFormat = getLinearPixelFormat(texture->getPixelFormat());
+	isFormatLinear = isGammaCorrect() && !isPixelFormatSRGB(texture->getPixelFormat());
 
 	if (!image::ImageData::validPixelFormat(textureFormat))
 	{
@@ -96,7 +97,7 @@ GraphicsReadback::GraphicsReadback(Graphics *gfx, ReadbackMethod method, Texture
 		if (isRT && !caps.features[Graphics::FEATURE_COPY_RENDER_TARGET_TO_BUFFER])
 			throw love::Exception("readbackTextureAsync is not supported on this system.");
 		else if (!isRT && !caps.features[Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER])
-			throw love::Exception("readbackTextureAsync a with non-render-target textures is not supported on this system.");
+			throw love::Exception("readbackTextureAsync with a non-render-target texture is not supported on this system.");
 	}
 	else
 	{
@@ -158,6 +159,7 @@ void *GraphicsReadback::prepareReadbackDest(size_t size)
 				throw love::Exception("The love.image module must be loaded for readbackTexture.");
 
 			imageData.set(module->newImageData(rect.w, rect.h, textureFormat, nullptr), Acquire::NORETAIN);
+			imageData->setLinear(isFormatLinear);
 			return imageData->getData();
 		}
 	}

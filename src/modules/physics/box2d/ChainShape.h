@@ -45,7 +45,7 @@ public:
 	 * Create a new ChainShape from a Box2D chain shape.
 	 * @param c The chain shape.
 	 **/
-	ChainShape(b2ChainShape *c, bool own = true);
+	ChainShape(Body *body, const b2ChainShape &c);
 
 	virtual ~ChainShape();
 

@@ -20,6 +20,7 @@
 
 #include "wrap_Body.h"
 #include "wrap_Physics.h"
+#include "wrap_Shape.h"
 
 namespace love
 {
@@ -159,6 +160,13 @@ int w_Body_getMassData(lua_State *L)
 	Body *t = luax_checkbody(L, 1);
 	lua_remove(L, 1);
 	return t->getMassData(L);
+}
+
+int w_Body_hasCustomMassData(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	luax_pushboolean(L, t->hasCustomMassData());
+	return 1;
 }
 
 int w_Body_getAngularDamping(lua_State *L)
@@ -599,13 +607,30 @@ int w_Body_getWorld(lua_State *L)
 	return 1;
 }
 
-int w_Body_getFixtures(lua_State *L)
+int w_Body_getShape(lua_State *L)
+{
+	Body *t = luax_checkbody(L, 1);
+	Shape *s = t->getShape();
+	if (s)
+		luax_pushshape(L, s);
+	else
+		lua_pushnil(L);
+	return 1;
+}
+
+int w_Body_getShapes(lua_State *L)
 {
 	Body *t = luax_checkbody(L, 1);
 	lua_remove(L, 1);
 	int n = 0;
-	luax_catchexcept(L, [&](){ n = t->getFixtures(L); });
+	luax_catchexcept(L, [&](){ n = t->getShapes(L); });
 	return n;
+}
+
+int w_Body_getFixtures(lua_State *L)
+{
+	luax_markdeprecated(L, 1, "Body:getFixtures", API_METHOD, DEPRECATED_REPLACED, "Body:getShapes");
+	return w_Body_getShapes(L);
 }
 
 int w_Body_getJoints(lua_State *L)
@@ -670,6 +695,7 @@ static const luaL_Reg w_Body_functions[] =
 	{ "getMass", w_Body_getMass },
 	{ "getInertia", w_Body_getInertia },
 	{ "getMassData", w_Body_getMassData },
+	{ "hasCustomMassData", w_Body_hasCustomMassData },
 	{ "getAngularDamping", w_Body_getAngularDamping },
 	{ "getLinearDamping", w_Body_getLinearDamping },
 	{ "getGravityScale", w_Body_getGravityScale },
@@ -713,13 +739,17 @@ static const luaL_Reg w_Body_functions[] =
 	{ "isFixedRotation", w_Body_isFixedRotation },
 	{ "isTouching", w_Body_isTouching },
 	{ "getWorld", w_Body_getWorld },
-	{ "getFixtures", w_Body_getFixtures },
+	{ "getShape", w_Body_getShape },
+	{ "getShapes", w_Body_getShapes },
 	{ "getJoints", w_Body_getJoints },
 	{ "getContacts", w_Body_getContacts },
 	{ "destroy", w_Body_destroy },
 	{ "isDestroyed", w_Body_isDestroyed },
 	{ "setUserData", w_Body_setUserData },
 	{ "getUserData", w_Body_getUserData },
+
+	// Deprecated
+	{ "getFixtures", w_Body_getFixtures },
 
 	{ 0, 0 }
 };

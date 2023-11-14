@@ -114,7 +114,7 @@ bool PKMHandler::canParseCompressed(Data *data)
 	return true;
 }
 
-StrongRef<ByteData> PKMHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> PKMHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format)
 {
 	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");
@@ -148,8 +148,6 @@ StrongRef<ByteData> PKMHandler::parseCompressed(Data *filedata, std::vector<Stro
 	images.emplace_back(new CompressedSlice(cformat, width, height, memory, 0, totalsize), Acquire::NORETAIN);
 
 	format = cformat;
-	sRGB = false;
-
 	return memory;
 }
 

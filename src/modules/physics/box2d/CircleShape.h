@@ -50,7 +50,7 @@ public:
 	 * Create a new CircleShape from the a Box2D CircleShape definition.
 	 * @param c The CircleShape definition.
 	 **/
-	CircleShape(b2CircleShape *c, bool own = true);
+	CircleShape(Body *body, const b2CircleShape &c);
 
 	virtual ~CircleShape();
 

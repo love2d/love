@@ -2948,9 +2948,8 @@ function love.nogame()
 		self.body = love.physics.newBody(world, x, y, "dynamic")
 		self.body:setLinearDamping(0.8)
 		self.body:setAngularDamping(0.8)
-		self.shape = love.physics.newPolygonShape(-55, -60, 0, 90, 55, -60)
-		self.fixture = love.physics.newFixture(self.body, self.shape, 1)
-		self.fixture:setRestitution(0.5)
+		self.shape = love.physics.newPolygonShape(self.body, -55, -60, 0, 90, 55, -60)
+		self.shape:setRestitution(0.5)
 		self.img_normal = img_duckloon_normal
 		self.img_blink = img_duckloon_blink
 		self.img = self.img_normal
@@ -3041,8 +3040,8 @@ function love.nogame()
 			link.body = love.physics.newBody(world, link.x, link.y, "dynamic")
 			link.body:setLinearDamping(0.5)
 			link.body:setAngularDamping(0.5)
-			link.shape = love.physics.newCircleShape(link.radius)
-			link.fixture = love.physics.newFixture(link.body, link.shape, 0.1 / i)
+			link.shape = love.physics.newCircleShape(link.body, link.radius)
+			link.shape:setDensity(0.1 / i)
 			link.state = State(link.body)
 
 			-- Note: every link must also be attached to the Duckloon. Otherwise the

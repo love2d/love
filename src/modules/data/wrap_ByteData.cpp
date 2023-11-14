@@ -56,7 +56,7 @@ int w_ByteData_setString(lua_State *L)
 	if (size == 0)
 		return 0;
 
-	if (offset < 0 || offset + size > (int64) t->getSize())
+	if (offset < 0 || offset + (int64) size > (int64) t->getSize())
 		return luaL_error(L, "The given string offset and size don't fit within the Data's size.");
 
 	memcpy((char *) t->getData() + (size_t) offset, str, size);

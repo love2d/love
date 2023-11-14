@@ -250,7 +250,7 @@ void Graphics::updateBackbuffer(int width, int height, int /*pixelwidth*/, int p
 		settings.renderTarget = true;
 		settings.readable.set(false);
 
-		settings.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_UNORM_sRGB : PIXELFORMAT_RGBA8_UNORM;
+		settings.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_sRGB : PIXELFORMAT_RGBA8_UNORM;
 		internalBackbuffer.set(newTexture(settings), Acquire::NORETAIN);
 
 		settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
@@ -909,6 +909,30 @@ void Graphics::endPass(bool presenting)
 
 void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth)
 {
+	if (c.hasValue)
+	{
+		bool hasintegerformat = false;
+
+		const auto &rts = states.back().renderTargets;
+		for (const auto &rt : rts.colors)
+		{
+			if (rt.texture.get() && isPixelFormatInteger(rt.texture->getPixelFormat()))
+				hasintegerformat = true;
+		}
+
+		// This variant of clear() uses glClear() which can't clear integer formats,
+		// so we switch to the MRT variant if needed.
+		if (hasintegerformat)
+		{
+			std::vector<OptionalColorD> colors(rts.colors.size());
+			for (size_t i = 0; i < colors.size(); i++)
+				colors[i] = c;
+
+			clear(colors, stencil, depth);
+			return;
+		}
+	}
+
 	if (c.hasValue || stencil.hasValue || depth.hasValue)
 		flushBatchedDraws();
 
@@ -922,36 +946,23 @@ void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth
 		flags |= GL_COLOR_BUFFER_BIT;
 	}
 
-	uint32 stencilwrites = gl.getStencilWriteMask();
-
 	if (stencil.hasValue)
 	{
-		if (stencilwrites != LOVE_UINT32_MAX)
-			gl.setStencilWriteMask(LOVE_UINT32_MAX);
-
 		glClearStencil(stencil.value);
 		flags |= GL_STENCIL_BUFFER_BIT;
 	}
 
-	bool hadDepthWrites = gl.hasDepthWrites();
-
 	if (depth.hasValue)
 	{
-		if (!hadDepthWrites) // glDepthMask also affects glClear.
-			gl.setDepthWrites(true);
-
 		gl.clearDepth(depth.value);
 		flags |= GL_DEPTH_BUFFER_BIT;
 	}
 
 	if (flags != 0)
+	{
+		OpenGL::CleanClearState cs(flags);
 		glClear(flags);
-
-	if (stencil.hasValue && stencilwrites != LOVE_UINT32_MAX)
-		gl.setStencilWriteMask(stencilwrites);
-
-	if (depth.hasValue && !hadDepthWrites)
-		gl.setDepthWrites(hadDepthWrites);
+	}
 
 	if (c.hasValue && gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
 	{
@@ -1041,36 +1052,23 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 	GLbitfield flags = 0;
 
-	uint32 stencilwrites = gl.getStencilWriteMask();
-
 	if (stencil.hasValue)
 	{
-		if (stencilwrites != LOVE_UINT32_MAX)
-			gl.setStencilWriteMask(LOVE_UINT32_MAX);
-
 		glClearStencil(stencil.value);
 		flags |= GL_STENCIL_BUFFER_BIT;
 	}
 
-	bool hadDepthWrites = gl.hasDepthWrites();
-
 	if (depth.hasValue)
 	{
-		if (!hadDepthWrites) // glDepthMask also affects glClear.
-			gl.setDepthWrites(true);
-
 		gl.clearDepth(depth.value);
 		flags |= GL_DEPTH_BUFFER_BIT;
 	}
 
 	if (flags != 0)
+	{
+		OpenGL::CleanClearState cs(flags);
 		glClear(flags);
-
-	if (stencil.hasValue && stencilwrites != LOVE_UINT32_MAX)
-		gl.setStencilWriteMask(stencilwrites);
-
-	if (depth.hasValue && !hadDepthWrites)
-		gl.setDepthWrites(hadDepthWrites);
+	}
 
 	if (gl.bugs.clearRequiresDriverTextureStateUpdate && Shader::current)
 	{
@@ -1191,8 +1189,7 @@ GLuint Graphics::bindCachedFBO(const RenderTargets &targets)
 		auto attachRT = [&](const RenderTarget &rt)
 		{
 			bool renderbuffer = msaa > 1 || !rt.texture->isReadable();
-			bool srgb = false;
-			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.texture->getPixelFormat(), renderbuffer, srgb);
+			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.texture->getPixelFormat(), renderbuffer);
 
 			if (fmt.framebufferAttachments[0] == GL_COLOR_ATTACHMENT0)
 			{
@@ -1568,7 +1565,11 @@ void Graphics::setColorMask(ColorChannelMask mask)
 {
 	flushBatchedDraws();
 
-	glColorMask(mask.r, mask.g, mask.b, mask.a);
+	uint32 maskbits =
+		((mask.r ? 1 : 0) << 0) | ((mask.g ? 1 : 0) << 1) |
+		((mask.b ? 1 : 0) << 2) | ((mask.a ? 1 : 0) << 3);
+
+	gl.setColorWriteMask(maskbits);
 	states.back().colorMask = mask;
 }
 
@@ -1732,31 +1733,6 @@ void Graphics::initCapabilities()
 	}
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const
-{
-	uint32 requiredflags = 0;
-	if (rendertarget)
-		requiredflags |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
-	if (readable)
-		requiredflags |= PIXELFORMATUSAGEFLAGS_SAMPLE;
-
-	switch (format)
-	{
-	case PIXELFORMAT_NORMAL:
-		if (isGammaCorrect())
-			return PIXELFORMAT_RGBA8_UNORM_sRGB;
-		else if ((OpenGL::getPixelFormatUsageFlags(PIXELFORMAT_RGBA8_UNORM) & requiredflags) != requiredflags)
-			// 32-bit render targets don't have guaranteed support on GLES2.
-			return PIXELFORMAT_RGBA4_UNORM;
-		else
-			return PIXELFORMAT_RGBA8_UNORM;
-	case PIXELFORMAT_HDR:
-		return PIXELFORMAT_RGBA16_FLOAT;
-	default:
-		return format;
-	}
-}
-
 uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 {
 	uint32 usage = OpenGL::getPixelFormatUsageFlags(format);
@@ -1777,9 +1753,8 @@ uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 	{
 		GLuint texture = 0;
 		GLuint renderbuffer = 0;
-		bool sRGB = isPixelFormatSRGB(format);
 
-		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, !readable, sRGB);
+		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, !readable);
 
 		GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 
@@ -1801,7 +1776,7 @@ uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 			s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
 			gl.setSamplerState(TEXTURE_2D, s);
 
-			gl.rawTexStorage(TEXTURE_2D, 1, format, sRGB, 1, 1);
+			gl.rawTexStorage(TEXTURE_2D, 1, format, 1, 1);
 		}
 		else
 		{
@@ -1837,16 +1812,11 @@ uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 	return usage;
 }
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
+bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 {
-	if (sRGB)
-		format = getSRGBPixelFormat(format);
+	format = getSizedFormat(format);
 
-	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
 	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
-
-	format = getSizedFormat(format, rendertarget, readable);
-
 	return (usage & pixelFormatUsage[format][readable ? 1 : 0]) == usage;
 }
 

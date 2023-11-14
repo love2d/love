@@ -151,9 +151,9 @@ public:
 	void getChildren(int &childA, int &childB);
 
 	/**
-	 * Gets the Fixtures associated with this Contact.
+	 * Gets the Shapes associated with this Contact.
 	 **/
-	void getFixtures(Fixture *&fixtureA, Fixture *&fixtureB);
+	void getShapes(Shape *&shapeA, Shape *&shapeB);
 
 private:
 

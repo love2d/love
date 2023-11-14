@@ -46,7 +46,7 @@ struct Optional
 		hasValue = true;
 	}
 
-	T get(T defaultVal)
+	T get(T defaultVal) const
 	{
 		return hasValue ? value : defaultVal;
 	}

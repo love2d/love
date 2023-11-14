@@ -44,7 +44,7 @@ class TrueTypeRasterizer : public love::font::TrueTypeRasterizer
 {
 public:
 
-	TrueTypeRasterizer(FT_Library library, love::Data *data, int size, float dpiscale, Hinting hinting);
+	TrueTypeRasterizer(FT_Library library, love::Data *data, int size, const Settings &settings, float defaultdpiscale);
 	virtual ~TrueTypeRasterizer();
 
 	// Implement Rasterizer

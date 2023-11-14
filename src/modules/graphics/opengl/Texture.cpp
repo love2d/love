@@ -56,8 +56,7 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 			glReadBuffer(GL_NONE);
 		}
 
-		bool unusedSRGB = false;
-		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false, unusedSRGB);
+		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false);
 
 		int faces = texType == TEXTURE_CUBE ? 6 : 1;
 
@@ -78,33 +77,38 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 						gl.framebufferTexture(attachment, texType, texture, mip, layer, face);
 					}
 
-					if (clear)
+					if (clear && isPixelFormatInteger(format))
 					{
-						if (isPixelFormatDepthStencil(format))
+						PixelFormatType datatype = getPixelFormatInfo(format).dataType;
+						if (datatype == PIXELFORMATTYPE_SINT)
 						{
-							bool hadDepthWrites = gl.hasDepthWrites();
-							if (!hadDepthWrites) // glDepthMask also affects glClear.
-								gl.setDepthWrites(true);
+							const GLint carray[] = { 0, 0, 0, 0 };
+							glClearBufferiv(GL_COLOR, 0, carray);
+						}
+						else
+						{
+							const GLuint carray[] = { 0, 0, 0, 0 };
+							glClearBufferuiv(GL_COLOR, 0, carray);
+						}
+					}
+					else if (clear)
+					{
+						bool ds = isPixelFormatDepthStencil(format);
 
-							uint32 stencilwrite = gl.getStencilWriteMask();
-							if (stencilwrite != LOVE_UINT32_MAX)
-								gl.setStencilWriteMask(LOVE_UINT32_MAX);
+						GLbitfield clearflags = ds ? GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT : GL_COLOR_BUFFER_BIT;
+						OpenGL::CleanClearState cleanClearState(clearflags);
 
+						if (ds)
+						{
 							gl.clearDepth(1.0);
 							glClearStencil(0);
-							glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-							if (!hadDepthWrites)
-								gl.setDepthWrites(hadDepthWrites);
-
-							if (stencilwrite != LOVE_UINT32_MAX)
-								gl.setStencilWriteMask(stencilwrite);
 						}
 						else
 						{
 							glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-							glClear(GL_COLOR_BUFFER_BIT);
 						}
+
+						glClear(clearflags);
 					}
 				}
 			}
@@ -120,8 +124,7 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 
 static GLenum newRenderbuffer(int width, int height, int &samples, PixelFormat pixelformat, GLuint &buffer)
 {
-	bool unusedSRGB = false;
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, true, unusedSRGB);
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, true);
 
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 
@@ -167,24 +170,39 @@ static GLenum newRenderbuffer(int width, int height, int &samples, PixelFormat p
 
 	if (status == GL_FRAMEBUFFER_COMPLETE)
 	{
-		if (isPixelFormatDepthStencil(pixelformat))
+		if (isPixelFormatInteger(pixelformat))
 		{
-			bool hadDepthWrites = gl.hasDepthWrites();
-			if (!hadDepthWrites) // glDepthMask also affects glClear.
-				gl.setDepthWrites(true);
-
-			gl.clearDepth(1.0);
-			glClearStencil(0);
-			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-			if (!hadDepthWrites)
-				gl.setDepthWrites(hadDepthWrites);
+			PixelFormatType datatype = getPixelFormatInfo(pixelformat).dataType;
+			if (datatype == PIXELFORMATTYPE_SINT)
+			{
+				const GLint carray[] = { 0, 0, 0, 0 };
+				glClearBufferiv(GL_COLOR, 0, carray);
+			}
+			else
+			{
+				const GLuint carray[] = { 0, 0, 0, 0 };
+				glClearBufferuiv(GL_COLOR, 0, carray);
+			}
 		}
 		else
 		{
-			// Initialize the buffer to transparent black.
-			glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
+			bool ds = isPixelFormatDepthStencil(pixelformat);
+
+			GLbitfield clearflags = ds ? GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT : GL_COLOR_BUFFER_BIT;
+			OpenGL::CleanClearState cleanClearState(clearflags);
+
+			if (ds)
+			{
+				gl.clearDepth(1.0);
+				glClearStencil(0);
+			}
+			else
+			{
+				// Initialize the buffer to transparent black.
+				glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			}
+
+			glClear(clearflags);
 		}
 	}
 	else
@@ -262,7 +280,7 @@ void Texture::createTexture()
 	// remember some driver issues on some old Android systems, maybe...
 	// For now, the base class enforces data on init for compressed textures.
 	if (!isCompressed())
-		gl.rawTexStorage(texType, mipcount, format, sRGB, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
+		gl.rawTexStorage(texType, mipcount, format, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
 
 	// rawTexStorage handles this for uncompressed textures.
 	if (isCompressed() && (GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0))
@@ -272,7 +290,7 @@ void Texture::createTexture()
 	int h = pixelHeight;
 	int d = depth;
 
-	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false, sRGB);
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false);
 
 	for (int mip = 0; mip < mipcount; mip++)
 	{
@@ -440,7 +458,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 
 	gl.bindTextureToUnit(this, 0, false);
 
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, false, sRGB);
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, false);
 	GLenum gltarget = OpenGL::getGLTextureType(texType);
 
 	if (texType == TEXTURE_CUBE)
@@ -488,8 +506,7 @@ void Texture::readbackInternal(int slice, int mipmap, const Rect &rect, int dest
 
 	gl.bindTextureToUnit(this, 0, false);
 
-	bool isSRGB = false;
-	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false, isSRGB);
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false);
 
 	if (gl.isCopyTextureToBufferSupported())
 	{

@@ -837,8 +837,6 @@ set(LOVE_SRC_MODULE_PHYSICS_BOX2D
 	src/modules/physics/box2d/DistanceJoint.h
 	src/modules/physics/box2d/EdgeShape.cpp
 	src/modules/physics/box2d/EdgeShape.h
-	src/modules/physics/box2d/Fixture.cpp
-	src/modules/physics/box2d/Fixture.h
 	src/modules/physics/box2d/FrictionJoint.cpp
 	src/modules/physics/box2d/FrictionJoint.h
 	src/modules/physics/box2d/GearJoint.cpp
@@ -881,8 +879,6 @@ set(LOVE_SRC_MODULE_PHYSICS_BOX2D
 	src/modules/physics/box2d/wrap_DistanceJoint.h
 	src/modules/physics/box2d/wrap_EdgeShape.cpp
 	src/modules/physics/box2d/wrap_EdgeShape.h
-	src/modules/physics/box2d/wrap_Fixture.cpp
-	src/modules/physics/box2d/wrap_Fixture.h
 	src/modules/physics/box2d/wrap_FrictionJoint.cpp
 	src/modules/physics/box2d/wrap_FrictionJoint.h
 	src/modules/physics/box2d/wrap_GearJoint.cpp

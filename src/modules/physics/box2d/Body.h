@@ -39,7 +39,6 @@ namespace box2d
 // Forward declarations.
 class World;
 class Shape;
-class Fixture;
 
 /**
  * A Body is an entity which has position and orientation
@@ -57,7 +56,6 @@ public:
 	friend class CircleShape;
 	friend class PolygonShape;
 	friend class Shape;
-	friend class Fixture;
 
 	// Public because joints et al ask for b2body
 	b2Body *body;
@@ -138,6 +136,8 @@ public:
 	 * Gets mass properties.
 	 **/
 	int getMassData(lua_State *L);
+
+	bool hasCustomMassData() const { return hasCustomMass; }
 
 	/**
 	 * Gets the Body's angular damping.
@@ -391,10 +391,14 @@ public:
 	World *getWorld() const;
 
 	/**
-	 * Get an array of all the Fixtures attached to this Body.
-	 * @return An array of Fixtures.
+	 * Gets the first Shape attached to this Body.
 	 **/
-	int getFixtures(lua_State *L) const;
+	Shape *getShape() const;
+
+	/**
+	 * Get an array of all the Shapes attached to this Body.
+	 **/
+	int getShapes(lua_State *L) const;
 
 	/**
 	 * Get an array of all Joints attached to this Body.
@@ -430,6 +434,8 @@ private:
 	// FIXME: This should be a weak reference, rather than being completely
 	// unowned?
 	World *world;
+
+	bool hasCustomMass;
 
 	// Reference to arbitrary data.
 	Reference* ref = nullptr;

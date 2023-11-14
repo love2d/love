@@ -34,8 +34,8 @@ namespace box2d
 
 love::Type CircleShape::type("CircleShape", &Shape::type);
 
-CircleShape::CircleShape(b2CircleShape *c, bool own)
-	: Shape(c, own)
+CircleShape::CircleShape(Body *body, const b2CircleShape &c)
+	: Shape(body, c)
 {
 }
 
@@ -45,16 +45,19 @@ CircleShape::~CircleShape()
 
 float CircleShape::getRadius() const
 {
+	throwIfShapeNotValid();
 	return Physics::scaleUp(shape->m_radius);
 }
 
 void CircleShape::setRadius(float r)
 {
+	throwIfShapeNotValid();
 	shape->m_radius = Physics::scaleDown(r);
 }
 
 void CircleShape::getPoint(float &x_o, float &y_o) const
 {
+	throwIfShapeNotValid();
 	b2CircleShape *c = (b2CircleShape *) shape;
 	x_o = Physics::scaleUp(c->m_p.x);
 	y_o = Physics::scaleUp(c->m_p.y);
@@ -62,6 +65,7 @@ void CircleShape::getPoint(float &x_o, float &y_o) const
 
 void CircleShape::setPoint(float x, float y)
 {
+	throwIfShapeNotValid();
 	b2CircleShape *c = (b2CircleShape *) shape;
 	c->m_p = Physics::scaleDown(b2Vec2(x, y));
 }

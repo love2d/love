@@ -48,7 +48,7 @@ public:
 	bool canParseCompressed(Data *data) override;
 	StrongRef<ByteData> parseCompressed(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
-	        PixelFormat &format, bool &sRGB) override;
+	        PixelFormat &format) override;
 
 }; // DDSHandler
 

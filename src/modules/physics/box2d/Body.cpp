@@ -23,12 +23,12 @@
 #include "common/math.h"
 
 #include "Shape.h"
-#include "Fixture.h"
 #include "World.h"
 #include "Physics.h"
 
 // Needed for luax_pushjoint.
 #include "wrap_Joint.h"
+#include "wrap_Shape.h"
 
 namespace love
 {
@@ -39,6 +39,7 @@ namespace box2d
 
 Body::Body(World *world, b2Vec2 p, Body::Type type)
 	: world(world)
+	, hasCustomMass(false)
 {
 	b2BodyDef def;
 	def.position = Physics::scaleDown(p);
@@ -249,6 +250,7 @@ void Body::setLinearDamping(float d)
 void Body::resetMassData()
 {
 	body->ResetMassData();
+	hasCustomMass = false;
 }
 
 void Body::setMassData(float x, float y, float m, float i)
@@ -258,6 +260,7 @@ void Body::setMassData(float x, float y, float m, float i)
 	massData.mass = m;
 	massData.I = Physics::scaleDown(Physics::scaleDown(i));
 	body->SetMassData(&massData);
+	hasCustomMass = true;
 }
 
 void Body::setMass(float m)
@@ -266,6 +269,7 @@ void Body::setMass(float m)
 	body->GetMassData(&data);
 	data.mass = m;
 	body->SetMassData(&data);
+	hasCustomMass = true;
 }
 
 void Body::setInertia(float i)
@@ -275,6 +279,7 @@ void Body::setInertia(float i)
 	massData.mass = body->GetMass();
 	massData.I = Physics::scaleDown(Physics::scaleDown(i));
 	body->SetMassData(&massData);
+	hasCustomMass = true;
 }
 
 void Body::setGravityScale(float scale)
@@ -461,7 +466,20 @@ World *Body::getWorld() const
 	return world;
 }
 
-int Body::getFixtures(lua_State *L) const
+Shape *Body::getShape() const
+{
+	b2Fixture *f = body->GetFixtureList();
+	if (f == nullptr)
+		return nullptr;
+
+	Shape *shape = (Shape *)(f->GetUserData().pointer);
+	if (!shape)
+		throw love::Exception("A Shape has escaped Memoizer!");
+
+	return shape;
+}
+
+int Body::getShapes(lua_State *L) const
 {
 	lua_newtable(L);
 	b2Fixture *f = body->GetFixtureList();
@@ -470,10 +488,10 @@ int Body::getFixtures(lua_State *L) const
 	{
 		if (!f)
 			break;
-		Fixture *fixture = (Fixture *)(f->GetUserData().pointer);
-		if (!fixture)
-			throw love::Exception("A fixture has escaped Memoizer!");
-		luax_pushtype(L, fixture);
+		Shape *shape = (Shape *)(f->GetUserData().pointer);
+		if (!shape)
+			throw love::Exception("A Shape has escaped Memoizer!");
+		luax_pushshape(L, shape);
 		lua_rawseti(L, -2, i);
 		i++;
 	}

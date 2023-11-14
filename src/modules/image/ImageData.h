@@ -62,7 +62,7 @@ public:
 	static love::Type type;
 
 	ImageData(Data *data);
-	ImageData(int width, int height, PixelFormat format = PIXELFORMAT_RGBA8_UNORM);
+	ImageData(int width, int height, PixelFormat format);
 	ImageData(int width, int height, PixelFormat format, void *data, bool own);
 	ImageData(const ImageData &c);
 	virtual ~ImageData();
@@ -116,7 +116,6 @@ public:
 	ImageData *clone() const override;
 	void *getData() const override;
 	size_t getSize() const override;
-	bool isSRGB() const override;
 
 	size_t getPixelSize() const;
 

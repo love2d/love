@@ -503,7 +503,7 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	backbufferMSAA.set(nullptr);
 	if (settings.msaa > 1)
 	{
-		settings.format = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
+		settings.format = isGammaCorrect() ? PIXELFORMAT_BGRA8_sRGB : PIXELFORMAT_BGRA8_UNORM;
 		backbufferMSAA.set(newTexture(settings), Acquire::NORETAIN);
 	}
 
@@ -681,7 +681,7 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 			attachmentStoreActions.stencil = MTLStoreActionDontCare;
 
 			auto &key = lastRenderPipelineKey;
-			key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
+			key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_sRGB : PIXELFORMAT_BGRA8_UNORM;
 			key.depthStencilFormat = backbufferDepthStencil->getPixelFormat();
 			key.msaa = backbufferMSAA ? (uint8) backbufferMSAA->getMSAA() : 1;
 		}
@@ -1864,31 +1864,9 @@ void Graphics::setWireframe(bool enable)
 	}
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, bool /*readable*/) const
+bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 {
-	switch (format)
-	{
-	case PIXELFORMAT_NORMAL:
-		if (isGammaCorrect())
-			return PIXELFORMAT_RGBA8_UNORM_sRGB;
-		else
-			return PIXELFORMAT_RGBA8_UNORM;
-	case PIXELFORMAT_HDR:
-		return PIXELFORMAT_RGBA16_FLOAT;
-	default:
-		return format;
-	}
-}
-
-bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
-{
-	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
-	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
-
-	format = getSizedFormat(format, rendertarget, readable);
-
-	if (sRGB)
-		format = getSRGBPixelFormat(format);
+	format = getSizedFormat(format);
 
 	const uint32 sample = PIXELFORMATUSAGEFLAGS_SAMPLE;
 	const uint32 filter = PIXELFORMATUSAGEFLAGS_LINEAR;
@@ -1902,7 +1880,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 
 	uint32 flags = PIXELFORMATUSAGEFLAGS_NONE;
 
-	if (isPixelFormatCompressed(format) && rendertarget)
+	if (isPixelFormatCompressed(format) && (usage & rt) != 0)
 		return false;
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
@@ -1977,8 +1955,8 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 		case PIXELFORMAT_BGRA8_UNORM:
 			flags |= all;
 			break;
-		case PIXELFORMAT_RGBA8_UNORM_sRGB:
-		case PIXELFORMAT_BGRA8_UNORM_sRGB:
+		case PIXELFORMAT_RGBA8_sRGB:
+		case PIXELFORMAT_BGRA8_sRGB:
 			if (families.apple[1] || families.mac[1] || families.macCatalyst[1])
 				flags |= commonsample | commonrender;
 			if (families.apple[2])
@@ -2077,8 +2055,11 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 			break;
 
 		case PIXELFORMAT_DXT1_UNORM:
+		case PIXELFORMAT_DXT1_sRGB:
 		case PIXELFORMAT_DXT3_UNORM:
+		case PIXELFORMAT_DXT3_sRGB:
 		case PIXELFORMAT_DXT5_UNORM:
+		case PIXELFORMAT_DXT5_sRGB:
 		case PIXELFORMAT_BC4_UNORM:
 		case PIXELFORMAT_BC4_SNORM:
 		case PIXELFORMAT_BC5_UNORM:
@@ -2086,22 +2067,30 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 		case PIXELFORMAT_BC6H_UFLOAT:
 		case PIXELFORMAT_BC6H_FLOAT:
 		case PIXELFORMAT_BC7_UNORM:
+		case PIXELFORMAT_BC7_sRGB:
 			if (families.mac[1] || families.macCatalyst[1])
 				flags |= commonsample;
 			break;
 
 		case PIXELFORMAT_PVR1_RGB2_UNORM:
+		case PIXELFORMAT_PVR1_RGB2_sRGB:
 		case PIXELFORMAT_PVR1_RGB4_UNORM:
+		case PIXELFORMAT_PVR1_RGB4_sRGB:
 		case PIXELFORMAT_PVR1_RGBA2_UNORM:
+		case PIXELFORMAT_PVR1_RGBA2_sRGB:
 		case PIXELFORMAT_PVR1_RGBA4_UNORM:
+		case PIXELFORMAT_PVR1_RGBA4_sRGB:
 			if (families.apple[1])
 				flags |= commonsample;
 			break;
 
 		case PIXELFORMAT_ETC1_UNORM:
 		case PIXELFORMAT_ETC2_RGB_UNORM:
+		case PIXELFORMAT_ETC2_RGB_sRGB:
 		case PIXELFORMAT_ETC2_RGBA_UNORM:
+		case PIXELFORMAT_ETC2_RGBA_sRGB:
 		case PIXELFORMAT_ETC2_RGBA1_UNORM:
+		case PIXELFORMAT_ETC2_RGBA1_sRGB:
 		case PIXELFORMAT_EAC_R_UNORM:
 		case PIXELFORMAT_EAC_R_SNORM:
 		case PIXELFORMAT_EAC_RG_UNORM:
@@ -2110,20 +2099,34 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 				flags |= commonsample;
 			break;
 
-		case PIXELFORMAT_ASTC_4x4:
-		case PIXELFORMAT_ASTC_5x4:
-		case PIXELFORMAT_ASTC_5x5:
-		case PIXELFORMAT_ASTC_6x5:
-		case PIXELFORMAT_ASTC_6x6:
-		case PIXELFORMAT_ASTC_8x5:
-		case PIXELFORMAT_ASTC_8x6:
-		case PIXELFORMAT_ASTC_8x8:
-		case PIXELFORMAT_ASTC_10x5:
-		case PIXELFORMAT_ASTC_10x6:
-		case PIXELFORMAT_ASTC_10x8:
-		case PIXELFORMAT_ASTC_10x10:
-		case PIXELFORMAT_ASTC_12x10:
-		case PIXELFORMAT_ASTC_12x12:
+		case PIXELFORMAT_ASTC_4x4_UNORM:
+		case PIXELFORMAT_ASTC_5x4_UNORM:
+		case PIXELFORMAT_ASTC_5x5_UNORM:
+		case PIXELFORMAT_ASTC_6x5_UNORM:
+		case PIXELFORMAT_ASTC_6x6_UNORM:
+		case PIXELFORMAT_ASTC_8x5_UNORM:
+		case PIXELFORMAT_ASTC_8x6_UNORM:
+		case PIXELFORMAT_ASTC_8x8_UNORM:
+		case PIXELFORMAT_ASTC_10x5_UNORM:
+		case PIXELFORMAT_ASTC_10x6_UNORM:
+		case PIXELFORMAT_ASTC_10x8_UNORM:
+		case PIXELFORMAT_ASTC_10x10_UNORM:
+		case PIXELFORMAT_ASTC_12x10_UNORM:
+		case PIXELFORMAT_ASTC_12x12_UNORM:
+		case PIXELFORMAT_ASTC_4x4_sRGB:
+		case PIXELFORMAT_ASTC_5x4_sRGB:
+		case PIXELFORMAT_ASTC_5x5_sRGB:
+		case PIXELFORMAT_ASTC_6x5_sRGB:
+		case PIXELFORMAT_ASTC_6x6_sRGB:
+		case PIXELFORMAT_ASTC_8x5_sRGB:
+		case PIXELFORMAT_ASTC_8x6_sRGB:
+		case PIXELFORMAT_ASTC_8x8_sRGB:
+		case PIXELFORMAT_ASTC_10x5_sRGB:
+		case PIXELFORMAT_ASTC_10x6_sRGB:
+		case PIXELFORMAT_ASTC_10x8_sRGB:
+		case PIXELFORMAT_ASTC_10x10_sRGB:
+		case PIXELFORMAT_ASTC_12x10_sRGB:
+		case PIXELFORMAT_ASTC_12x12_sRGB:
 			if (families.apple[2])
 				flags |= commonsample;
 			break;

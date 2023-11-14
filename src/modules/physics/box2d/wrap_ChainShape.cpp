@@ -54,9 +54,10 @@ int w_ChainShape_setPreviousVertex(lua_State *L)
 
 int w_ChainShape_getChildEdge(lua_State *L)
 {
+	luax_markdeprecated(L, 1, "ChainShape:getChildEdge", API_METHOD, DEPRECATED_NO_REPLACEMENT, nullptr);
 	ChainShape *c = luax_checkchainshape(L, 1);
 	int index = (int) luaL_checkinteger(L, 2) - 1; // Convert from 1-based index
-	EdgeShape *e = 0;
+	EdgeShape *e = nullptr;
 	luax_catchexcept(L, [&](){ e = c->getChildEdge(index); });
 	luax_pushtype(L, e);
 	e->release();
@@ -66,7 +67,8 @@ int w_ChainShape_getChildEdge(lua_State *L)
 int w_ChainShape_getVertexCount(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
-	int count = c->getVertexCount();
+	int count = 0;
+	luax_catchexcept(L, [&]() { count = c->getVertexCount(); });
 	lua_pushinteger(L, count);
 	return 1;
 }
@@ -85,7 +87,8 @@ int w_ChainShape_getPoint(lua_State *L)
 int w_ChainShape_getNextVertex(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
-	b2Vec2 v = c->getNextVertex();
+	b2Vec2 v;
+	luax_catchexcept(L, [&]() { v = c->getNextVertex(); });
 	lua_pushnumber(L, v.x);
 	lua_pushnumber(L, v.y);
 	return 2;
@@ -94,7 +97,8 @@ int w_ChainShape_getNextVertex(lua_State *L)
 int w_ChainShape_getPreviousVertex(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
-	b2Vec2 v = c->getPreviousVertex();
+	b2Vec2 v;
+	luax_catchexcept(L, [&]() { v = c->getPreviousVertex(); });
 	lua_pushnumber(L, v.x);
 	lua_pushnumber(L, v.y);
 	return 2;
@@ -103,7 +107,8 @@ int w_ChainShape_getPreviousVertex(lua_State *L)
 int w_ChainShape_getPoints(lua_State *L)
 {
 	ChainShape *c = luax_checkchainshape(L, 1);
-	const b2Vec2 *verts = c->getPoints();
+	const b2Vec2 *verts;
+	luax_catchexcept(L, [&]() { verts = c->getPoints(); });
 	int count = c->getVertexCount();
 	if (!lua_checkstack(L, count*2))
 		return luaL_error(L, "Too many return values");

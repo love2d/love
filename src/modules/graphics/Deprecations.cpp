@@ -74,12 +74,12 @@ void Deprecations::draw(Graphics *gfx)
 
 	if (font.get() == nullptr)
 	{
-		auto hinting = font::TrueTypeRasterizer::HINTING_NORMAL;
+		font::TrueTypeRasterizer::Settings settings;
 
 		if (!isGammaCorrect() && gfx->getScreenDPIScale() <= 1.0)
-			hinting = font::TrueTypeRasterizer::HINTING_LIGHT;
+			settings.hinting = font::TrueTypeRasterizer::HINTING_LIGHT;
 
-		font.set(gfx->newDefaultFont(9, hinting), Acquire::NORETAIN);
+		font.set(gfx->newDefaultFont(9, settings), Acquire::NORETAIN);
 	}
 
 	gfx->flushBatchedDraws();

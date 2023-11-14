@@ -34,6 +34,7 @@ namespace box2d
 {
 
 Shape *luax_checkshape(lua_State *L, int idx);
+void luax_pushshape(lua_State *L, Shape *shape);
 extern "C" int luaopen_shape(lua_State *L);
 
 extern const luaL_Reg w_Shape_functions[];

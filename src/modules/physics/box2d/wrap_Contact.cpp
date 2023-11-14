@@ -19,7 +19,7 @@
  **/
 
 #include "wrap_Contact.h"
-#include "Fixture.h"
+#include "wrap_Shape.h"
 
 namespace love
 {
@@ -139,16 +139,22 @@ int w_Contact_getChildren(lua_State *L)
 	return 2;
 }
 
-int w_Contact_getFixtures(lua_State *L)
+int w_Contact_getShapes(lua_State *L)
 {
 	Contact *t = luax_checkcontact(L, 1);
-	Fixture *a = nullptr;
-	Fixture *b = nullptr;
-	luax_catchexcept(L, [&](){ t->getFixtures(a, b); });
+	Shape *a = nullptr;
+	Shape *b = nullptr;
+	luax_catchexcept(L, [&](){ t->getShapes(a, b); });
 
-	luax_pushtype(L, a);
-	luax_pushtype(L, b);
+	luax_pushshape(L, a);
+	luax_pushshape(L, b);
 	return 2;
+}
+
+int w_Contact_getFixtures(lua_State *L)
+{
+	luax_markdeprecated(L, 1, "Contact:getFixtures", API_METHOD, DEPRECATED_REPLACED, "Contact:getShapes");
+	return w_Contact_getShapes(L);
 }
 
 int w_Contact_isDestroyed(lua_State *L)
@@ -174,8 +180,12 @@ static const luaL_Reg w_Contact_functions[] =
 	{ "setTangentSpeed", w_Contact_setTangentSpeed },
 	{ "getTangentSpeed", w_Contact_getTangentSpeed },
 	{ "getChildren", w_Contact_getChildren },
-	{ "getFixtures", w_Contact_getFixtures },
+	{ "getShapes", w_Contact_getShapes },
 	{ "isDestroyed", w_Contact_isDestroyed },
+
+	// Deprecated
+	{ "getFixtures", w_Contact_getFixtures },
+
 	{ 0, 0 }
 };
 

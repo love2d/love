@@ -43,7 +43,7 @@ public:
 		API_AVAILABLE(macos(10.15), ios(13.0)) MTLTextureSwizzleChannels swizzle;
 	};
 
-	static PixelFormatDesc convertPixelFormat(id<MTLDevice> device, PixelFormat format, bool &isSRGB);
+	static PixelFormatDesc convertPixelFormat(id<MTLDevice> device, PixelFormat format);
 
 }; // Metal
 

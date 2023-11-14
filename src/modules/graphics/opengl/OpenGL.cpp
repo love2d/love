@@ -91,12 +91,49 @@ OpenGL::TempDebugGroup::~TempDebugGroup()
 	}
 }
 
+OpenGL::CleanClearState::CleanClearState(GLbitfield clearFlags)
+	: clearFlags(clearFlags)
+	, colorWriteMask(gl.getColorWriteMask())
+	, stencilWriteMask(gl.getStencilWriteMask())
+	, depthWrites(gl.hasDepthWrites())
+	, scissor(gl.isStateEnabled(ENABLE_SCISSOR_TEST))
+{
+	if ((clearFlags & GL_COLOR_BUFFER_BIT) != 0 && colorWriteMask != LOVE_UINT32_MAX)
+		gl.setColorWriteMask(LOVE_UINT32_MAX);
+
+	if ((clearFlags & GL_DEPTH_BUFFER_BIT) != 0 && !depthWrites)
+		gl.setDepthWrites(true);
+
+	if ((clearFlags & GL_STENCIL_BUFFER_BIT) != 0 && (stencilWriteMask & 0xFF) != 0xFF)
+		gl.setStencilWriteMask(LOVE_UINT32_MAX);
+
+	if (clearFlags != 0 && scissor)
+		gl.setEnableState(ENABLE_SCISSOR_TEST, false);
+}
+
+OpenGL::CleanClearState::~CleanClearState()
+{
+	if ((clearFlags & GL_COLOR_BUFFER_BIT) != 0 && colorWriteMask != LOVE_UINT32_MAX)
+		gl.setColorWriteMask(colorWriteMask);
+
+	if ((clearFlags & GL_DEPTH_BUFFER_BIT) != 0 && !depthWrites)
+		gl.setDepthWrites(depthWrites);
+
+	if ((clearFlags & GL_STENCIL_BUFFER_BIT) != 0 && (stencilWriteMask & 0xFF) != 0xFF)
+		gl.setStencilWriteMask(stencilWriteMask);
+
+	if (clearFlags != 0 && scissor)
+		gl.setEnableState(ENABLE_SCISSOR_TEST, scissor);
+}
+
 OpenGL::OpenGL()
 	: stats()
+	, bugs()
 	, contextInitialized(false)
 	, pixelShaderHighpSupported(false)
 	, baseVertexSupported(false)
 	, maxAnisotropy(1.0f)
+	, maxLODBias(0.0f)
 	, max2DTextureSize(0)
 	, max3DTextureSize(0)
 	, maxCubeTextureSize(0)
@@ -284,6 +321,7 @@ void OpenGL::setupContext()
 
 	setDepthWrites(state.depthWritesEnabled);
 	setStencilWriteMask(state.stencilWriteMask);
+	setColorWriteMask(state.colorWriteMask);
 
 	createDefaultTexture();
 
@@ -608,11 +646,9 @@ void OpenGL::createDefaultTexture()
 
 			const GLubyte *p = datatype == DATA_BASETYPE_FLOAT ? pix : intpix;
 
-			bool isSRGB = false;
-			rawTexStorage(type, 1, format, isSRGB, 1, 1);
+			rawTexStorage(type, 1, format, 1, 1);
 
-			TextureFormat fmt = convertPixelFormat(format, false, isSRGB);
-
+			TextureFormat fmt = convertPixelFormat(format, false);
 			int slices = type == TEXTURE_CUBE ? 6 : 1;
 
 			for (int slice = 0; slice < slices; slice++)
@@ -1125,6 +1161,17 @@ uint32 OpenGL::getStencilWriteMask() const
 	return state.stencilWriteMask;
 }
 
+void OpenGL::setColorWriteMask(uint32 mask)
+{
+	glColorMask(mask & (1 << 0), mask & (1 << 1), mask & (1 << 2), mask & (1 << 3));
+	state.colorWriteMask = mask;
+}
+
+uint32 OpenGL::getColorWriteMask() const
+{
+	return state.colorWriteMask;
+}
+
 void OpenGL::useProgram(GLuint program)
 {
 	glUseProgram(program);
@@ -1384,10 +1431,10 @@ void OpenGL::setSamplerState(TextureType target, SamplerState &s)
 	}
 }
 
-bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, bool &isSRGB, int width, int height, int depth)
+bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, int width, int height, int depth)
 {
 	GLenum gltarget = getGLTextureType(target);
-	TextureFormat fmt = convertPixelFormat(pixelformat, false, isSRGB);
+	TextureFormat fmt = convertPixelFormat(pixelformat, false);
 
 	// This shouldn't be needed for glTexStorage, but some drivers don't follow
 	// the spec apparently.
@@ -1651,16 +1698,14 @@ OpenGL::Vendor OpenGL::getVendor() const
 	return vendor;
 }
 
-OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB)
+OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool renderbuffer)
 {
 	TextureFormat f;
 
 	f.framebufferAttachments[0] = GL_COLOR_ATTACHMENT0;
 	f.framebufferAttachments[1] = GL_NONE;
 
-	if (isSRGB)
-		pixelformat = getSRGBPixelFormat(pixelformat);
-	else if (pixelformat == PIXELFORMAT_ETC1_UNORM)
+	if (pixelformat == PIXELFORMAT_ETC1_UNORM)
 	{
 		// The ETC2 format can load ETC1 textures.
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility)
@@ -1693,7 +1738,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		f.externalformat = GL_RGBA;
 		f.type = GL_UNSIGNED_BYTE;
 		break;
-	case PIXELFORMAT_RGBA8_UNORM_sRGB:
+	case PIXELFORMAT_RGBA8_sRGB:
 		f.internalformat = GL_SRGB8_ALPHA8;
 		f.type = GL_UNSIGNED_BYTE;
 		if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_0)
@@ -1702,7 +1747,7 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 			f.externalformat = GL_RGBA;
 		break;
 	case PIXELFORMAT_BGRA8_UNORM:
-	case PIXELFORMAT_BGRA8_UNORM_sRGB:
+	case PIXELFORMAT_BGRA8_sRGB:
 		// Not supported right now.
 		break;
 	case PIXELFORMAT_R16_UNORM:
@@ -1977,123 +2022,190 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		break;
 
 	case PIXELFORMAT_DXT1_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT : GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		f.internalformat = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+		break;
+	case PIXELFORMAT_DXT1_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
 		break;
 	case PIXELFORMAT_DXT3_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		f.internalformat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		break;
+	case PIXELFORMAT_DXT3_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
 		break;
 	case PIXELFORMAT_DXT5_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		f.internalformat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		break;
+	case PIXELFORMAT_DXT5_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
 		break;
 	case PIXELFORMAT_BC4_UNORM:
-		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_RED_RGTC1;
 		break;
 	case PIXELFORMAT_BC4_SNORM:
-		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_SIGNED_RED_RGTC1;
 		break;
 	case PIXELFORMAT_BC5_UNORM:
-		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_RG_RGTC2;
 		break;
 	case PIXELFORMAT_BC5_SNORM:
-		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_SIGNED_RG_RGTC2;
 		break;
 	case PIXELFORMAT_BC6H_UFLOAT:
-		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
 		break;
 	case PIXELFORMAT_BC6H_FLOAT:
-		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
 		break;
 	case PIXELFORMAT_BC7_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM : GL_COMPRESSED_RGBA_BPTC_UNORM;
+		f.internalformat = GL_COMPRESSED_RGBA_BPTC_UNORM;
 		break;
+	case PIXELFORMAT_BC7_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
+		break;
+
 	case PIXELFORMAT_PVR1_RGB2_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT : GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+		f.internalformat = GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+		break;
+	case PIXELFORMAT_PVR1_RGB2_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT;
 		break;
 	case PIXELFORMAT_PVR1_RGB4_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT : GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+		f.internalformat = GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+		break;
+	case PIXELFORMAT_PVR1_RGB4_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT;
 		break;
 	case PIXELFORMAT_PVR1_RGBA2_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT : GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+		f.internalformat = GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+		break;
+	case PIXELFORMAT_PVR1_RGBA2_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT;
 		break;
 	case PIXELFORMAT_PVR1_RGBA4_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT : GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+		f.internalformat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
 		break;
+	case PIXELFORMAT_PVR1_RGBA4_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT;
+		break;
+
 	case PIXELFORMAT_ETC1_UNORM:
-		isSRGB = false;
 		f.internalformat = GL_ETC1_RGB8_OES;
 		break;
 	case PIXELFORMAT_ETC2_RGB_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ETC2 : GL_COMPRESSED_RGB8_ETC2;
+		f.internalformat = GL_COMPRESSED_RGB8_ETC2;
+		break;
+	case PIXELFORMAT_ETC2_RGB_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ETC2;
 		break;
 	case PIXELFORMAT_ETC2_RGBA_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC : GL_COMPRESSED_RGBA8_ETC2_EAC;
+		f.internalformat = GL_COMPRESSED_RGBA8_ETC2_EAC;
+		break;
+	case PIXELFORMAT_ETC2_RGBA_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
 		break;
 	case PIXELFORMAT_ETC2_RGBA1_UNORM:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2 : GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+		f.internalformat = GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+		break;
+	case PIXELFORMAT_ETC2_RGBA1_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2;
 		break;
 	case PIXELFORMAT_EAC_R_UNORM:
-		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_R11_EAC;
 		break;
 	case PIXELFORMAT_EAC_R_SNORM:
-		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_SIGNED_R11_EAC;
 		break;
 	case PIXELFORMAT_EAC_RG_UNORM:
-		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_RG11_EAC;
 		break;
 	case PIXELFORMAT_EAC_RG_SNORM:
-		isSRGB = false;
 		f.internalformat = GL_COMPRESSED_SIGNED_RG11_EAC;
 		break;
-	case PIXELFORMAT_ASTC_4x4:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR : GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
+
+	case PIXELFORMAT_ASTC_4x4_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_4x4_KHR;
 		break;
-	case PIXELFORMAT_ASTC_5x4:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR : GL_COMPRESSED_RGBA_ASTC_5x4_KHR;
+	case PIXELFORMAT_ASTC_4x4_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
 		break;
-	case PIXELFORMAT_ASTC_5x5:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR : GL_COMPRESSED_RGBA_ASTC_5x5_KHR;
+	case PIXELFORMAT_ASTC_5x4_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_5x4_KHR;
 		break;
-	case PIXELFORMAT_ASTC_6x5:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR : GL_COMPRESSED_RGBA_ASTC_6x5_KHR;
+	case PIXELFORMAT_ASTC_5x4_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR;
 		break;
-	case PIXELFORMAT_ASTC_6x6:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR : GL_COMPRESSED_RGBA_ASTC_6x6_KHR;
+	case PIXELFORMAT_ASTC_5x5_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_5x5_KHR;
 		break;
-	case PIXELFORMAT_ASTC_8x5:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR : GL_COMPRESSED_RGBA_ASTC_8x5_KHR;
+	case PIXELFORMAT_ASTC_5x5_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR;
 		break;
-	case PIXELFORMAT_ASTC_8x6:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR : GL_COMPRESSED_RGBA_ASTC_8x6_KHR;
+	case PIXELFORMAT_ASTC_6x5_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_6x5_KHR;
 		break;
-	case PIXELFORMAT_ASTC_8x8:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR : GL_COMPRESSED_RGBA_ASTC_8x8_KHR;
+	case PIXELFORMAT_ASTC_6x5_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR;
 		break;
-	case PIXELFORMAT_ASTC_10x5:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR : GL_COMPRESSED_RGBA_ASTC_10x5_KHR;
+	case PIXELFORMAT_ASTC_6x6_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_6x6_KHR;
 		break;
-	case PIXELFORMAT_ASTC_10x6:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR : GL_COMPRESSED_RGBA_ASTC_10x6_KHR;
+	case PIXELFORMAT_ASTC_6x6_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR;
 		break;
-	case PIXELFORMAT_ASTC_10x8:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR : GL_COMPRESSED_RGBA_ASTC_10x8_KHR;
+	case PIXELFORMAT_ASTC_8x5_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_8x5_KHR;
 		break;
-	case PIXELFORMAT_ASTC_10x10:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR : GL_COMPRESSED_RGBA_ASTC_10x10_KHR;
+	case PIXELFORMAT_ASTC_8x5_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR;
 		break;
-	case PIXELFORMAT_ASTC_12x10:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR : GL_COMPRESSED_RGBA_ASTC_12x10_KHR;
+	case PIXELFORMAT_ASTC_8x6_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_8x6_KHR;
 		break;
-	case PIXELFORMAT_ASTC_12x12:
-		f.internalformat = isSRGB ? GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR : GL_COMPRESSED_RGBA_ASTC_12x12_KHR;
+	case PIXELFORMAT_ASTC_8x6_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR;
+		break;
+	case PIXELFORMAT_ASTC_8x8_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_8x8_KHR;
+		break;
+	case PIXELFORMAT_ASTC_8x8_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR;
+		break;
+	case PIXELFORMAT_ASTC_10x5_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_10x5_KHR;
+		break;
+	case PIXELFORMAT_ASTC_10x5_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR;
+		break;
+	case PIXELFORMAT_ASTC_10x6_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_10x6_KHR;
+		break;
+	case PIXELFORMAT_ASTC_10x6_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR;
+		break;
+	case PIXELFORMAT_ASTC_10x8_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_10x8_KHR;
+		break;
+	case PIXELFORMAT_ASTC_10x8_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR;
+		break;
+	case PIXELFORMAT_ASTC_10x10_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_10x10_KHR;
+		break;
+	case PIXELFORMAT_ASTC_10x10_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR;
+		break;
+	case PIXELFORMAT_ASTC_12x10_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_12x10_KHR;
+		break;
+	case PIXELFORMAT_ASTC_12x10_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR;
+		break;
+	case PIXELFORMAT_ASTC_12x12_UNORM:
+		f.internalformat = GL_COMPRESSED_RGBA_ASTC_12x12_KHR;
+		break;
+	case PIXELFORMAT_ASTC_12x12_sRGB:
+		f.internalformat = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR;
 		break;
 
 	default:
@@ -2115,9 +2227,6 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat, bool r
 		{
 			f.internalformat = f.externalformat;
 		}
-
-		if (!isPixelFormatSRGB(pixelformat))
-			isSRGB = false;
 	}
 
 	return f;
@@ -2149,7 +2258,7 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
 			flags |= computewrite;
 		break;
-	case PIXELFORMAT_RGBA8_UNORM_sRGB:
+	case PIXELFORMAT_RGBA8_sRGB:
 		if (gl.bugs.brokenSRGB)
 			break;
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB)
@@ -2161,7 +2270,7 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= computewrite;
 		break;
 	case PIXELFORMAT_BGRA8_UNORM:
-	case PIXELFORMAT_BGRA8_UNORM_sRGB:
+	case PIXELFORMAT_BGRA8_sRGB:
 		// Not supported right now.
 		break;
 	case PIXELFORMAT_R16_UNORM:
@@ -2229,47 +2338,47 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= computewrite;
 		break;
 
-		case PIXELFORMAT_R8_INT:
-		case PIXELFORMAT_R8_UINT:
-		case PIXELFORMAT_RG8_INT:
-		case PIXELFORMAT_RG8_UINT:
-		case PIXELFORMAT_RGBA8_INT:
-		case PIXELFORMAT_RGBA8_UINT:
-		case PIXELFORMAT_R16_INT:
-		case PIXELFORMAT_R16_UINT:
-		case PIXELFORMAT_RG16_INT:
-		case PIXELFORMAT_RG16_UINT:
-		case PIXELFORMAT_RGBA16_INT:
-		case PIXELFORMAT_RGBA16_UINT:
-		case PIXELFORMAT_R32_INT:
-		case PIXELFORMAT_R32_UINT:
-		case PIXELFORMAT_RG32_INT:
-		case PIXELFORMAT_RG32_UINT:
-		case PIXELFORMAT_RGBA32_INT:
-		case PIXELFORMAT_RGBA32_UINT:
-			if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0)
-				flags |= PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
-			if (GLAD_VERSION_4_3)
-				flags |= computewrite;
-			if (GLAD_ES_VERSION_3_1)
+	case PIXELFORMAT_R8_INT:
+	case PIXELFORMAT_R8_UINT:
+	case PIXELFORMAT_RG8_INT:
+	case PIXELFORMAT_RG8_UINT:
+	case PIXELFORMAT_RGBA8_INT:
+	case PIXELFORMAT_RGBA8_UINT:
+	case PIXELFORMAT_R16_INT:
+	case PIXELFORMAT_R16_UINT:
+	case PIXELFORMAT_RG16_INT:
+	case PIXELFORMAT_RG16_UINT:
+	case PIXELFORMAT_RGBA16_INT:
+	case PIXELFORMAT_RGBA16_UINT:
+	case PIXELFORMAT_R32_INT:
+	case PIXELFORMAT_R32_UINT:
+	case PIXELFORMAT_RG32_INT:
+	case PIXELFORMAT_RG32_UINT:
+	case PIXELFORMAT_RGBA32_INT:
+	case PIXELFORMAT_RGBA32_UINT:
+		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0)
+			flags |= PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+		if (GLAD_VERSION_4_3)
+			flags |= computewrite;
+		if (GLAD_ES_VERSION_3_1)
+		{
+			switch (pixelformat)
 			{
-				switch (pixelformat)
-				{
-				case PIXELFORMAT_RGBA8_INT:
-				case PIXELFORMAT_RGBA8_UINT:
-				case PIXELFORMAT_RGBA16_INT:
-				case PIXELFORMAT_RGBA16_UINT:
-				case PIXELFORMAT_R32_INT:
-				case PIXELFORMAT_R32_UINT:
-				case PIXELFORMAT_RGBA32_INT:
-				case PIXELFORMAT_RGBA32_UINT:
-					flags |= computewrite;
-					break;
-				default:
-					break;
-				}
+			case PIXELFORMAT_RGBA8_INT:
+			case PIXELFORMAT_RGBA8_UINT:
+			case PIXELFORMAT_RGBA16_INT:
+			case PIXELFORMAT_RGBA16_UINT:
+			case PIXELFORMAT_R32_INT:
+			case PIXELFORMAT_R32_UINT:
+			case PIXELFORMAT_RGBA32_INT:
+			case PIXELFORMAT_RGBA32_UINT:
+				flags |= computewrite;
+				break;
+			default:
+				break;
 			}
-			break;
+		}
+		break;
 
 	case PIXELFORMAT_LA8_UNORM:
 		flags |= commonsample;
@@ -2331,14 +2440,17 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 		break;
 
 	case PIXELFORMAT_DXT1_UNORM:
+	case PIXELFORMAT_DXT1_sRGB:
 		if (GLAD_EXT_texture_compression_s3tc || GLAD_EXT_texture_compression_dxt1)
 			flags |= commonsample;
 		break;
 	case PIXELFORMAT_DXT3_UNORM:
+	case PIXELFORMAT_DXT3_sRGB:
 		if (GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt3)
 			flags |= commonsample;
 		break;
 	case PIXELFORMAT_DXT5_UNORM:
+	case PIXELFORMAT_DXT5_sRGB:
 		if (GLAD_EXT_texture_compression_s3tc || GLAD_ANGLE_texture_compression_dxt5)
 			flags |= commonsample;
 		break;
@@ -2352,6 +2464,7 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 	case PIXELFORMAT_BC6H_UFLOAT:
 	case PIXELFORMAT_BC6H_FLOAT:
 	case PIXELFORMAT_BC7_UNORM:
+	case PIXELFORMAT_BC7_sRGB:
 		if (GLAD_VERSION_4_2 || GLAD_ARB_texture_compression_bptc)
 			flags |= commonsample;
 		break;
@@ -2362,14 +2475,24 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 		if (GLAD_IMG_texture_compression_pvrtc)
 			flags |= commonsample;
 		break;
+	case PIXELFORMAT_PVR1_RGB2_sRGB:
+	case PIXELFORMAT_PVR1_RGB4_sRGB:
+	case PIXELFORMAT_PVR1_RGBA2_sRGB:
+	case PIXELFORMAT_PVR1_RGBA4_sRGB:
+		if (GLAD_EXT_pvrtc_sRGB)
+			flags |= commonsample;
+		break;
 	case PIXELFORMAT_ETC1_UNORM:
 		// ETC2 support guarantees ETC1 support as well.
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility || GLAD_OES_compressed_ETC1_RGB8_texture)
 			flags |= commonsample;
 		break;
 	case PIXELFORMAT_ETC2_RGB_UNORM:
+	case PIXELFORMAT_ETC2_RGB_sRGB:
 	case PIXELFORMAT_ETC2_RGBA_UNORM:
+	case PIXELFORMAT_ETC2_RGBA_sRGB:
 	case PIXELFORMAT_ETC2_RGBA1_UNORM:
+	case PIXELFORMAT_ETC2_RGBA1_sRGB:
 	case PIXELFORMAT_EAC_R_UNORM:
 	case PIXELFORMAT_EAC_R_SNORM:
 	case PIXELFORMAT_EAC_RG_UNORM:
@@ -2377,20 +2500,34 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_4_3 || GLAD_ARB_ES3_compatibility)
 			flags |= commonsample;
 		break;
-	case PIXELFORMAT_ASTC_4x4:
-	case PIXELFORMAT_ASTC_5x4:
-	case PIXELFORMAT_ASTC_5x5:
-	case PIXELFORMAT_ASTC_6x5:
-	case PIXELFORMAT_ASTC_6x6:
-	case PIXELFORMAT_ASTC_8x5:
-	case PIXELFORMAT_ASTC_8x6:
-	case PIXELFORMAT_ASTC_8x8:
-	case PIXELFORMAT_ASTC_10x5:
-	case PIXELFORMAT_ASTC_10x6:
-	case PIXELFORMAT_ASTC_10x8:
-	case PIXELFORMAT_ASTC_10x10:
-	case PIXELFORMAT_ASTC_12x10:
-	case PIXELFORMAT_ASTC_12x12:
+	case PIXELFORMAT_ASTC_4x4_UNORM:
+	case PIXELFORMAT_ASTC_5x4_UNORM:
+	case PIXELFORMAT_ASTC_5x5_UNORM:
+	case PIXELFORMAT_ASTC_6x5_UNORM:
+	case PIXELFORMAT_ASTC_6x6_UNORM:
+	case PIXELFORMAT_ASTC_8x5_UNORM:
+	case PIXELFORMAT_ASTC_8x6_UNORM:
+	case PIXELFORMAT_ASTC_8x8_UNORM:
+	case PIXELFORMAT_ASTC_10x5_UNORM:
+	case PIXELFORMAT_ASTC_10x6_UNORM:
+	case PIXELFORMAT_ASTC_10x8_UNORM:
+	case PIXELFORMAT_ASTC_10x10_UNORM:
+	case PIXELFORMAT_ASTC_12x10_UNORM:
+	case PIXELFORMAT_ASTC_12x12_UNORM:
+	case PIXELFORMAT_ASTC_4x4_sRGB:
+	case PIXELFORMAT_ASTC_5x4_sRGB:
+	case PIXELFORMAT_ASTC_5x5_sRGB:
+	case PIXELFORMAT_ASTC_6x5_sRGB:
+	case PIXELFORMAT_ASTC_6x6_sRGB:
+	case PIXELFORMAT_ASTC_8x5_sRGB:
+	case PIXELFORMAT_ASTC_8x6_sRGB:
+	case PIXELFORMAT_ASTC_8x8_sRGB:
+	case PIXELFORMAT_ASTC_10x5_sRGB:
+	case PIXELFORMAT_ASTC_10x6_sRGB:
+	case PIXELFORMAT_ASTC_10x8_sRGB:
+	case PIXELFORMAT_ASTC_10x10_sRGB:
+	case PIXELFORMAT_ASTC_12x10_sRGB:
+	case PIXELFORMAT_ASTC_12x12_sRGB:
 		if (GLAD_ES_VERSION_3_2 || GLAD_KHR_texture_compression_astc_ldr)
 			flags |= commonsample;
 		break;

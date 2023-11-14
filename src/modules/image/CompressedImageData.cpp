@@ -30,7 +30,6 @@ love::Type CompressedImageData::type("CompressedImageData", &Data::type);
 
 CompressedImageData::CompressedImageData(const std::list<FormatHandler *> &formats, Data *filedata)
 	: format(PIXELFORMAT_UNKNOWN)
-	, sRGB(false)
 {
 	FormatHandler *parser = nullptr;
 
@@ -46,7 +45,7 @@ CompressedImageData::CompressedImageData(const std::list<FormatHandler *> &forma
 	if (parser == nullptr)
 		throw love::Exception("Could not parse compressed data: Unknown format.");
 
-	memory = parser->parseCompressed(filedata, dataImages, format, sRGB);
+	memory = parser->parseCompressed(filedata, dataImages, format);
 
 	if (memory == nullptr)
 		throw love::Exception("Could not parse compressed data.");
@@ -56,11 +55,14 @@ CompressedImageData::CompressedImageData(const std::list<FormatHandler *> &forma
 
 	if (dataImages.size() == 0 || memory->getSize() == 0)
 		throw love::Exception("Could not parse compressed data: No valid data?");
+
+	// This throws away some information the decoder could give us, but we
+	// can't really rely on it I think...
+	format = getLinearPixelFormat(format);
 }
 
 CompressedImageData::CompressedImageData(const CompressedImageData &c)
 	: format(c.format)
-	, sRGB(c.sRGB)
 {
 	memory.set(c.memory->clone(), Acquire::NORETAIN);
 
@@ -134,9 +136,15 @@ PixelFormat CompressedImageData::getFormat() const
 	return format;
 }
 
-bool CompressedImageData::isSRGB() const
+void CompressedImageData::setLinear(bool linear)
 {
-	return sRGB;
+	for (auto &slice : dataImages)
+		slice->setLinear(linear);
+}
+
+bool CompressedImageData::isLinear() const
+{
+	return dataImages.empty() ? false : dataImages[0]->isLinear();
 }
 
 CompressedSlice *CompressedImageData::getSlice(int slice, int miplevel) const

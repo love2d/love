@@ -152,6 +152,10 @@ void ImageData::decode(Data *data)
 	else
 		delete[] this->data;
 
+	// This throws away some information the decoder could give us, but we
+	// can't really rely on it I think...
+	decodedimage.format = getLinearPixelFormat(decodedimage.format);
+
 	this->width  = decodedimage.width;
 	this->height = decodedimage.height;
 	this->data   = decodedimage.data;
@@ -245,11 +249,6 @@ size_t ImageData::getSize() const
 void *ImageData::getData() const
 {
 	return data;
-}
-
-bool ImageData::isSRGB() const
-{
-	return false;
 }
 
 bool ImageData::inside(int x, int y) const

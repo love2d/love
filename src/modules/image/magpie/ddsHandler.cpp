@@ -32,12 +32,9 @@ namespace image
 namespace magpie
 {
 
-static PixelFormat convertFormat(dds::dxinfo::DXGIFormat dxformat, bool &sRGB, bool &bgra)
+static PixelFormat convertFormat(dds::dxinfo::DXGIFormat dxformat)
 {
 	using namespace dds::dxinfo;
-
-	sRGB = false;
-	bgra = false;
 
 	switch (dxformat)
 	{
@@ -65,9 +62,9 @@ static PixelFormat convertFormat(dds::dxinfo::DXGIFormat dxformat, bool &sRGB, b
 
 	case DXGI_FORMAT_R8G8B8A8_TYPELESS:
 	case DXGI_FORMAT_R8G8B8A8_UNORM:
-	case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
-		sRGB = (dxformat == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
 		return PIXELFORMAT_RGBA8_UNORM;
+	case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+		return PIXELFORMAT_RGBA8_sRGB;
 
 	case DXGI_FORMAT_R16G16_TYPELESS:
 	case DXGI_FORMAT_R16G16_FLOAT:
@@ -98,21 +95,21 @@ static PixelFormat convertFormat(dds::dxinfo::DXGIFormat dxformat, bool &sRGB, b
 
 	case DXGI_FORMAT_BC1_TYPELESS:
 	case DXGI_FORMAT_BC1_UNORM:
-	case DXGI_FORMAT_BC1_UNORM_SRGB:
-		sRGB = (dxformat == DXGI_FORMAT_BC1_UNORM_SRGB);
 		return PIXELFORMAT_DXT1_UNORM;
+	case DXGI_FORMAT_BC1_UNORM_SRGB:
+		return PIXELFORMAT_DXT1_sRGB;
 
 	case DXGI_FORMAT_BC2_TYPELESS:
 	case DXGI_FORMAT_BC2_UNORM:
-	case DXGI_FORMAT_BC2_UNORM_SRGB:
-		sRGB = (dxformat == DXGI_FORMAT_BC2_UNORM_SRGB);
 		return PIXELFORMAT_DXT3_UNORM;
+	case DXGI_FORMAT_BC2_UNORM_SRGB:
+		return PIXELFORMAT_DXT3_sRGB;
 
 	case DXGI_FORMAT_BC3_TYPELESS:
 	case DXGI_FORMAT_BC3_UNORM:
-	case DXGI_FORMAT_BC3_UNORM_SRGB:
-		sRGB = (dxformat == DXGI_FORMAT_BC3_UNORM_SRGB);
 		return PIXELFORMAT_DXT5_UNORM;
+	case DXGI_FORMAT_BC3_UNORM_SRGB:
+		return PIXELFORMAT_DXT5_sRGB;
 
 	case DXGI_FORMAT_BC4_TYPELESS:
 	case DXGI_FORMAT_BC4_UNORM:
@@ -136,10 +133,9 @@ static PixelFormat convertFormat(dds::dxinfo::DXGIFormat dxformat, bool &sRGB, b
 
 	case DXGI_FORMAT_B8G8R8A8_UNORM:
 	case DXGI_FORMAT_B8G8R8A8_TYPELESS:
+		return PIXELFORMAT_BGRA8_UNORM;
 	case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
-		sRGB = (dxformat == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB);
-		bgra = true;
-		return PIXELFORMAT_RGBA8_UNORM;
+		return PIXELFORMAT_BGRA8_sRGB;
 
 	case DXGI_FORMAT_BC6H_TYPELESS:
 	case DXGI_FORMAT_BC6H_UF16:
@@ -150,9 +146,9 @@ static PixelFormat convertFormat(dds::dxinfo::DXGIFormat dxformat, bool &sRGB, b
 
 	case DXGI_FORMAT_BC7_TYPELESS:
 	case DXGI_FORMAT_BC7_UNORM:
-	case DXGI_FORMAT_BC7_UNORM_SRGB:
-		sRGB = (dxformat == DXGI_FORMAT_BC7_UNORM_SRGB);
 		return PIXELFORMAT_BC7_UNORM;
+	case DXGI_FORMAT_BC7_UNORM_SRGB:
+		return PIXELFORMAT_BC7_sRGB;
 
 	default:
 		return PIXELFORMAT_UNKNOWN;
@@ -164,9 +160,13 @@ bool DDSHandler::canDecode(Data *data)
 	using namespace dds::dxinfo;
 
 	DXGIFormat dxformat = dds::getDDSPixelFormat(data->getData(), data->getSize());
-	bool isSRGB = false;
-	bool bgra = false;
-	PixelFormat format = convertFormat(dxformat, isSRGB, bgra);
+	PixelFormat format = convertFormat(dxformat);
+
+	// We convert BGRA to RGBA
+	if (format == PIXELFORMAT_BGRA8_UNORM)
+		format = PIXELFORMAT_RGBA8_UNORM;
+	else if (format == PIXELFORMAT_BGRA8_sRGB)
+		format = PIXELFORMAT_RGBA8_sRGB;
 
 	return ImageData::validPixelFormat(format);
 }
@@ -177,9 +177,19 @@ FormatHandler::DecodedImage DDSHandler::decode(Data *data)
 
 	dds::Parser parser(data->getData(), data->getSize());
 
-	bool isSRGB = false;
+	img.format = convertFormat(parser.getFormat());
+
 	bool bgra = false;
-	img.format = convertFormat(parser.getFormat(), isSRGB, bgra);
+	if (img.format == PIXELFORMAT_BGRA8_UNORM)
+	{
+		img.format = PIXELFORMAT_RGBA8_UNORM;
+		bgra = true;
+	}
+	else if (img.format == PIXELFORMAT_BGRA8_sRGB)
+	{
+		img.format = PIXELFORMAT_RGBA8_sRGB;
+		bgra = true;
+	}
 
 	if (!ImageData::validPixelFormat(img.format))
 		throw love::Exception("Could not parse DDS pixel data: Unsupported format.");
@@ -229,14 +239,12 @@ bool DDSHandler::canParseCompressed(Data *data)
 	return dds::isCompressedDDS(data->getData(), data->getSize());
 }
 
-StrongRef<ByteData> DDSHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> DDSHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format)
 {
 	if (!dds::isCompressedDDS(filedata->getData(), filedata->getSize()))
 		throw love::Exception("Could not decode compressed data (not a DDS file?)");
 
 	PixelFormat texformat = PIXELFORMAT_UNKNOWN;
-	bool isSRGB = false;
-	bool bgra = false;
 
 	size_t dataSize = 0;
 
@@ -245,7 +253,7 @@ StrongRef<ByteData> DDSHandler::parseCompressed(Data *filedata, std::vector<Stro
 	// Attempt to parse the dds file.
 	dds::Parser parser(filedata->getData(), filedata->getSize());
 
-	texformat = convertFormat(parser.getFormat(), isSRGB, bgra);
+	texformat = convertFormat(parser.getFormat());
 
 	if (texformat == PIXELFORMAT_UNKNOWN)
 		throw love::Exception("Could not parse compressed data: Unsupported format.");
@@ -280,7 +288,6 @@ StrongRef<ByteData> DDSHandler::parseCompressed(Data *filedata, std::vector<Stro
 	}
 
 	format = texformat;
-	sRGB = isSRGB;
 	return memory;
 }
 

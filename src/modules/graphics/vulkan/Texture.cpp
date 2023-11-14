@@ -41,6 +41,10 @@ Texture::Texture(love::graphics::Graphics *gfx, const Settings &settings, const 
 		slices = *data;
 
 	loadVolatile();
+
+	// ImageData is referenced by the first loadVolatile call, but we don't
+	// hang on to it after that so we can save memory.
+	slices.clear();
 }
 
 bool Texture::loadVolatile()
@@ -55,7 +59,7 @@ bool Texture::loadVolatile()
 	if (isPixelFormatColor(format))
 		imageAspect |= VK_IMAGE_ASPECT_COLOR_BIT;
 
-	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
+	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkImageUsageFlags usageFlags =
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
@@ -150,7 +154,7 @@ bool Texture::loadVolatile()
 	createTextureImageView();
 	textureSampler = vgfx->getCachedSampler(samplerState);
 
-	if (!isPixelFormatDepthStencil(format) && mipmapCount > 1 && getMipmapsMode() != MIPMAPS_NONE)
+	if (!isPixelFormatDepthStencil(format) && slices.getMipmapCount() <= 1 && getMipmapsMode() != MIPMAPS_NONE)
 		generateMipmaps();
 
 	if (renderTarget)
@@ -273,7 +277,7 @@ VkImageLayout Texture::getImageLayout() const
 
 void Texture::createTextureImageView()
 {
-	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
+	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -345,7 +349,7 @@ void Texture::clear()
 
 VkClearColorValue Texture::getClearValue()
 {
-	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
+	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkClearColorValue clearColor{};
 	switch (vulkanFormat.internalFormatRepresentation)

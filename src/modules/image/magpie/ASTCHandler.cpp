@@ -54,33 +54,33 @@ static PixelFormat convertFormat(uint32 blockX, uint32 blockY, uint32 blockZ)
 		return PIXELFORMAT_UNKNOWN;
 
 	if (blockX == 4 && blockY == 4)
-		return PIXELFORMAT_ASTC_4x4;
+		return PIXELFORMAT_ASTC_4x4_UNORM;
 	else if (blockX == 5 && blockY == 4)
-		return PIXELFORMAT_ASTC_5x4;
+		return PIXELFORMAT_ASTC_5x4_UNORM;
 	else if (blockX == 5 && blockY == 5)
-		return PIXELFORMAT_ASTC_5x5;
+		return PIXELFORMAT_ASTC_5x5_UNORM;
 	else if (blockX == 6 && blockY == 5)
-		return PIXELFORMAT_ASTC_6x5;
+		return PIXELFORMAT_ASTC_6x5_UNORM;
 	else if (blockX == 6 && blockY == 6)
-		return PIXELFORMAT_ASTC_6x6;
+		return PIXELFORMAT_ASTC_6x6_UNORM;
 	else if (blockX == 8 && blockY == 5)
-		return PIXELFORMAT_ASTC_8x5;
+		return PIXELFORMAT_ASTC_8x5_UNORM;
 	else if (blockX == 8 && blockY == 6)
-		return PIXELFORMAT_ASTC_8x6;
+		return PIXELFORMAT_ASTC_8x6_UNORM;
 	else if (blockX == 8 && blockY == 8)
-		return PIXELFORMAT_ASTC_8x8;
+		return PIXELFORMAT_ASTC_8x8_UNORM;
 	else if (blockX == 10 && blockY == 5)
-		return PIXELFORMAT_ASTC_10x5;
+		return PIXELFORMAT_ASTC_10x5_UNORM;
 	else if (blockX == 10 && blockY == 6)
-		return PIXELFORMAT_ASTC_10x6;
+		return PIXELFORMAT_ASTC_10x6_UNORM;
 	else if (blockX == 10 && blockY == 8)
-		return PIXELFORMAT_ASTC_10x8;
+		return PIXELFORMAT_ASTC_10x8_UNORM;
 	else if (blockX == 10 && blockY == 10)
-		return PIXELFORMAT_ASTC_10x10;
+		return PIXELFORMAT_ASTC_10x10_UNORM;
 	else if (blockX == 12 && blockY == 10)
-		return PIXELFORMAT_ASTC_12x10;
+		return PIXELFORMAT_ASTC_12x10_UNORM;
 	else if (blockX == 12 && blockY == 12)
-		return PIXELFORMAT_ASTC_12x12;
+		return PIXELFORMAT_ASTC_12x12_UNORM;
 
 	return PIXELFORMAT_UNKNOWN;
 }
@@ -105,7 +105,7 @@ bool ASTCHandler::canParseCompressed(Data *data)
 	return true;
 }
 
-StrongRef<ByteData> ASTCHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> ASTCHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format)
 {
 	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not an .astc file?)");
@@ -138,8 +138,6 @@ StrongRef<ByteData> ASTCHandler::parseCompressed(Data *filedata, std::vector<Str
 	images.emplace_back(new CompressedSlice(cformat, sizeX, sizeY, memory, 0, totalsize), Acquire::NORETAIN);
 
 	format = cformat;
-	sRGB = false;
-
 	return memory;
 }
 

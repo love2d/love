@@ -31,7 +31,6 @@ CompressedSlice::CompressedSlice(PixelFormat format, int width, int height, Byte
 	, memory(memory)
 	, offset(offset)
 	, dataSize(size)
-	, sRGB(false)
 {
 }
 
@@ -40,7 +39,6 @@ CompressedSlice::CompressedSlice(const CompressedSlice &s)
 	, memory(s.memory)
 	, offset(s.offset)
 	, dataSize(s.dataSize)
-	, sRGB(s.sRGB)
 {
 }
 

@@ -168,7 +168,6 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	, computeWrite(settings.computeWrite)
 	, readable(true)
 	, mipmapsMode(settings.mipmaps)
-	, sRGB(isGammaCorrect() && !settings.linear)
 	, width(settings.width)
 	, height(settings.height)
 	, depth(settings.type == TEXTURE_VOLUME ? settings.layers : 1)
@@ -204,7 +203,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 		love::image::ImageDataBase *slice = slices->get(0, 0);
 
 		format = slice->getFormat();
-		if (sRGB)
+		if (isGammaCorrect() && !slice->isLinear())
 			format = getSRGBPixelFormat(format);
 
 		pixelWidth = slice->getWidth();
@@ -235,7 +234,9 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	else
 		readable = !renderTarget || !isPixelFormatDepthStencil(format);
 
-	format = gfx->getSizedFormat(format, renderTarget, readable);
+	format = gfx->getSizedFormat(format);
+	if (!isGammaCorrect() || settings.linear)
+		format = getLinearPixelFormat(format);
 
 	if (mipmapsMode == MIPMAPS_AUTO && isCompressed())
 		mipmapsMode = MIPMAPS_MANUAL;
@@ -290,7 +291,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	if (computeWrite)
 		usage |= PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
 
-	if (!gfx->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, sRGB))
+	if (!gfx->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage))
 	{
 		const char *fstr = "unknown";
 		love::getConstant(format, fstr);
@@ -621,7 +622,7 @@ bool Texture::isCompressed() const
 
 bool Texture::isFormatLinear() const
 {
-	return isGammaCorrect() && !sRGB && !isPixelFormatSRGB(format);
+	return isGammaCorrect() && !isPixelFormatSRGB(format);
 }
 
 bool Texture::isValidSlice(int slice, int mip) const
@@ -885,6 +886,7 @@ bool Texture::Slices::validate() const
 	int w = firstdata->getWidth();
 	int h = firstdata->getHeight();
 	PixelFormat format = firstdata->getFormat();
+	bool linear = firstdata->isLinear();
 
 	if (textureType == TEXTURE_CUBE && w != h)
 		throw love::Exception("Cube textures must have equal widths and heights for each cube face.");
@@ -924,6 +926,9 @@ bool Texture::Slices::validate() const
 
 			if (format != slicedata->getFormat())
 				throw love::Exception("All texture slices and mipmaps must have the same pixel format.");
+
+			if (linear != slicedata->isLinear())
+				throw love::Exception("All texture slices and mipmaps must have the same linear setting.");
 		}
 
 		mipw = std::max(mipw / 2, 1);
