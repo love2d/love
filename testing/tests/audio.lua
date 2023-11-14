@@ -144,14 +144,14 @@ love.test.audio.Source = function(test)
     type = 'flanger',
     volume = 10
   })
-  local seteffect, err = effsource:setEffect('flanger', {
+  local seteffect, err = effsource:setEffect('testeffect', {
     type = 'highpass',
     volume = 0.3,
     lowgain = 0.1
   })
   -- both these fail on 12 using stereo or mono, no err
   test:assertEquals(true, seteffect, 'check effect was applied')
-  local filtersettings = effsource:getEffect('chorus', {})
+  local filtersettings = effsource:getEffect('effectthatdoesntexist', {})
   test:assertNotNil(filtersettings)
 end
 
