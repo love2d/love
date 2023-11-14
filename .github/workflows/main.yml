@@ -5,7 +5,7 @@ jobs:
   linux-os:
     runs-on: ubuntu-22.04
     env:
-      ALSOFT_CONF: testing/resources/alsoft.conf
+      ALSOFT_CONF: love2d-${{ github.sha }}/testing/resources/alsoft.conf
       DISPLAY: :99
     steps:
     - name: Update APT
@@ -130,7 +130,7 @@ jobs:
   windows-os:
     runs-on: windows-latest
     env: 
-      ALSOFT_CONF: testing/resources/alsoft.conf
+      ALSOFT_CONF: megasource/libs/love/testing/resources/alsoft.conf
       VK_ICD_FILENAMES: ${{ github.workspace }}\mesa\x64\lvp_icd.x86_64.json
       VULKAN_SDK: C:/VulkanSDK/1.3.231.1
     strategy:
