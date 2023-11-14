@@ -303,7 +303,6 @@ jobs:
     - name: Build Test Exe
       if: steps.vars.outputs.arch != 'ARM64'
       run: cmake --build build --config Release --target install
-      uses: actions/checkout@v3
     - name: Run Tests (opengl)
       if: steps.vars.outputs.arch != 'ARM64'
       run: |
