@@ -5,7 +5,7 @@ jobs:
   linux-os:
     runs-on: ubuntu-22.04
     env:
-      ALSOFT_CONF: resources/alsoft.conf
+      ALSOFT_CONF: testing/resources/alsoft.conf
       DISPLAY: :99
     steps:
     - name: Update APT
@@ -130,7 +130,7 @@ jobs:
   windows-os:
     runs-on: windows-latest
     env: 
-      ALSOFT_CONF: resources/alsoft.conf
+      ALSOFT_CONF: testing/resources/alsoft.conf
       VK_ICD_FILENAMES: ${{ github.workspace }}\mesa\x64\lvp_icd.x86_64.json
       VULKAN_SDK: C:/VulkanSDK/1.3.231.1
     strategy:
@@ -314,7 +314,7 @@ jobs:
     - name: Zip Test Output (opengl)
       if: steps.vars.outputs.arch != 'ARM64'
       run: |
-        7z a -tzip test-output-windows-opengl.zip megasource/libs/love/testing/output/
+        7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl.zip megasource/libs/love/testing/output/
     - name: Artifact Test Output (opengl)
       if: steps.vars.outputs.arch != 'ARM64'
       uses: actions/upload-artifact@v3
@@ -337,7 +337,7 @@ jobs:
     - name: Zip Test Output (opengles)
       if: steps.vars.outputs.arch != 'ARM64'
       run: |
-        7z a -tzip test-output-windows-opengles.zip megasource/libs/love/testing/output/
+        7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles.zip megasource/libs/love/testing/output/
     - name: Artifact Test Output (opengles)
       if: steps.vars.outputs.arch != 'ARM64'
       uses: actions/upload-artifact@v3
@@ -373,7 +373,7 @@ jobs:
 #    - name: Zip Test Output (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
 #      run: |
-#        7z a -tzip test-output-windows-vulkan.zip megasource/libs/love/testing/output/
+#        7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan.zip megasource/libs/love/testing/output/
 #    - name: Artifact Test Output (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
 #      uses: actions/upload-artifact@v3
