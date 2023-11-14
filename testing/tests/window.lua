@@ -168,31 +168,25 @@ end
 
 -- love.window.isMaximized
 love.test.window.isMaximized = function(test)
-  if test:isDelayed() == false then
-    test:assertEquals(false, love.window.isMaximized(), 'check window not maximized')
-    love.window.maximize()
-    test:setDelay(10)
-  else
-    -- on MACOS maximize wont get recognised immedietely so wait a few frames
-    test:assertEquals(true, love.window.isMaximized(), 'check window now maximized')
-    love.window.restore()
-  end
+  test:assertEquals(false, love.window.isMaximized(), 'check window not maximized')
+  love.window.maximize()
+  test:waitFrames(10)
+  -- on MACOS maximize wont get recognised immedietely so wait a few frames
+  test:assertEquals(true, love.window.isMaximized(), 'check window now maximized')
+  love.window.restore()
 end
 
 
 -- love.window.isMinimized
 love.test.window.isMinimized = function(test)
-  if test:isDelayed() == false then
-    -- check not minimized to start
-    test:assertEquals(false, love.window.isMinimized(), 'check window not minimized')
-    -- try to minimize
-    love.window.minimize()
-    test:setDelay(10)
-  else
-    -- on linux minimize won't get recognized immediately, so wait a few frames
-    test:assertEquals(true, love.window.isMinimized(), 'check window minimized')
-    love.window.restore()
-  end
+  -- check not minimized to start
+  test:assertEquals(false, love.window.isMinimized(), 'check window not minimized')
+  -- try to minimize
+  love.window.minimize()
+  test:waitFrames(10)
+  -- on linux minimize won't get recognized immediately, so wait a few frames
+  test:assertEquals(true, love.window.isMinimized(), 'check window minimized')
+  love.window.restore()
 end
 
 
@@ -220,31 +214,25 @@ end
 
 -- love.window.maximize
 love.test.window.maximize = function(test)
-  if test:isDelayed() == false then
-    test:assertEquals(false, love.window.isMaximized(), 'check window not maximized')
-    -- check maximizing is set
-    love.window.maximize()
-    test:setDelay(10)
-  else
-    -- on macos we need to wait a few frames
-    test:assertEquals(true, love.window.isMaximized(), 'check window maximized')
-    love.window.restore()
-  end
+  test:assertEquals(false, love.window.isMaximized(), 'check window not maximized')
+  -- check maximizing is set
+  love.window.maximize()
+  test:waitFrames(10)
+  -- on macos we need to wait a few frames
+  test:assertEquals(true, love.window.isMaximized(), 'check window maximized')
+  love.window.restore()
 end
 
 
 -- love.window.minimize
 love.test.window.minimize = function(test)
-  if test:isDelayed() == false then
-    test:assertEquals(false, love.window.isMinimized(), 'check window not minimized')
-    -- check minimizing is set
-    love.window.minimize()
-    test:setDelay(10)
-  else
-    -- on linux we need to wait a few frames
-    test:assertEquals(true, love.window.isMinimized(), 'check window maximized')
-    love.window.restore()
-  end
+  test:assertEquals(false, love.window.isMinimized(), 'check window not minimized')
+  -- check minimizing is set
+  love.window.minimize()
+  test:waitFrames(10)
+  -- on linux we need to wait a few frames
+  test:assertEquals(true, love.window.isMinimized(), 'check window maximized')
+  love.window.restore()
 end
 
 
@@ -256,20 +244,13 @@ end
 
 -- love.window.restore
 love.test.window.restore = function(test)
-
-  -- TODO: for linux runner
-  -- test doesn't pass because the current test delay system can't wait twice 
-
-  if test:isDelayed() == false then
-    -- check minimized to start
-    love.window.minimize()
-    love.window.restore()
-    test:setDelay(10)
-  else
-    -- check restoring the state of the window
-    test:assertEquals(false, love.window.isMinimized(), 'check window restored')
-  end
-
+  -- check minimized to start
+  love.window.minimize()
+  test:waitFrames(10)
+  love.window.restore()
+  test:waitFrames(10)
+  -- check restoring the state of the window
+  test:assertEquals(false, love.window.isMinimized(), 'check window restored')
 end
 
 
@@ -327,15 +308,12 @@ end
 
 -- love.window.setPosition
 love.test.window.setPosition = function(test)
-  if test:isDelayed() == false then
-    -- check position is returned
-    love.window.setPosition(100, 100, 1)
-    test:setDelay(10)
-  else
-    local x, y, _ = love.window.getPosition()
-    test:assertEquals(100, x, 'check position x')
-    test:assertEquals(100, y, 'check position y')
-  end
+  -- check position is returned
+  love.window.setPosition(100, 100, 1)
+  test:waitFrames(10)
+  local x, y, _ = love.window.getPosition()
+  test:assertEquals(100, x, 'check position x')
+  test:assertEquals(100, y, 'check position y')
 end
 
 

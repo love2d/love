@@ -101,6 +101,8 @@ love.test.filesystem.read = function(test)
 end
 ```
 
+Each test is run inside it's own coroutine - you can use `test:waitFrames(frames)` to pause the test for a small period if you need to check things that won't happen for a few seconds.
+
 After each test method is ran, the assertions are totalled up, printed, and we move onto the next method! Once all methods in the suite are run a total pass/fail/skip is given for that module and we move onto the next module (if any)
 
 For sanity-checking, if it's currently not covered or it's not possible to test the method we can set the test to be skipped with `test:skipTest(reason)` - this way we still see the method listed in the test output without it affected the pass/fail totals
@@ -108,13 +110,23 @@ For sanity-checking, if it's currently not covered or it's not possible to test 
 ---
 
 ## Todo 
-Modules with some small bits needed or needing sense checking:
-- **love.event** - love.event.wait or love.event.pump need writing if possible I dunno how to check
-- **love.font** - newBMFontRasterizer() wiki entry is wrong so not sure whats expected
-- **love.graphics** - still need to do tests for the main drawing methods
-- **love.image** - ideally isCompressed should have an example of all compressed files love can take
-- **love.*.objects** - all objects tests still to be done
-- **love.graphics.setStencilTest** - deprecated, replaced by setStencilMode()
+Things still left to do:
+- [ ] physics.Body, physics.Contact, physics.Fixture,
+      physics.Joint, physics.Shape, physics.World
+- [ ] graphics.Canvas, graphics.Font, graphics.Image, graphics.Mesh, 
+      graphics.ParticleSystem, graphics.Quad, graphics.Shader, 
+      graphics.SpriteBatch, graphics.Text, graphics.Texture, graphics.Video
+- [ ] event.wait
+- [ ] graphics.present 
+- [ ] graphics.drawInstanced
+- [ ] graphics.setDepthMode (needs actual graphical comparison if possible)
+- [ ] graphics.setFrontFaceWinding (needs actual graphical comparison if possible)
+- [ ] graphics.setMeshCullMode (needs actual graphical comparison if possible)
+- [ ] @deprecated setStencilTest (use setStencilMode)
+- [ ] @deprecated physics methods (sasha changes)
+- [ ] check 12.0 wiki page for new methods
+- [ ] need a platform: format table somewhere for compressed formats (i.e. DXT not supported)
+- [ ] ideally graphics.isCompressed should have an example of all compressed files love can take
 
 ---
 

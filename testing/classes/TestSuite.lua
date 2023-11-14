@@ -59,9 +59,7 @@ TestSuite = {
 
       -- stagger between tests
     if self.module ~= nil then
-      self.module.timer = self.module.timer + delta
-      if self.module.timer >= self.module.delay then
-        self.module.timer = self.module.timer - self.module.delay
+
         if self.module.start == true then
 
           -- work through each test method 1 by 1
@@ -74,43 +72,25 @@ TestSuite = {
               self.test = TestMethod:new(method, self.module)
               TextRun:set('love.' .. self.module.module .. '.' .. method)
 
-              -- check method exists in love first
-              if love[self.module.module] == nil then
-                local tested = 'love.' .. self.module.module .. '.' .. method .. '()' 
-                local matching = string.sub(self.module.spacer, string.len(tested), 40)
-                self.module:log(self.module.colors['FAIL'],
-                  tested .. matching,
-                  ' ==> FAIL (0/0) - call failed - method does not exist'
-                )
-              -- otherwise run the test method
-              else
-                local ok, chunk, err = pcall(self[self.module.module][method], self.test)
+              self.test.co = coroutine.create(function()
+                local ok, chunk, err = pcall(love.test[love.test.module.module][method], love.test.test)
                 if ok == false then
-                  self.test.passed = false
-                  self.test.fatal = tostring(chunk) .. tostring(err)
+                  love.test.test.passed = false
+                  love.test.test.fatal = tostring(chunk) .. tostring(err)
                 end
-              end
+              end)
 
-            -- once we've run check delay + eval
+
+            -- once called we have a corouting, so just call resume every frame
+            -- until we have finished
             else
 
-              -- @TODO use coroutines?
-              -- if we have a test method that needs a delay
-              -- we wait for the delay to run out first
-              if self.delayed ~= nil then
-                self.delayed.delay = self.delayed.delay - 1
-                -- re-run the test method again when delay ends
-                -- its up to the test to handle the :isDelayed() property
-                if self.delayed.delay <= 0 then
-                  local ok, chunk, err = pcall(self[self.module.module][self.delayed.method], self.test)
-                  if ok == false then
-                    self.test.passed = false
-                    self.test.fatal = tostring(chunk) .. tostring(err)
-                  end
-                  self.delayed = nil
-                end
-              else
+              -- move onto next yield if any
+              -- pauses can be set with TestMethod:waitFrames(frames)
+              coroutine.resume(self.test.co)
 
+              -- when wait finished (or no yields)
+              if coroutine.status(self.test.co) == 'dead' then
                 -- now we're all done evaluate the test 
                 local ok, chunk, err = pcall(self.test.evaluateTest, self.test)
                 if ok == false then
@@ -118,11 +98,9 @@ TestSuite = {
                   self.test.fatal = tostring(chunk) .. tostring(err)
                 end
                 -- save having to :release() anything we made in the last test
-                -- 7251ms > 7543ms
                 collectgarbage("collect")
                 -- move onto the next test
                 self.module.index = self.module.index + 1
-
               end
 
             end
@@ -148,7 +126,7 @@ TestSuite = {
           end
         end
       end
-    end
+
   end,
 
 

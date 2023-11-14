@@ -311,33 +311,40 @@ jobs:
         title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl
         path: testing/output/lovetest_runAllTests.md
     - name: Zip Test Output (opengl)
+      if: steps.vars.outputs.arch != 'ARM64'
       run: |
         7z a -tzip test-output-windows-opengl.zip testing/output/
     - name: Artifact Test Output (opengl)
+      if: steps.vars.outputs.arch != 'ARM64'
       uses: actions/upload-artifact@v3
       with:
         name: test-output-windows-opengl
         path: test-output-windows-opengl.zip
     # windows opengles test
     - name: Run Tests (opengles)
+      if: steps.vars.outputs.arch != 'ARM64'
       run: |
         $ENV:LOVE_GRAPHICS_USE_OPENGLES=1
         powershell.exe ./install/lovec.exe ./testing/main.lua
     - name: Love Test Report (opengles)
+      if: steps.vars.outputs.arch != 'ARM64'
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite Windows (opengles)
         title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles
         path: testing/output/lovetest_runAllTests.md
     - name: Zip Test Output (opengles)
+      if: steps.vars.outputs.arch != 'ARM64'
       run: |
         7z a -tzip test-output-windows-opengles.zip testing/output/
     - name: Artifact Test Output (opengles)
+      if: steps.vars.outputs.arch != 'ARM64'
       uses: actions/upload-artifact@v3
       with:
         name: test-output-windows-opengles
         path: test-output-windows-opengles.zip
     - name: Install Vulkan
+      if: steps.vars.outputs.arch != 'ARM64'
       run: |
         curl -L --show-error --output VulkanSDK.exe https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe
         ./VulkanSDK.exe --root C:/VulkanSDK/1.3.231.1 --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan.core com.lunarg.vulkan.vma 
@@ -350,19 +357,23 @@ jobs:
         powershell.exe C:/VulkanSDK/1.3.231.1/runtime/x64/vulkaninfo.exe --summary
     # windows vulkan tests
     - name: Run Tests (vulkan)
+      if: steps.vars.outputs.arch != 'ARM64'
       run: |
         $ENV:LOVE_GRAPHICS_DEBUG=1
         powershell.exe ./install/lovec.exe ./testing/main.lua --runAllTests --renderers vulkan
     - name: Love Test Report (vulkan)
+      if: steps.vars.outputs.arch != 'ARM64'
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite Windows (vulkan)
         title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
         path: testing/output/lovetest_runAllTests.md
     - name: Zip Test Output (vulkan)
+      if: steps.vars.outputs.arch != 'ARM64'
       run: |
         7z a -tzip test-output-windows-vulkan.zip testing/output
     - name: Artifact Test Output (vulkan)
+      if: steps.vars.outputs.arch != 'ARM64'
       uses: actions/upload-artifact@v3
       with:
         name: test-output-windows-vulkan

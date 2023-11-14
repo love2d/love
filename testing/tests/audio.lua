@@ -15,36 +15,32 @@ love.test.audio.RecordingDevice = function(test)
   if #devices == 0 then
     return test:skipTest('cant test this works: no recording devices found')
   end
-  -- test device
-  if test:isDelayed() == false then
-    -- check object created and basics
-    local device = devices[1]
-    test.store.device = device
-    test:assertObject(device)
-    test:assertMatch({1, 2}, device:getChannelCount(), 'check channel count is 1 or 2')
-    test:assertNotEquals(nil, device:getName(), 'check has name')
-    -- check initial data is empty as we haven't recorded anything yet 
-    test:assertNotNil(device:getBitDepth())
-    test:assertEquals(nil, device:getData(), 'check initial data empty')
-    test:assertEquals(0, device:getSampleCount(), 'check initial sample empty')
-    test:assertNotNil(device:getSampleRate())
-    test:assertEquals(false, device:isRecording(), 'check not recording')
-    -- start recording for a short time
-    local startrecording = device:start(32000, 4000, 16, 1)
-    test:assertEquals(true, startrecording, 'check recording started')
-    test:assertEquals(true, device:isRecording(), 'check now recording')
-    test:assertEquals(4000, device:getSampleRate(), 'check sample rate set')
-    test:assertEquals(16, device:getBitDepth(), 'check bit depth set')
-    test:assertEquals(1, device:getChannelCount(), 'check channel count set')
-    test:setDelay(20)
+  -- check object created and basics
+  local device = devices[1]
+  test:assertObject(device)
+  test:assertMatch({1, 2}, device:getChannelCount(), 'check channel count is 1 or 2')
+  test:assertNotEquals(nil, device:getName(), 'check has name')
+  -- check initial data is empty as we haven't recorded anything yet 
+  test:assertNotNil(device:getBitDepth())
+  test:assertEquals(nil, device:getData(), 'check initial data empty')
+  test:assertEquals(0, device:getSampleCount(), 'check initial sample empty')
+  test:assertNotNil(device:getSampleRate())
+  test:assertEquals(false, device:isRecording(), 'check not recording')
+  -- start recording for a short time
+  -- @TODO needs delay for VMs
+  local startrecording = device:start(32000, 4000, 16, 1)
+  test:waitFrames(120)
+  test:assertEquals(true, startrecording, 'check recording started')
+  test:assertEquals(true, device:isRecording(), 'check now recording')
+  test:assertEquals(4000, device:getSampleRate(), 'check sample rate set')
+  test:assertEquals(16, device:getBitDepth(), 'check bit depth set')
+  test:assertEquals(1, device:getChannelCount(), 'check channel count set')
+  local recording = device:stop()
+  test:waitFrames(120)
   -- after recording 
-  else
-    local device = test.store.device
-    local recording = device:stop()
-    test:assertEquals(false, device:isRecording(), 'check not recording')
-    test:assertEquals(nil, device:getData(), 'using stop should clear buffer')
-    test:assertObject(recording)
-  end
+  test:assertEquals(false, device:isRecording(), 'check not recording')
+  test:assertEquals(nil, device:getData(), 'using stop should clear buffer')
+  test:assertObject(recording)
 end
 
 

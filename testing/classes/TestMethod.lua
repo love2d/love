@@ -42,7 +42,8 @@ TestMethod = {
       imgs = 1,
       delay = 0,
       delayed = false,
-      store = {}
+      store = {},
+      co = nil
     }
     setmetatable(test, self)
     self.__index = self
@@ -281,14 +282,8 @@ TestMethod = {
   end,
 
 
-  -- currently unused
-  setDelay = function(self, frames)
-    self.delay = frames
-    self.delayed = true
-    love.test.delayed = self
-  end,
-  isDelayed = function(self)
-    return self.delayed
+  waitFrames = function(self, frames)
+    for i=1,frames do coroutine.yield() end
   end,
 
 
