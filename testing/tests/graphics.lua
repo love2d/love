@@ -10,19 +10,221 @@
 
 -- Canvas (love.graphics.newCanvas)
 love.test.graphics.Canvas = function(test)
-  test:skipTest('test class needs writing')
+  -- create canvas with defaults
+  local canvas = love.graphics.newCanvas(100, 100, {
+    type = '2d',
+    format = 'normal',
+    readable = true,
+    msaa = 0,
+    dpiscale = love.graphics.getDPIScale(),
+    mipmaps = 'auto'
+  })
+  test:assertObject(canvas)
+  -- check texture settings
+  test:assertEquals(love.graphics.getDPIScale(), canvas:getDPIScale(), 'check dpi scale')
+  test:assertEquals(1, canvas:getDepth(), 'check depth is 2d')
+  test:assertEquals(nil, canvas:getDepthSampleMode(), 'check depth sample nil')
+  local min, mag, ani = canvas:getFilter()
+  test:assertEquals('nearest', min, 'check filter def min')
+  test:assertEquals('nearest', mag, 'check filter def mag')
+  test:assertEquals(1, ani, 'check filter def ani')
+  canvas:setFilter('linear', 'linear', 2)
+  min, mag, ani = canvas:getFilter()
+  test:assertEquals('linear', min, 'check filter changed min')
+  test:assertEquals('linear', mag, 'check filter changed mag')
+  test:assertEquals(2, ani, 'check filter changed ani')
+  test:assertEquals(1, canvas:getLayerCount(), 'check 1 layer for 2d')
+  test:assertEquals('2d', canvas:getTextureType(), 'check 2d')
+  local horiz, vert = canvas:getWrap()
+  test:assertEquals('clamp', horiz, 'check def wrap h')
+  test:assertEquals('clamp', vert, 'check def wrap v')
+  canvas:setWrap('repeat', 'repeat')
+  horiz, vert = canvas:getWrap()
+  test:assertEquals('repeat', horiz, 'check changed wrap h')
+  test:assertEquals('repeat', vert, 'check changed wrap v')
+  test:assertEquals(true, canvas:isReadable(), 'check canvas readable')
+  test:assertEquals(1, canvas:getMSAA(), 'check samples match')
+  -- check dimensions
+  local cw, ch = canvas:getDimensions()
+  test:assertEquals(100, cw, 'check canvas dim w')
+  test:assertEquals(100, ch, 'check canvas dim h')
+  test:assertEquals(cw, canvas:getWidth(), 'check canvas w matches dim')
+  test:assertEquals(ch, canvas:getHeight(), 'check canvas h matches dim')
+  local pw, ph = canvas:getPixelDimensions()
+  test:assertEquals(100*love.graphics.getDPIScale(), pw, 'check pixel dim w')
+  test:assertEquals(100*love.graphics.getDPIScale(), ph, 'check pixel dim h')
+  test:assertEquals(pw, canvas:getPixelWidth(), 'check pixel w matches dim')
+  test:assertEquals(ph, canvas:getPixelHeight(), 'check pixel h matches dim')
+  -- check mipmaps
+  local mode, sharpness = canvas:getMipmapFilter()
+  test:assertEquals('linear', mode, 'check def minmap filter  mode')
+  test:assertEquals(0, sharpness, 'check def minmap filter sharpness')
+  canvas:setMipmapFilter('nearest', 1)
+  mode, sharpness = canvas:getMipmapFilter()
+  test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
+  test:assertEquals(1, sharpness, 'check changed minmap filter sharpness')
+  test:assertGreaterEqual(2, canvas:getMipmapCount()) -- docs say no mipmaps should return 1
+  test:assertEquals('auto', canvas:getMipmapMode())
+  -- check rendering
+  canvas:renderTo(function()
+    love.graphics.setColor(1, 0, 0)
+    love.graphics.rectangle('fill', 0, 0, 200, 200)
+    love.graphics.setColor(1, 1, 1, 1)
+  end)
+  local data = love.graphics.readbackTexture(canvas, {100, 0, 0, 0, 100, 100})
+  local r, g, b, a = data:getPixel(2, 2)
+  test:assertEquals(1, r, 'check canvas draw r')
+  test:assertEquals(0, g, 'check canvas draw g')
+  test:assertEquals(0, b, 'check canvas draw b')
+  test:assertEquals(1, a, 'check canvas draw a')
+  -- check using canvas in love.graphics.draw()
+  local xcanvas = love.graphics.newCanvas()
+  love.graphics.setCanvas(xcanvas)
+    love.graphics.draw(canvas, 0, 0)
+  love.graphics.setCanvas()
+  data = love.graphics.readbackTexture(canvas, {100, 0, 0, 0, 100, 100})
+  r, g, b, a = data:getPixel(2, 2)
+  test:assertEquals(1, r, 'check canvas draw r')
+  test:assertEquals(0, g, 'check canvas draw g')
+  test:assertEquals(0, b, 'check canvas draw b')
+  test:assertEquals(1, a, 'check canvas draw a')
+  -- check depth samples
+  local dcanvas = love.graphics.newCanvas(100, 100, {
+    type = '2d',
+    format = 'depth16'
+  })
+  test:assertEquals(nil, dcanvas:getDepthSampleMode(), 'check depth sample mode nil by def')
+  dcanvas:setDepthSampleMode('equal')
+  test:assertEquals('equal', dcanvas:getDepthSampleMode(), 'check depth sample mode set')
 end
 
 
 -- Font (love.graphics.newFont)
 love.test.graphics.Font = function(test)
-  test:skipTest('test class needs writing')
+  -- create obj
+  local font = love.graphics.newFont('resources/font.ttf', 8)
+  test:assertObject(font)
+  -- check properties match expected
+  test:assertEquals(6, font:getAscent(), 'check ascent')
+  test:assertEquals(6, font:getBaseline(), 'check baseline')
+  test:assertEquals(1, font:getDPIScale(), 'check dpi')
+  test:assertEquals(-2, font:getDescent(), 'check descent')
+  test:assertEquals('nearest', font:getFilter(), 'check filter def')
+  font:setFilter('linear', 'linear')
+  test:assertEquals('linear', font:getFilter(), 'check filter change')
+  font:setFilter('nearest', 'nearest')
+  test:assertEquals(8, font:getHeight(), 'check height')
+  test:assertEquals(0, font:getKerning('a', 'b'), 'check kerning')
+  test:assertEquals(1, font:getLineHeight(), 'check line height')
+  font:setLineHeight(2)
+  test:assertEquals(2, font:getLineHeight(), 'check changed line height')
+  font:setLineHeight(1) -- reset for drawing + wrap later
+  test:assertEquals(24, font:getWidth('test'), 'check data size')
+  test:assertEquals(true, font:hasGlyphs('test'), 'check data size')
+  -- check font wrapping
+  local width, wrappedtext = font:getWrap('LÖVE is an *awesome* framework you can use to make 2D games in Lua.', 50)
+  test:assertEquals(48, width, 'check actual wrap width')
+  test:assertEquals(8, #wrappedtext, 'check wrapped lines')
+  test:assertEquals('LÖVE is an ', wrappedtext[1], 'check wrapped line')
+  -- check drawing font 
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas(canvas)
+    love.graphics.setFont(font)
+    love.graphics.print('Aa', 0, 5)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, {
+    white = {{0,3},{4,3},{7,4},{9,4},{10,5},{0,8},{4,8},{10,8}},
+  }, 'font draw check')
+  test:exportImg(imgdata)
+  -- check font substitution
+  local fontab = love.graphics.newImageFont('resources/font-letters-ab.png', 'AB')
+  local fontcd = love.graphics.newImageFont('resources/font-letters-cd.png', 'CD')
+  fontab:setFallbacks(fontcd)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 0)
+    love.graphics.setFont(fontab)
+    love.graphics.print('AB', 0, 0)
+    love.graphics.print('CD', 0, 9)
+  love.graphics.setCanvas()
+  local imgdata2 = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata2, {
+    green = {{1,8},{6,8},{2,10},{5,10},{9,10}},
+    black = {{9,9},{14,8},{14,10},{14,1},{1,10}}
+  }, 'font draw check')
+  test:exportImg(imgdata2)
 end
 
 
 -- Image (love.graphics.newImage)
 love.test.graphics.Image = function(test)
-  test:skipTest('test class needs writing')
+  -- create object
+  local image = love.graphics.newImage('resources/love.png', {
+    dpiscale = 1,
+    mipmaps = true
+  })
+  test:assertObject(image)
+  -- check texture props
+  test:assertEquals(love.graphics.getDPIScale(), image:getDPIScale(), 'check dpi scale')
+  test:assertEquals(1, image:getDepth(), 'check depth is 2d')
+  test:assertEquals(nil, image:getDepthSampleMode(), 'check depth sample nil')
+  local min, mag, ani = image:getFilter()
+  test:assertEquals('nearest', min, 'check filter def min')
+  test:assertEquals('nearest', mag, 'check filter def mag')
+  test:assertEquals(1, ani, 'check filter def ani')
+  image:setFilter('linear', 'linear', 2)
+  min, mag, ani = image:getFilter()
+  test:assertEquals('linear', min, 'check filter changed min')
+  test:assertEquals('linear', mag, 'check filter changed mag')
+  test:assertEquals(2, ani, 'check filter changed ani')
+  test:assertEquals(1, image:getLayerCount(), 'check 1 layer for 2d')
+  test:assertEquals('2d', image:getTextureType(), 'check 2d')
+  local horiz, vert = image:getWrap()
+  test:assertEquals('clamp', horiz, 'check def wrap h')
+  test:assertEquals('clamp', vert, 'check def wrap v')
+  image:setWrap('repeat', 'repeat')
+  horiz, vert = image:getWrap()
+  test:assertEquals('repeat', horiz, 'check changed wrap h')
+  test:assertEquals('repeat', vert, 'check changed wrap v')
+  test:assertEquals(true, image:isReadable(), 'check canvas readable')
+  test:assertEquals(1, image:getMSAA(), 'check samples match')
+  -- check dimensions
+  local cw, ch = image:getDimensions()
+  test:assertEquals(64, cw, 'check canvas dim w')
+  test:assertEquals(64, ch, 'check canvas dim h')
+  test:assertEquals(cw, image:getWidth(), 'check canvas w matches dim')
+  test:assertEquals(ch, image:getHeight(), 'check canvas h matches dim')
+  local pw, ph = image:getPixelDimensions()
+  test:assertEquals(64*love.graphics.getDPIScale(), pw, 'check pixel dim w')
+  test:assertEquals(64*love.graphics.getDPIScale(), ph, 'check pixel dim h')
+  test:assertEquals(pw, image:getPixelWidth(), 'check pixel w matches dim')
+  test:assertEquals(ph, image:getPixelHeight(), 'check pixel h matches dim')
+  -- check mipmaps
+  local mode, sharpness = image:getMipmapFilter()
+  test:assertEquals('linear', mode, 'check def minmap filter  mode')
+  test:assertEquals(0, sharpness, 'check def minmap filter sharpness')
+  image:setMipmapFilter('nearest', 1)
+  mode, sharpness = image:getMipmapFilter()
+  test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
+  test:assertEquals(1, sharpness, 'check changed minmap filter sharpness')
+  test:assertGreaterEqual(2, image:getMipmapCount()) -- docs say no mipmaps should return 1
+  -- check image properties
+  test:assertEquals(false, image:isCompressed(), 'check not compressed')
+  test:assertEquals(false, image:isFormatLinear(), 'check not linear')
+  local cimage = love.graphics.newImage('resources/love.dxt1')
+  test:assertObject(cimage)
+  test:assertEquals(true, cimage:isCompressed(), 'check is compressed')
+  -- check pixel replacement
+  local rimage = love.image.newImageData('resources/loveinv.png')
+  image:replacePixels(rimage)
+  local canvas = love.graphics.newCanvas(64, 64)
+  love.graphics.setCanvas(canvas)
+    love.graphics.draw(image, 0, 0)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  local r1, g1, b1 = imgdata:getPixel(25, 25)
+  test:assertEquals(3, r1+g1+b1, 'check back to white')
+  test:exportImg(imgdata)
 end
 
 
@@ -40,13 +242,102 @@ end
 
 -- Quad (love.graphics.newQuad)
 love.test.graphics.Quad = function(test)
-  test:skipTest('test class needs writing')
+  local texture = love.graphics.newImage('resources/love.png')
+  local quad = love.graphics.newQuad(0, 0, 32, 32, texture)
+  test:assertObject(quad)
+  -- check properties
+  test:assertEquals(1, quad:getLayer(), 'check default layer')
+  quad:setLayer(2)
+  test:assertEquals(2, quad:getLayer(), 'check changed layer')
+  local sw, sh = quad:getTextureDimensions()
+  test:assertEquals(64, sw, 'check texture w')
+  test:assertEquals(64, sh, 'check texture h')
+  -- check drawing and viewport changes
+  local canvas = love.graphics.newCanvas(64, 64)
+  love.graphics.setCanvas(canvas)
+    love.graphics.draw(texture, quad, 0, 0)
+    quad:setViewport(32, 32, 32, 32, 64, 64)
+    love.graphics.draw(texture, quad, 32, 32)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  test:assertPixels(imgdata, {
+    white = {{17,31},{31,31},{31,24},{32,32},{46,32},{32,46}},
+    lovepink = {{2,31},{31,2}},
+    loveblue = {{32,61},{61,32}}
+  }, 'check quad drawing')
+  test:exportImg(imgdata)
 end
 
 
 -- Shader (love.graphics.newShader)
 love.test.graphics.Shader = function(test)
-  test:skipTest('test class needs writing')
+  -- check valid shader
+  local pixelcode1 = [[
+    extern Image tex2;
+    vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { 
+      vec4 texturecolor = Texel(tex2, texture_coords); 
+      return texturecolor * color;
+    }
+  ]]
+  local vertexcode1 = [[
+    vec4 position(mat4 transform_projection, vec4 vertex_position) { 
+      return transform_projection * vertex_position; 
+    }
+  ]]
+  local shader1 = love.graphics.newShader(pixelcode1, vertexcode1)
+  test:assertObject(shader1)
+  test:assertEquals('vertex shader:\npixel shader:\n', shader1:getWarnings(), 'check shader valid')
+  test:assertEquals(false, shader1:hasUniform('tex1'), 'check invalid uniform')
+  test:assertEquals(true, shader1:hasUniform('tex2'), 'check valid uniform')
+  -- check invalid shader
+  local pixelcode2 = [[
+    extern float ww;
+    vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { 
+      vec4 texturecolor = Texel(tex, texture_coords);
+      float unused = ww * 3 * color;
+      return texturecolor * color;
+    }
+  ]]
+  local res, err = pcall(love.graphics.newShader, pixelcode2, vertexcode1)
+  test:assertNotEquals(nil, err, 'check shader compile fails')
+  -- check using a shader to draw + sending uniforms
+  -- shader will return a given color if overwrite set to 1, otherwise def. draw
+  local pixelcode3 = [[
+    extern vec4 col;
+    extern float overwrite;
+    vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { 
+      vec4 texcol = Texel(tex, texture_coords); 
+      if (overwrite == 1) {
+        return col;
+      } else {
+        return texcol * color;
+      }
+    }
+  ]]
+  local shader3 = love.graphics.newShader(pixelcode3, vertexcode1)
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.setCanvas(canvas)
+    -- set color to yellow
+    love.graphics.setColor(1, 1, 0, 1)
+    -- turn shader 'on' and use red to draw
+    shader3:send('overwrite', 1)
+    shader3:sendColor('col', {1, 0, 0, 1})
+    love.graphics.setShader(shader3)
+      love.graphics.rectangle('fill', 0, 0, 8, 8)
+    love.graphics.setShader()
+    -- turn shader 'off' and draw again
+    shader3:send('overwrite', 0)
+    love.graphics.setShader(shader3)
+      love.graphics.rectangle('fill', 8, 8, 8, 8)
+    love.graphics.setShader()
+    love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, {
+    red = {{1,1},{1,7},{7,7},{7,1}},
+    yellow = {{8,8},{8,15},{15,15},{15,8}}
+  }, 'shader draw check')
+  test:exportImg(imgdata)
 end
 
 
@@ -58,13 +349,40 @@ end
 
 -- Text (love.graphics.newTextBatch)
 love.test.graphics.Text = function(test)
-  test:skipTest('test class needs writing')
-end
-
-
--- Texture (love.graphics.newTexture)
-love.test.graphics.Texture = function(test)
-  test:skipTest('test class needs writing')
+  local font = love.graphics.newFont('resources/font.ttf', 8)
+  local plaintext = love.graphics.newTextBatch(font, 'test')
+  -- check text properties
+  test:assertObject(plaintext)
+  test:assertEquals(font:getHeight(), plaintext:getFont():getHeight(), 'check font matches')
+  local tw, th = plaintext:getDimensions()
+  test:assertEquals(24, tw, 'check initial dim w')
+  test:assertEquals(8, th, 'check initial dim h')
+  test:assertEquals(tw, plaintext:getWidth(), 'check initial dim w')
+  test:assertEquals(th, plaintext:getHeight(), 'check initial dim h')
+  -- check changing text
+  plaintext:add('more text', 100, 0, 0)
+  test:assertEquals(49, plaintext:getDimensions(), 'check adding text')
+  plaintext:set('test')
+  test:assertEquals(24, plaintext:getDimensions(), 'check resetting text')
+  plaintext:clear()
+  test:assertEquals(0, plaintext:getDimensions(), 'check clearing text')
+  -- check drawing + setting more complex text
+  local colortext = love.graphics.newTextBatch(font, {{1, 0, 0, 1}, 'test'})
+  test:assertObject(colortext)
+  colortext:setf('LÖVE is an *awesome* framework you can use to make 2D games in Lua', 60, 'right')
+  colortext:addf({{1, 1, 0}, 'overlap'}, 1000, 'left')
+  local font2 = love.graphics.newFont('resources/font.ttf', 8)
+  colortext:setFont(font2)
+  local canvas = love.graphics.newCanvas(64, 64)
+  love.graphics.setCanvas(canvas)
+    love.graphics.draw(colortext, 0, 10)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  test:assertPixels(imgdata, {
+    yellow = {{1,9},{8,13},{16,11},{22,10},{25,7},{29,9},{32,13},{34,15}},
+    white = {{17,13},{30,12},{38,9},{44,13},{58,13},{8,29},{58,29},{57,37},{5,39},{57,45},{1,55}}
+  }, 'text draw check')
+  test:exportImg(imgdata)
 end
 
 
@@ -196,15 +514,8 @@ end
 
 -- love.graphics.discard
 love.test.graphics.discard = function(test)
+  -- from the docs: "on some desktops this may do nothing"
   test:skipTest('cant test this worked')
-  -- wrote all this before seeing "on some desktops this may do nothing"
-  -- leaving in case we need it in future
-  --local canvas = love.graphics.newCanvas(32, 32)
-  --love.graphics.setCanvas(canvas)
-  --  love.graphics.clear(0, 0, 0, 1)
-  --  love.graphics.draw(Logo.texture, Logo.img, 0, 0)
-  --  love.graphics.discard(true, true)
-  --love.graphics.setCanvas()
 end
 
 
@@ -366,12 +677,6 @@ love.test.graphics.polygon = function(test)
     red = {{2,1},{1,2},{1,7},{5,15},{14,15},{8,8},{14,2},{7,1}}
   }, 'polygon')
   test:exportImg(imgdata)
-end
-
-
--- love.graphics.present
-love.test.graphics.present = function(test)
-  test:skipTest('test class needs writing')
 end
 
 
@@ -939,9 +1244,7 @@ end
 -- love.graphics.isGammaCorrect
 love.test.graphics.isGammaCorrect = function(test)
   -- we know the config so know this is false
-  print('gammaCorrect #1')
   test:assertNotNil(love.graphics.isGammaCorrect())
-  print('gammaCorrect #2')
 end
 
 

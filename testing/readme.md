@@ -23,10 +23,10 @@ This is the status of all module tests currently.
 | ----------------- | ---- | ---- | ---- |
 | 🟢 audio          |  28  |   0  |   0  |
 | 🟢 data           |  12  |   0  |   0  |
-| 🟡 event          |   4  |   1  |   1  |
-| 🟢 filesystem     |  28  |   0  |   2  |
+| 🟢 event          |   4  |   0  |   2  |
+| 🟢 filesystem     |  29  |   0  |   2  |
 | 🟢 font           |   7  |   0  |   0  |
-| 🟡 graphics       |  93  |  14  |   1  |
+| 🟡 graphics       |  99  |   5  |   1  |
 | 🟢 image          |   5  |   0  |   0  |
 | 🟢 math           |  20  |   0  |   0  |
 | 🟡 physics        |  22  |   6  |   0  |
@@ -113,24 +113,20 @@ For sanity-checking, if it's currently not covered or it's not possible to test 
 Things still left to do:
 - [ ] physics.Body, physics.Contact, physics.Fixture,
       physics.Joint, physics.Shape, physics.World
-- [ ] graphics.Canvas, graphics.Font, graphics.Image, graphics.Mesh, 
-      graphics.ParticleSystem, graphics.Quad, graphics.Shader, 
-      graphics.SpriteBatch, graphics.Text, graphics.Texture, graphics.Video
-- [ ] event.wait
-- [ ] graphics.present 
-- [ ] graphics.drawInstanced
-- [ ] graphics.setDepthMode (needs actual graphical comparison if possible)
-- [ ] graphics.setFrontFaceWinding (needs actual graphical comparison if possible)
-- [ ] graphics.setMeshCullMode (needs actual graphical comparison if possible)
-- [ ] @deprecated setStencilTest (use setStencilMode)
 - [ ] @deprecated physics methods (sasha changes)
-- [ ] check 12.0 wiki page for new methods
-- [ ] need a platform: format table somewhere for compressed formats (i.e. DXT not supported)
-- [ ] ideally graphics.isCompressed should have an example of all compressed files love can take
+- [ ] graphics.Mesh, graphics.ParticleSystem
+      graphics.SpriteBatch, graphics.Video
+- [ ] graphics.drawInstanced
+- [ ] @deprecated love.graphics.stencil (replaced by love.graphics.setStencilMode)
+- [ ] @deprecated love.graphics.setStencilTest (replaced by love.graphics.setStencilMode)
 
 ---
 
 ## Future Goals
-- [ ] Tests can compare visual results to a reference image (partially done)
+- [ ] graphics.isCompressed should have an example of all compressed files love can take
+- [ ] Tests can compare visual results to a reference image
+      This is partially done as we already save actual images for graphics tests to
+      use in the report output comparisons, so we just need to add a helper method
+      to the test class to let you just do assertMatching on the imgdata
 - [ ] Ability to test loading different combinations of modules
 - [ ] Performance tests

@@ -76,5 +76,5 @@ end
 -- love.event.wait
 -- @NOTE not sure best way to test this one
 love.test.event.wait = function(test)
-  test:skipTest('test class needs writing')
+  test:skipTest('used internally')
 end
