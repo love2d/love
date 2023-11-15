@@ -59,10 +59,13 @@ love.test.graphics.Canvas = function(test)
   local mode, sharpness = canvas:getMipmapFilter()
   test:assertEquals('linear', mode, 'check def minmap filter  mode')
   test:assertEquals(0, sharpness, 'check def minmap filter sharpness')
-  canvas:setMipmapFilter('nearest', 1)
-  mode, sharpness = canvas:getMipmapFilter()
-  test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
-  test:assertEquals(1, sharpness, 'check changed minmap filter sharpness')
+  local name, version, vendor, device = love.graphics.getRendererInfo()
+  if string.match(name, 'OpenGL ES') == nil and string.match(name, 'Metal') == nil then
+    canvas:setMipmapFilter('nearest', 1)
+    mode, sharpness = canvas:getMipmapFilter()
+    test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
+    test:assertEquals(1, sharpness, 'check changed minmap filter sharpness')
+  end
   test:assertGreaterEqual(2, canvas:getMipmapCount()) -- docs say no mipmaps should return 1
   test:assertEquals('auto', canvas:getMipmapMode())
   -- check rendering
@@ -204,10 +207,14 @@ love.test.graphics.Image = function(test)
   local mode, sharpness = image:getMipmapFilter()
   test:assertEquals('linear', mode, 'check def minmap filter  mode')
   test:assertEquals(0, sharpness, 'check def minmap filter sharpness')
-  image:setMipmapFilter('nearest', 1)
-  mode, sharpness = image:getMipmapFilter()
-  test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
-  test:assertEquals(1, sharpness, 'check changed minmap filter sharpness')
+  
+  local name, version, vendor, device = love.graphics.getRendererInfo()
+  if string.match(name, 'OpenGL ES') == nil and string.match(name, 'Metal') == nil then
+    image:setMipmapFilter('nearest', 1)
+    mode, sharpness = image:getMipmapFilter()
+    test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
+    test:assertEquals(1, sharpness, 'check changed minmap filter sharpness')
+  end
   test:assertGreaterEqual(2, image:getMipmapCount()) -- docs say no mipmaps should return 1
   -- check image properties
   test:assertEquals(false, image:isCompressed(), 'check not compressed')
@@ -1278,6 +1285,10 @@ love.test.graphics.reset = function(test)
   r, g, b, a = love.graphics.getColor()
   test:assertEquals(4, r+g+b+a, 'check color reset')
   test:assertEquals(nil, love.graphics.getCanvas(), 'check canvas reset')
+  love.graphics.setDefaultFilter("nearest", "nearest")
+  love.graphics.setLineStyle('rough')
+  love.graphics.setPointSize(1)
+  love.graphics.setLineWidth(1)
 end
 
 

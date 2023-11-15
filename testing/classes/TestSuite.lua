@@ -142,7 +142,7 @@ TestSuite = {
     local md = '<!-- PASSED ' .. tostring(self.totals[1]) ..
       ' || FAILED ' .. tostring(self.totals[2]) ..
       ' || SKIPPED ' .. tostring(self.totals[3]) ..
-      ' || TIME ' .. finaltime .. ' -->\n\n' ..
+      ' || TIME ' .. finaltime .. ' -->\n\n### Info\n' ..
       '**' .. tostring(self.totals[1] + self.totals[2] + self.totals[3]) .. '** tests were completed in **' ..
       finaltime .. 's** with **' ..
       tostring(self.totals[1]) .. '** passed, **' ..
@@ -152,7 +152,7 @@ TestSuite = {
       '### Report\n' ..
       '| Module                | Pass | Fail | Skip | Time   |\n' ..
       '| --------------------- | ------ | ------ | ------- | ------ |\n' ..
-      self.mdrows .. '\n\n### Failures\n' .. self.mdfailures
+      self.mdrows .. '\n### Failures\n' .. self.mdfailures
 
     local xml = '<testsuites name="love.test" tests="' .. tostring(self.totals[1]) .. 
       '" failures="' .. tostring(self.totals[2]) .. 
