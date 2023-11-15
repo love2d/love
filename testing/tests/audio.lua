@@ -10,6 +10,9 @@
 
 -- RecordingDevice (love.audio.getRecordingDevices)
 love.test.audio.RecordingDevice = function(test)
+  if GITHUB_RUNNER == true then
+    return test:skipTest('cant emulate recording devices in CI')
+  end
   -- check devices first
   local devices = love.audio.getRecordingDevices()
   if #devices == 0 then
