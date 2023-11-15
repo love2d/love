@@ -91,7 +91,8 @@ love.test.graphics.Canvas = function(test)
   -- check depth samples
   local dcanvas = love.graphics.newCanvas(100, 100, {
     type = '2d',
-    format = 'depth16'
+    format = 'depth16',
+    readable = true
   })
   test:assertEquals(nil, dcanvas:getDepthSampleMode(), 'check depth sample mode nil by def')
   dcanvas:setDepthSampleMode('equal')
