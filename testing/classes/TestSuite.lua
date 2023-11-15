@@ -136,6 +136,8 @@ TestSuite = {
   -- @return {nil}
   printResult = function(self)
     local finaltime = UtilTimeFormat(self.time)
+
+    local name, version, vendor, device = love.graphics.getRendererInfo()
     
     local md = '<!-- PASSED ' .. tostring(self.totals[1]) ..
       ' || FAILED ' .. tostring(self.totals[2]) ..
@@ -145,7 +147,9 @@ TestSuite = {
       finaltime .. 's** with **' ..
       tostring(self.totals[1]) .. '** passed, **' ..
       tostring(self.totals[2]) .. '** failed, and **' ..
-      tostring(self.totals[3]) .. '** skipped\n\n### Report\n' ..
+      tostring(self.totals[3]) .. '** skipped\n\n' .. 
+      'Renderer: ' .. name .. ' | ' .. version .. ' | ' .. vendor .. ' | ' .. device .. '\n\n' ..
+      '### Report\n' ..
       '| Module                | Pass | Fail | Skip | Time   |\n' ..
       '| --------------------- | ------ | ------ | ------- | ------ |\n' ..
       self.mdrows .. '\n\n### Failures\n' .. self.mdfailures

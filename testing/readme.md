@@ -61,7 +61,7 @@ All results will be printed in the console per method as PASS, FAIL, or SKIP wit
 When finished, the following files will be generated in the `/output` directory with a summary of the test results:
 - an `XML` file in the style of [JUnit XML](https://www.ibm.com/docs/en/developer-for-zos/14.1?topic=formats-junit-xml-format)
 - a `HTML` file that shows any visual test results
-- a `Markdown` file for use with [this github action](https://github.com/ellraiser/love-test-report)
+- a `Markdown` file you can use with [this github action](https://github.com/ellraiser/love-test-report)
 > An example of all types of output can be found in the `/examples`  
 > The visual results of any graphic tests can be found in `/output/actual`
 
@@ -124,7 +124,7 @@ Things still left to do:
 
 ## Future Goals
 - [ ] graphics.isCompressed should have an example of all compressed files love can take
-- [ ] Tests can compare visual results to a reference image
+- [ ] Tests can compare visual results to a reference image  
       This is partially done as we already save actual images for graphics tests to
       use in the report output comparisons, so we just need to add a helper method
       to the test class to let you just do assertMatching on the imgdata

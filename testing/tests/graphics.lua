@@ -307,7 +307,7 @@ love.test.graphics.Shader = function(test)
     extern float overwrite;
     vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { 
       vec4 texcol = Texel(tex, texture_coords); 
-      if (overwrite == 1) {
+      if (overwrite == 1.0) {
         return col;
       } else {
         return texcol * color;
