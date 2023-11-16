@@ -267,7 +267,7 @@ void Texture::setSamplerState(const SamplerState &s)
 {
 	love::graphics::Texture::setSamplerState(s);
 
-	textureSampler = vgfx->getCachedSampler(s);
+	textureSampler = vgfx->getCachedSampler(samplerState);
 }
 
 VkImageLayout Texture::getImageLayout() const
