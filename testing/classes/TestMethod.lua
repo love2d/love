@@ -260,11 +260,57 @@ TestMethod = {
   end,
 
 
-  -- @method - TestMethod:exportImg()
-  -- @desc - used to export actual test img results to compare to the expected
+  -- @method - TestMethod:compareImg()
+  -- @desc - compares a given image to the 'expected' version, with a tolerance of 
+  --         1px in any direction, and then saves it as the 'actual' version for 
+  --         report viewing
   -- @param {table} imgdata - imgdata to save as a png
   -- @return {nil}
-  exportImg = function(self, imgdata)
+  compareImg = function(self, imgdata)
+    local expected = love.image.newImageData(
+      'tempoutput/expected/love.test.graphics.' .. self.method .. '-' .. 
+      tostring(self.imgs) .. '.png'
+    )
+    local iw = imgdata:getWidth()-2
+    local ih = imgdata:getHeight()-2
+    for ix=2,iw do
+      for iy=2,ih do
+        local ir, ig, ib, ia = imgdata:getPixel(ix, iy)
+        local tolerance = {
+          {expected:getPixel(ix, iy)},
+          {expected:getPixel(ix+1, iy+1)},
+          {expected:getPixel(ix+1, iy)},
+          {expected:getPixel(ix+1, iy-1)},
+          {expected:getPixel(ix, iy+1)},
+          {expected:getPixel(ix, iy-1)},
+          {expected:getPixel(ix-1, iy+1)},
+          {expected:getPixel(ix-1, iy)},
+          {expected:getPixel(ix-1, iy-1)}
+        }
+        local has_match_r = false
+        local has_match_g = false
+        local has_match_b = false
+        local has_match_a = false
+        for t=1,9 do
+          if ir == tolerance[t][1] then has_match_r = true; end
+          if ig == tolerance[t][2] then has_match_g = true; end
+          if ib == tolerance[t][3] then has_match_b = true; end
+          if ia == tolerance[t][4] then has_match_a = true; end
+        end
+        local matching = has_match_r and has_match_g and has_match_b and has_match_a
+        local ymatch = ''
+        local nmatch = ''
+        if has_match_r then ymatch = ymatch .. 'r' else nmatch = nmatch .. 'r' end
+        if has_match_g then ymatch = ymatch .. 'g' else nmatch = nmatch .. 'g' end
+        if has_match_b then ymatch = ymatch .. 'b' else nmatch = nmatch .. 'b' end
+        if has_match_a then ymatch = ymatch .. 'a' else nmatch = nmatch .. 'a' end
+        local pixel = tostring(ir)..','..tostring(ig)..','..tostring(ib)..','..tostring(ia)
+        self:assertEquals(true, matching, 'compare image pixel (' .. pixel .. ') at ' ..
+          tostring(ix) .. ',' .. tostring(iy) .. ', matching = ' .. ymatch ..
+          ', not matching = ' .. nmatch .. ' (' .. self.method .. ')'
+        )
+      end
+    end
     local path = 'tempoutput/actual/love.test.graphics.' .. 
       self.method .. '-' .. tostring(self.imgs) .. '.png'
     imgdata:encode('png', path)

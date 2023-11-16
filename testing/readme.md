@@ -1,5 +1,5 @@
 # Lövetest
-Basic testing suite for the [Löve](https://github.com/love2d/love) APIs, based off of [this issue](https://github.com/love2d/love/issues/1745).
+Test suite for the [Löve](https://github.com/love2d/love) APIs, based off of [this issue](https://github.com/love2d/love/issues/1745).
 
 Currently written for [Löve 12](https://github.com/love2d/love/tree/12.0-development), which is still in development.
 
@@ -12,6 +12,7 @@ Currently written for [Löve 12](https://github.com/love2d/love/tree/12.0-develo
 - [x] Ability to run a subset of tests
 - [x] Ability to easily run an individual test
 - [x] Ability to see all visual results at a glance
+- [x] Compare graphics test output with an expected output
 - [x] Automatic testing that happens after every commit
 - [x] No platform-specific dependencies / scripts
 
@@ -19,6 +20,7 @@ Currently written for [Löve 12](https://github.com/love2d/love/tree/12.0-develo
 
 ## Coverage
 This is the status of all module tests currently.  
+See the **Todo** section for outstanding tests that need writing.
 | Module            | Done | Todo | Skip |
 | ----------------- | ---- | ---- | ---- |
 | 🟢 audio          |  28  |   0  |   0  |
@@ -115,16 +117,12 @@ Test classes that still need to be written:
 - [ ] graphics.ParticleSystem
 - [ ] physics.Body
 - [ ] physics.Contact
-- [ ] physics.Shape
+- [ ] physics.Shape (this will include physics.Fixture properties)
 
 ---
 
 ## Future
-- [ ] font class tests (Rasterizer + GlyphData) with BMfonts
-- [ ] graphics.isCompressed should have an example of all compressed files love can take
-- [ ] Tests can compare visual results to a reference image  
-      This is partially done as we already save actual images for graphics tests to
-      use in the report output comparisons, so we just need to add a helper method
-      to the test class to let you just do assertMatching on the imgdata
-- [ ] Ability to test loading different combinations of modules
-- [ ] Performance tests
+- [ ] add BMfont alts for font class tests (Rasterizer + GlyphData)
+- [ ] graphics.isCompressed() should have an example of all compressed files
+- [ ] ability to test loading different combinations of modules
+- [ ] performance tests?
