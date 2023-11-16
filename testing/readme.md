@@ -115,12 +115,12 @@ Test classes that still need to be written:
 - [ ] graphics.ParticleSystem
 - [ ] physics.Body
 - [ ] physics.Contact
-- [ ] physics.Joint
 - [ ] physics.Shape
 
 ---
 
-## Future Goals
+## Future
+- [ ] font class tests (Rasterizer + GlyphData) with BMfonts
 - [ ] graphics.isCompressed should have an example of all compressed files love can take
 - [ ] Tests can compare visual results to a reference image  
       This is partially done as we already save actual images for graphics tests to

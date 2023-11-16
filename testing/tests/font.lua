@@ -19,8 +19,16 @@ love.test.font.GlyphData = function(test)
   test:assertEquals(128, gdata:getSize(), 'check data size')
   test:assertEquals(9, gdata:getAdvance(), 'check advance')
   test:assertEquals('la8', gdata:getFormat(), 'check format')
-  test:assertEquals(97, gdata:getGlyph(), 'check glyph number')
-  test:assertEquals('a', gdata:getGlyphString(), 'check glyph string')
+  -- @TODO 
+  --[[
+    currently these will return 0 and '' respectively as not implemented
+    https://github.com/love2d/love/blob/12.0-development/src/modules/font/freetype/TrueTypeRasterizer.cpp#L140-L141
+    "basically I haven't decided what to do here yet, because of the more 
+    advanced text shaping that happens in love 12 having a unicode codepoint 
+    associated with a glyph probably doesn't make sense in the first place"
+  ]]--
+  --test:assertEquals(97, gdata:getGlyph(), 'check glyph number') - returns 0
+  --test:assertEquals('a', gdata:getGlyphString(), 'check glyph string') - returns ''
   test:assertEquals(8, gdata:getHeight(), 'check height')
   test:assertEquals(8, gdata:getWidth(), 'check width')
   -- check boundary

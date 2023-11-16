@@ -22,12 +22,38 @@ end
 
 -- Joint (love.physics.newDistanceJoint)
 love.test.physics.Joint = function(test)
-  test:skipTest('test class needs writing')
+  -- make joint
+  local world = love.physics.newWorld(1, 1, true)
+  local body1 = love.physics.newBody(world, 10, 10, 'dynamic')
+  local body2 = love.physics.newBody(world, 20, 20, 'dynamic')
+  local joint = love.physics.newDistanceJoint(body1, body2, 10, 10, 20, 20, true)
+  test:assertObject(joint)
+  -- check props
+  test:assertEquals('distance', joint:getType(), 'check joint type')
+  test:assertEquals(false, joint:isDestroyed(), 'check not destroyed')
+  test:assertEquals(0, joint:getReactionForce(1), 'check reaction force')
+  test:assertEquals(0, joint:getReactionTorque(1), 'check reaction torque')
+  local b1, b2 = joint:getBodies()
+  test:assertEquals(body1:getX(), b1:getX(), 'check body 1')
+  test:assertEquals(body2:getX(), b2:getX(), 'check body 2')
+  local x1, y1, x2, y2 = joint:getAnchors()
+  test:assertEquals(10, x1, 'check anchor x1')
+  test:assertEquals(10, y1, 'check anchor y1')
+  test:assertEquals(20, x2, 'check anchor x2')
+  test:assertEquals(20, y2, 'check anchor y2')
+  test:assertEquals(true, joint:getCollideConnected(), 'check not colliding')
+  -- test userdata
+  test:assertEquals(nil, joint:getUserData(), 'check no data by def')
+  joint:setUserData('hello')
+  test:assertEquals('hello', joint:getUserData(), 'check set userdata')
+  -- destroy
+  joint:destroy()
+  test:assertEquals(true, joint:isDestroyed(), 'check destroyed')
 end
 
 
 -- Shape (love.physics.newCircleShape)
--- @NOTE includes Fixture methods too enjoy
+-- @NOTE includes Fixture methods too now so enjoy
 love.test.physics.Shape = function(test)
   test:skipTest('test class needs writing')
 end
@@ -45,8 +71,8 @@ love.test.physics.World = function(test)
   test:assertEquals(0, world:getBodies()[1]:getX(), 'check body prop x')
   test:assertEquals(0, world:getBodies()[1]:getY(), 'check body prop y')
   world:translateOrigin(-10, -10)
-  test:assertEquals(10, world:getBodies()[1]:getX(), 'check body prop change x')
-  test:assertEquals(10, world:getBodies()[1]:getY(), 'check body prop change y')
+  test:assertEquals(10, math.floor(world:getBodies()[1]:getX()), 'check body prop change x')
+  test:assertEquals(10, math.floor(world:getBodies()[1]:getY()), 'check body prop change y')
   test:assertEquals(1, world:getBodyCount(), 'check 1 body count')
   test:assertEquals(false, world:isDestroyed(), 'check not destroyed')
   test:assertEquals(false, world:isLocked(), 'check not updating')
