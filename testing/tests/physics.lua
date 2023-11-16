@@ -20,12 +20,6 @@ love.test.physics.Contact = function(test)
 end
 
 
--- Fixture (love.physics.newFixture)
-love.test.physics.Fixture = function(test)
-  test:skipTest('test class needs writing')
-end
-
-
 -- Joint (love.physics.newDistanceJoint)
 love.test.physics.Joint = function(test)
   test:skipTest('test class needs writing')
@@ -33,6 +27,7 @@ end
 
 
 -- Shape (love.physics.newCircleShape)
+-- @NOTE includes Fixture methods too enjoy
 love.test.physics.Shape = function(test)
   test:skipTest('test class needs writing')
 end
@@ -40,7 +35,81 @@ end
 
 -- World (love.physics.newWorld)
 love.test.physics.World = function(test)
-  test:skipTest('test class needs writing')
+  -- create new world
+  local world = love.physics.newWorld(0, 0, false)
+  local body1 = love.physics.newBody(world, 0, 0, 'dynamic')
+  local rectangle1 = love.physics.newRectangleShape(body1, 0, 0, 10, 10)
+  test:assertObject(world)
+  -- check defaults
+  test:assertEquals(1, #world:getBodies(), 'check 1 body')
+  test:assertEquals(0, world:getBodies()[1]:getX(), 'check body prop x')
+  test:assertEquals(0, world:getBodies()[1]:getY(), 'check body prop y')
+  world:translateOrigin(-10, -10)
+  test:assertEquals(10, world:getBodies()[1]:getX(), 'check body prop change x')
+  test:assertEquals(10, world:getBodies()[1]:getY(), 'check body prop change y')
+  test:assertEquals(1, world:getBodyCount(), 'check 1 body count')
+  test:assertEquals(false, world:isDestroyed(), 'check not destroyed')
+  test:assertEquals(false, world:isLocked(), 'check not updating')
+  test:assertEquals(0, #world:getJoints(), 'check no joints')
+  test:assertEquals(0, world:getJointCount(), 'check no joints count')
+  test:assertEquals(0, world:getGravity(), 'check def gravity')
+  test:assertEquals(0, #world:getContacts(), 'check no contacts')
+  test:assertEquals(0, world:getContactCount(), 'check no contact count')
+  test:assertEquals(false, world:isSleepingAllowed(), 'check no sleep (till brooklyn)')
+  world:setSleepingAllowed(true)
+  test:assertEquals(true, world:isSleepingAllowed(), 'check can sleep')
+  -- check callbacks are called
+  local beginContact, endContact, preSolve, postSolve = world:getCallbacks()
+  test:assertEquals(nil, beginContact, 'check no begin contact callback')
+  test:assertEquals(nil, endContact, 'check no end contact callback')
+  test:assertEquals(nil, preSolve, 'check no pre solve callback')
+  test:assertEquals(nil, postSolve, 'check no post solve callback')
+  local beginContactCheck = false
+  local endContactCheck = false
+  local preSolveCheck = false
+  local postSolveCheck = false
+  local collisions = 0
+  world:setCallbacks(
+    function() beginContactCheck = true; collisions = collisions + 1 end,
+    function() endContactCheck = true end,
+    function() preSolveCheck = true end,
+    function() postSolveCheck = true end
+  )
+  local body2 = love.physics.newBody(world, 10, 10, 'dynamic')
+  local rectangle2 = love.physics.newRectangleShape(body2, 0, 0, 10, 10)
+  test:assertEquals(false, beginContactCheck, 'check world didnt update after adding body')
+  world:update(1)
+  test:assertEquals(true, beginContactCheck, 'check contact start')
+  test:assertEquals(true, preSolveCheck, 'check pre solve')
+  test:assertEquals(true, postSolveCheck, 'check post solve')
+  body2:setPosition(100, 100)
+  world:update(1)
+  test:assertEquals(true, endContactCheck, 'check contact end')
+  -- check point checking
+  local shapes = 0
+  world:queryShapesInArea(0, 0, 10, 10, function(x)
+    shapes = shapes + 1
+  end)
+  test:assertEquals(1, shapes, 'check shapes in area')
+  world:rayCast(0, 0, 200, 200, function(x)
+    shapes = shapes + 1
+    return 1
+  end)
+  test:assertEquals(3, shapes, 'check shapes in raycast')
+  -- change collision logic
+  test:assertEquals(nil, world:getContactFilter(), 'check def filter')
+  world:update(1)
+  world:setContactFilter(function(s1, s2)
+    return false -- nothing collides
+  end)
+  body2:setPosition(10, 10)
+  world:update(1)
+  test:assertEquals(1, collisions, 'check collision logic change')
+  -- final bits
+  world:setGravity(1, 1)
+  test:assertEquals(1, world:getGravity(), 'check grav change')
+  world:destroy()
+  test:assertEquals(true, world:isDestroyed(), 'check world destroyed')
 end
 
 
@@ -54,14 +123,12 @@ end
 -- love.physics.getDistance
 love.test.physics.getDistance = function(test)
   -- setup two fixtues to check
-  local shape1 = love.physics.newEdgeShape(0, 0, 5, 5)
-  local shape2 = love.physics.newEdgeShape(10, 10, 15, 15)
   local world = love.physics.newWorld(0, 0, false)
   local body = love.physics.newBody(world, 10, 10, 'static')
-  local fixture1 = love.physics.newFixture(body, shape1, 1)
-  local fixture2 = love.physics.newFixture(body, shape2, 1)
+  local shape1 = love.physics.newEdgeShape(body, 0, 0, 5, 5)
+  local shape2 = love.physics.newEdgeShape(body, 10, 10, 15, 15)
   -- check distance between them
-  test:assertEquals(647106, math.floor(love.physics.getDistance(fixture1, fixture2)*100000), 'check distance matches')
+  test:assertEquals(647106, math.floor(love.physics.getDistance(shape1, shape2)*100000), 'check distance matches')
 end
 
 
@@ -85,14 +152,18 @@ end
 -- love.physics.newChainShape
 -- @NOTE this is just basic nil checking, objs have their own test method
 love.test.physics.newChainShape = function(test)
-  test:assertObject(love.physics.newChainShape(true, 0, 0, 1, 0, 1, 1, 0, 1))
+  local world = love.physics.newWorld(1, 1, true)
+  local body = love.physics.newBody(world, 10, 10, 'static')
+  test:assertObject(love.physics.newChainShape(body, true, 0, 0, 1, 0, 1, 1, 0, 1))
 end
 
 
 -- love.physics.newCircleShape
 -- @NOTE this is just basic nil checking, objs have their own test method
 love.test.physics.newCircleShape = function(test)
-  test:assertObject(love.physics.newCircleShape(10))
+  local world = love.physics.newWorld(1, 1, true)
+  local body = love.physics.newBody(world, 10, 10, 'static')
+  test:assertObject(love.physics.newCircleShape(body, 10))
 end
 
 
@@ -110,18 +181,9 @@ end
 -- love.physics.newEdgeShape
 -- @NOTE this is just basic nil checking, objs have their own test method
 love.test.physics.newEdgeShape = function(test)
-  local obj = love.physics.newEdgeShape(0, 0, 10, 10)
-  test:assertObject(obj)
-end
-
-
--- love.physics.newFixture
--- @NOTE this is just basic nil checking, objs have their own test method
-love.test.physics.newFixture = function(test)
   local world = love.physics.newWorld(1, 1, true)
   local body = love.physics.newBody(world, 10, 10, 'static')
-  local shape = love.physics.newCircleShape(10)
-  local obj = love.physics.newFixture(body, shape, 1)
+  local obj = love.physics.newEdgeShape(body, 0, 0, 10, 10)
   test:assertObject(obj)
 end
 
@@ -176,7 +238,9 @@ end
 -- love.physics.newPolygonShape
 -- @NOTE this is just basic nil checking, objs have their own test method
 love.test.physics.newPolygonShape = function(test)
-  local obj = love.physics.newPolygonShape({0, 0, 2, 3, 2, 1, 3, 1, 5, 1})
+  local world = love.physics.newWorld(1, 1, true)
+  local body = love.physics.newBody(world, 10, 10, 'static')
+  local obj = love.physics.newPolygonShape(body, {0, 0, 2, 3, 2, 1, 3, 1, 5, 1})
   test:assertObject(obj)
 end
 
@@ -206,8 +270,10 @@ end
 -- love.physics.newRectangleShape
 -- @NOTE this is just basic nil checking, objs have their own test method
 love.test.physics.newRectangleShape = function(test)
-  local shape1 = love.physics.newRectangleShape(10, 20)
-  local shape2 = love.physics.newRectangleShape(10, 10, 40, 30, 10)
+  local world = love.physics.newWorld(1, 1, true)
+  local body = love.physics.newBody(world, 10, 10, 'static')
+  local shape1 = love.physics.newRectangleShape(body, 10, 20)
+  local shape2 = love.physics.newRectangleShape(body, 10, 10, 40, 30, 10)
   test:assertObject(shape1)
   test:assertObject(shape2)
 end

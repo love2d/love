@@ -60,10 +60,11 @@ love.test.graphics.Canvas = function(test)
   test:assertEquals('linear', mode, 'check def minmap filter  mode')
   test:assertEquals(0, sharpness, 'check def minmap filter sharpness')
   local name, version, vendor, device = love.graphics.getRendererInfo()
+  canvas:setMipmapFilter('nearest', 1)
+  mode, sharpness = canvas:getMipmapFilter()
+  test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
+  -- mipmap sharpness wont work on opengl/metal
   if string.match(name, 'OpenGL ES') == nil and string.match(name, 'Metal') == nil then
-    canvas:setMipmapFilter('nearest', 1)
-    mode, sharpness = canvas:getMipmapFilter()
-    test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
     test:assertEquals(1, sharpness, 'check changed minmap filter sharpness')
   end
   test:assertGreaterEqual(2, canvas:getMipmapCount()) -- docs say no mipmaps should return 1
@@ -209,10 +210,11 @@ love.test.graphics.Image = function(test)
   test:assertEquals(0, sharpness, 'check def minmap filter sharpness')
   
   local name, version, vendor, device = love.graphics.getRendererInfo()
+  -- mipmap sharpness wont work on opengl/metal
+  image:setMipmapFilter('nearest', 1)
+  mode, sharpness = image:getMipmapFilter()
+  test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
   if string.match(name, 'OpenGL ES') == nil and string.match(name, 'Metal') == nil then
-    image:setMipmapFilter('nearest', 1)
-    mode, sharpness = image:getMipmapFilter()
-    test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
     test:assertEquals(1, sharpness, 'check changed minmap filter sharpness')
   end
   test:assertGreaterEqual(2, image:getMipmapCount()) -- docs say no mipmaps should return 1
@@ -351,7 +353,133 @@ end
 
 -- SpriteBatch (love.graphics.newSpriteBatch)
 love.test.graphics.SpriteBatch = function(test)
-  test:skipTest('test class needs writing')
+  -- create batch
+  local texture1 = love.graphics.newImage('resources/cubemap.png')
+  local texture2 = love.graphics.newImage('resources/love.png')
+  local quad1 = love.graphics.newQuad(32, 12, 1, 1, texture2) -- lovepink
+  local quad2 = love.graphics.newQuad(32, 32, 1, 1, texture2) -- white
+  local sbatch = love.graphics.newSpriteBatch(texture1, 5000)
+  test:assertObject(sbatch)
+  -- check basic props
+  test:assertEquals(0, sbatch:getCount(), 'check batch size')
+  test:assertEquals(5000, sbatch:getBufferSize(), 'check batch size')
+  test:assertEquals(texture1:getWidth(), sbatch:getTexture():getWidth(), 'check texture match w')
+  test:assertEquals(texture1:getHeight(), sbatch:getTexture():getHeight(), 'check texture match h')
+  sbatch:setTexture(texture2)
+  test:assertEquals(texture2:getWidth(), sbatch:getTexture():getWidth(), 'check texture change w')
+  test:assertEquals(texture2:getHeight(), sbatch:getTexture():getHeight(), 'check texture change h')
+  local r, g, b, a = sbatch:getColor()
+  test:assertEquals(1, r, 'check initial color r')
+  test:assertEquals(1, g, 'check initial color g')
+  test:assertEquals(1, b, 'check initial color b')
+  test:assertEquals(1, a, 'check initial color a')
+  sbatch:setColor(1, 0, 0, 1)
+  r, g, b, a = sbatch:getColor()
+  test:assertEquals(1, r, 'check set color r')
+  test:assertEquals(0, g, 'check set color g')
+  test:assertEquals(0, b, 'check set color b')
+  test:assertEquals(1, a, 'check set color a')
+  -- check adding sprites
+  local offset_x = 0
+  local offset_y = 0
+  local color = 'white'
+  sbatch:setColor(1, 1, 1, 1)
+  local sprites = {}
+  for s=1,4096 do
+    local spr = sbatch:add(quad1, offset_x, offset_y, 0, 1, 1)
+    table.insert(sprites, {spr, offset_x, offset_y})
+    offset_x = offset_x + 1
+    if s % 64 == 0 then
+      -- alternate row colors
+      if color == 'white' then
+        color = 'red'
+        sbatch:setColor(1, 0, 0, 1)
+      else
+        color = 'white'
+        sbatch:setColor(1, 1, 1, 1)
+      end
+      offset_y = offset_y + 1
+      offset_x = 0
+    end
+  end
+  test:assertEquals(4096, sbatch:getCount())
+  -- test drawing and setting
+  local canvas = love.graphics.newCanvas(64, 64)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.draw(sbatch, 0, 0)
+  love.graphics.setCanvas()
+  local imgdata1 = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  test:assertPixels(imgdata1, {
+    lovepink = {{0,0},{63,2},{0,32},{63,32},{63,0},{63,2}}
+  }, 'sbatch draw normal')
+  test:exportImg(imgdata1)
+  -- use set to change some sprites
+  for s=1,2048 do
+    sbatch:set(sprites[s][1], quad2, sprites[s][2], sprites[s][3]+1, 0, 1, 1)
+  end
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.draw(sbatch, 0, 0)
+  love.graphics.setCanvas()
+  local imgdata2 = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  test:assertPixels(imgdata2, {
+    lovepink = {{0,32},{63,32}},
+    black = {{0,0},{63,0}},
+    white = {{0,1},{63,1},{0,31},{63,31}}
+  }, 'sbatch draw set')
+  test:exportImg(imgdata2)
+  -- set drawRange and redraw
+  sbatch:setDrawRange(1025, 2048)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.draw(sbatch, 0, 0)
+  love.graphics.setCanvas()
+  local imgdata3 = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  test:assertPixels(imgdata3, {
+    lovepink = {{0,32},{63,32}},
+    black = {{0,0},{63,0},{0,48},{63,48}},
+    white = {{0,17},{63,17},{0,31},{63,31}}
+  }, 'sbatch draw drawrange')
+  test:exportImg(imgdata3)
+  -- clear and redraw
+  sbatch:clear()
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.draw(sbatch, 0, 0)
+  love.graphics.setCanvas()
+  local imgdata4 = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  test:assertPixels(imgdata4, {
+    black = {{0,0},{63,0},{0,32},{63,32},{0,63},{63,63}},
+  }, 'sbatch draw clear')
+  test:exportImg(imgdata4)
+  -- array texture sbatch
+  local texture3 = love.graphics.newArrayImage({
+    'resources/love.png',
+    'resources/loveinv.png'
+  })
+  local asbatch = love.graphics.newSpriteBatch(texture3, 4096)
+  local quad3 = love.graphics.newQuad(32, 52, 1, 1, texture3) -- loveblue
+  sprites = {}
+  for s=1,4096 do
+    local spr = asbatch:addLayer(1, quad3, 0, s, math.floor(s/64), 1, 1)
+    table.insert(sprites, {spr, s, math.floor(s/64)})
+  end
+  test:assertEquals(4096, asbatch:getCount(), 'check max batch size applies')
+  for s=1,2048 do
+    asbatch:setLayer(sprites[s][1], 2, sprites[s][2], sprites[s][3], 0, 1, 1)
+  end
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.draw(asbatch, 0, 0)
+  love.graphics.setCanvas()
+  local imgdata5 = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  test:assertPixels(imgdata5, {
+    loveblue = {{31,2},{63,2},{3,30},{3,33},{16,47},{63,47}},
+    lovepink = {{17,48},{63,48},{31,61},{63,61}},
+    black = {{0,0},{63,0},{63,63},{63,0},{30,2},{30,61}},
+  }, 'sbatch draw layers')
+  test:exportImg(imgdata5)
 end
 
 
@@ -396,7 +524,54 @@ end
 
 -- Video (love.graphics.newVideo)
 love.test.graphics.Video = function(test)
-  test:skipTest('test class needs writing')
+  -- create video
+  local video = love.graphics.newVideo('resources/sample.ogv')
+  test:assertObject(video)
+  -- check basic props
+  local w, h = video:getDimensions()
+  test:assertEquals(496, w, 'check vid dim w')
+  test:assertEquals(502, h, 'check vid dim h')
+  test:assertEquals(w, video:getWidth(), 'check vid width match')
+  test:assertEquals(h, video:getHeight(), 'check vid height match')
+  local min, mag, ani = video:getFilter()
+  test:assertEquals('nearest', min, 'check def filter min')
+  test:assertEquals('nearest', mag, 'check def filter mag')
+  test:assertEquals(1, ani, 'check def filter ani')
+  video:setFilter('linear', 'linear', 2)
+  min, mag, ani = video:getFilter()
+  test:assertEquals('linear', min, 'check changed filter min')
+  test:assertEquals('linear', mag, 'check changed filter mag')
+  test:assertEquals(2, ani, 'check changed filter ani')
+  test:assertEquals(false, video:isPlaying(), 'check paused by default')
+  test:assertEquals(0, video:tell(), 'check 0:00 by default')
+  -- covered by their own obj tests in video but check returns obj
+  local source = video:getSource()
+  test:assertObject(source)
+  local stream = video:getStream()
+  test:assertObject(stream)
+  -- check playing / pausing / seeking
+  video:play()
+  test:waitFrames(60)
+  video:pause()
+  test:assertEquals(1, math.ceil(video:tell()), 'check video playing for 1s')
+  video:seek(0.2)
+  test:assertEquals(0.2, video:tell(), 'check video seeking')
+  video:rewind()
+  test:assertEquals(0, video:tell(), 'check video rewind')
+  video:setFilter('nearest', 'nearest', 1)
+  video:play()
+  -- check actuall drawing with the vid 
+  local canvas = love.graphics.newCanvas(500, 500)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(1, 0, 0, 1)
+    love.graphics.draw(video, 0, 0)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {500, 0, 0, 0, 500, 500})
+  test:assertPixels(imgdata, {
+    black = {{0,0},{495,0},{495,499},{0,499}},
+    red = {{499,0},{499,499}}
+  }, 'video draw')
+  test:exportImg(imgdata)
 end
 
 
@@ -560,7 +735,27 @@ end
 
 -- love.graphics.drawInstanced
 love.test.graphics.drawInstanced = function(test)
-  test:skipTest('test class needs writing')
+  local image = love.graphics.newImage('resources/love.png')
+  local vertices = {
+		{ 0, 0, 0, 0, 1, 0, 0 },
+		{ image:getWidth(), 0, 1, 0, 0, 1, 0 },
+		{ image:getWidth(), image:getHeight(), 1, 1, 0, 0, 1 },
+		{ 0, image:getHeight(), 0, 1, 1, 1, 0 },
+  }
+  local mesh = love.graphics.newMesh(vertices, 'fan')
+  local canvas = love.graphics.newCanvas(64, 64)
+  love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.drawInstanced(mesh, 1000, 0, 0, 0, 1, 1)
+  love.graphics.setCanvas()
+  local imgdata = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  test:assertPixels(imgdata, {
+    red = {{0,0}},
+    green = {{63,0}},
+    blue = {{63,63}},
+    yellow = {{0,63}}
+  }, 'draw instances')
+  test:exportImg(imgdata)
 end
 
 
@@ -1648,19 +1843,18 @@ love.test.graphics.setShader = function(test)
 end
 
 
--- love.graphics.setStencilTest
-love.test.graphics.setStencilTest = function(test)
+-- love.graphics.setStencilMode
+love.test.graphics.setStencilMode = function(test)
   local canvas = love.graphics.newCanvas(16, 16)
   love.graphics.setCanvas({canvas, stencil=true})
     love.graphics.clear(0, 0, 0, 1)
-    love.graphics.stencil(function()
-      love.graphics.circle('fill', 8, 8, 6)
-    end, 'replace', 1)
-    love.graphics.setStencilTest('greater', 0)
+    love.graphics.setStencilMode('replace', 'always', 1)
+    love.graphics.circle('fill', 8, 8, 6)
+    love.graphics.setStencilMode('keep', 'greater', 0)
     love.graphics.setColor(1, 0, 0, 1)
     love.graphics.rectangle('fill', 0, 0, 16, 16)
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.setStencilTest()
+    love.graphics.setStencilMode()
   love.graphics.setCanvas()
   local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
   test:assertPixels(imgdata, { 

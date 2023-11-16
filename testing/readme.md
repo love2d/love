@@ -26,10 +26,10 @@ This is the status of all module tests currently.
 | 🟢 event          |   4  |   0  |   2  |
 | 🟢 filesystem     |  29  |   0  |   2  |
 | 🟢 font           |   7  |   0  |   0  |
-| 🟡 graphics       |  99  |   5  |   1  |
+| 🟡 graphics       | 102  |   2  |   1  |
 | 🟢 image          |   5  |   0  |   0  |
 | 🟢 math           |  20  |   0  |   0  |
-| 🟡 physics        |  22  |   6  |   0  |
+| 🟡 physics        |  22  |   4  |   0  |
 | 🟢 sound          |   4  |   0  |   0  |
 | 🟢 system         |   6  |   0  |   2  |
 | 🟢 thread         |   5  |   0  |   0  |
@@ -60,7 +60,7 @@ All results will be printed in the console per method as PASS, FAIL, or SKIP wit
 
 When finished, the following files will be generated in the `/output` directory with a summary of the test results:
 - an `XML` file in the style of [JUnit XML](https://www.ibm.com/docs/en/developer-for-zos/14.1?topic=formats-junit-xml-format)
-- a `HTML` file that shows any visual test results
+- a `HTML` file that shows the report + any visual test results
 - a `Markdown` file you can use with [this github action](https://github.com/ellraiser/love-test-report)
 > An example of all types of output can be found in the `/examples`  
 > The visual results of any graphic tests can be found in `/output/actual`
@@ -110,15 +110,13 @@ For sanity-checking, if it's currently not covered or it's not possible to test 
 ---
 
 ## Todo 
-Things still left to do:
-- [ ] physics.Body, physics.Contact, physics.Fixture,
-      physics.Joint, physics.Shape, physics.World
-- [ ] @deprecated physics methods (sasha changes)
-- [ ] graphics.Mesh, graphics.ParticleSystem
-      graphics.SpriteBatch, graphics.Video
-- [ ] graphics.drawInstanced
-- [ ] @deprecated love.graphics.stencil (replaced by love.graphics.setStencilMode)
-- [ ] @deprecated love.graphics.setStencilTest (replaced by love.graphics.setStencilMode)
+Test classes that still need to be written:
+- [ ] graphics.Mesh
+- [ ] graphics.ParticleSystem
+- [ ] physics.Body
+- [ ] physics.Contact
+- [ ] physics.Joint
+- [ ] physics.Shape
 
 ---
 
