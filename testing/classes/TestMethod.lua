@@ -273,29 +273,20 @@ TestMethod = {
     )
     local iw = imgdata:getWidth()-2
     local ih = imgdata:getHeight()-2
+    local tolerance = 0 -- @NOTE could pass in optional tolerance i.e. 1/255
     for ix=2,iw do
       for iy=2,ih do
         local ir, ig, ib, ia = imgdata:getPixel(ix, iy)
-        local tolerance = {
-          {expected:getPixel(ix, iy)},
-          {expected:getPixel(ix+1, iy+1)},
-          {expected:getPixel(ix+1, iy)},
-          {expected:getPixel(ix+1, iy-1)},
-          {expected:getPixel(ix, iy+1)},
-          {expected:getPixel(ix, iy-1)},
-          {expected:getPixel(ix-1, iy+1)},
-          {expected:getPixel(ix-1, iy)},
-          {expected:getPixel(ix-1, iy-1)}
-        }
+        local er, eg, eb, ea = expected:getPixel(ix, iy)
         local has_match_r = false
         local has_match_g = false
         local has_match_b = false
         local has_match_a = false
         for t=1,9 do
-          if ir == tolerance[t][1] then has_match_r = true; end
-          if ig == tolerance[t][2] then has_match_g = true; end
-          if ib == tolerance[t][3] then has_match_b = true; end
-          if ia == tolerance[t][4] then has_match_a = true; end
+          if ir >= er - tolerance and ir <= er + tolerance then has_match_r = true; end
+          if ig >= eg - tolerance and ig <= eg + tolerance then has_match_g = true; end
+          if ib >= eb - tolerance and ib <= eb + tolerance then has_match_b = true; end
+          if ia >= ea - tolerance and ia <= ea + tolerance then has_match_a = true; end
         end
         local matching = has_match_r and has_match_g and has_match_b and has_match_a
         local ymatch = ''

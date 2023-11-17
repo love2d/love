@@ -558,7 +558,6 @@ love.test.graphics.Video = function(test)
   video:rewind()
   test:assertEquals(0, video:tell(), 'check video rewind')
   video:setFilter('nearest', 'nearest', 1)
-  video:play()
   -- check actuall drawing with the vid 
   local canvas = love.graphics.newCanvas(500, 500)
   love.graphics.setCanvas(canvas)
@@ -570,11 +569,7 @@ love.test.graphics.Video = function(test)
     black = {{0,0},{495,0},{495,499},{0,499}},
     red = {{499,0},{499,499}}
   }, 'video draw')
-  -- @NOTE on github runners the video doesnt seem to draw at all for any platform
-  -- however it passes locally
-  if GITHUB_RUNNER == false then
-    test:compareImg(imgdata)
-  end
+  test:compareImg(imgdata)
 end
 
 
@@ -709,7 +704,7 @@ end
 love.test.graphics.draw = function(test)
   local canvas1 = love.graphics.newCanvas(32, 32)
   local canvas2 = love.graphics.newCanvas(32, 32)
-  local transform = love.math.newTransform( )
+  local transform = love.math.newTransform()
   transform:translate(16, 0)
   transform:scale(0.5, 0.5)
   love.graphics.setCanvas(canvas1)
