@@ -4,6 +4,9 @@ on: [push, pull_request]
 jobs:
   linux-os:
     runs-on: ubuntu-22.04
+    permissions:
+      checks: write
+      pull-requests: write
     env:
       ALSOFT_CONF: love2d-${{ github.sha }}/testing/resources/alsoft.conf
       DISPLAY: :99
@@ -129,6 +132,9 @@ jobs:
         path: love-${{ github.sha }}.AppImage-debug.tar.gz
   windows-os:
     runs-on: windows-latest
+    permissions:
+      checks: write
+      pull-requests: write
     env: 
       ALSOFT_CONF: megasource/libs/love/testing/resources/alsoft.conf
       VK_ICD_FILENAMES: ${{ github.workspace }}\mesa\x64\lvp_icd.x86_64.json
@@ -382,6 +388,9 @@ jobs:
 #        path: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan.zip
   macOS:
     runs-on: macos-latest
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
     - name: Checkout
       uses: actions/checkout@v3
