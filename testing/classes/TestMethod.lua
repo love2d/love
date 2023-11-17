@@ -20,6 +20,8 @@ TestMethod = {
       passed = false,
       skipped = false,
       skipreason = '',
+      rgba_tolerance = 0,
+      pixel_tolerance = 0,
       fatal = '',
       message = nil,
       result = {},
@@ -92,7 +94,6 @@ TestMethod = {
         col[2] = math.floor((col[2]*10)+0.5)/10
         col[3] = math.floor((col[3]*10)+0.5)/10
         col[4] = math.floor((col[4]*10)+0.5)/10
-        -- @TODO add some sort pixel tolerance to the coords
         self:assertEquals(col[1], tr, 'check pixel r for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
         self:assertEquals(col[2], tg, 'check pixel g for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
         self:assertEquals(col[3], tb, 'check pixel b for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
@@ -273,20 +274,33 @@ TestMethod = {
     )
     local iw = imgdata:getWidth()-2
     local ih = imgdata:getHeight()-2
-    local tolerance = 0 -- @NOTE could pass in optional tolerance i.e. 1/255
+    local rgba_tolerance = self.rgba_tolerance * (1/255)
     for ix=2,iw do
       for iy=2,ih do
         local ir, ig, ib, ia = imgdata:getPixel(ix, iy)
-        local er, eg, eb, ea = expected:getPixel(ix, iy)
+        local points = {
+          {expected:getPixel(ix, iy)}
+        }
+        if self.pixel_tolerance > 0 then
+          table.insert(points, {expected:getPixel(ix-1, iy+1)})
+          table.insert(points, {expected:getPixel(ix-1, iy)})
+          table.insert(points, {expected:getPixel(ix-1, iy-1)})
+          table.insert(points, {expected:getPixel(ix, iy+1)})
+          table.insert(points, {expected:getPixel(ix, iy-1)})
+          table.insert(points, {expected:getPixel(ix+1, iy+1)})
+          table.insert(points, {expected:getPixel(ix+1, iy)})
+          table.insert(points, {expected:getPixel(ix+1, iy-1)})
+        end
         local has_match_r = false
         local has_match_g = false
         local has_match_b = false
         local has_match_a = false
-        for t=1,9 do
-          if ir >= er - tolerance and ir <= er + tolerance then has_match_r = true; end
-          if ig >= eg - tolerance and ig <= eg + tolerance then has_match_g = true; end
-          if ib >= eb - tolerance and ib <= eb + tolerance then has_match_b = true; end
-          if ia >= ea - tolerance and ia <= ea + tolerance then has_match_a = true; end
+        for t=1,#points do
+          local epoint = points[t]
+          if ir >= epoint[1] - rgba_tolerance and ir <= epoint[1] + rgba_tolerance then has_match_r = true; end
+          if ig >= epoint[2] - rgba_tolerance and ig <= epoint[2] + rgba_tolerance then has_match_g = true; end
+          if ib >= epoint[3] - rgba_tolerance and ib <= epoint[3] + rgba_tolerance then has_match_b = true; end
+          if ia >= epoint[4] - rgba_tolerance and ia <= epoint[4] + rgba_tolerance then has_match_a = true; end
         end
         local matching = has_match_r and has_match_g and has_match_b and has_match_a
         local ymatch = ''
@@ -298,7 +312,7 @@ TestMethod = {
         local pixel = tostring(ir)..','..tostring(ig)..','..tostring(ib)..','..tostring(ia)
         self:assertEquals(true, matching, 'compare image pixel (' .. pixel .. ') at ' ..
           tostring(ix) .. ',' .. tostring(iy) .. ', matching = ' .. ymatch ..
-          ', not matching = ' .. nmatch .. ' (' .. self.method .. ')'
+          ', not matching = ' .. nmatch .. ' (' .. self.method .. '-' .. tostring(self.imgs) .. ')'
         )
       end
     end
