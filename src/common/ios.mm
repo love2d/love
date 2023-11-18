@@ -150,6 +150,8 @@ static NSArray *getLovesInDocuments()
 			[paths addObject:path.stringByDeletingLastPathComponent];
 	}
 
+	[paths sortUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+
 	return paths;
 }
 
