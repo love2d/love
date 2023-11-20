@@ -63,6 +63,7 @@ jobs:
         chmod a+x love-${{ github.sha }}.AppImage
         ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner
     - name: Love Test Report (opengl)
+      id: report1
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite Linux
@@ -75,7 +76,7 @@ jobs:
     - name: Artifact Test Output (opengl)
       uses: actions/upload-artifact@v3
       with:
-        name: test-output-linux-opengl
+        name: test-output-linux-opengl-${{ steps.report1.outputs.conclusion }}
         path: test-output-linux-opengl.zip
     # linux opengles tests
     - name: Run Test Suite (opengles)
@@ -84,6 +85,7 @@ jobs:
         ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner
     - name: Love Test Report (opengles)
       uses: ellraiser/love-test-report@main
+      id: report2
       with:
         name: Love Testsuite Linux
         title: test-report-linux-opengles
@@ -95,7 +97,7 @@ jobs:
     - name: Artifact Test Output (opengles)
       uses: actions/upload-artifact@v3
       with:
-        name: test-output-linux-opengles
+        name: test-output-linux-opengles-${{ steps.report2.outputs.conclusion }}
         path: test-output-linux-opengles.zip
 #    # linux vulkan tests
 #    - name: Run Test Suite (vulkan)
@@ -297,23 +299,25 @@ jobs:
         path: pdb/Release/*.pdb
     # install mesa for graphic tests
     - name: Install Mesa 
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       run: |
         curl -L --output mesa.7z --url https://github.com/pal1000/mesa-dist-win/releases/download/23.2.1/mesa3d-23.2.1-release-msvc.7z
         7z x mesa.7z -o*
         powershell.exe mesa\systemwidedeploy.cmd 1
     # build love to use for the tests
     - name: Build Test Exe
-      if: steps.vars.outputs.arch != 'ARM64'
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       run: cmake --build build --config Release --target install
     # windows opengl tests
     - name: Run Tests (opengl)
-      if: steps.vars.outputs.arch != 'ARM64'
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       run: |
         echo 'check dir'
         ls
         powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner
     - name: Love Test Report (opengl)
-      if: steps.vars.outputs.arch != 'ARM64'
+      id: report1
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (opengl)
@@ -321,23 +325,24 @@ jobs:
         path: megasource/libs/love/testing/output/lovetest_runAllTests.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengl)
-      if: steps.vars.outputs.arch != 'ARM64'
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       run: |
         7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl.zip megasource/libs/love/testing/output/
     - name: Artifact Test Output (opengl)
-      if: steps.vars.outputs.arch != 'ARM64'
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       uses: actions/upload-artifact@v3
       with:
-        name: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl
-        path: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl.zip
+        name: test-output-windows-${{ steps.vars.outputs.arch }}-opengl-${{ steps.report1.outputs.conclusion }}
+        path: test-output-windows-${{ steps.vars.outputs.arch }}-opengl.zip
     # windows opengles tests
     - name: Run Tests (opengles)
-      if: steps.vars.outputs.arch != 'ARM64'
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       run: |
         $ENV:LOVE_GRAPHICS_USE_OPENGLES=1
         powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner
     - name: Love Test Report (opengles)
-      if: steps.vars.outputs.arch != 'ARM64'
+      id: report2
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (opengles)
@@ -345,15 +350,15 @@ jobs:
         path: megasource/libs/love/testing/output/lovetest_runAllTests.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengles)
-      if: steps.vars.outputs.arch != 'ARM64'
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       run: |
         7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles.zip megasource/libs/love/testing/output/
     - name: Artifact Test Output (opengles)
-      if: steps.vars.outputs.arch != 'ARM64'
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       uses: actions/upload-artifact@v3
       with:
-        name: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles
-        path: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles.zip
+        name: test-output-windows-${{ steps.vars.outputs.arch }}-opengles-${{ steps.report2.outputs.conclusion }}
+        path: test-output-windows-${{ steps.vars.outputs.arch }}-opengles.zip
 #    # install vulkan
 #    - name: Install Vulkan
 #      if: steps.vars.outputs.arch != 'ARM64'
@@ -427,6 +432,7 @@ jobs:
         ls
         love-macos/love.app/Contents/MacOS/love ./testing/main.lua --runAllTests --isRunner
     - name: Love Test Report
+      id: report1
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite MacOS
@@ -439,7 +445,7 @@ jobs:
     - name: Artifact Test Output
       uses: actions/upload-artifact@v3
       with:
-        name: test-output-macos-opengl
+        name: test-output-macos-opengl-${{ steps.report1.outputs.conclusion }}
         path: test-output-macos-opengl.zip
   iOS-Simulator:
     runs-on: macos-latest

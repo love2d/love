@@ -47,13 +47,16 @@ love.load = function(args)
       }
       Logo.img = love.graphics.newQuad(0, 0, 64, 64, Logo.texture)
       Font = love.graphics.newFont('resources/font.ttf', 8, 'normal')
-      TextCommand = love.graphics.newTextBatch(Font, 'Loading...')
-      TextRun = love.graphics.newTextBatch(Font, '')
+      local txtobj = love.graphics.newTextBatch or love.graphics.newText
+      TextCommand = txtobj(Font, 'Loading...')
+      TextRun = txtobj(Font, '')
     end
   end
 
   -- mount for output later
-  love.filesystem.mountFullPath(love.filesystem.getSource() .. "/output", "tempoutput", "readwrite")
+  if love.filesystem.mountFullPath then
+    love.filesystem.mountFullPath(love.filesystem.getSource() .. "/output", "tempoutput", "readwrite")
+  end
 
   -- get all args with any comma lists split out as seperate
   local arglist = {}
