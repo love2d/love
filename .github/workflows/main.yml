@@ -134,6 +134,12 @@ jobs:
       with:
         name: love-x86_64-AppImage-debug
         path: love-${{ github.sha }}.AppImage-debug.tar.gz
+    - name: Check Tests Passing
+      if: steps.report1.outputs.conclusion == 'failure' || steps.report2.outputs.conclusion == 'failure'
+      run: |
+        echo "${{ steps.report1.outputs.failed }} opengl tests failed"
+        echo "${{ steps.report2.outputs.failed }} opengles tests failed"
+        exit 1
   windows-os:
     runs-on: windows-latest
     permissions:
@@ -359,6 +365,12 @@ jobs:
       with:
         name: test-output-windows-${{ steps.vars.outputs.arch }}-opengles-${{ steps.report2.outputs.conclusion }}
         path: test-output-windows-${{ steps.vars.outputs.arch }}-opengles.zip
+    - name: Check Tests Passing
+      if: steps.report1.outputs.conclusion == 'failure' || steps.report2.outputs.conclusion == 'failure'
+      run: |
+        echo "${{ steps.report1.outputs.failed }} opengl tests failed"
+        echo "${{ steps.report2.outputs.failed }} opengles tests failed"
+        exit 1
 #    # install vulkan
 #    - name: Install Vulkan
 #      if: steps.vars.outputs.arch != 'ARM64'
@@ -447,6 +459,11 @@ jobs:
       with:
         name: test-output-macos-opengl-${{ steps.report1.outputs.conclusion }}
         path: test-output-macos-opengl.zip
+    - name: Check Tests Passing
+      if: steps.report1.outputs.conclusion == 'failure'
+      run: |
+        echo "${{ steps.report1.outputs.failed }} opengl tests failed"
+        exit 1
   iOS-Simulator:
     runs-on: macos-latest
     steps:
