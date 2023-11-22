@@ -186,11 +186,11 @@ int w_Shape_testPoint(lua_State *L)
 		float r = (float)luaL_checknumber(L, 4);
 		float px = (float)luaL_checknumber(L, 5);
 		float py = (float)luaL_checknumber(L, 6);
-		result = luax_catchexcept(L, [&]() { t->testPoint(x, y, r, px, py); });
+		luax_catchexcept(L, [&]() { result = t->testPoint(x, y, r, px, py); });
 	}
 	else
 	{
-		result = luax_catchexcept(L, [&]() { t->testPoint(x, y); });
+		luax_catchexcept(L, [&]() { result = t->testPoint(x, y); });
 	}
 	lua_pushboolean(L, result);
 	return 1;
