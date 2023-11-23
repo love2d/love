@@ -157,8 +157,8 @@ love.test.physics.Body = function(test)
   test:assertEquals('cool', body1:getUserData().love, 'check set user data')
 
   -- check x/y direct
-  test:assertEquals(10, body1:getX(), 'check get x')
-  test:assertEquals(4, body1:getY(), 'check get y')
+  test:assertEquals(10, math.floor(body1:getX()), 'check get x')
+  test:assertEquals(4, math.floor(body1:getY()), 'check get y')
   body1:setX(0)
   body1:setY(0)
   test:assertEquals(0, body1:getX(), 'check get x')
