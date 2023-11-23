@@ -10,17 +10,21 @@
 
 -- ByteData (love.data.newByteData)
 love.test.data.ByteData = function(test)
+
   -- create new obj
   local data = love.data.newByteData('helloworld')
   test:assertObject(data)
+
   -- check properties match expected
   test:assertEquals('helloworld', data:getString(), 'check data string')
   test:assertEquals(10, data:getSize(), 'check data size')
+
   -- check cloning the bytedata
   local cloneddata = data:clone()
   test:assertObject(cloneddata)
   test:assertEquals('helloworld', cloneddata:getString(), 'check cloned data')
   test:assertEquals(10, cloneddata:getSize(), 'check cloned size')
+
   -- check pointer access if allowed
   if data:getFFIPointer() ~= nil and ffi ~= nil then
     local pointer = data:getFFIPointer()
@@ -28,24 +32,29 @@ love.test.data.ByteData = function(test)
     local byte5 = ptr[4]
     test:assertEquals('o', byte5)
   end
+
 end
 
 
 -- CompressedData (love.data.compress)
 love.test.data.CompressedData = function(test)
+
   -- create new compressed data
   local cdata = love.data.compress('data', 'zlib', 'helloworld', -1)
   test:assertObject(cdata)
   test:assertEquals('zlib', cdata:getFormat(), 'check format used')
+
   -- check properties match expected
   test:assertEquals(18, cdata:getSize())
   test:assertEquals('helloworld', love.data.decompress('data', cdata):getString())
+
   -- check cloning the data
   local clonedcdata = cdata:clone()
   test:assertObject(clonedcdata)
   test:assertEquals('zlib', clonedcdata:getFormat())
   test:assertEquals(18, clonedcdata:getSize())
   test:assertEquals('helloworld', love.data.decompress('data', clonedcdata):getString())
+
 end
 
 

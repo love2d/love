@@ -10,15 +10,18 @@
 
 -- GlyphData (love.font.newGlyphData)
 love.test.font.GlyphData = function(test)
+
   -- create obj
   local rasterizer = love.font.newRasterizer('resources/font.ttf')
   local gdata = love.font.newGlyphData(rasterizer, 97) -- 'a'
   test:assertObject(gdata)
+
   -- check properties match expected
   test:assertNotNil(gdata:getString())
   test:assertEquals(128, gdata:getSize(), 'check data size')
   test:assertEquals(9, gdata:getAdvance(), 'check advance')
   test:assertEquals('la8', gdata:getFormat(), 'check format')
+
   -- @TODO 
   --[[
     currently these will return 0 and '' respectively as not implemented
@@ -29,37 +32,54 @@ love.test.font.GlyphData = function(test)
   ]]--
   --test:assertEquals(97, gdata:getGlyph(), 'check glyph number') - returns 0
   --test:assertEquals('a', gdata:getGlyphString(), 'check glyph string') - returns ''
+
+  -- check height + width
   test:assertEquals(8, gdata:getHeight(), 'check height')
   test:assertEquals(8, gdata:getWidth(), 'check width')
-  -- check boundary
+
+  -- check boundary / dimensions
   local x, y, w, h = gdata:getBoundingBox()
   local dw, dh = gdata:getDimensions()
-  local bw, bh = gdata:getBearing()
   test:assertEquals(0, x, 'check bbox x')
   test:assertEquals(-3, y, 'check bbox y')
   test:assertEquals(8, w, 'check bbox w')
   test:assertEquals(14, h, 'check bbox h')
   test:assertEquals(8, dw, 'check dim width')
   test:assertEquals(8, dh, 'check dim height')
+
+  -- check bearing
+  local bw, bh = gdata:getBearing()
   test:assertEquals(0, bw, 'check bearing w')
   test:assertEquals(11, bh, 'check bearing h')
+
 end
 
 
 -- Rasterizer (love.font.newRasterizer)
 love.test.font.Rasterizer = function(test)
+
   -- create obj
   local rasterizer = love.font.newRasterizer('resources/font.ttf')
   test:assertObject(rasterizer)
-  -- check properties match
+
+  -- check advance
   test:assertEquals(9, rasterizer:getAdvance(), 'check advance')
+
+  -- check ascent/descent
   test:assertEquals(9, rasterizer:getAscent(), 'check ascent')
   test:assertEquals(-3, rasterizer:getDescent(), 'check descent')
+
+  -- check glyphcount
   test:assertEquals(77, rasterizer:getGlyphCount(), 'check glyph count')
+
+  -- check specific glyphs
   test:assertObject(rasterizer:getGlyphData('L'))
+  test:assertTrue(rasterizer:hasGlyphs('L', 'O', 'V', 'E'), 'check LOVE')
+
+  -- check height + lineheight
   test:assertEquals(12, rasterizer:getHeight(), 'check height')
   test:assertEquals(15, rasterizer:getLineHeight(), 'check line height')
-  test:assertEquals(true, rasterizer:hasGlyphs('L', 'O', 'V', 'E'), 'check LOVE')
+
 end
 
 

@@ -78,6 +78,8 @@ When you run the tests, a single TestSuite object is created which handles the p
 Each module has a TestModule object created, and each test method has a TestMethod object created which keeps track of assertions for that method. You can currently do the following assertions:
 - **assertNotNil**(value)
 - **assertEquals**(expected, actual, label)
+- **assertTrue**(value, label)
+- **assertFalse**(value, label)
 - **assertNotEquals**(expected, actual, label)
 - **assertRange**(actual, min, max, label)
 - **assertMatch**({option1, option2, option3 ...}, actual, label) 

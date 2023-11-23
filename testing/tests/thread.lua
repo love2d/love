@@ -10,9 +10,11 @@
 
 -- Channel (love.thread.newChannel)
 love.test.thread.Channel = function(test)
+
   -- create channel
   local channel = love.thread.getChannel('test')
   test:assertObject(channel)
+
   -- setup thread to use
   local threadcode1 = [[
     require("love.timer")
@@ -23,6 +25,7 @@ love.test.thread.Channel = function(test)
   ]]
   local thread1 = love.thread.newThread(threadcode1)
   thread1:start()
+
   -- check message sent from thread to channel
   local msg1 = channel:demand()
   test:assertEquals('hello world', msg1, 'check 1st message was sent')
@@ -32,6 +35,7 @@ love.test.thread.Channel = function(test)
   local msg2 = channel:pop()
   test:assertEquals('me again', msg2, 'check 2nd message was sent')
   channel:clear()
+
   -- setup another thread for some ping pong
   local threadcode2 = [[
     local function setChannel(channel, value)
@@ -54,24 +58,30 @@ love.test.thread.Channel = function(test)
       end
     end
   ]]
+
   -- first we run a thread that will send 1 ping
   local thread2 = love.thread.newThread(threadcode2)
   thread2:start()
+
   -- we wait for that ping to be sent and then send a pong back
   local msg3 = channel:demand()
   test:assertEquals('ping', msg3, 'check message recieved 1')
+
   -- thread should be waiting for us, and checking is the ping was read
   channel:supply('pong', 1)
+
   -- if it was then it should send back our pong and thread should die
   thread2:wait()
   local msg4 = channel:pop()
   test:assertEquals('pong', msg4, 'check message recieved 2')
   test:assertEquals(0, channel:getCount())
+
 end
 
 
 -- Thread (love.thread.newThread)
 love.test.thread.Thread = function(test)
+
   -- create thread
   local threadcode = [[
     local b = 0
@@ -81,18 +91,21 @@ love.test.thread.Thread = function(test)
   ]]
   local thread = love.thread.newThread(threadcode)
   test:assertObject(thread)
+
   -- check thread runs
   thread:start()
-  test:assertEquals(true, thread:isRunning(), 'check started')
+  test:assertTrue(thread:isRunning(), 'check started')
   thread:wait()
-  test:assertEquals(false, thread:isRunning(), 'check finished')
+  test:assertFalse(thread:isRunning(), 'check finished')
   test:assertEquals(nil, thread:getError(), 'check no errors')
+
   -- check an invalid thread
   local badthreadcode = 'local b = 0\nreturn b + "string" .. 10'
   local badthread = love.thread.newThread(badthreadcode)
   badthread:start()
   badthread:wait()
   test:assertNotNil(badthread:getError())
+
 end
 
 

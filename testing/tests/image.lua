@@ -10,38 +10,52 @@
 
 -- CompressedImageData (love.image.newCompressedImageData)
 love.test.image.CompressedImageData = function(test)
+
   -- create obj
   local idata = love.image.newCompressedData('resources/love.dxt1')
   test:assertObject(idata)
-  -- check data properties
+
+  -- check string + size
   test:assertNotEquals(nil, idata:getString(), 'check data string')
   test:assertEquals(2744, idata:getSize(), 'check data size')
-  -- check img data properties
+
+  -- check img dimensions
   local iw, ih = idata:getDimensions()
   test:assertEquals(64, iw, 'check image dimension w')
   test:assertEquals(64, ih, 'check image dimension h')
-  test:assertEquals('DXT1', idata:getFormat(), 'check image format')
   test:assertEquals(64, idata:getWidth(), 'check image direct w')
   test:assertEquals(64, idata:getHeight(), 'check image direct h')
+
+  -- check format
+  test:assertEquals('DXT1', idata:getFormat(), 'check image format')
+
+  -- check mipmap count
   test:assertEquals(7, idata:getMipmapCount(), 'check mipmap count')
+
 end
 
 
 -- ImageData (love.image.newImageData)
 love.test.image.ImageData = function(test)
+
   -- create obj
   local idata = love.image.newImageData('resources/love.png')
   test:assertObject(idata)
-  -- check data properties
+
+  -- check string + size
   test:assertNotEquals(nil, idata:getString(), 'check data string')
   test:assertEquals(16384, idata:getSize(), 'check data size')
-  -- check img data properties
+
+  -- check img dimensions
   local iw, ih = idata:getDimensions()
   test:assertEquals(64, iw, 'check image dimension w')
   test:assertEquals(64, ih, 'check image dimension h')
-  test:assertEquals('rgba8', idata:getFormat(), 'check image format')
   test:assertEquals(64, idata:getWidth(), 'check image direct w')
   test:assertEquals(64, idata:getHeight(), 'check image direct h')
+
+  -- check format
+  test:assertEquals('rgba8', idata:getFormat(), 'check image format')
+  
   -- manipulate image data so white heart is black
   local mapdata = function(x, y, r, g, b, a)
     if r == 1 and g == 1 and b == 1 then
@@ -52,20 +66,24 @@ love.test.image.ImageData = function(test)
   idata:mapPixel(mapdata, 0, 0, 64, 64)
   local r1, g1, b1 = idata:getPixel(25, 25)
   test:assertEquals(0, r1+g1+b1, 'check mapped black')
+
   -- map some other data into the idata
   local idata2 = love.image.newImageData('resources/loveinv.png')
   idata:paste(idata2, 0, 0, 0, 0)
   r1, g1, b1 = idata:getPixel(25, 25)
   test:assertEquals(3, r1+g1+b1, 'check back to white')
+
   -- set pixels directly
   idata:setPixel(25, 25, 1, 0, 0, 1)
-  r1, g1, b1 = idata:getPixel(25, 25)
-  test:assertEquals(1, r1+g1+b1, 'check set to red')
+  local r2, g2, b2 = idata:getPixel(25, 25)
+  test:assertEquals(1, r2+g2+b2, 'check set to red')
+
   -- check encoding to an image
   idata:encode('png', 'test-encode.png')
   local read = love.filesystem.openFile('test-encode.png', 'r')
   test:assertNotNil(read)
   love.filesystem.remove('test-encode.png')
+
 end
 
 
@@ -81,7 +99,7 @@ end
 -- https://love2d.org/wiki/CompressedImageFormat
 -- also need to be platform dependent (e.g. dxt not suppored on phones)
 love.test.image.isCompressed = function(test)
-  test:assertEquals(true, love.image.isCompressed('resources/love.dxt1'), 
+  test:assertTrue(love.image.isCompressed('resources/love.dxt1'), 
     'check dxt1 valid compressed image')
 end
 

@@ -10,11 +10,13 @@
 
 -- File (love.filesystem.newFile)
 love.test.filesystem.File = function(test)
+
   -- setup a file to play with
   local file1 = love.filesystem.openFile('data.txt', 'w')
   file1:write('helloworld')
   test:assertObject(file1)
   file1:close()
+
   -- test read mode
   file1:open('r')
   test:assertEquals('r', file1:getMode(), 'check read mode')
@@ -22,31 +24,34 @@ love.test.filesystem.File = function(test)
   test:assertEquals('helloworld', contents)
   test:assertEquals(10, size, 'check file read')
   test:assertEquals(10, file1:getSize())
-  local ok, err = file1:write('hello')
-  test:assertNotEquals(nil, err, 'check cant write in read mode')
+  local ok1, err1 = file1:write('hello')
+  test:assertNotEquals(nil, err1, 'check cant write in read mode')
   local iterator = file1:lines()
   test:assertNotEquals(nil, iterator, 'check can read lines')
   test:assertEquals('data.txt', file1:getFilename(), 'check filename matches')
   file1:close()
+
   -- test write mode
   file1:open('w')
   test:assertEquals('w', file1:getMode(), 'check write mode')
   contents, size = file1:read()
   test:assertEquals(nil, contents, 'check cant read file in write mode')
   test:assertEquals('string', type(size), 'check err message shown')
-  ok, err = file1:write('helloworld')
-  test:assertEquals(true, ok, 'check file write')
-  test:assertEquals(nil, err, 'check no err writing')
+  local ok2, err2 = file1:write('helloworld')
+  test:assertTrue(ok2, 'check file write')
+  test:assertEquals(nil, err2, 'check no err writing')
+
   -- test open/closing
   file1:open('r')
-  test:assertEquals(true, file1:isOpen(), 'check file is open')
+  test:assertTrue(file1:isOpen(), 'check file is open')
   file1:close()
-  test:assertEquals(false, file1:isOpen(), 'check file gets closed')
+  test:assertFalse(file1:isOpen(), 'check file gets closed')
   file1:close()
+
   -- test buffering and flushing
   file1:open('w')
-  ok, err = file1:setBuffer('full', 10000)
-  test:assertEquals(true, ok)
+  local ok3, err3 = file1:setBuffer('full', 10000)
+  test:assertTrue(ok3)
   test:assertEquals('full', file1:getBuffer())
   file1:write('replacedcontent')
   file1:flush()
@@ -55,6 +60,7 @@ love.test.filesystem.File = function(test)
   contents, size = file1:read()
   test:assertEquals('replacedcontent', contents, 'check buffered content was written')
   file1:close()
+
   -- loop through file data with seek/tell until EOF
   file1:open('r')
   local counter = 0
@@ -68,24 +74,29 @@ love.test.filesystem.File = function(test)
   end
   test:assertEquals(counter, 15)
   file1:close()
+
 end
 
 
 -- FileData (love.filesystem.newFileData)
 love.test.filesystem.FileData = function(test)
+
   -- create new obj
   local fdata = love.filesystem.newFileData('helloworld', 'test.txt')
   test:assertObject(fdata)
   test:assertEquals('test.txt', fdata:getFilename())
   test:assertEquals('txt', fdata:getExtension())
+
   -- check properties match expected
   test:assertEquals('helloworld', fdata:getString(), 'check data string')
   test:assertEquals(10, fdata:getSize(), 'check data size')
+
   -- check cloning the bytedata
   local clonedfdata = fdata:clone()
   test:assertObject(clonedfdata)
   test:assertEquals('helloworld', clonedfdata:getString(), 'check cloned data')
   test:assertEquals(10, clonedfdata:getSize(), 'check cloned size')
+
 end
 
 
@@ -166,8 +177,8 @@ love.test.filesystem.getDirectoryItems = function(test)
     if v == 'bar' and info.type == 'directory' then hasdir = true end
     if v == 'file1.txt' and info.type == 'file' then hasfile = true end
   end
-  test:assertEquals(true, hasfile, 'check file exists')
-  test:assertEquals(true, hasdir, 'check directory exists')
+  test:assertTrue(hasfile, 'check file exists')
+  test:assertTrue(hasdir, 'check directory exists')
   -- cleanup
   love.filesystem.remove('foo/file1.txt')
   love.filesystem.remove('foo/bar/file2.txt')
@@ -297,7 +308,7 @@ love.test.filesystem.load = function(test)
   test:assertEquals(1, chunk(), 'check lua file runs')
   -- check invalid lua file
   local ok, chunk, err = pcall(love.filesystem.load, 'test2.lua')
-  test:assertEquals(false, ok, 'check invalid lua file')
+  test:assertFalse(ok, 'check invalid lua file')
   -- cleanup
   love.filesystem.remove('test1.lua')
   love.filesystem.remove('test2.lua')
@@ -311,7 +322,7 @@ love.test.filesystem.mount = function(test)
   love.filesystem.write('test.zip', contents, size)
   -- check mounting file and check contents are mounted
   local success = love.filesystem.mount('test.zip', 'test')
-  test:assertEquals(true, success, 'check success')
+  test:assertTrue(success, 'check success')
   test:assertNotEquals(nil, love.filesystem.getInfo('test'), 'check mount not nil')
   test:assertEquals('directory', love.filesystem.getInfo('test').type, 'check directory made')
   test:assertNotEquals(nil, love.filesystem.getInfo('test/test.txt'), 'check file not nil')
@@ -362,11 +373,11 @@ love.test.filesystem.remove = function(test)
   love.filesystem.createDirectory('foo/bar')
   love.filesystem.write('foo/bar/file2.txt', 'helloworld')
   -- check removing files + dirs (should fail to remove dir if file inside)
-  test:assertEquals(false, love.filesystem.remove('foo'), 'check fail when file inside')
-  test:assertEquals(false, love.filesystem.remove('foo/bar'), 'check fail when file inside')
-  test:assertEquals(true, love.filesystem.remove('foo/bar/file2.txt'), 'check file removed')
-  test:assertEquals(true, love.filesystem.remove('foo/bar'), 'check subdirectory removed')
-  test:assertEquals(true, love.filesystem.remove('foo'), 'check directory removed')
+  test:assertFalse(love.filesystem.remove('foo'), 'check fail when file inside')
+  test:assertFalse(love.filesystem.remove('foo/bar'), 'check fail when file inside')
+  test:assertTrue(love.filesystem.remove('foo/bar/file2.txt'), 'check file removed')
+  test:assertTrue(love.filesystem.remove('foo/bar'), 'check subdirectory removed')
+  test:assertTrue(love.filesystem.remove('foo'), 'check directory removed')
   -- cleanup not needed here hopefully...
 end
 

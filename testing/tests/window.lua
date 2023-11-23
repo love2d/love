@@ -13,10 +13,10 @@ love.test.window.close = function(test)
   -- closing window should cause graphics to not be active
   love.window.close()
   local active = love.graphics.isActive()
-  test:assertEquals(false, active, 'check window not active')
+  test:assertFalse(active, 'check window not active')
   love.window.updateMode(360, 240) -- reset
   active = love.graphics.isActive() 
-  test:assertEquals(true, active, 'check window active again')
+  test:assertTrue(active, 'check window active again')
 end
 
 -- love.window.fromPixels
@@ -68,10 +68,10 @@ end
 -- love.window.getFullscreen
 love.test.window.getFullscreen = function(test)
   -- check not fullscreen to start
-  test:assertEquals(false, love.window.getFullscreen(), 'check not fullscreen')
+  test:assertFalse(love.window.getFullscreen(), 'check not fullscreen')
   love.window.setFullscreen(true)
   -- check now fullscreen
-  test:assertEquals(true, love.window.getFullscreen(), 'check now fullscreen')
+  test:assertTrue(love.window.getFullscreen(), 'check now fullscreen')
   love.window.setFullscreen(false) -- reset
 end
 
@@ -100,7 +100,7 @@ love.test.window.getMode = function(test)
   local w, h, flags = love.window.getMode()
   test:assertEquals(360, w, 'check w')
   test:assertEquals(240, h, 'check h')
-  test:assertEquals(false, flags["fullscreen"], 'check fullscreen')
+  test:assertFalse(flags["fullscreen"], 'check fullscreen')
 end
 
 
@@ -159,20 +159,20 @@ love.test.window.isDisplaySleepEnabled = function(test)
   test:assertNotNil(love.window.isDisplaySleepEnabled())
   -- check disabled
   love.window.setDisplaySleepEnabled(false)
-  test:assertEquals(false, love.window.isDisplaySleepEnabled(), 'check sleep disabled')
+  test:assertFalse(love.window.isDisplaySleepEnabled(), 'check sleep disabled')
   -- check enabled
   love.window.setDisplaySleepEnabled(true)
-  test:assertEquals(true, love.window.isDisplaySleepEnabled(), 'check sleep enabled')
+  test:assertTrue(love.window.isDisplaySleepEnabled(), 'check sleep enabled')
 end
 
 
 -- love.window.isMaximized
 love.test.window.isMaximized = function(test)
-  test:assertEquals(false, love.window.isMaximized(), 'check window not maximized')
+  test:assertFalse(love.window.isMaximized(), 'check window not maximized')
   love.window.maximize()
   test:waitFrames(10)
   -- on MACOS maximize wont get recognised immedietely so wait a few frames
-  test:assertEquals(true, love.window.isMaximized(), 'check window now maximized')
+  test:assertTrue(love.window.isMaximized(), 'check window now maximized')
   love.window.restore()
 end
 
@@ -180,12 +180,12 @@ end
 -- love.window.isMinimized
 love.test.window.isMinimized = function(test)
   -- check not minimized to start
-  test:assertEquals(false, love.window.isMinimized(), 'check window not minimized')
+  test:assertFalse(love.window.isMinimized(), 'check window not minimized')
   -- try to minimize
   love.window.minimize()
   test:waitFrames(10)
   -- on linux minimize won't get recognized immediately, so wait a few frames
-  test:assertEquals(true, love.window.isMinimized(), 'check window minimized')
+  test:assertTrue(love.window.isMinimized(), 'check window minimized')
   love.window.restore()
 end
 
@@ -193,10 +193,10 @@ end
 -- love.window.isOpen
 love.test.window.isOpen = function(test)
   -- check open initially
-  test:assertEquals(true, love.window.isOpen(), 'check window open')
+  test:assertTrue(love.window.isOpen(), 'check window open')
   -- try closing
   love.window.close()
-  test:assertEquals(false, love.window.isOpen(), 'check window closed')
+  test:assertFalse(love.window.isOpen(), 'check window closed')
   love.window.updateMode(360, 240) -- reset 
 end
 
@@ -204,34 +204,34 @@ end
 -- love.window.isVisible
 love.test.window.isVisible = function(test)
   -- check visible initially
-  test:assertEquals(true, love.window.isVisible(), 'check window visible')
+  test:assertTrue(love.window.isVisible(), 'check window visible')
   -- check closing makes window not visible
   love.window.close()
-  test:assertEquals(false, love.window.isVisible(), 'check window not visible')
+  test:assertFalse(love.window.isVisible(), 'check window not visible')
   love.window.updateMode(360, 240) -- reset 
 end
 
 
 -- love.window.maximize
 love.test.window.maximize = function(test)
-  test:assertEquals(false, love.window.isMaximized(), 'check window not maximized')
+  test:assertFalse(love.window.isMaximized(), 'check window not maximized')
   -- check maximizing is set
   love.window.maximize()
   test:waitFrames(10)
   -- on macos we need to wait a few frames
-  test:assertEquals(true, love.window.isMaximized(), 'check window maximized')
+  test:assertTrue(love.window.isMaximized(), 'check window maximized')
   love.window.restore()
 end
 
 
 -- love.window.minimize
 love.test.window.minimize = function(test)
-  test:assertEquals(false, love.window.isMinimized(), 'check window not minimized')
+  test:assertFalse(love.window.isMinimized(), 'check window not minimized')
   -- check minimizing is set
   love.window.minimize()
   test:waitFrames(10)
   -- on linux we need to wait a few frames
-  test:assertEquals(true, love.window.isMinimized(), 'check window maximized')
+  test:assertTrue(love.window.isMinimized(), 'check window maximized')
   love.window.restore()
 end
 
@@ -250,7 +250,7 @@ love.test.window.restore = function(test)
   love.window.restore()
   test:waitFrames(10)
   -- check restoring the state of the window
-  test:assertEquals(false, love.window.isMinimized(), 'check window restored')
+  test:assertFalse(love.window.isMinimized(), 'check window restored')
 end
 
 
@@ -258,10 +258,10 @@ end
 love.test.window.setDisplaySleepEnabled = function(test)
   -- check disabling sleep
   love.window.setDisplaySleepEnabled(false)
-  test:assertEquals(false, love.window.isDisplaySleepEnabled(), 'check sleep disabled')
+  test:assertFalse(love.window.isDisplaySleepEnabled(), 'check sleep disabled')
   -- check setting it back to enabled
   love.window.setDisplaySleepEnabled(true)
-  test:assertEquals(true, love.window.isDisplaySleepEnabled(), 'check sleep enabled')
+  test:assertTrue(love.window.isDisplaySleepEnabled(), 'check sleep enabled')
 end
 
 
@@ -269,10 +269,10 @@ end
 love.test.window.setFullscreen = function(test)
   -- check fullscreen is set
   love.window.setFullscreen(true)
-  test:assertEquals(true, love.window.getFullscreen(), 'check fullscreen')
+  test:assertTrue(love.window.getFullscreen(), 'check fullscreen')
   -- check setting back to normal
   love.window.setFullscreen(false)
-  test:assertEquals(false, love.window.getFullscreen(), 'check not fullscreen')
+  test:assertFalse(love.window.getFullscreen(), 'check not fullscreen')
 end
 
 
@@ -298,8 +298,8 @@ love.test.window.setMode = function(test)
   local width, height, flags = love.window.getMode()
   test:assertEquals(512, width, 'check window w match')
   test:assertEquals(512, height, 'check window h match')
-  test:assertEquals(false, flags["fullscreen"], 'check window not fullscreen')
-  test:assertEquals(false, flags["resizable"], 'check window not resizeable')
+  test:assertFalse(flags["fullscreen"], 'check window not fullscreen')
+  test:assertFalse(flags["resizable"], 'check window not resizeable')
   love.window.setMode(360, 240, {
     fullscreen = false,
     resizable = true
@@ -362,8 +362,8 @@ love.test.window.updateMode = function(test)
   local width, height, flags = love.window.getMode()
   test:assertEquals(360, width, 'check window w match')
   test:assertEquals(240, height, 'check window h match')
-  test:assertEquals(false, flags["fullscreen"], 'check window not fullscreen')
-  test:assertEquals(false, flags["resizable"], 'check window not resizeable')
+  test:assertFalse(flags["fullscreen"], 'check window not fullscreen')
+  test:assertFalse(flags["resizable"], 'check window not resizeable')
   love.window.setMode(360, 240, { -- reset
     fullscreen = false,
     resizable = true

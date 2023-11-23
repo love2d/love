@@ -71,6 +71,58 @@ TestMethod = {
   end,
 
 
+  -- @method - TestMethod:assertTrue()
+  -- @desc - used to assert a value is true
+  -- @param {any} value - value to test
+  -- @param {string} label - label for this test to use in exports
+  -- @return {nil}
+  assertTrue = function(self, value, label)
+    self.count = self.count + 1
+    table.insert(self.asserts, {
+      key = 'assert ' .. tostring(self.count),
+      passed = value == true,
+      message = 'expected \'true\' got \'' .. 
+        tostring(value) .. '\'',
+      test = label or 'no label given'
+    })
+  end,
+
+
+  -- @method - TestMethod:assertFalse()
+  -- @desc - used to assert a value is false
+  -- @param {any} value - value to test
+  -- @param {string} label - label for this test to use in exports
+  -- @return {nil}
+  assertFalse = function(self, value, label)
+    self.count = self.count + 1
+    table.insert(self.asserts, {
+      key = 'assert ' .. tostring(self.count),
+      passed = value == false,
+      message = 'expected \'false\' got \'' .. 
+        tostring(value) .. '\'',
+      test = label or 'no label given'
+    })
+  end,
+
+
+  -- @method - TestMethod:assertNotEquals()
+  -- @desc - used to assert two values are not equal
+  -- @param {any} expected - expected value of the test
+  -- @param {any} actual - actual value of the test
+  -- @param {string} label - label for this test to use in exports
+  -- @return {nil}
+  assertNotEquals = function(self, expected, actual, label)
+    self.count = self.count + 1
+    table.insert(self.asserts, {
+      key = 'assert ' .. tostring(self.count),
+      passed = expected ~= actual,
+      message = 'avoiding \'' .. tostring(expected) .. '\' got \'' ..
+        tostring(actual) .. '\'',
+      test = label or 'no label given'
+    })
+  end,
+
+
   -- @method - TestMethod:assertPixels()
   -- @desc - checks a list of coloured pixels agaisnt given imgdata
   -- @param {ImageData} imgdata - image data to check
@@ -100,24 +152,6 @@ TestMethod = {
         self:assertEquals(col[4], ta, 'check pixel a for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
       end
     end
-  end,
-
-
-  -- @method - TestMethod:assertNotEquals()
-  -- @desc - used to assert two values are not equal
-  -- @param {any} expected - expected value of the test
-  -- @param {any} actual - actual value of the test
-  -- @param {string} label - label for this test to use in exports
-  -- @return {nil}
-  assertNotEquals = function(self, expected, actual, label)
-    self.count = self.count + 1
-    table.insert(self.asserts, {
-      key = 'assert ' .. tostring(self.count),
-      passed = expected ~= actual,
-      message = 'avoiding \'' .. tostring(expected) .. '\' got \'' ..
-        tostring(actual) .. '\'',
-      test = label or 'no label given'
-    })
   end,
 
 

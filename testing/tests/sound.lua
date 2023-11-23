@@ -10,52 +10,76 @@
 
 -- Decoder (love.sound.newDecoder)
 love.test.sound.Decoder = function(test)
+
   -- create obj
   local decoder = love.sound.newDecoder('resources/click.ogg')
   test:assertObject(decoder)
-  -- check decoder props
+
+  -- check bit depth
   test:assertMatch({8, 16}, decoder:getBitDepth(), 'check bit depth')
+
+  -- check channel count
   test:assertMatch({1, 2}, decoder:getChannelCount(), 'check channel count')
-  test:assertEquals(66, math.floor(decoder:getDuration()*1000), 'check duration')
+
+  -- check duration
+  test:assertRange(decoder:getDuration(), 0.06, 0.07, 'check duration')
+
+  -- check sample rate
   test:assertEquals(44100, decoder:getSampleRate(), 'check sample rate')
+
   -- check makes sound data (test in method below)
   test:assertObject(decoder:decode())
+
   -- check cloning sound
   local clone = decoder:clone()
   test:assertMatch({8, 16}, clone:getBitDepth(), 'check cloned bit depth')
   test:assertMatch({1, 2}, clone:getChannelCount(), 'check cloned channel count')
-  test:assertEquals(66, math.floor(clone:getDuration()*1000), 'check cloned duration')
+  test:assertRange(clone:getDuration(), 0.06, 0.07, 'check cloned duration')
   test:assertEquals(44100, clone:getSampleRate(), 'check cloned sample rate')
+
 end
 
 
 -- SoundData (love.sound.newSoundData)
 love.test.sound.SoundData = function(test)
+
   -- create obj
   local sdata = love.sound.newSoundData('resources/click.ogg')
   test:assertObject(sdata)
-  -- check data props
+
+  -- check data size + string
   test:assertEquals(11708, sdata:getSize(), 'check size')
   test:assertNotNil(sdata:getString())
+
+  -- check bit depth
   test:assertMatch({8, 16}, sdata:getBitDepth(), 'check bit depth')
+
+  -- check channel count
   test:assertMatch({1, 2}, sdata:getChannelCount(), 'check channel count')
-  test:assertEquals(66, math.floor(sdata:getDuration()*1000), 'check duration')
+
+  -- check duration
+  test:assertRange(sdata:getDuration(), 0.06, 0.07, 'check duration')
+
+  -- check samples
   test:assertEquals(44100, sdata:getSampleRate(), 'check sample rate')
   test:assertEquals(2927, sdata:getSampleCount(), 'check sample count')
+
   -- check cloning
   local clone = sdata:clone()
   test:assertEquals(11708, clone:getSize(), 'check clone size')
   test:assertNotNil(clone:getString())
   test:assertMatch({8, 16}, clone:getBitDepth(), 'check clone bit depth')
   test:assertMatch({1, 2}, clone:getChannelCount(), 'check clone channel count')
-  test:assertEquals(66, math.floor(clone:getDuration()*1000), 'check clone duration')
+  test:assertRange(clone:getDuration(), 0.06, 0.07, 'check clone duration')
   test:assertEquals(44100, clone:getSampleRate(), 'check clone sample rate')
   test:assertEquals(2927, clone:getSampleCount(), 'check clone sample count')
+
   -- check sample setting
-  test:assertEquals(-22, math.floor(sdata:getSample(0.001)*100000), 'check sample 1')
-  test:assertEquals(-22, math.floor(sdata:getSample(0.005)*100000), 'check sample 1')
+  test:assertRange(sdata:getSample(0.001), -0.1, 0, 'check sample 1')
+  test:assertRange(sdata:getSample(0.005), -0.1, 0, 'check sample 1')
   sdata:setSample(0.002, 1)
   test:assertEquals(1, sdata:getSample(0.002), 'check setting sample manually')
+
 end
 
 

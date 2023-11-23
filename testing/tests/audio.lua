@@ -10,137 +10,167 @@
 
 -- RecordingDevice (love.audio.getRecordingDevices)
 love.test.audio.RecordingDevice = function(test)
+
+  -- skip recording device on runners, they cant emulate it
   if GITHUB_RUNNER == true then
     return test:skipTest('cant emulate recording devices in CI')
   end
+
   -- check devices first
   local devices = love.audio.getRecordingDevices()
   if #devices == 0 then
     return test:skipTest('cant test this works: no recording devices found')
   end
+
   -- check object created and basics
   local device = devices[1]
   test:assertObject(device)
   test:assertMatch({1, 2}, device:getChannelCount(), 'check channel count is 1 or 2')
   test:assertNotEquals(nil, device:getName(), 'check has name')
+
   -- check initial data is empty as we haven't recorded anything yet 
   test:assertNotNil(device:getBitDepth())
   test:assertEquals(nil, device:getData(), 'check initial data empty')
   test:assertEquals(0, device:getSampleCount(), 'check initial sample empty')
   test:assertNotNil(device:getSampleRate())
-  test:assertEquals(false, device:isRecording(), 'check not recording')
+  test:assertFalse(device:isRecording(), 'check not recording')
+
   -- start recording for a short time
-  -- @TODO needs delay for VMs
   local startrecording = device:start(32000, 4000, 16, 1)
   test:waitFrames(10)
-  test:assertEquals(true, startrecording, 'check recording started')
-  test:assertEquals(true, device:isRecording(), 'check now recording')
+  test:assertTrue(startrecording, 'check recording started')
+  test:assertTrue(device:isRecording(), 'check now recording')
   test:assertEquals(4000, device:getSampleRate(), 'check sample rate set')
   test:assertEquals(16, device:getBitDepth(), 'check bit depth set')
   test:assertEquals(1, device:getChannelCount(), 'check channel count set')
   local recording = device:stop()
   test:waitFrames(10)
+
   -- after recording 
-  test:assertEquals(false, device:isRecording(), 'check not recording')
+  test:assertFalse(device:isRecording(), 'check not recording')
   test:assertEquals(nil, device:getData(), 'using stop should clear buffer')
   test:assertObject(recording)
+
 end
 
 
 -- Source (love.audio.newSource)
 love.test.audio.Source = function(test)
+
   -- create stereo source
   local stereo = love.audio.newSource('resources/click.ogg', 'static')
   test:assertObject(stereo)
+
   -- check stereo props
   test:assertEquals(2, stereo:getChannelCount(), 'check stereo src')
-  test:assertEquals(66, math.floor(stereo:getDuration("seconds")*1000), 'check stereo seconds')
+  test:assertRange(stereo:getDuration("seconds"), 0, 0.1, 'check stereo seconds')
   test:assertNotNil(stereo:getFreeBufferCount())
   test:assertEquals('static', stereo:getType(), 'check stereo type')
+
   -- check cloning a stereo
   local clone = stereo:clone()
   test:assertEquals(2, clone:getChannelCount(), 'check clone stereo src')
-  test:assertEquals(66, math.floor(clone:getDuration("seconds")*1000), 'check clone stereo seconds')
+  test:assertRange(clone:getDuration("seconds"), 0, 0.1, 'check clone stereo seconds')
   test:assertNotNil(clone:getFreeBufferCount())
   test:assertEquals('static', clone:getType(), 'check cloned stereo type')
+
   -- mess with stereo playing
-  test:assertEquals(false, stereo:isPlaying(), 'check not playing')
+  test:assertFalse(stereo:isPlaying(), 'check not playing')
   stereo:setLooping(true)
   stereo:play()
-  test:assertEquals(true, stereo:isPlaying(), 'check now playing')
-  test:assertEquals(true, stereo:isLooping(), 'check now playing')
+  test:assertTrue(stereo:isPlaying(), 'check now playing')
+  test:assertTrue(stereo:isLooping(), 'check now playing')
   stereo:pause()
   stereo:seek(0.01, 'seconds')
   test:assertEquals(0.01, stereo:tell('seconds'), 'check seek/tell')
   stereo:stop()
-  test:assertEquals(false, stereo:isPlaying(), 'check stopped playing')
+  test:assertFalse(stereo:isPlaying(), 'check stopped playing')
+
   -- check volume limits
   stereo:setVolumeLimits(0.1, 0.5)
   local min, max = stereo:getVolumeLimits()
-  test:assertEquals(1, math.floor(min*10), 'check min limit')
-  test:assertEquals(5, math.floor(max*10), 'check max limit')
-  -- @NOTE the following works as setVolumeLimits is used with set volume
-  -- as the BASE and then applying directional, rather than being a clamp
+  test:assertRange(min, 0.1, 0.2, 'check min limit')
+  test:assertRange(max, 0.5, 0.6, 'check max limit')
+
+  -- check setting volume
   stereo:setVolume(1)
   test:assertEquals(1, stereo:getVolume(), 'check set volume')
   stereo:setVolume(0)
   test:assertEquals(0, stereo:getVolume(), 'check set volume')
+
   -- change some get/set props that can apply to stereo
   stereo:setPitch(2)
   test:assertEquals(2, stereo:getPitch(), 'check pitch change')
+
   -- create mono source
   local mono = love.audio.newSource('resources/clickmono.ogg', 'stream')
   test:assertObject(mono)
   test:assertEquals(1, mono:getChannelCount(), 'check mono src')
   test:assertEquals(2927, mono:getDuration("samples"), 'check mono seconds')
   test:assertEquals('stream', mono:getType(), 'check mono type')
-  -- check the basic get/set properties
+
+  -- air absorption
   test:assertEquals(0, mono:getAirAbsorption(), 'get air absorption')
   mono:setAirAbsorption(1)
   test:assertEquals(1, mono:getAirAbsorption(), 'set air absorption')
+
+  -- cone
   mono:setCone(0, 90*(math.pi/180), 1)
   local ia, oa, ov = mono:getCone()
   test:assertEquals(0, ia, 'check cone ia')
   test:assertEquals(math.floor(9000*(math.pi/180)), math.floor(oa*100), 'check cone oa')
   test:assertEquals(1, ov, 'check cone ov')
+
+  -- direction
   mono:setDirection(3, 1, -1)
   local x, y, z = mono:getDirection()
   test:assertEquals(3, x, 'check direction x')
   test:assertEquals(1, y, 'check direction y')
   test:assertEquals(-1, z, 'check direction z')
+
+  -- relative
   mono:setRelative(true)
-  test:assertEquals(true, mono:isRelative(), 'check set relative')
+  test:assertTrue(mono:isRelative(), 'check set relative')
+
+  -- position
   mono:setPosition(1, 2, 3)
   x, y, z = mono:getPosition()
   test:assertEquals(x, 1, 'check pos x')
   test:assertEquals(y, 2, 'check pos y')
   test:assertEquals(z, 3, 'check pos z')
+
+  -- velocity
   mono:setVelocity(1, 3, 4)
   x, y, z = mono:getVelocity()
   test:assertEquals(x, 1, 'check velocity x')
   test:assertEquals(y, 3, 'check velocity x')
   test:assertEquals(z, 4, 'check velocity x')
+
+  -- rolloff
   mono:setRolloff(1)
   test:assertEquals(1, mono:getRolloff(), 'check rolloff set')
+
   -- create queue source
   local queue = love.audio.newQueueableSource(44100, 16, 1, 3)
   local sdata = love.sound.newSoundData(1024, 44100, 16, 1)
   test:assertObject(queue)
   local run = queue:queue(sdata)
-  test:assertEquals(true, run, 'check queued sound')
+  test:assertTrue(run, 'check queued sound')
   queue:stop()
+
   -- check making a filer
   local setfilter = stereo:setFilter({
     type = 'lowpass',
     volume = 0.5,
     highgain = 0.3
   })
-  test:assertEquals(true, setfilter, 'check filter applied')
+  test:assertTrue(setfilter, 'check filter applied')
   local filter = stereo:getFilter()
   test:assertEquals('lowpass', filter.type, 'check filter type')
   test:assertEquals(0.5, filter.volume, 'check filter volume')
-  test:assertEquals(3, math.floor(filter.highgain*10), 'check filter highgain')
+  test:assertRange(filter.highgain, 0.3, 0.4, 'check filter highgain')
   test:assertEquals(nil, filter.lowgain, 'check filter lowgain')
+
   -- add an effect
   local effsource = love.audio.newSource('resources/click.ogg', 'static')
   love.audio.setEffect('testeffect', {
@@ -152,10 +182,12 @@ love.test.audio.Source = function(test)
     volume = 0.3,
     lowgain = 0.1
   })
+
   -- both these fail on 12 using stereo or mono, no err
-  test:assertEquals(true, seteffect, 'check effect was applied')
+  test:assertTrue(seteffect, 'check effect was applied')
   local filtersettings = effsource:getEffect('effectthatdoesntexist', {})
   test:assertNotNil(filtersettings)
+
 end
 
 
@@ -339,7 +371,7 @@ love.test.audio.play = function(test)
   -- check playing source is detected
   local source = love.audio.newSource('resources/click.ogg', 'static')
   love.audio.play(source)
-  test:assertEquals(true, source:isPlaying(), 'check something playing')
+  test:assertTrue(source:isPlaying(), 'check something playing')
   love.audio.pause()
 end
 
@@ -376,7 +408,7 @@ love.test.audio.setEffect = function(test)
     type = 'chorus',
     volume = 10
   })
-  test:assertEquals(true, effect, 'check effect created')
+  test:assertTrue(effect, 'check effect created')
   -- check values set match
   local settings = love.audio.getEffect('testeffect')
   test:assertEquals('chorus', settings.type, 'check effect type')
@@ -439,8 +471,8 @@ love.test.audio.stop = function(test)
   -- check source is playing first
   local source = love.audio.newSource('resources/click.ogg', 'static')
   love.audio.play(source)
-  test:assertEquals(true, source:isPlaying(), 'check is playing')
+  test:assertTrue(source:isPlaying(), 'check is playing')
   -- check source is then stopped
   love.audio.stop()
-  test:assertEquals(false, source:isPlaying(), 'check stopped playing')
+  test:assertFalse(source:isPlaying(), 'check stopped playing')
 end

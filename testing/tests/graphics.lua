@@ -10,6 +10,7 @@
 
 -- Canvas (love.graphics.newCanvas)
 love.test.graphics.Canvas = function(test)
+
   -- create canvas with defaults
   local canvas = love.graphics.newCanvas(100, 100, {
     type = '2d',
@@ -20,30 +21,46 @@ love.test.graphics.Canvas = function(test)
     mipmaps = 'auto'
   })
   test:assertObject(canvas)
-  -- check texture settings
+
+  -- check dpi
   test:assertEquals(love.graphics.getDPIScale(), canvas:getDPIScale(), 'check dpi scale')
+
+  -- check depth
   test:assertEquals(1, canvas:getDepth(), 'check depth is 2d')
   test:assertEquals(nil, canvas:getDepthSampleMode(), 'check depth sample nil')
-  local min, mag, ani = canvas:getFilter()
-  test:assertEquals('nearest', min, 'check filter def min')
-  test:assertEquals('nearest', mag, 'check filter def mag')
-  test:assertEquals(1, ani, 'check filter def ani')
+
+  -- check fliter
+  local min1, mag1, ani1 = canvas:getFilter()
+  test:assertEquals('nearest', min1, 'check filter def min')
+  test:assertEquals('nearest', mag1, 'check filter def mag')
+  test:assertEquals(1, ani1, 'check filter def ani')
   canvas:setFilter('linear', 'linear', 2)
-  min, mag, ani = canvas:getFilter()
-  test:assertEquals('linear', min, 'check filter changed min')
-  test:assertEquals('linear', mag, 'check filter changed mag')
-  test:assertEquals(2, ani, 'check filter changed ani')
+  local min2, mag2, ani2 = canvas:getFilter()
+  test:assertEquals('linear', min2, 'check filter changed min')
+  test:assertEquals('linear', mag2, 'check filter changed mag')
+  test:assertEquals(2, ani2, 'check filter changed ani')
+
+  -- check layer
   test:assertEquals(1, canvas:getLayerCount(), 'check 1 layer for 2d')
+
+  -- check texture type
   test:assertEquals('2d', canvas:getTextureType(), 'check 2d')
-  local horiz, vert = canvas:getWrap()
-  test:assertEquals('clamp', horiz, 'check def wrap h')
-  test:assertEquals('clamp', vert, 'check def wrap v')
+
+  -- check texture wrap
+  local horiz1, vert1 = canvas:getWrap()
+  test:assertEquals('clamp', horiz1, 'check def wrap h')
+  test:assertEquals('clamp', vert1, 'check def wrap v')
   canvas:setWrap('repeat', 'repeat')
-  horiz, vert = canvas:getWrap()
-  test:assertEquals('repeat', horiz, 'check changed wrap h')
-  test:assertEquals('repeat', vert, 'check changed wrap v')
-  test:assertEquals(true, canvas:isReadable(), 'check canvas readable')
+  local horiz2, vert2 = canvas:getWrap()
+  test:assertEquals('repeat', horiz2, 'check changed wrap h')
+  test:assertEquals('repeat', vert2, 'check changed wrap v')
+
+    -- check readable
+  test:assertTrue(canvas:isReadable(), 'check canvas readable')
+
+  -- check msaa
   test:assertEquals(1, canvas:getMSAA(), 'check samples match')
+
   -- check dimensions
   local cw, ch = canvas:getDimensions()
   test:assertEquals(100, cw, 'check canvas dim w')
@@ -55,6 +72,7 @@ love.test.graphics.Canvas = function(test)
   test:assertEquals(100*love.graphics.getDPIScale(), ph, 'check pixel dim h')
   test:assertEquals(pw, canvas:getPixelWidth(), 'check pixel w matches dim')
   test:assertEquals(ph, canvas:getPixelHeight(), 'check pixel h matches dim')
+
   -- check mipmaps
   local mode, sharpness = canvas:getMipmapFilter()
   test:assertEquals('linear', mode, 'check def minmap filter  mode')
@@ -63,13 +81,14 @@ love.test.graphics.Canvas = function(test)
   canvas:setMipmapFilter('nearest', 1)
   mode, sharpness = canvas:getMipmapFilter()
   test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
-  -- mipmap sharpness wont work on opengl/metal
+  -- @NOTE mipmap sharpness wont work on opengl/metal
   if string.match(name, 'OpenGL ES') == nil and string.match(name, 'Metal') == nil then
     test:assertEquals(1, sharpness, 'check changed minmap filter sharpness')
   end
   test:assertGreaterEqual(2, canvas:getMipmapCount()) -- docs say no mipmaps should return 1
   test:assertEquals('auto', canvas:getMipmapMode())
-  -- check rendering
+
+  -- check basic rendering
   canvas:renderTo(function()
     love.graphics.setColor(1, 0, 0)
     love.graphics.rectangle('fill', 0, 0, 200, 200)
@@ -80,6 +99,7 @@ love.test.graphics.Canvas = function(test)
     red = {{0, 0},{0,99},{99,0},{99,99}},
   }, 'font draw check')
   test:compareImg(imgdata1)
+
   -- check using canvas in love.graphics.draw()
   local xcanvas = love.graphics.newCanvas()
   love.graphics.setCanvas(xcanvas)
@@ -90,6 +110,7 @@ love.test.graphics.Canvas = function(test)
     red = {{0, 0},{0,99},{99,0},{99,99}},
   }, 'font draw check')
   test:compareImg(imgdata2)
+
   -- check depth samples
   local dcanvas = love.graphics.newCanvas(100, 100, {
     type = '2d',
@@ -99,36 +120,53 @@ love.test.graphics.Canvas = function(test)
   test:assertEquals(nil, dcanvas:getDepthSampleMode(), 'check depth sample mode nil by def')
   dcanvas:setDepthSampleMode('equal')
   test:assertEquals('equal', dcanvas:getDepthSampleMode(), 'check depth sample mode set')
+
 end
 
 
 -- Font (love.graphics.newFont)
 love.test.graphics.Font = function(test)
+
   -- create obj
   local font = love.graphics.newFont('resources/font.ttf', 8)
   test:assertObject(font)
-  -- check properties match expected
+
+  -- check ascent/descent
   test:assertEquals(6, font:getAscent(), 'check ascent')
-  test:assertEquals(6, font:getBaseline(), 'check baseline')
-  test:assertEquals(1, font:getDPIScale(), 'check dpi')
   test:assertEquals(-2, font:getDescent(), 'check descent')
+
+  -- check baseline
+  test:assertEquals(6, font:getBaseline(), 'check baseline')
+
+  -- check dpi 
+  test:assertEquals(1, font:getDPIScale(), 'check dpi')
+
+  -- check filter
   test:assertEquals('nearest', font:getFilter(), 'check filter def')
   font:setFilter('linear', 'linear')
   test:assertEquals('linear', font:getFilter(), 'check filter change')
   font:setFilter('nearest', 'nearest')
+
+  -- check height + lineheight
   test:assertEquals(8, font:getHeight(), 'check height')
-  test:assertEquals(0, font:getKerning('a', 'b'), 'check kerning')
   test:assertEquals(1, font:getLineHeight(), 'check line height')
   font:setLineHeight(2)
   test:assertEquals(2, font:getLineHeight(), 'check changed line height')
   font:setLineHeight(1) -- reset for drawing + wrap later
+
+  -- check width + kerning
+  test:assertEquals(0, font:getKerning('a', 'b'), 'check kerning')
   test:assertEquals(24, font:getWidth('test'), 'check data size')
-  test:assertEquals(true, font:hasGlyphs('test'), 'check data size')
+
+  -- check specific glyphs
+  test:assertTrue(font:hasGlyphs('test'), 'check data size')
+
   -- check font wrapping
   local width, wrappedtext = font:getWrap('LÖVE is an *awesome* framework you can use to make 2D games in Lua.', 50)
   test:assertEquals(48, width, 'check actual wrap width')
   test:assertEquals(8, #wrappedtext, 'check wrapped lines')
   test:assertEquals('LÖVE is an ', wrappedtext[1], 'check wrapped line')
+
   -- check drawing font 
   local canvas = love.graphics.newCanvas(16, 16)
   love.graphics.setCanvas(canvas)
@@ -140,6 +178,7 @@ love.test.graphics.Font = function(test)
     white = {{0,3},{4,3},{7,4},{9,4},{10,5},{0,8},{4,8},{10,8}},
   }, 'font draw check')
   test:compareImg(imgdata)
+
   -- check font substitution
   local fontab = love.graphics.newImageFont('resources/font-letters-ab.png', 'AB')
   local fontcd = love.graphics.newImageFont('resources/font-letters-cd.png', 'CD')
@@ -147,8 +186,8 @@ love.test.graphics.Font = function(test)
   love.graphics.setCanvas(canvas)
     love.graphics.clear(0, 0, 0, 0)
     love.graphics.setFont(fontab)
-    love.graphics.print('AB', 0, 0)
-    love.graphics.print('CD', 0, 9)
+    love.graphics.print('AB', 0, 0) -- should come from fontab
+    love.graphics.print('CD', 0, 9) -- should come from fontcd
   love.graphics.setCanvas()
   local imgdata2 = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
   test:assertPixels(imgdata2, {
@@ -156,42 +195,60 @@ love.test.graphics.Font = function(test)
     black = {{9,9},{14,8},{14,10},{14,1},{1,10}}
   }, 'font draw check')
   test:compareImg(imgdata2)
+
 end
 
 
 -- Image (love.graphics.newImage)
 love.test.graphics.Image = function(test)
+
   -- create object
   local image = love.graphics.newImage('resources/love.png', {
     dpiscale = 1,
     mipmaps = true
   })
   test:assertObject(image)
-  -- check texture props
+
+  -- check dpi
   test:assertEquals(love.graphics.getDPIScale(), image:getDPIScale(), 'check dpi scale')
+
+  -- check depth
   test:assertEquals(1, image:getDepth(), 'check depth is 2d')
   test:assertEquals(nil, image:getDepthSampleMode(), 'check depth sample nil')
-  local min, mag, ani = image:getFilter()
-  test:assertEquals('nearest', min, 'check filter def min')
-  test:assertEquals('nearest', mag, 'check filter def mag')
-  test:assertEquals(1, ani, 'check filter def ani')
+
+  -- check filter
+  local min1, mag1, ani1 = image:getFilter()
+  test:assertEquals('nearest', min1, 'check filter def min')
+  test:assertEquals('nearest', mag1, 'check filter def mag')
+  test:assertEquals(1, ani1, 'check filter def ani')
   image:setFilter('linear', 'linear', 2)
-  min, mag, ani = image:getFilter()
-  test:assertEquals('linear', min, 'check filter changed min')
-  test:assertEquals('linear', mag, 'check filter changed mag')
-  test:assertEquals(2, ani, 'check filter changed ani')
+  local min2, mag2, ani2 = image:getFilter()
+  test:assertEquals('linear', min2, 'check filter changed min')
+  test:assertEquals('linear', mag2, 'check filter changed mag')
+  test:assertEquals(2, ani2, 'check filter changed ani')
   image:setFilter('nearest', 'nearest', 1)
+
+  -- check layers
   test:assertEquals(1, image:getLayerCount(), 'check 1 layer for 2d')
+
+  -- check texture type
   test:assertEquals('2d', image:getTextureType(), 'check 2d')
-  local horiz, vert = image:getWrap()
-  test:assertEquals('clamp', horiz, 'check def wrap h')
-  test:assertEquals('clamp', vert, 'check def wrap v')
+
+  -- check texture wrapping
+  local horiz1, vert1 = image:getWrap()
+  test:assertEquals('clamp', horiz1, 'check def wrap h')
+  test:assertEquals('clamp', vert1, 'check def wrap v')
   image:setWrap('repeat', 'repeat')
-  horiz, vert = image:getWrap()
-  test:assertEquals('repeat', horiz, 'check changed wrap h')
-  test:assertEquals('repeat', vert, 'check changed wrap v')
-  test:assertEquals(true, image:isReadable(), 'check canvas readable')
+  local horiz2, vert2 = image:getWrap()
+  test:assertEquals('repeat', horiz2, 'check changed wrap h')
+  test:assertEquals('repeat', vert2, 'check changed wrap v')
+
+    -- check readable
+  test:assertTrue(image:isReadable(), 'check canvas readable')
+
+  -- check msaa
   test:assertEquals(1, image:getMSAA(), 'check samples match')
+
   -- check dimensions
   local cw, ch = image:getDimensions()
   test:assertEquals(64, cw, 'check canvas dim w')
@@ -203,26 +260,28 @@ love.test.graphics.Image = function(test)
   test:assertEquals(64*love.graphics.getDPIScale(), ph, 'check pixel dim h')
   test:assertEquals(pw, image:getPixelWidth(), 'check pixel w matches dim')
   test:assertEquals(ph, image:getPixelHeight(), 'check pixel h matches dim')
+
   -- check mipmaps
   local mode, sharpness = image:getMipmapFilter()
   test:assertEquals('linear', mode, 'check def minmap filter  mode')
   test:assertEquals(0, sharpness, 'check def minmap filter sharpness')
-  
   local name, version, vendor, device = love.graphics.getRendererInfo()
-  -- mipmap sharpness wont work on opengl/metal
+  -- @note mipmap sharpness wont work on opengl/metal
   image:setMipmapFilter('nearest', 1)
   mode, sharpness = image:getMipmapFilter()
   test:assertEquals('nearest', mode, 'check changed minmap filter  mode')
   if string.match(name, 'OpenGL ES') == nil and string.match(name, 'Metal') == nil then
     test:assertEquals(1, sharpness, 'check changed minmap filter sharpness')
   end
-  test:assertGreaterEqual(2, image:getMipmapCount()) -- docs say no mipmaps should return 1
+  test:assertGreaterEqual(2, image:getMipmapCount()) -- docs say no mipmaps should return 1?
+
   -- check image properties
-  test:assertEquals(false, image:isCompressed(), 'check not compressed')
-  test:assertEquals(false, image:isFormatLinear(), 'check not linear')
+  test:assertFalse(image:isCompressed(), 'check not compressed')
+  test:assertFalse(image:isFormatLinear(), 'check not linear')
   local cimage = love.graphics.newImage('resources/love.dxt1')
   test:assertObject(cimage)
-  test:assertEquals(true, cimage:isCompressed(), 'check is compressed')
+  test:assertTrue(cimage:isCompressed(), 'check is compressed')
+
   -- check pixel replacement
   local rimage = love.image.newImageData('resources/loveinv.png')
   image:replacePixels(rimage)
@@ -234,11 +293,13 @@ love.test.graphics.Image = function(test)
   local r1, g1, b1 = imgdata:getPixel(25, 25)
   test:assertEquals(3, r1+g1+b1, 'check back to white')
   test:compareImg(imgdata)
+
 end
 
 
 -- Mesh (love.graphics.newMesh)
 love.test.graphics.Mesh = function(test)
+
   -- create 2d mesh with pretty colors
   local image = love.graphics.newImage('resources/love.png')
   local vertices = {
@@ -249,72 +310,91 @@ love.test.graphics.Mesh = function(test)
   }
   local mesh1 = love.graphics.newMesh(vertices, 'fan')
   test:assertObject(mesh1)
-  -- check properties
+
+  -- check draw mode
   test:assertEquals('fan', mesh1:getDrawMode(), 'check draw mode')
   mesh1:setDrawMode('triangles')
   test:assertEquals('triangles', mesh1:getDrawMode(), 'check draw mode set')
-  local min, max = mesh1:getDrawRange()
-  test:assertEquals(nil, min, 'check draw range not set')
+
+  -- check draw range
+  local min1, max1 = mesh1:getDrawRange()
+  test:assertEquals(nil, min1, 'check draw range not set')
   mesh1:setDrawRange(1, 10)
-  min, max = mesh1:getDrawRange()
-  test:assertEquals(1, min, 'check draw range set min')
-  test:assertEquals(10, max, 'check draw range set max')
+  local min2, max2 = mesh1:getDrawRange()
+  test:assertEquals(1, min2, 'check draw range set min')
+  test:assertEquals(10, max2, 'check draw range set max')
+
+  -- check texture pointer
   test:assertEquals(nil, mesh1:getTexture(), 'check no texture')
   mesh1:setTexture(image)
   test:assertEquals(image:getHeight(), mesh1:getTexture():getHeight(), 'check texture match w')
   test:assertEquals(image:getWidth(), mesh1:getTexture():getWidth(), 'check texture match h')
+
+  -- check vertext count
   test:assertEquals(4, mesh1:getVertexCount(), 'check vertex count')
+
+  -- check def vertex format
   local format = mesh1:getVertexFormat()
   test:assertEquals('floatvec2', format[2][2], 'check def vertex format 2')
   test:assertEquals('VertexColor', format[3][1], 'check def vertex format 3')
-  -- check attributes
-  test:assertEquals(true, mesh1:isAttributeEnabled('VertexPosition'), 'check def attribute VertexPosition')
-  test:assertEquals(true, mesh1:isAttributeEnabled('VertexTexCoord'), 'check def attribute VertexTexCoord')
-  test:assertEquals(true, mesh1:isAttributeEnabled('VertexColor'), 'check def attribute VertexColor')
+
+  -- check vertext attributes
+  test:assertTrue(mesh1:isAttributeEnabled('VertexPosition'), 'check def attribute VertexPosition')
+  test:assertTrue(mesh1:isAttributeEnabled('VertexTexCoord'), 'check def attribute VertexTexCoord')
+  test:assertTrue(mesh1:isAttributeEnabled('VertexColor'), 'check def attribute VertexColor')
   mesh1:setAttributeEnabled('VertexPosition', false)
   mesh1:setAttributeEnabled('VertexTexCoord', false)
   mesh1:setAttributeEnabled('VertexColor', false)
-  test:assertEquals(false, mesh1:isAttributeEnabled('VertexPosition'), 'check disable attribute VertexPosition')
-  test:assertEquals(false, mesh1:isAttributeEnabled('VertexTexCoord'), 'check disable attribute VertexTexCoord')
-  test:assertEquals(false, mesh1:isAttributeEnabled('VertexColor'), 'check disable attribute VertexColor')
-  -- check vertex
-  local x, y, u, v, r, g, b, a = mesh1:getVertex(1)
-  test:assertEquals(0, x, 'check vertex props x')
-  test:assertEquals(0, y, 'check vertex props y')
-  test:assertEquals(0, u, 'check vertex props u')
-  test:assertEquals(0, v, 'check vertex props v')
-  test:assertEquals(1, r, 'check vertex props r')
-  test:assertEquals(0, g, 'check vertex props g')
-  test:assertEquals(0, b, 'check vertex props b')
-  test:assertEquals(1, a, 'check vertex props a')
+  test:assertFalse(mesh1:isAttributeEnabled('VertexPosition'), 'check disable attribute VertexPosition')
+  test:assertFalse(mesh1:isAttributeEnabled('VertexTexCoord'), 'check disable attribute VertexTexCoord')
+  test:assertFalse(mesh1:isAttributeEnabled('VertexColor'), 'check disable attribute VertexColor')
+
+  -- check vertex itself
+  local x1, y1, u1, v1, r1, g1, b1, a1 = mesh1:getVertex(1)
+  test:assertEquals(0, x1, 'check vertex props x')
+  test:assertEquals(0, y1, 'check vertex props y')
+  test:assertEquals(0, u1, 'check vertex props u')
+  test:assertEquals(0, v1, 'check vertex props v')
+  test:assertEquals(1, r1, 'check vertex props r')
+  test:assertEquals(0, g1, 'check vertex props g')
+  test:assertEquals(0, b1, 'check vertex props b')
+  test:assertEquals(1, a1, 'check vertex props a')
+
+  -- check setting a specific vertex
   mesh1:setVertex(2, image:getWidth(), 0, 1, 0, 0, 1, 1, 1)
-  x, y, u, v, r, g, b, a = mesh1:getVertex(2)
-  test:assertEquals(image:getWidth(), x, 'check changed vertex props x')
-  test:assertEquals(0, y, 'check changed vertex props y')
-  test:assertEquals(1, u, 'check changed vertex props u')
-  test:assertEquals(0, v, 'check changed vertex props v')
-  test:assertEquals(0, r, 'check changed vertex props r')
-  test:assertEquals(1, g, 'check changed vertex props g')
-  test:assertEquals(1, b, 'check changed vertex props b')
-  test:assertEquals(1, a, 'check changed vertex props a')
-  r, g, b, a  = mesh1:getVertexAttribute(3, 3)
-  test:assertEquals(1, b, 'check specific vertex color')
+  local x2, y2, u2, v2, r2, g2, b2, a2 = mesh1:getVertex(2)
+  test:assertEquals(image:getWidth(), x2, 'check changed vertex props x')
+  test:assertEquals(0, y2, 'check changed vertex props y')
+  test:assertEquals(1, u2, 'check changed vertex props u')
+  test:assertEquals(0, v2, 'check changed vertex props v')
+  test:assertEquals(0, r2, 'check changed vertex props r')
+  test:assertEquals(1, g2, 'check changed vertex props g')
+  test:assertEquals(1, b2, 'check changed vertex props b')
+  test:assertEquals(1, a2, 'check changed vertex props a')
+
+  -- check setting a specific vertex attribute 
+  local r3, g3, b3, a3  = mesh1:getVertexAttribute(3, 3)
+  test:assertEquals(1, b3, 'check specific vertex color')
   mesh1:setVertexAttribute(4, 3, 1, 0, 1)
-  r, g, b, a  = mesh1:getVertexAttribute(4, 3)
-  test:assertEquals(0, g, 'check changed vertex color')
-  -- change vertices
+  local r4, g4, b4, a4  = mesh1:getVertexAttribute(4, 3)
+  test:assertEquals(0, g4, 'check changed vertex color')
+
+  -- check setting a vertice
   mesh1:setVertices(vertices)
-  r, g, b, a  = mesh1:getVertexAttribute(4, 3)
-  x, y, u, v, r, g, b, a = mesh1:getVertex(2)
-  test:assertEquals(1, g, 'check reset vertex color 1')
-  test:assertEquals(0, b, 'check reset vertex color 2')
-  local vmap = mesh1:getVertexMap()
-  test:assertEquals(nil, vmap, 'check no map by def')
+  local r5, g5, b5, a5  = mesh1:getVertexAttribute(4, 3)
+  local x6, y6, u6, v6, r6, g6, b6, a6 = mesh1:getVertex(2)
+  test:assertEquals(1, g5, 'check reset vertex color 1')
+  test:assertEquals(0, b5, 'check reset vertex color 2')
+
+  -- check setting the vertex map 
+  local vmap1 = mesh1:getVertexMap()
+  test:assertEquals(nil, vmap1, 'check no map by def')
   mesh1:setVertexMap({4, 1, 2, 3})
-  vmap = mesh1:getVertexMap()
-  test:assertEquals(4, #vmap, 'check set map len')
-  test:assertEquals(2, vmap[3], 'check set map val')
-  -- custom attributes
+  local vmap2 = mesh1:getVertexMap()
+  test:assertEquals(4, #vmap2, 'check set map len')
+  test:assertEquals(2, vmap2[3], 'check set map val')
+
+  -- check using custom attributes
   local mesh2 = love.graphics.newMesh({
     { name = 'VertexPosition', format = 'floatvec2'},
     { name = 'VertexTexCoord', format = 'floatvec2'},
@@ -332,38 +412,45 @@ love.test.graphics.Mesh = function(test)
   test:assertEquals(2, c1, 'check custom attribute val 1')
   test:assertEquals(1, c2, 'check custom attribute val 2')
   test:assertEquals(1005, c3, 'check custom attribute val 3')
+
+  -- check attaching custom attribute + detaching
   mesh1:attachAttribute('CustomValue1', mesh2)
-  test:assertEquals(true, mesh1:isAttributeEnabled('CustomValue1'), 'check custom attribute attached')
+  test:assertTrue(mesh1:isAttributeEnabled('CustomValue1'), 'check custom attribute attached')
   mesh1:detachAttribute('CustomValue1')
   local obj, err = pcall(mesh1.isAttributeEnabled, mesh1, 'CustomValue1')
   test:assertNotEquals(nil, err, 'check attribute detached')
   mesh1:detachAttribute('VertexPosition')
-  test:assertEquals(true, mesh1:isAttributeEnabled('VertexPosition'), 'check cant detach def attribute')
+  test:assertTrue(mesh1:isAttributeEnabled('VertexPosition'), 'check cant detach def attribute')
+
 end
 
 
 -- ParticleSystem (love.graphics.newParticleSystem)
 love.test.graphics.ParticleSystem = function(test)
+
   -- create new system 
   local image = love.graphics.newImage('resources/pixel.png')
   local quad1 = love.graphics.newQuad(0, 0, 1, 1, image)
   local quad2 = love.graphics.newQuad(0, 0, 1, 1, image)
   local psystem = love.graphics.newParticleSystem(image, 1000)
   test:assertObject(psystem)
-  -- check properties
+
+  -- check psystem state properties 
   psystem:start()
   psystem:update(1)
-  test:assertEquals(true, psystem:isActive(), 'check active')
-  test:assertEquals(false, psystem:isPaused(), 'checked not paused by def')
-  test:assertEquals(false, psystem:hasRelativeRotation(), 'check rel rot def')
+  test:assertTrue(psystem:isActive(), 'check active')
+  test:assertFalse(psystem:isPaused(), 'checked not paused by def')
+  test:assertFalse(psystem:hasRelativeRotation(), 'check rel rot def')
   psystem:pause()
-  test:assertEquals(true, psystem:isPaused(), 'check now paused')
-  test:assertEquals(false, psystem:isStopped(), 'check not stopped by def')
+  test:assertTrue(psystem:isPaused(), 'check now paused')
+  test:assertFalse(psystem:isStopped(), 'check not stopped by def')
   psystem:stop()
-  test:assertEquals(true, psystem:isStopped(), 'check now stopped')
+  test:assertTrue(psystem:isStopped(), 'check now stopped')
   psystem:start()
   psystem:reset()
-  -- need to set lifetime here or count will be 0
+  
+  -- check emitting some particles
+  -- need to set a lifespan at minimum or none will be counted 
   local min, max = psystem:getParticleLifetime()
   test:assertEquals(0, min, 'check def lifetime min')
   test:assertEquals(0, max, 'check def lifetime max')
@@ -373,16 +460,21 @@ love.test.graphics.ParticleSystem = function(test)
   test:assertEquals(10, psystem:getCount(), 'check added particles')
   psystem:reset()
   test:assertEquals(0, psystem:getCount(), 'check reset')
-  -- check particle get/sets 
-  local colors = {psystem:getColors()}
-  test:assertEquals(1, #colors, 'check 1 color by def')
+
+  -- check setting colors
+  local colors1 = {psystem:getColors()}
+  test:assertEquals(1, #colors1, 'check 1 color by def')
   psystem:setColors(1, 1, 1, 1, 1, 0, 0, 1)
-  colors = {psystem:getColors()}
-  test:assertEquals(2, #colors, 'check set colors')
-  test:assertEquals(1, colors[2][1], 'check set color')
+  local colors2 = {psystem:getColors()}
+  test:assertEquals(2, #colors2, 'check set colors')
+  test:assertEquals(1, colors2[2][1], 'check set color')
+
+  -- check setting direction
   test:assertEquals(0, psystem:getDirection(), 'check def direction')
   psystem:setDirection(90 * (math.pi/180))
   test:assertEquals(math.floor(math.pi/2*100), math.floor(psystem:getDirection()*100), 'check set direction')
+
+  -- check emission area options
   psystem:setEmissionArea('normal', 100, 50)
   psystem:setEmissionArea('ellipse', 100, 50)
   psystem:setEmissionArea('borderellipse', 100, 50)
@@ -394,108 +486,144 @@ love.test.graphics.ParticleSystem = function(test)
   test:assertEquals(100, dx, 'check emission area dx')
   test:assertEquals(50, dy, 'check emission area dy')
   test:assertEquals(0, angle, 'check emission area angle')
-  test:assertEquals(false, rel, 'check emission area rel')
+  test:assertFalse(rel, 'check emission area rel')
+
+  -- check emission rate
   test:assertEquals(0, psystem:getEmissionRate(), 'check def emission rate')
   psystem:setEmissionRate(1)
   test:assertEquals(1, psystem:getEmissionRate(), 'check changed emission rate')
+
+  -- check emission lifetime
   test:assertEquals(-1, psystem:getEmitterLifetime(), 'check def emitter life')
   psystem:setEmitterLifetime(10)
   test:assertEquals(10, psystem:getEmitterLifetime(), 'check changed emitter life')
+
+  -- check insert mode
   test:assertEquals('top', psystem:getInsertMode(), 'check def insert mode')
   psystem:setInsertMode('bottom')
   psystem:setInsertMode('random')
   test:assertEquals('random', psystem:getInsertMode(), 'check change insert mode')
-  local xmin, ymin, xmax, ymax = psystem:getLinearAcceleration()
-  test:assertEquals(0, xmin, 'check def lin acceleration xmin')
-  test:assertEquals(0, ymin, 'check def lin acceleration ymin')
-  test:assertEquals(0, xmax, 'check def lin acceleration xmax')
-  test:assertEquals(0, ymax, 'check def lin acceleration ymax')
+
+  -- check linear acceleration
+  local xmin1, ymin1, xmax1, ymax1 = psystem:getLinearAcceleration()
+  test:assertEquals(0, xmin1, 'check def lin acceleration xmin')
+  test:assertEquals(0, ymin1, 'check def lin acceleration ymin')
+  test:assertEquals(0, xmax1, 'check def lin acceleration xmax')
+  test:assertEquals(0, ymax1, 'check def lin acceleration ymax')
   psystem:setLinearAcceleration(1, 2, 3, 4)
-  xmin, ymin, xmax, ymax = psystem:getLinearAcceleration()
-  test:assertEquals(1, xmin, 'check change lin acceleration xmin')
-  test:assertEquals(2, ymin, 'check change lin acceleration ymin')
-  test:assertEquals(3, xmax, 'check change lin acceleration xmax')
-  test:assertEquals(4, ymax, 'check change lin acceleration ymax')
-  min, max = psystem:getLinearDamping()
-  test:assertEquals(0, min, 'check def lin damping min')
-  test:assertEquals(0, max, 'check def lin damping max')
+  local xmin2, ymin2, xmax2, ymax2 = psystem:getLinearAcceleration()
+  test:assertEquals(1, xmin2, 'check change lin acceleration xmin')
+  test:assertEquals(2, ymin2, 'check change lin acceleration ymin')
+  test:assertEquals(3, xmax2, 'check change lin acceleration xmax')
+  test:assertEquals(4, ymax2, 'check change lin acceleration ymax')
+
+  -- check linear damping
+  local min3, max3 = psystem:getLinearDamping()
+  test:assertEquals(0, min3, 'check def lin damping min')
+  test:assertEquals(0, max3, 'check def lin damping max')
   psystem:setLinearDamping(1, 2)
-  min, max = psystem:getLinearDamping()
-  test:assertEquals(1, min, 'check change lin damping min')
-  test:assertEquals(2, max, 'check change lin damping max')
-  local ox, oy = psystem:getOffset()
-  -- 0.5 cos middle of pixel image which is 1x1
-  test:assertEquals(0.5, ox, 'check def offset x')
-  test:assertEquals(0.5, oy, 'check def offset y')
+  local min4, max4 = psystem:getLinearDamping()
+  test:assertEquals(1, min4, 'check change lin damping min')
+  test:assertEquals(2, max4, 'check change lin damping max')
+
+  -- check offset
+  local ox1, oy1 = psystem:getOffset()
+  test:assertEquals(0.5, ox1, 'check def offset x') -- 0.5 cos middle of pixel image which is 1x1
+  test:assertEquals(0.5, oy1, 'check def offset y')
   psystem:setOffset(0, 10)
-  ox, oy = psystem:getOffset()
-  test:assertEquals(0, ox, 'check change offset x')
-  test:assertEquals(10, oy, 'check change offset y')
-  min, max = psystem:getParticleLifetime()
-  test:assertEquals(1, min, 'check p lifetime min')
-  test:assertEquals(2, max, 'check p lifetime max')
-  local x, y = psystem:getPosition()
-  test:assertEquals(0, x, 'check emitter x')
-  test:assertEquals(0, y, 'check emitter y')
+  local ox2, oy2 = psystem:getOffset()
+  test:assertEquals(0, ox2, 'check change offset x')
+  test:assertEquals(10, oy2, 'check change offset y')
+
+  -- check lifetime (we set it earlier)
+  local min5, max5 = psystem:getParticleLifetime()
+  test:assertEquals(1, min5, 'check p lifetime min')
+  test:assertEquals(2, max5, 'check p lifetime max')
+
+  -- check position
+  local x1, y1 = psystem:getPosition()
+  test:assertEquals(0, x1, 'check emitter x')
+  test:assertEquals(0, y1, 'check emitter y')
   psystem:setPosition(10, 12)
-  x, y = psystem:getPosition()
-  test:assertEquals(10, x, 'check set emitter x')
-  test:assertEquals(12, y, 'check set emitter y')
+  local x2, y2 = psystem:getPosition()
+  test:assertEquals(10, x2, 'check set emitter x')
+  test:assertEquals(12, y2, 'check set emitter y')
+
+  -- check quads
   test:assertEquals(0, #psystem:getQuads(), 'check def quads')
   psystem:setQuads({quad1})
   psystem:setQuads(quad1, quad2)
   test:assertEquals(2, #psystem:getQuads(), 'check set quads')
-  min, max = psystem:getRadialAcceleration()
-  test:assertEquals(0, min, 'check def rad accel min')
-  test:assertEquals(0, max, 'check def rad accel max')
+
+  -- check radial acceleration
+  local min6, max6 = psystem:getRadialAcceleration()
+  test:assertEquals(0, min6, 'check def rad accel min')
+  test:assertEquals(0, max6, 'check def rad accel max')
   psystem:setRadialAcceleration(1, 2)
-  min, max = psystem:getRadialAcceleration()
-  test:assertEquals(1, min, 'check change rad accel min')
-  test:assertEquals(2, max, 'check change rad accel max')
-  min, max = psystem:getRotation()
-  test:assertEquals(0, min, 'check def rot min')
-  test:assertEquals(0, max, 'check def rot max')
+  local min7, max7 = psystem:getRadialAcceleration()
+  test:assertEquals(1, min7, 'check change rad accel min')
+  test:assertEquals(2, max7, 'check change rad accel max')
+
+  -- check rotation
+  local min8, max8 = psystem:getRotation()
+  test:assertEquals(0, min8, 'check def rot min')
+  test:assertEquals(0, max8, 'check def rot max')
   psystem:setRotation(90 * (math.pi/180), 180 * (math.pi/180))
-  min, max = psystem:getRotation()
-  test:assertEquals(math.floor(math.pi/2*100), math.floor(min*100), 'check set rot min')
-  test:assertEquals(math.floor(math.pi*100), math.floor(max*100), 'check set rot max')
+  local min8, max8 = psystem:getRotation()
+  test:assertEquals(math.floor(math.pi/2*100), math.floor(min8*100), 'check set rot min')
+  test:assertEquals(math.floor(math.pi*100), math.floor(max8*100), 'check set rot max')
+
+  -- check variation
   test:assertEquals(0, psystem:getSizeVariation(), 'check def variation')
   psystem:setSizeVariation(1)
   test:assertEquals(1, psystem:getSizeVariation(), 'check change variation')
+
+  -- check sizes
   test:assertEquals(1, #{psystem:getSizes()}, 'check def size')
   psystem:setSizes(1, 2, 4, 1, 3, 2)
   local sizes = {psystem:getSizes()}
   test:assertEquals(6, #sizes, 'check set sizes')
   test:assertEquals(3, sizes[5], 'check set size')
-  min, max = psystem:getSpeed()
-  test:assertEquals(0, min, 'check def speed min')
-  test:assertEquals(0, max, 'check def speed max')
+
+  -- check speed
+  local min9, max9 = psystem:getSpeed()
+  test:assertEquals(0, min9, 'check def speed min')
+  test:assertEquals(0, max9, 'check def speed max')
   psystem:setSpeed(1, 10)
-  min, max = psystem:getSpeed()
-  test:assertEquals(1, min, 'check change speed min')
-  test:assertEquals(10, max, 'check change speed max')
+  local min10, max10 = psystem:getSpeed()
+  test:assertEquals(1, min10, 'check change speed min')
+  test:assertEquals(10, max10, 'check change speed max')
+
+  -- check variation + spin
   local variation = psystem:getSpinVariation()
   test:assertEquals(0, variation, 'check def spin variation')
   psystem:setSpinVariation(1)
   test:assertEquals(1, psystem:getSpinVariation(), 'check change spin variation')
   psystem:setSpin(1, 2)
-  min, max = psystem:getSpin()
-  test:assertEquals(1, min, 'check change spin min')
-  test:assertEquals(2, max, 'check change spin max')
+  local min11, max11 = psystem:getSpin()
+  test:assertEquals(1, min11, 'check change spin min')
+  test:assertEquals(2, max11, 'check change spin max')
+
+  -- check spread
   test:assertEquals(0, psystem:getSpread(), 'check def spread')
   psystem:setSpread(90 * (math.pi/180))
   test:assertEquals(math.floor(math.pi/2*100), math.floor(psystem:getSpread()*100), 'check change spread')
-  min, max = psystem:getTangentialAcceleration()
-  test:assertEquals(0, min, 'check def tan accel min')
-  test:assertEquals(0, max, 'check def tan accel max')
+
+  -- tangential acceleration
+  local min12, max12 = psystem:getTangentialAcceleration()
+  test:assertEquals(0, min12, 'check def tan accel min')
+  test:assertEquals(0, max12, 'check def tan accel max')
   psystem:setTangentialAcceleration(1, 2)
-  min, max = psystem:getTangentialAcceleration()
-  test:assertEquals(1, min, 'check change tan accel min')
-  test:assertEquals(2, max, 'check change tan accel max')
+  local min13, max13 = psystem:getTangentialAcceleration()
+  test:assertEquals(1, min13, 'check change tan accel min')
+  test:assertEquals(2, max13, 'check change tan accel max')
+
+  -- check texture
   test:assertNotEquals(nil, psystem:getTexture(), 'check texture obj')
   test:assertObject(psystem:getTexture())
   psystem:setTexture(love.graphics.newImage('resources/love.png'))
   test:assertObject(psystem:getTexture())
+
   -- try a graphics test!
   -- hard to get exactly because of the variation but we can use some pixel 
   -- tolerance and volume to try and cover the randomness
@@ -524,14 +652,18 @@ love.test.graphics.ParticleSystem = function(test)
   local imgdata = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
   test.pixel_tolerance = 1
   test:compareImg(imgdata)
+  
 end
 
 
 -- Quad (love.graphics.newQuad)
 love.test.graphics.Quad = function(test)
+
+  -- create quad obj
   local texture = love.graphics.newImage('resources/love.png')
   local quad = love.graphics.newQuad(0, 0, 32, 32, texture)
   test:assertObject(quad)
+
   -- check properties
   test:assertEquals(1, quad:getLayer(), 'check default layer')
   quad:setLayer(2)
@@ -539,6 +671,7 @@ love.test.graphics.Quad = function(test)
   local sw, sh = quad:getTextureDimensions()
   test:assertEquals(64, sw, 'check texture w')
   test:assertEquals(64, sh, 'check texture h')
+
   -- check drawing and viewport changes
   local canvas = love.graphics.newCanvas(64, 64)
   love.graphics.setCanvas(canvas)
@@ -553,11 +686,13 @@ love.test.graphics.Quad = function(test)
     loveblue = {{32,61},{61,32}}
   }, 'check quad drawing')
   test:compareImg(imgdata)
+
 end
 
 
 -- Shader (love.graphics.newShader)
 love.test.graphics.Shader = function(test)
+
   -- check valid shader
   local pixelcode1 = [[
     extern Image tex2;
@@ -574,8 +709,9 @@ love.test.graphics.Shader = function(test)
   local shader1 = love.graphics.newShader(pixelcode1, vertexcode1)
   test:assertObject(shader1)
   test:assertEquals('vertex shader:\npixel shader:\n', shader1:getWarnings(), 'check shader valid')
-  test:assertEquals(false, shader1:hasUniform('tex1'), 'check invalid uniform')
-  test:assertEquals(true, shader1:hasUniform('tex2'), 'check valid uniform')
+  test:assertFalse(shader1:hasUniform('tex1'), 'check invalid uniform')
+  test:assertTrue(shader1:hasUniform('tex2'), 'check valid uniform')
+
   -- check invalid shader
   local pixelcode2 = [[
     extern float ww;
@@ -587,6 +723,7 @@ love.test.graphics.Shader = function(test)
   ]]
   local res, err = pcall(love.graphics.newShader, pixelcode2, vertexcode1)
   test:assertNotEquals(nil, err, 'check shader compile fails')
+
   -- check using a shader to draw + sending uniforms
   -- shader will return a given color if overwrite set to 1, otherwise def. draw
   local pixelcode3 = [[
@@ -625,11 +762,13 @@ love.test.graphics.Shader = function(test)
     yellow = {{8,8},{8,15},{15,15},{15,8}}
   }, 'shader draw check')
   test:compareImg(imgdata)
+
 end
 
 
 -- SpriteBatch (love.graphics.newSpriteBatch)
 love.test.graphics.SpriteBatch = function(test)
+
   -- create batch
   local texture1 = love.graphics.newImage('resources/cubemap.png')
   local texture2 = love.graphics.newImage('resources/love.png')
@@ -637,25 +776,33 @@ love.test.graphics.SpriteBatch = function(test)
   local quad2 = love.graphics.newQuad(32, 32, 1, 1, texture2) -- white
   local sbatch = love.graphics.newSpriteBatch(texture1, 5000)
   test:assertObject(sbatch)
-  -- check basic props
+
+  -- check initial count
   test:assertEquals(0, sbatch:getCount(), 'check batch size')
+
+  -- check buffer size
   test:assertEquals(5000, sbatch:getBufferSize(), 'check batch size')
+
+  -- check height/width/texture
   test:assertEquals(texture1:getWidth(), sbatch:getTexture():getWidth(), 'check texture match w')
   test:assertEquals(texture1:getHeight(), sbatch:getTexture():getHeight(), 'check texture match h')
   sbatch:setTexture(texture2)
   test:assertEquals(texture2:getWidth(), sbatch:getTexture():getWidth(), 'check texture change w')
   test:assertEquals(texture2:getHeight(), sbatch:getTexture():getHeight(), 'check texture change h')
-  local r, g, b, a = sbatch:getColor()
-  test:assertEquals(1, r, 'check initial color r')
-  test:assertEquals(1, g, 'check initial color g')
-  test:assertEquals(1, b, 'check initial color b')
-  test:assertEquals(1, a, 'check initial color a')
+
+  -- check colors
+  local r1, g1, b1, a1 = sbatch:getColor()
+  test:assertEquals(1, r1, 'check initial color r')
+  test:assertEquals(1, g1, 'check initial color g')
+  test:assertEquals(1, b1, 'check initial color b')
+  test:assertEquals(1, a1, 'check initial color a')
   sbatch:setColor(1, 0, 0, 1)
-  r, g, b, a = sbatch:getColor()
-  test:assertEquals(1, r, 'check set color r')
-  test:assertEquals(0, g, 'check set color g')
-  test:assertEquals(0, b, 'check set color b')
-  test:assertEquals(1, a, 'check set color a')
+  local r2, g2, b2, a2 = sbatch:getColor()
+  test:assertEquals(1, r2, 'check set color r')
+  test:assertEquals(0, g2, 'check set color g')
+  test:assertEquals(0, b2, 'check set color b')
+  test:assertEquals(1, a2, 'check set color a')
+
   -- check adding sprites
   local offset_x = 0
   local offset_y = 0
@@ -680,6 +827,7 @@ love.test.graphics.SpriteBatch = function(test)
     end
   end
   test:assertEquals(4096, sbatch:getCount())
+
   -- test drawing and setting
   local canvas = love.graphics.newCanvas(64, 64)
   love.graphics.setCanvas(canvas)
@@ -691,6 +839,7 @@ love.test.graphics.SpriteBatch = function(test)
     lovepink = {{0,0},{63,2},{0,32},{63,32},{63,0},{63,2}}
   }, 'sbatch draw normal')
   test:compareImg(imgdata1)
+
   -- use set to change some sprites
   for s=1,2048 do
     sbatch:set(sprites[s][1], quad2, sprites[s][2], sprites[s][3]+1, 0, 1, 1)
@@ -706,6 +855,7 @@ love.test.graphics.SpriteBatch = function(test)
     white = {{0,1},{63,1},{0,31},{63,31}}
   }, 'sbatch draw set')
   test:compareImg(imgdata2)
+
   -- set drawRange and redraw
   sbatch:setDrawRange(1025, 2048)
   love.graphics.setCanvas(canvas)
@@ -719,6 +869,7 @@ love.test.graphics.SpriteBatch = function(test)
     white = {{0,17},{63,17},{0,31},{63,31}}
   }, 'sbatch draw drawrange')
   test:compareImg(imgdata3)
+
   -- clear and redraw
   sbatch:clear()
   love.graphics.setCanvas(canvas)
@@ -730,6 +881,7 @@ love.test.graphics.SpriteBatch = function(test)
     black = {{0,0},{63,0},{0,32},{63,32},{0,63},{63,63}},
   }, 'sbatch draw clear')
   test:compareImg(imgdata4)
+
   -- array texture sbatch
   local texture3 = love.graphics.newArrayImage({
     'resources/love.png',
@@ -757,28 +909,34 @@ love.test.graphics.SpriteBatch = function(test)
     black = {{0,0},{63,0},{63,63},{63,0},{30,2},{30,61}},
   }, 'sbatch draw layers')
   test:compareImg(imgdata5)
+
 end
 
 
 -- Text (love.graphics.newTextBatch)
 love.test.graphics.Text = function(test)
+
+  -- setup text object
   local font = love.graphics.newFont('resources/font.ttf', 8)
   local plaintext = love.graphics.newTextBatch(font, 'test')
-  -- check text properties
   test:assertObject(plaintext)
+
+  -- check height/width/dimensions
   test:assertEquals(font:getHeight(), plaintext:getFont():getHeight(), 'check font matches')
   local tw, th = plaintext:getDimensions()
   test:assertEquals(24, tw, 'check initial dim w')
   test:assertEquals(8, th, 'check initial dim h')
   test:assertEquals(tw, plaintext:getWidth(), 'check initial dim w')
   test:assertEquals(th, plaintext:getHeight(), 'check initial dim h')
-  -- check changing text
+
+  -- check changing text effects dimensions
   plaintext:add('more text', 100, 0, 0)
   test:assertEquals(49, plaintext:getDimensions(), 'check adding text')
   plaintext:set('test')
   test:assertEquals(24, plaintext:getDimensions(), 'check resetting text')
   plaintext:clear()
   test:assertEquals(0, plaintext:getDimensions(), 'check clearing text')
+
   -- check drawing + setting more complex text
   local colortext = love.graphics.newTextBatch(font, {{1, 0, 0, 1}, 'test'})
   test:assertObject(colortext)
@@ -796,37 +954,46 @@ love.test.graphics.Text = function(test)
     white = {{17,13},{30,12},{38,9},{44,13},{58,13},{8,29},{58,29},{57,37},{5,39},{57,45},{1,55}}
   }, 'text draw check')
   test:compareImg(imgdata)
+
 end
 
 
 -- Video (love.graphics.newVideo)
 love.test.graphics.Video = function(test)
-  -- create video
+
+  -- create video obj
   local video = love.graphics.newVideo('resources/sample.ogv')
   test:assertObject(video)
-  -- check basic props
+
+  -- check dimensions
   local w, h = video:getDimensions()
   test:assertEquals(496, w, 'check vid dim w')
   test:assertEquals(502, h, 'check vid dim h')
   test:assertEquals(w, video:getWidth(), 'check vid width match')
   test:assertEquals(h, video:getHeight(), 'check vid height match')
-  local min, mag, ani = video:getFilter()
-  test:assertEquals('nearest', min, 'check def filter min')
-  test:assertEquals('nearest', mag, 'check def filter mag')
-  test:assertEquals(1, ani, 'check def filter ani')
+
+  -- check filters
+  local min1, mag1, ani1 = video:getFilter()
+  test:assertEquals('nearest', min1, 'check def filter min')
+  test:assertEquals('nearest', mag1, 'check def filter mag')
+  test:assertEquals(1, ani1, 'check def filter ani')
   video:setFilter('linear', 'linear', 2)
-  min, mag, ani = video:getFilter()
-  test:assertEquals('linear', min, 'check changed filter min')
-  test:assertEquals('linear', mag, 'check changed filter mag')
-  test:assertEquals(2, ani, 'check changed filter ani')
-  test:assertEquals(false, video:isPlaying(), 'check paused by default')
+  local min2, mag2, ani2 = video:getFilter()
+  test:assertEquals('linear', min2, 'check changed filter min')
+  test:assertEquals('linear', mag2, 'check changed filter mag')
+  test:assertEquals(2, ani2, 'check changed filter ani')
+
+  -- check video playing
+  test:assertFalse(video:isPlaying(), 'check paused by default')
   test:assertEquals(0, video:tell(), 'check 0:00 by default')
+
   -- covered by their own obj tests in video but check returns obj
   local source = video:getSource()
   test:assertObject(source)
   local stream = video:getStream()
   test:assertObject(stream)
-  -- check playing / pausing / seeking
+
+  -- check playing / pausing / seeking states
   video:play()
   test:waitFrames(30) -- 1.5s ish
   video:pause()
@@ -836,6 +1003,7 @@ love.test.graphics.Video = function(test)
   video:rewind()
   test:assertEquals(0, video:tell(), 'check video rewind')
   video:setFilter('nearest', 'nearest', 1)
+
   -- check actuall drawing with the vid 
   local canvas = love.graphics.newCanvas(500, 500)
   love.graphics.setCanvas(canvas)
@@ -848,6 +1016,7 @@ love.test.graphics.Video = function(test)
     red = {{499,0},{499,499}}
   }, 'video draw')
   test:compareImg(imgdata)
+
 end
 
 
@@ -903,7 +1072,7 @@ love.test.graphics.arc = function(test)
     -- there's a couple pixels different in the curve of the arc but as we
     -- are at such a low resolution I think that can be expected
     -- on real hardware the test passes fine though  
-    test:assertEquals(true, true, 'skip test')
+    test:assertTrue(true, 'skip test')
   else
     test:compareImg(imgdata1)
     test:compareImg(imgdata2)
@@ -1427,10 +1596,10 @@ love.test.graphics.validateShader = function(test)
   ]]
   -- check made up code first
   local status, _ = love.graphics.validateShader(true, 'nothing here', 'or here')
-  test:assertEquals(false, status, 'check invalid shader code')
+  test:assertFalse(status, 'check invalid shader code')
   -- check real code 
   status, _ = love.graphics.validateShader(true, pixelcode, vertexcode)
-  test:assertEquals(true, status, 'check valid shader code')
+  test:assertTrue(status, 'check valid shader code')
 end
 
 
@@ -1510,17 +1679,17 @@ end
 love.test.graphics.getColorMask = function(test)
   -- by default should all be active
   local r, g, b, a = love.graphics.getColorMask()
-  test:assertEquals(true, r, 'check default color mask r')
-  test:assertEquals(true, g, 'check default color mask g')
-  test:assertEquals(true, b, 'check default color mask b')
-  test:assertEquals(true, a, 'check default color mask a')
+  test:assertTrue(r, 'check default color mask r')
+  test:assertTrue(g, 'check default color mask g')
+  test:assertTrue(b, 'check default color mask b')
+  test:assertTrue(a, 'check default color mask a')
   -- check set color mask is returned correctly
   love.graphics.setColorMask(false, false, true, false)
   r, g, b, a = love.graphics.getColorMask()
-  test:assertEquals(false, r, 'check changed color mask r')
-  test:assertEquals(false, g, 'check changed color mask g')
-  test:assertEquals(true,  b, 'check changed color mask b')
-  test:assertEquals(false, a, 'check changed color mask a')
+  test:assertFalse(r, 'check changed color mask r')
+  test:assertFalse(g, 'check changed color mask g')
+  test:assertTrue( b, 'check changed color mask b')
+  test:assertFalse(a, 'check changed color mask a')
   love.graphics.setColorMask(true, true, true, true) -- reset
 end
 
@@ -1540,7 +1709,7 @@ love.test.graphics.getDepthMode = function(test)
   -- by default should be always/write
   local comparemode, write = love.graphics.getDepthMode()
   test:assertEquals('always', comparemode, 'check default compare depth')
-  test:assertEquals(false, write, 'check default depth buffer write')
+  test:assertFalse(write, 'check default depth buffer write')
 end
 
 
@@ -1708,7 +1877,7 @@ love.test.graphics.isActive = function(test)
   if string.find(name, 'Vulkan') ~= nil then
     test:skipTest('love.graphics.isActive() crashes on Vulkan')
   else 
-    test:assertEquals(true, love.graphics.isActive(), 'check graphics is active') -- i mean if you got this far
+    test:assertTrue(love.graphics.isActive(), 'check graphics is active') -- i mean if you got this far
   end
 end
 
@@ -1727,10 +1896,10 @@ love.test.graphics.isWireframe = function(test)
     test:skipTest('Wireframe not supported on OpenGL ES')
   else
     -- check off by default
-    test:assertEquals(false, love.graphics.isWireframe(), 'check no wireframe by default')
+    test:assertFalse(love.graphics.isWireframe(), 'check no wireframe by default')
     -- check on when enabled
     love.graphics.setWireframe(true)
-    test:assertEquals(true, love.graphics.isWireframe(), 'check wireframe is set')
+    test:assertTrue(love.graphics.isWireframe(), 'check wireframe is set')
     love.graphics.setWireframe(false) -- reset
   end
 end

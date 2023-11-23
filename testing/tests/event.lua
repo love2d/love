@@ -69,7 +69,7 @@ love.test.event.quit = function(test)
   love.test.module.fakequit = true
   love.event.quit(0)
   -- if it failed we'd have quit here
-  test:assertEquals(true, true, 'check quit hook called')
+  test:assertTrue(true, 'check quit hook called')
 end
 
 

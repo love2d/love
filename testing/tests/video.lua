@@ -10,21 +10,25 @@
 
 -- VideoStream (love.thread.newVideoStream)
 love.test.video.VideoStream = function(test)
+
   -- create obj
   local video = love.video.newVideoStream('resources/sample.ogv')
   test:assertObject(video)
+
   -- check def properties
   test:assertEquals('resources/sample.ogv', video:getFilename(), 'check filename')
-  test:assertEquals(false, video:isPlaying(), 'check not playing by def')
-  -- check playing and pausing
+  test:assertFalse(video:isPlaying(), 'check not playing by def')
+
+  -- check playing and pausing states
   video:play()
-  test:assertEquals(true, video:isPlaying(), 'check now playing')
+  test:assertTrue(video:isPlaying(), 'check now playing')
   video:seek(0.3)
-  test:assertEquals(3, math.floor(video:tell()*10), 'check seek/tell')
+  test:assertRange(video:tell(), 0.3, 0.4, 'check seek/tell')
   video:rewind()
   test:assertEquals(0, video:tell(), 'check rewind')
   video:pause()
-  test:assertEquals(false, video:isPlaying(), 'check paused')
+  test:assertFalse(video:isPlaying(), 'check paused')
+
 end
 
 
