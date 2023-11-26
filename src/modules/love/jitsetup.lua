@@ -62,6 +62,10 @@ if jit.arch == "arm64" then
 	
 	jit.opt.start("sizemcode=128")
 	for i=1, 100 do end
+
+	-- Actually just turn the whole thing off for arm64. It's very hard to get
+	-- reliable performance in non-trivial games even with the above workaround.
+	jit.off()
 else
 	-- Somewhat arbitrary value (>= the default).
 	jit.opt.start("sizemcode=128")

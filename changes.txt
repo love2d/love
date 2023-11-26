@@ -6,6 +6,7 @@ Released: N/A
 * Added "LÖVE Loader" launcher on Android for easier loading of .love files.
 
 * Changed iOS game selector to alphabetically sort the list of .love files.
+* Changed JIT compilation on macOS arm64 (Apple Silicon) to be off by default, since performance and available JIT memory isn't reliable.
 
 * Fixed inconsistent and buggy behaviour of 'pairs' by updating LuaJIT.
 * Fixed "unexpected alignment" errors when running love on some 32 bit Linux systems.
