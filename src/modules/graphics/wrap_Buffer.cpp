@@ -75,6 +75,18 @@ void luax_writebufferdata(lua_State *L, int startidx, DataFormat format, char *d
 		case DATAFORMAT_FLOAT_VEC3: writeData<float>(L, startidx, 3, data); break;
 		case DATAFORMAT_FLOAT_VEC4: writeData<float>(L, startidx, 4, data); break;
 
+		case DATAFORMAT_FLOAT_MAT2X2: writeData<float>(L, startidx, 4, data); break;
+		case DATAFORMAT_FLOAT_MAT2X3: writeData<float>(L, startidx, 6, data); break;
+		case DATAFORMAT_FLOAT_MAT2X4: writeData<float>(L, startidx, 8, data); break;
+
+		case DATAFORMAT_FLOAT_MAT3X2: writeData<float>(L, startidx, 6, data); break;
+		case DATAFORMAT_FLOAT_MAT3X3: writeData<float>(L, startidx, 9, data); break;
+		case DATAFORMAT_FLOAT_MAT3X4: writeData<float>(L, startidx, 12, data); break;
+
+		case DATAFORMAT_FLOAT_MAT4X2: writeData<float>(L, startidx, 8, data); break;
+		case DATAFORMAT_FLOAT_MAT4X3: writeData<float>(L, startidx, 12, data); break;
+		case DATAFORMAT_FLOAT_MAT4X4: writeData<float>(L, startidx, 16, data); break;
+
 		case DATAFORMAT_INT32:      writeData<int32>(L, startidx, 1, data); break;
 		case DATAFORMAT_INT32_VEC2: writeData<int32>(L, startidx, 2, data); break;
 		case DATAFORMAT_INT32_VEC3: writeData<int32>(L, startidx, 3, data); break;
