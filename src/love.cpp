@@ -165,7 +165,7 @@ static DoneAction runlove(int argc, char **argv, int &retval)
 
 	// LuaJIT-specific setup needs to be done as early as possible - before
 	// get_app_arguments because that loads external library code. This is also
-	// loaded inside require("love"). Note that it doesn't use the love table.
+	// loaded inside love's Lua threads. Note that it doesn't use the love table.
 	love_preload(L, luaopen_love_jitsetup, "love.jitsetup");
 	lua_getglobal(L, "require");
 	lua_pushstring(L, "love.jitsetup");

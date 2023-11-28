@@ -410,11 +410,6 @@ int luaopen_love(lua_State *L)
 	for (int i = 0; modules[i].name != nullptr; i++)
 		love::luax_preload(L, modules[i].func, modules[i].name);
 
-	// jitsetup is also loaded in the love executable runlove function. It's
-	// needed here too for threads. Note that it doesn't use the love table.
-	love::luax_require(L, "love.jitsetup");
-	lua_pop(L, 1);
-
 	love::luax_insistpinnedthread(L);
 
 	love::luax_insistglobal(L, "love");
