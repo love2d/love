@@ -3,7 +3,13 @@ on: [push, pull_request]
 
 jobs:
   linux-os:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+    permissions:
+      checks: write
+      pull-requests: write
+    env:
+      ALSOFT_CONF: love2d-${{ github.sha }}/testing/resources/alsoft.conf
+      DISPLAY: :99
     steps:
     - name: Update APT
       run: sudo apt-get update
@@ -16,7 +22,8 @@ jobs:
                                           libgl1-mesa-dev libdbus-1-dev libudev-dev libgles2-mesa-dev \
                                           libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
                                           libsndio-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev \
-                                          libcurl4-openssl-dev
+                                          libcurl4-openssl-dev libfuse2 wmctrl openbox mesa-vulkan-drivers \
+                                          libvulkan1 vulkan-tools vulkan-validationlayers
     - name: Checkout love-appimage-source
       uses: actions/checkout@v3
       with:
@@ -40,6 +47,83 @@ jobs:
       run: make LOVE_BRANCH=${{ github.sha }}
     - name: Print LuaJIT branch
       run: git -C LuaJIT-v2.1 branch -v
+    # start xvfb for test running
+    - name: Start xvfb and openbox
+      run: |
+        echo "Starting XVFB on $DISPLAY"
+        Xvfb $DISPLAY -screen 0, 360x240x24 &
+        echo "XVFBPID=$!" >> $GITHUB_ENV
+        # wait for xvfb to startup (3s is the same amount xvfb-run waits by default)
+        sleep 3
+        openbox &
+        echo "OPENBOXPID=$!" >> $GITHUB_ENV
+    # linux opengl tests
+    - name: Run Test Suite (opengl)
+      run: |
+        chmod a+x love-${{ github.sha }}.AppImage
+        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner
+    - name: Love Test Report (opengl)
+      id: report1
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Linux
+        title: test-report-linux-opengl
+        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Zip Test Output (opengl)
+      run: |
+        7z a -tzip test-output-linux-opengl.zip love2d-${{ github.sha }}/testing/output/
+    - name: Artifact Test Output (opengl)
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-linux-opengl-${{ steps.report1.outputs.conclusion }}
+        path: test-output-linux-opengl.zip
+    # linux opengles tests
+    - name: Run Test Suite (opengles)
+      run: |
+        export LOVE_GRAPHICS_USE_OPENGLES=1
+        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner
+    - name: Love Test Report (opengles)
+      uses: ellraiser/love-test-report@main
+      id: report2
+      with:
+        name: Love Testsuite Linux
+        title: test-report-linux-opengles
+        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Zip Test Output (opengles)
+      run: |
+        7z a -tzip test-output-linux-opengles.zip love2d-${{ github.sha }}/testing/output/
+    - name: Artifact Test Output (opengles)
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-linux-opengles-${{ steps.report2.outputs.conclusion }}
+        path: test-output-linux-opengles.zip
+#    # linux vulkan tests
+#    - name: Run Test Suite (vulkan)
+#      run: |
+#        export LOVE_GRAPHICS_DEBUG=1
+#        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner --renderers vulkan
+#    - name: Love Test Report (vulkan)
+#      uses: ellraiser/love-test-report@main
+#      with:
+#        name: Love Testsuite Linux
+#        title: test-report-linux-vulkan
+#        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+#    - name: Zip Test Output (vulkan)
+#      run: |
+#        7z a -tzip test-output-linux-vulkan.zip love2d-${{ github.sha }}/testing/output/
+#    - name: Artifact Test Output (vulkan)
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: test-output-linux-vulkan
+#        path: test-output-linux-vulkan.zip
+    - name: Stop xvfb and openbox
+      # should always stop xvfb and openbox even if other steps failed
+      if: always()
+      run: |
+        kill $XVFBPID
+        kill $OPENBOXPID
     - name: Artifact
       uses: actions/upload-artifact@v3
       with:
@@ -50,8 +134,21 @@ jobs:
       with:
         name: love-x86_64-AppImage-debug
         path: love-${{ github.sha }}.AppImage-debug.tar.gz
+    - name: Check Tests Passing
+      if: steps.report1.outputs.conclusion == 'failure' || steps.report2.outputs.conclusion == 'failure'
+      run: |
+        echo "${{ steps.report1.outputs.failed }} opengl tests failed"
+        echo "${{ steps.report2.outputs.failed }} opengles tests failed"
+        exit 1
   windows-os:
     runs-on: windows-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    env: 
+      ALSOFT_CONF: megasource/libs/love/testing/resources/alsoft.conf
+      VK_ICD_FILENAMES: ${{ github.workspace }}\mesa\x64\lvp_icd.x86_64.json
+      VULKAN_SDK: C:/VulkanSDK/1.3.231.1
     strategy:
       matrix:
         platform: [Win32, x64, ARM64]
@@ -206,8 +303,115 @@ jobs:
       with:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
         path: pdb/Release/*.pdb
+    # install mesa for graphic tests
+    - name: Install Mesa 
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      run: |
+        curl -L --output mesa.7z --url https://github.com/pal1000/mesa-dist-win/releases/download/23.2.1/mesa3d-23.2.1-release-msvc.7z
+        7z x mesa.7z -o*
+        powershell.exe mesa\systemwidedeploy.cmd 1
+    # build love to use for the tests
+    - name: Build Test Exe
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      run: cmake --build build --config Release --target install
+    # windows opengl tests
+    - name: Run Tests (opengl)
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      run: |
+        echo 'check dir'
+        ls
+        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner
+    - name: Love Test Report (opengl)
+      id: report1
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (opengl)
+        title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl
+        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Zip Test Output (opengl)
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      run: |
+        7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl.zip megasource/libs/love/testing/output/
+    - name: Artifact Test Output (opengl)
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-windows-${{ steps.vars.outputs.arch }}-opengl-${{ steps.report1.outputs.conclusion }}
+        path: test-output-windows-${{ steps.vars.outputs.arch }}-opengl.zip
+    # windows opengles tests
+    - name: Run Tests (opengles)
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      run: |
+        $ENV:LOVE_GRAPHICS_USE_OPENGLES=1
+        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner
+    - name: Love Test Report (opengles)
+      id: report2
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (opengles)
+        title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles
+        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Zip Test Output (opengles)
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      run: |
+        7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles.zip megasource/libs/love/testing/output/
+    - name: Artifact Test Output (opengles)
+      if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-windows-${{ steps.vars.outputs.arch }}-opengles-${{ steps.report2.outputs.conclusion }}
+        path: test-output-windows-${{ steps.vars.outputs.arch }}-opengles.zip
+    - name: Check Tests Passing
+      if: steps.report1.outputs.conclusion == 'failure' || steps.report2.outputs.conclusion == 'failure'
+      run: |
+        echo "${{ steps.report1.outputs.failed }} opengl tests failed"
+        echo "${{ steps.report2.outputs.failed }} opengles tests failed"
+        exit 1
+#    # install vulkan
+#    - name: Install Vulkan
+#      if: steps.vars.outputs.arch != 'ARM64'
+#      run: |
+#        curl -L --show-error --output VulkanSDK.exe https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe
+#        ./VulkanSDK.exe --root C:/VulkanSDK/1.3.231.1 --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan.core com.lunarg.vulkan.vma 
+#        curl -L --show-error --output vulkan-runtime.zip https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/vulkan-runtime-components.zip
+#        7z e vulkan-runtime.zip -o"C:/VulkanSDK/1.3.231.1/runtime/x64" */x64
+#        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "mesa/x64"
+#        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "C:/Windows/System32"
+#        copy "C:/VulkanSDK/1.3.231.1/runtime/x64/vulkan-1.dll" "love-12.0-win64/love-12.0-win64"
+#        reg add HKEY_LOCAL_MACHINE\SOFTWARE\Khronos\Vulkan\Drivers /v "${{ github.workspace }}\mesa\x64\lvp_icd.x86_64.json" /t REG_DWORD /d 0
+#        powershell.exe C:/VulkanSDK/1.3.231.1/runtime/x64/vulkaninfo.exe --summary
+#    # windows vulkan tests
+#    - name: Run Tests (vulkan)
+#      if: steps.vars.outputs.arch != 'ARM64'
+#      run: |
+#        $ENV:LOVE_GRAPHICS_DEBUG=1
+#        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner --renderers vulkan
+#    - name: Love Test Report (vulkan)
+#      if: steps.vars.outputs.arch != 'ARM64'
+#      uses: ellraiser/love-test-report@main
+#      with:
+#        name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (vulkan)
+#        title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
+#        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+#    - name: Zip Test Output (vulkan)
+#      if: steps.vars.outputs.arch != 'ARM64'
+#      run: |
+#        7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan.zip megasource/libs/love/testing/output/
+#    - name: Artifact Test Output (vulkan)
+#      if: steps.vars.outputs.arch != 'ARM64'
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
+#        path: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan.zip
   macOS:
     runs-on: macos-latest
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -234,6 +438,32 @@ jobs:
       with:
         name: love-macos
         path: love-macos.zip
+    # macos opengl tests (metal not supported on runners)
+    - name: Run Test Suite
+      run: |
+        ls
+        love-macos/love.app/Contents/MacOS/love ./testing/main.lua --runAllTests --isRunner
+    - name: Love Test Report
+      id: report1
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite MacOS
+        title: test-report-macos
+        path: testing/output/lovetest_runAllTests.md
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Zip Test Output
+      run: |
+        7z a -tzip test-output-macos-opengl.zip ./testing/output/
+    - name: Artifact Test Output
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-macos-opengl-${{ steps.report1.outputs.conclusion }}
+        path: test-output-macos-opengl.zip
+    - name: Check Tests Passing
+      if: steps.report1.outputs.conclusion == 'failure'
+      run: |
+        echo "${{ steps.report1.outputs.failed }} opengl tests failed"
+        exit 1
   iOS-Simulator:
     runs-on: macos-latest
     steps:

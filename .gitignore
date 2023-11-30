@@ -69,3 +69,7 @@ stamp-h1
 /src/tags
 .vs/
 .vscode/
+/testing/output/*.xml
+/testing/output/*.html
+/testing/output/*.md
+/testing/output/actual/*.png
