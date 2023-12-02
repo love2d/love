@@ -33,9 +33,9 @@ jit.opt.start("maxtrace=2000", "maxrecord=8000")
 -- and higher than the default (512) because that's already too low.
 jit.opt.start("maxmcode=16384")
 
-if jit.arch == "arm64" then
+if jit.arch == "arm64" or jit.arch == "arm" then
 	-- https://github.com/LuaJIT/LuaJIT/issues/285
-	-- LuaJIT 2.1 on arm64 currently (as of commit b4b2dce) can only use memory
+	-- LuaJIT 2.1 on arm(64) currently (as of commit b4b2dce) can only use memory
 	-- for JIT compilation within a certain short range. Other libraries such as
 	-- SDL can take all the usable space in that range and cause attempts at JIT
 	-- compilation to both fail and take a long time.
@@ -62,6 +62,10 @@ if jit.arch == "arm64" then
 	
 	jit.opt.start("sizemcode=128")
 	for i=1, 100 do end
+
+	-- Actually just turn the whole thing off for arm(64). It's very hard to get
+	-- reliable performance in non-trivial games even with the above workaround.
+	jit.off()
 else
 	-- Somewhat arbitrary value (>= the default).
 	jit.opt.start("sizemcode=128")

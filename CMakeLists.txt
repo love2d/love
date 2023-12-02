@@ -41,7 +41,13 @@ if(APPLE)
 	message(WARNING "Use the prebuilt .app or the xcode project in platform/xcode/ instead.")
 endif()
 
-if(MSVC)
+if(MINGW)
+	message(WARNING "MinGW is not an officially supported build system for love.")
+	message(WARNING "Use megasource with Visual Studio instead.")
+	message(WARNING "Please see https://github.com/love2d/megasource")
+endif()
+
+if(MSVC OR MINGW)
 	set(LOVE_CONSOLE_EXE_NAME lovec)
 endif()
 
@@ -178,7 +184,7 @@ Please see https://github.com/love2d/megasource
 	find_package(ModPlug REQUIRED)
 	find_package(OpenAL REQUIRED)
 	find_package(OpenGL REQUIRED)
-	find_package(SDL2 2.0.9 REQUIRED)
+	find_package(SDL2 2.0.9 REQUIRED CONFIG COMPONENTS SDL2main)
 	find_package(Theora REQUIRED)
 	find_package(Vorbis REQUIRED)
 	find_package(ZLIB REQUIRED)
@@ -188,7 +194,7 @@ Please see https://github.com/love2d/megasource
 	add_definitions(-D HAS_SOCKLEN_T)
 
 	set(LOVE_INCLUDE_DIRS
-		${SDL2_INCLUDE_DIR}
+		${SDL2_INCLUDE_DIRS}
 		${FREETYPE_INCLUDE_DIRS}
 		${HARFBUZZ_INCLUDE_DIR}
 		${VORBIS_INCLUDE_DIR}
@@ -201,7 +207,7 @@ Please see https://github.com/love2d/megasource
 
 	set(LOVE_LINK_LIBRARIES
 		${OPENGL_gl_LIBRARY}
-		${SDL2_LIBRARY}
+		${SDL2_LIBRARIES}
 		${FREETYPE_LIBRARY}
 		${HARFBUZZ_LIBRARY}
 		${OPENAL_LIBRARY}
@@ -1298,6 +1304,9 @@ set(LOVE_SRC_3P_ENET
 add_library(love_3p_enet ${LOVE_SRC_3P_ENET})
 target_link_libraries(love_3p_enet ${LOVE_LUA_LIBRARY})
 target_include_directories(love_3p_enet PUBLIC src/libraries/enet/libenet/include)
+if(MINGW)
+	target_link_libraries(love_3p_enet winmm.a)
+endif()
 
 #
 # GLAD
@@ -1393,7 +1402,7 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
 	src/libraries/glslang/glslang/OSDependent/osinclude.h
 )
 
-if(MSVC)
+if(MSVC OR MINGW)
 	set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
 		${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
 		src/libraries/glslang/glslang/OSDependent/Windows/main.cpp
@@ -1530,7 +1539,13 @@ set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 
 set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET)
 
-if(MSVC)
+if(MINGW)
+	set(WIN32_LIB_EXT .a)
+else()
+	set(WIN32_LIB_EXT .lib)
+endif()
+
+if(MSVC OR MINGW)
 	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
 		src/libraries/luasocket/libluasocket/wsocket.c
@@ -1539,7 +1554,7 @@ if(MSVC)
 
 	set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET
 		${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET}
-		ws2_32.lib
+		ws2_32${WIN32_LIB_EXT}
 	)
 else()
 	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
@@ -1950,17 +1965,23 @@ link_directories(${LOVE_LINK_DIRS})
 
 set(LOVE_RC)
 
-if(MSVC)
+if(MSVC OR MINGW)
 	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES}
-		ws2_32.lib
-		winmm.lib
-		dwmapi.lib
+		ws2_32${WIN32_LIB_EXT}
+		winmm${WIN32_LIB_EXT}
+		dwmapi${WIN32_LIB_EXT}
 	)
 
 	set(LOVE_RC
 		extra/windows/love.rc
 		extra/windows/love.ico
 	)
+
+	if(MINGW)
+		# UTF-16 flags passed to windres. windres invokes gcc as preprocessor
+		# -> gcc outputs utf8, so windres must read-in codepage 65001 (utf8)
+		set(CMAKE_RC_FLAGS ${CMAKE_RC_FLAGS} "-c 65001 --preprocessor-arg=-finput-charset=UTF-16LE")
+	endif()
 endif()
 
 if(ANDROID)
@@ -1992,7 +2013,7 @@ if(NOT ANDROID)
 	target_link_libraries(${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
 	set_target_properties(${LOVE_EXE_NAME} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
 
-	if(MSVC)
+	if(MSVC OR MINGW)
 		add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})
 		target_link_libraries(${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME})
 	endif()
@@ -2021,7 +2042,7 @@ if(NOT ANDROID)
 	endif()
 endif()
 
-if (NOT MSVC)
+if (NOT MSVC OR MINGW)
 	return()
 endif()
 

@@ -32,6 +32,8 @@ namespace physics
 namespace box2d
 {
 
+love::Type DistanceJoint::type("DistanceJoint", &Joint::type);
+
 DistanceJoint::DistanceJoint(Body *body1, Body *body2, float x1, float y1, float x2, float y2, bool collideConnected)
 	: Joint(body1, body2)
 	, joint(NULL)
