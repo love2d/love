@@ -1,7 +1,7 @@
 LOVE 11.5 [Mysterious Mysteries]
 --------------------------------
 
-Released: N/A
+Released: 2023-12-03
 
 * Added "LÖVE Loader" launcher on Android for easier loading of .love files.
 
