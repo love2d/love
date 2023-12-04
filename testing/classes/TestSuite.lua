@@ -33,9 +33,12 @@ TestSuite = {
       graphics = {},
       image = {},
       joystick = {},
+      love = {},
+      keyboard = {},
       math = {},
       mouse = {},
       physics = {},
+      sensor = {},
       sound = {},
       system = {},
       thread = {},
@@ -60,7 +63,7 @@ TestSuite = {
       -- stagger between tests
     if self.module ~= nil then
 
-        if self.module.start == true then
+        if self.module.start then
 
           -- work through each test method 1 by 1
           if self.module.index <= #self.module.running then
@@ -70,13 +73,13 @@ TestSuite = {
               self.module.called[self.module.index] = true
               local method = self.module.running[self.module.index]
               self.test = TestMethod:new(method, self.module)
-              TextRun:set('love.' .. self.module.module .. '.' .. method)
+              TextRun = 'love.' .. self.module.module .. '.' .. method
 
               self.test.co = coroutine.create(function()
                 local ok, chunk, err = pcall(love.test[love.test.module.module][method], love.test.test)
                 if ok == false then
-                  love.test.test.passed = false
-                  love.test.test.fatal = tostring(chunk) .. tostring(err)
+                  love.test.test['passed'] = false
+                  love.test.test['fatal'] = tostring(chunk) .. tostring(err)
                 end
               end)
 

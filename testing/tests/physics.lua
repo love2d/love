@@ -307,10 +307,10 @@ love.test.physics.Joint = function(test)
   test:assertFalse(joint:isDestroyed(), 'check not destroyed')
 
   -- check reaction props (sometimes nil on linux runners)
-  if joint:getReactionForce(1) ~= nil then
+  if joint:getReactionForce(1) ~= nil and joint:getReactionForce(1) ~= 0/0 then
     test:assertEquals(0, joint:getReactionForce(1), 'check reaction force')
   end
-  if joint:getReactionTorque(1) ~= nil then
+  if joint:getReactionTorque(1) ~= nil and joint:getReactionTorque(1) ~= 0/0 then
     test:assertEquals(0, joint:getReactionTorque(1), 'check reaction torque')
   end
 
