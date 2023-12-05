@@ -379,7 +379,7 @@ TestMethod = {
     local failure = ''
     local failures = 0
     for a=1,#self.asserts do
-      -- @TODO show all failued assertion methods?
+      -- @TODO show all failed assertion methods?
       -- currently just shows the first assert that failed
       if not self.asserts[a].passed and not self.skipped then
         if failure == '' then failure = self.asserts[a] end

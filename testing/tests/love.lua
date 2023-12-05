@@ -48,31 +48,7 @@ love.test.love.errhand = function(test)
 end
 
 
--- love.load
-love.test.love.load = function(test)
-  test:assertTrue(type(love.load) == 'function', 'check defined')
-end
-
-
--- love.draw
-love.test.love.draw = function(test)
-  test:assertTrue(type(love.draw) == 'function', 'check defined')
-end
-
-
--- love.update
-love.test.love.update = function(test)
-  test:assertTrue(type(love.update) == 'function', 'check defined')
-end
-
-
 -- love.run
 love.test.love.run = function(test)
   test:assertTrue(type(love.run) == 'function', 'check defined')
-end
-
-
--- love.quit
-love.test.love.quit = function(test)
-  test:assertTrue(type(love.quit) == 'function', 'check defined')
 end

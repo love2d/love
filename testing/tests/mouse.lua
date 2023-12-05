@@ -13,10 +13,13 @@
 love.test.mouse.getCursor = function(test)
   local cursor = love.mouse.getCursor()
   test:assertEquals(nil, cursor, 'check nil initially')
-  love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
-  local newcursor = love.mouse.getCursor()
-  test:assertObject(newcursor)
-  love.mouse.setCursor()
+  -- try setting a cursor to check return if supported
+  if love.mouse.isCursorSupported() then
+    love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
+    local newcursor = love.mouse.getCursor()
+    test:assertObject(newcursor)
+    love.mouse.setCursor()
+  end
 end
 
 
@@ -97,21 +100,32 @@ end
 
 -- love.mouse.newCursor
 love.test.mouse.newCursor = function(test)
-  local cursor = love.mouse.newCursor('resources/love.png', 0, 0)
-  test:assertObject(cursor)
+  -- new cursor might fail if not supported
+  if love.mouse.isCursorSupported() then
+    local cursor = love.mouse.newCursor('resources/love.png', 0, 0)
+    test:assertObject(cursor)
+  else
+    test:skipTest('cursor not supported on this system')
+  end
 end
 
 
 -- love.mouse.setCursor
 love.test.mouse.setCursor = function(test)
-  love.mouse.setCursor()
-  test:assertEquals(nil, love.mouse.getCursor(), 'check reset')
-  love.mouse.setCursor(love.mouse.getSystemCursor('hand'))
-  test:assertObject(love.mouse.getCursor())
+  -- cant set cursor if not supported
+  if love.mouse.isCursorSupported() then
+    love.mouse.setCursor()
+    test:assertEquals(nil, love.mouse.getCursor(), 'check reset')
+    love.mouse.setCursor(love.mouse.getSystemCursor('hand'))
+    test:assertObject(love.mouse.getCursor())
+  else
+    test:skipTest('cursor not supported on this system')
+  end
 end
 
 
 -- love.mouse.setGrabbed
+-- @NOTE can fail if you move the mouse a bunch while the test runs
 love.test.mouse.setGrabbed = function(test)
   test:assertEquals(false, love.mouse.isGrabbed(), 'check not grabbed')
   love.mouse.setGrabbed(true)

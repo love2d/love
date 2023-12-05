@@ -12,7 +12,7 @@
 love.test.audio.RecordingDevice = function(test)
 
   -- skip recording device on runners, they cant emulate it
-  if GITHUB_RUNNER == true then
+  if GITHUB_RUNNER then
     return test:skipTest('cant emulate recording devices in CI')
   end
 

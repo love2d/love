@@ -34,7 +34,7 @@ See the **Todo** section for outstanding tasks if you want to contribute!
 | 🟢 image          |    5 |   0  | 🟢 timer          |    6 |   0  |
 | 🟢 joystick       |    6 |   0  | 🟢 touch          |    3 |   0  |
 | 🟢 keyboard       |    9 |   0  | 🟢 video          |    2 |   0  |
-| 🟢 love           |   10 |   0  | 🟢 window         |   34 |   2  |
+| 🟢 love           |    6 |   0  | 🟢 window         |   34 |   2  |
 | 🟢 math           |   20 |   0  | 
 
 > The following modules are covered but at a basic level as we can't emulate hardware input nicely for all platforms + virtual runners:  
