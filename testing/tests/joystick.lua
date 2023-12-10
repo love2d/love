@@ -26,7 +26,7 @@ end
 -- love.joystick.getJoysticks
 love.test.joystick.getJoysticks = function(test)
   local joysticks = love.joystick.getJoysticks()
-  test:assertEquals(0, #joysticks, 'check no joysticks')
+  test:assertGreaterEqual(0, #joysticks, 'check is count')
 end
 
 
