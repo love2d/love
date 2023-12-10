@@ -23,26 +23,22 @@ While the test suite is part of the main Löve repo, the test suite has it's own
 ## Coverage
 This is the status of all module tests.  
 See the **Todo** section for outstanding tasks if you want to contribute!
-| Module            | Done | Todo | Skip |
-| ----------------- | ---- | ---- | ---- |
-| 🟢 audio          |  28  |   0  |   0  |
-| 🟢 data           |  12  |   0  |   0  |
-| 🟢 event          |   4  |   0  |   2  |
-| 🟢 filesystem     |  29  |   0  |   2  |
-| 🟢 font           |   7  |   0  |   0  |
-| 🟢 graphics       | 104  |   0  |   1  |
-| 🟢 image          |   5  |   0  |   0  |
-| 🟢 math           |  20  |   0  |   0  |
-| 🟢 physics        |  26  |   0  |   0  |
-| 🟢 sound          |   4  |   0  |   0  |
-| 🟢 system         |   6  |   0  |   2  |
-| 🟢 thread         |   5  |   0  |   0  |
-| 🟢 timer          |   6  |   0  |   0  |
-| 🟢 video          |   2  |   0  |   0  |
-| 🟢 window         |  34  |   0  |   2  |
+| Module            | Done | Skip | Modules          | Done | Skip |
+| ----------------- | ---- | ---- | ---------------- | ---- | ---- |
+| 🟢 audio          |   28 |   0  | 🟢 mouse          |   18 |   0  |
+| 🟢 data           |   12 |   0  | 🟢 physics        |   26 |   0  |
+| 🟢 event          |    4 |   2  | 🟢 sensor         |    1 |   0  |
+| 🟢 filesystem     |   29 |   2  | 🟢 sound          |    4 |   0  |
+| 🟢 font           |    7 |   0  | 🟢 system         |    6 |   2  |
+| 🟢 graphics       |  104 |   1  | 🟢 thread         |    5 |   0  |
+| 🟢 image          |    5 |   0  | 🟢 timer          |    6 |   0  |
+| 🟢 joystick       |    6 |   0  | 🟢 touch          |    3 |   0  |
+| 🟢 keyboard       |    9 |   0  | 🟢 video          |    2 |   0  |
+| 🟢 love           |    6 |   0  | 🟢 window         |   34 |   2  |
+| 🟢 math           |   20 |   0  | 
 
-> The following modules are not covered as we can't really emulate input nicely:  
-> `joystick`, `keyboard`, `mouse`, and `touch`
+> The following modules are covered but at a basic level as we can't emulate hardware input nicely for all platforms + virtual runners:  
+> `joystick`, `keyboard`, `mouse`, `sensor` and `touch`
 
 ---
 

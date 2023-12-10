@@ -8,17 +8,6 @@
 --------------------------------------------------------------------------------
 
 
--- love.window.close
-love.test.window.close = function(test)
-  -- closing window should cause graphics to not be active
-  love.window.close()
-  local active = love.graphics.isActive()
-  test:assertFalse(active, 'check window not active')
-  love.window.updateMode(360, 240) -- reset
-  active = love.graphics.isActive() 
-  test:assertTrue(active, 'check window active again')
-end
-
 -- love.window.fromPixels
 love.test.window.fromPixels = function(test)
   -- check dpi/pixel ratio as expected
@@ -194,10 +183,7 @@ end
 love.test.window.isOpen = function(test)
   -- check open initially
   test:assertTrue(love.window.isOpen(), 'check window open')
-  -- try closing
-  love.window.close()
-  test:assertFalse(love.window.isOpen(), 'check window closed')
-  love.window.updateMode(360, 240) -- reset 
+  -- we check closing in test.window.close
 end
 
 
@@ -205,10 +191,7 @@ end
 love.test.window.isVisible = function(test)
   -- check visible initially
   test:assertTrue(love.window.isVisible(), 'check window visible')
-  -- check closing makes window not visible
-  love.window.close()
-  test:assertFalse(love.window.isVisible(), 'check window not visible')
-  love.window.updateMode(360, 240) -- reset 
+  -- we check closing in test.window.close
 end
 
 
@@ -368,4 +351,19 @@ love.test.window.updateMode = function(test)
     fullscreen = false,
     resizable = true
   })
+end
+
+-- love.window.close
+-- calling love.window.close() last as it will stop the main test image drawing
+love.test.window.z_close = function(test)
+  -- closing window should cause graphics to not be active
+  love.window.close()
+  local active = love.graphics.isActive()
+  test:assertFalse(active, 'check window not active')
+  -- should also mark the window as not open and not visible
+  test:assertFalse(love.window.isOpen(), 'check window closed')
+  test:assertFalse(love.window.isVisible(), 'check window not visible')
+  love.window.updateMode(360, 240) -- reset
+  active = love.graphics.isActive() 
+  test:assertTrue(active, 'check window active again')
 end

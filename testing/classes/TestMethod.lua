@@ -126,11 +126,11 @@ TestMethod = {
   -- @method - TestMethod:assertPixels()
   -- @desc - checks a list of coloured pixels agaisnt given imgdata
   -- @param {ImageData} imgdata - image data to check
-  -- @param {table} pixels - map of colors to list of pixel coords, i.e.
-  --                         { blue = { {1, 1}, {2, 2}, {3, 4} } }
+  -- @param {table} pixelchecks - map of colors to list of pixel coords, i.e.
+  --                              { blue = { {1, 1}, {2, 2}, {3, 4} } }
   -- @return {nil}
-  assertPixels = function(self, imgdata, pixels, label)
-    for i, v in pairs(pixels) do
+  assertPixels = function(self, imgdata, pixelchecks, label)
+    for i, v in pairs(pixelchecks) do
       local col = self.colors[i]
       local pixels = v
       for p=1,#pixels do
@@ -379,9 +379,9 @@ TestMethod = {
     local failure = ''
     local failures = 0
     for a=1,#self.asserts do
-      -- @TODO just return first failed assertion msg? or all?
+      -- @TODO show all failed assertion methods?
       -- currently just shows the first assert that failed
-      if self.asserts[a].passed == false and self.skipped == false then
+      if not self.asserts[a].passed and not self.skipped then
         if failure == '' then failure = self.asserts[a] end
         failures = failures + 1
       end
@@ -389,7 +389,7 @@ TestMethod = {
     if self.fatal ~= '' then failure = self.fatal end
     local passed = tostring(#self.asserts - failures)
     local total = '(' .. passed .. '/' .. tostring(#self.asserts) .. ')'
-    if self.skipped == true then
+    if self.skipped then
       self.testmodule.skipped = self.testmodule.skipped + 1
       love.test.totals[3] = love.test.totals[3] + 1
       self.result = { 
@@ -454,7 +454,6 @@ TestMethod = {
   printResult = function(self)
 
     -- get total timestamp
-    -- @TODO make nicer, just need a 3DP ms value 
     self.finish = love.timer.getTime() - self.start
     love.test.time = love.test.time + self.finish
     self.testmodule.time = self.testmodule.time + self.finish
@@ -463,7 +462,7 @@ TestMethod = {
     -- get failure/skip message for output (if any)
     local failure = ''
     local output = ''
-    if self.passed == false and self.skipped == false then
+    if not self.passed and not self.skipped then
       failure = '\t\t\t<failure message="' .. self.result.key .. ' ' ..
         self.result.message .. '">' .. self.result.key .. ' ' .. self.result.message .. '</failure>\n'
         output = self.result.key .. ' ' ..  self.result.message
@@ -471,7 +470,7 @@ TestMethod = {
       love.test.mdfailures = love.test.mdfailures .. '> 🔴 ' .. self.method .. '  \n' ..
         '> ' .. output .. '  \n\n'
     end
-    if output == '' and self.skipped == true then
+    if output == '' and self.skipped then
       failure = '\t\t\t<skipped message="' .. self.skipreason .. '" />\n'
       output = self.skipreason
     end
@@ -504,8 +503,8 @@ TestMethod = {
     -- append HTML for the test class result 
     local status = '🔴'
     local cls = 'red'
-    if self.passed == true then status = '🟢'; cls = '' end
-    if self.skipped == true then status = '🟡'; cls = '' end
+    if self.passed then status = '🟢'; cls = '' end
+    if self.skipped then status = '🟡'; cls = '' end
     self.testmodule.html = self.testmodule.html ..
       '<tr class=" ' .. cls .. '">' ..
         '<td>' .. status .. '</td>' ..
@@ -516,11 +515,11 @@ TestMethod = {
 
     -- add message if assert failed
     local msg = ''
-    if self.result.message ~= nil and self.skipped == false then
+    if self.result.message ~= nil and not self.skipped then
       msg = ' - ' .. self.result.key ..
         ' failed - (' .. self.result.message .. ')'
     end
-    if self.skipped == true then
+    if self.skipped then
       msg = self.result.message
     end
 

@@ -306,13 +306,15 @@ love.test.physics.Joint = function(test)
   -- check not destroyed
   test:assertFalse(joint:isDestroyed(), 'check not destroyed')
 
-  -- check reaction props (sometimes nil on linux runners)
-  if joint:getReactionForce(1) ~= nil then
-    test:assertEquals(0, joint:getReactionForce(1), 'check reaction force')
-  end
-  if joint:getReactionTorque(1) ~= nil then
-    test:assertEquals(0, joint:getReactionTorque(1), 'check reaction torque')
-  end
+
+  -- check reaction props
+  world:update(1)
+  local rx1, ry1 = joint:getReactionForce(1)
+  test:assertEquals(0, rx1, 'check reaction force x')
+  test:assertEquals(0, ry1, 'check reaction force y')
+  local rx2, ry2 = joint:getReactionTorque(1)
+  test:assertEquals(0, rx2, 'check reaction torque x')
+  test:assertEquals(nil, ry2, 'check reaction torque y')
 
   -- check body pointer
   local b1, b2 = joint:getBodies()
