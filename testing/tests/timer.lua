@@ -31,9 +31,9 @@ end
 -- love.timer.getTime
 love.test.timer.getTime = function(test)
   local starttime = love.timer.getTime()
-  love.timer.sleep(1)
+  love.timer.sleep(0.1)
   local endtime = love.timer.getTime() - starttime
-  test:assertRange(endtime, 1, 2, 'check 1s passes')
+  test:assertRange(endtime, 0.05, 0.15, 'check 0.1s passes')
 end
 
 
