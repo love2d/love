@@ -995,11 +995,11 @@ love.test.graphics.Video = function(test)
 
   -- check playing / pausing / seeking states
   video:play()
-  test:waitFrames(30) -- 1.5s ish
+  test:waitSeconds(0.25)
   video:pause()
   -- runners can be a bit funny and just not play anything sometimes
   if not GITHUB_RUNNER then
-    test:assertEquals(1, math.ceil(video:tell()), 'check video playing for 1s')
+    test:assertRange(video:tell(), 0.2, 0.35, 'check video playing for 0.25s')
   end
   video:seek(0.2)
   test:assertEquals(0.2, video:tell(), 'check video seeking')
