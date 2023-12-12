@@ -175,7 +175,7 @@ love.test.audio.Source = function(test)
   local effsource = love.audio.newSource('resources/click.ogg', 'static')
   love.audio.setEffect('testeffect', {
     type = 'flanger',
-    volume = 10
+    volume = 0.75
   })
   local seteffect, err = effsource:setEffect('testeffect', {
     type = 'highpass',
@@ -209,7 +209,7 @@ love.test.audio.getActiveEffects = function(test)
   -- check setting an effect active
   love.audio.setEffect('testeffect', {
     type = 'chorus',
-    volume = 10
+    volume = 0.75
   })
   test:assertEquals(1, #love.audio.getActiveEffects(), 'check 1 effect running')
   test:assertEquals('testeffect', love.audio.getActiveEffects()[1], 'check effect details')
@@ -261,12 +261,12 @@ love.test.audio.getEffect = function(test)
   -- check getting a valid effect
   love.audio.setEffect('testeffect', {
     type = 'chorus',
-    volume = 10
+    volume = 0.75
   })
   test:assertNotNil(love.audio.getEffect('testeffect'))
   -- check effect values match creation values
   test:assertEquals('chorus', love.audio.getEffect('testeffect').type, 'check effect type')
-  test:assertEquals(10, love.audio.getEffect('testeffect').volume, 'check effect volume')
+  test:assertEquals(0.75, love.audio.getEffect('testeffect').volume, 'check effect volume')
 end
 
 
@@ -412,13 +412,13 @@ love.test.audio.setEffect = function(test)
   -- check effect is set correctly
   local effect = love.audio.setEffect('testeffect', {
     type = 'chorus',
-    volume = 10
+    volume = 0.75
   })
   test:assertTrue(effect, 'check effect created')
   -- check values set match
   local settings = love.audio.getEffect('testeffect')
   test:assertEquals('chorus', settings.type, 'check effect type')
-  test:assertEquals(10, settings.volume, 'check effect volume')
+  test:assertEquals(0.75, settings.volume, 'check effect volume')
 end
 
 
