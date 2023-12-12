@@ -372,6 +372,14 @@ TestMethod = {
   end,
 
 
+  waitSeconds = function(self, seconds)
+    local start = love.timer.getTime()
+    while love.timer.getTime() < start + seconds do
+      coroutine.yield()
+    end
+  end,
+
+
   -- @method - TestMethod:evaluateTest()
   -- @desc - evaluates the results of all assertions for a final restult
   -- @return {nil}
