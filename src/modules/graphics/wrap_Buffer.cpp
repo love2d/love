@@ -416,11 +416,11 @@ static int w_Buffer_isBufferType(lua_State *L)
 static int w_Buffer_getDebugName(lua_State *L)
 {
 	Buffer *t = luax_checkbuffer(L, 1);
-	const Optional<std::string> &debugName = t->getDebugName();
-	if (debugName.hasValue)
-		luax_pushstring(L, debugName.value);
-	else
+	const std::string &debugName = t->getDebugName();
+	if (debugName.empty())
 		lua_pushnil(L);
+	else
+		luax_pushstring(L, debugName);
 	return 1;
 }
 

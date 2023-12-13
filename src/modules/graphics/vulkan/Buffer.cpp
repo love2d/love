@@ -108,7 +108,7 @@ bool Buffer::loadVolatile()
 	else
 		coherent = false;
 
-	if (debugName.hasValue && vgfx->getEnabledOptionalInstanceExtensions().debugInfo)
+	if (!debugName.empty() && vgfx->getEnabledOptionalInstanceExtensions().debugInfo)
 	{
 		auto device = vgfx->getDevice();
 
@@ -116,7 +116,7 @@ bool Buffer::loadVolatile()
 		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
 		nameInfo.objectHandle = (uint64_t)buffer;
-		nameInfo.pObjectName = debugName.value.c_str();
+		nameInfo.pObjectName = debugName.c_str();
 		vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
 	}
 

@@ -477,11 +477,11 @@ int w_Texture_renderTo(lua_State *L)
 static int w_Texture_getDebugName(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	const Optional<std::string> &debugName = t->getDebugName();
-	if (debugName.hasValue)
-		luax_pushstring(L, debugName.value);
-	else
+	const std::string &debugName = t->getDebugName();
+	if (debugName.empty())
 		lua_pushnil(L);
+	else
+		luax_pushstring(L, debugName);
 	return 1;
 }
 

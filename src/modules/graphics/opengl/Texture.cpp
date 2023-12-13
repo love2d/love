@@ -422,12 +422,12 @@ bool Texture::loadVolatile()
 
 	setGraphicsMemorySize(memsize);
 
-	if (debugName.hasValue)
+	if (!debugName.empty())
 	{
 		if (texture)
-			glObjectLabel(GL_TEXTURE, texture, -1, debugName.value.c_str());
+			glObjectLabel(GL_TEXTURE, texture, -1, debugName.c_str());
 		else
-			glObjectLabel(GL_FRAMEBUFFER, renderbuffer, -1, debugName.value.c_str());
+			glObjectLabel(GL_FRAMEBUFFER, renderbuffer, -1, debugName.c_str());
 	}
 
 	return true;

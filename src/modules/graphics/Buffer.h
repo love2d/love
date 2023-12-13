@@ -90,7 +90,7 @@ public:
 		BufferUsageFlags usageFlags;
 		BufferDataUsage dataUsage;
 		bool zeroInitialize;
-		Optional<std::string> debugName;
+		std::string debugName;
 
 		Settings(uint32 usageflags, BufferDataUsage dataUsage)
 			: usageFlags((BufferUsageFlags)usageflags)
@@ -114,7 +114,7 @@ public:
 	const DataMember &getDataMember(int index) const { return dataMembers[index]; }
 	size_t getMemberOffset(int index) const { return dataMembers[index].offset; }
 	int getDataMemberIndex(const std::string &name) const;
-	const Optional<std::string> &getDebugName() const { return debugName; }
+	const std::string &getDebugName() const { return debugName; }
 
 	void setImmutable(bool immutable) { this->immutable = immutable; };
 	bool isImmutable() const { return immutable; }
@@ -188,7 +188,7 @@ protected:
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
 	BufferDataUsage dataUsage;
 
-	Optional<std::string> debugName;
+	std::string debugName;
 
 	bool mapped;
 	MapType mappedType;

@@ -201,7 +201,7 @@ bool Texture::loadVolatile()
 
 	setGraphicsMemorySize(memsize);
 
-	if (debugName.hasValue)
+	if (!debugName.empty())
 	{
 		if (vgfx->getEnabledOptionalInstanceExtensions().debugInfo)
 		{
@@ -209,7 +209,7 @@ bool Texture::loadVolatile()
 			nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 			nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
 			nameInfo.objectHandle = (uint64_t)textureImage;
-			nameInfo.pObjectName = debugName.value.c_str();
+			nameInfo.pObjectName = debugName.c_str();
 			vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
 		}
 	}
