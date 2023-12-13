@@ -1403,7 +1403,7 @@ const OptionalDeviceExtensions &Graphics::getEnabledOptionalDeviceExtensions() c
 	return optionalDeviceExtensions;
 }
 
-const OptionalInstanceExtensions& Graphics::getEnabledOptionalInstanceExtensions() const
+const OptionalInstanceExtensions &Graphics::getEnabledOptionalInstanceExtensions() const
 {
 	return optionalInstanceExtensions;
 }

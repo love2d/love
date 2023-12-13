@@ -290,7 +290,7 @@ public:
 
 	Quad *getQuad() const;
 
-	const Optional<std::string>& getDebugName() const { return debugName; }
+	const Optional<std::string> &getDebugName() const { return debugName; }
 
 	static int getTotalMipmapCount(int w, int h);
 	static int getTotalMipmapCount(int w, int h, int d);

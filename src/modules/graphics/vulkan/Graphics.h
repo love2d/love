@@ -321,7 +321,7 @@ public:
 	void setComputeShader(Shader *computeShader);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	const OptionalDeviceExtensions &getEnabledOptionalDeviceExtensions() const;
-	const OptionalInstanceExtensions& getEnabledOptionalInstanceExtensions() const;
+	const OptionalInstanceExtensions &getEnabledOptionalInstanceExtensions() const;
 	VkSampleCountFlagBits getMsaaCount(int requestedMsaa) const;
 	void setVsync(int vsync);
 	int getVsync() const;
