@@ -1576,10 +1576,11 @@ static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &sett
 
 	lua_getfield(L, idx, "usage");
 	settings.dataUsage = luax_optdatausage(L, -1, settings.dataUsage);
+	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "debugname");
-	settings.debugName = luax_checkstring(L, -1);
-
+	if (!lua_isnoneornil(L, -1))
+		settings.debugName = luax_checkstring(L, -1);
 	lua_pop(L, 1);
 }
 
