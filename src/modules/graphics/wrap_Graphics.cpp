@@ -738,6 +738,13 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 	if (!forceRenderTarget.hasValue)
 		s.renderTarget = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_RENDER_TARGET), s.renderTarget);
 
+	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_DEBUGNAME));
+	if (!lua_isnoneornil(L, -1))
+	{
+		s.debugName = luaL_checkstring(L, -1);
+	}
+	lua_pop(L, 1);
+
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_FORMAT));
 	if (!lua_isnoneornil(L, -1))
 	{
@@ -1569,6 +1576,11 @@ static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &sett
 
 	lua_getfield(L, idx, "usage");
 	settings.dataUsage = luax_optdatausage(L, -1, settings.dataUsage);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "debugname");
+	if (!lua_isnoneornil(L, -1))
+		settings.debugName = luax_checkstring(L, -1);
 	lua_pop(L, 1);
 }
 

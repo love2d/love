@@ -175,6 +175,7 @@ public:
 		SETTING_RENDER_TARGET,
 		SETTING_COMPUTE_WRITE,
 		SETTING_READABLE,
+		SETTING_DEBUGNAME,
 		SETTING_MAX_ENUM
 	};
 
@@ -194,6 +195,7 @@ public:
 		bool renderTarget = false;
 		bool computeWrite = false;
 		OptionalBool readable;
+		std::string debugName;
 	};
 
 	struct Slices
@@ -288,6 +290,8 @@ public:
 
 	Quad *getQuad() const;
 
+	const std::string &getDebugName() const { return debugName; }
+
 	static int getTotalMipmapCount(int w, int h);
 	static int getTotalMipmapCount(int w, int h, int d);
 
@@ -342,6 +346,8 @@ protected:
 	StrongRef<Quad> quad;
 
 	int64 graphicsMemorySize;
+
+	std::string debugName;
 
 }; // Texture
 

@@ -144,6 +144,9 @@ struct OptionalInstanceExtensions
 {
 	// VK_KHR_get_physical_device_properties2
 	bool physicalDeviceProperties2 = false;
+
+	// VK_EXT_debug_info
+	bool debugInfo = false;
 };
 
 struct OptionalDeviceExtensions
@@ -318,6 +321,7 @@ public:
 	void setComputeShader(Shader *computeShader);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	const OptionalDeviceExtensions &getEnabledOptionalDeviceExtensions() const;
+	const OptionalInstanceExtensions &getEnabledOptionalInstanceExtensions() const;
 	VkSampleCountFlagBits getMsaaCount(int requestedMsaa) const;
 	void setVsync(int vsync);
 	int getVsync() const;

@@ -89,6 +89,8 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext)
 	{
 		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
 			ext.physicalDeviceProperties2 = true;
+		if (strcmp(extension.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
+			ext.debugInfo = true;
 	}
 }
 
@@ -127,6 +129,8 @@ Graphics::Graphics()
 
 	if (optionalInstanceExtensions.physicalDeviceProperties2)
 		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+	if (optionalInstanceExtensions.debugInfo)
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
 	size_t additional_extension_count = extensions.size();
 	extensions.resize(additional_extension_count + count);
@@ -1397,6 +1401,11 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 const OptionalDeviceExtensions &Graphics::getEnabledOptionalDeviceExtensions() const
 {
 	return optionalDeviceExtensions;
+}
+
+const OptionalInstanceExtensions &Graphics::getEnabledOptionalInstanceExtensions() const
+{
+	return optionalInstanceExtensions;
 }
 
 bool Graphics::checkValidationSupport()

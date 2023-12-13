@@ -474,6 +474,17 @@ int w_Texture_renderTo(lua_State *L)
 	return 0;
 }
 
+static int w_Texture_getDebugName(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	const std::string &debugName = t->getDebugName();
+	if (debugName.empty())
+		lua_pushnil(L);
+	else
+		luax_pushstring(L, debugName);
+	return 1;
+}
+
 const luaL_Reg w_Texture_functions[] =
 {
 	{ "getTextureType", w_Texture_getTextureType },
@@ -506,6 +517,7 @@ const luaL_Reg w_Texture_functions[] =
 	{ "generateMipmaps", w_Texture_generateMipmaps },
 	{ "replacePixels", w_Texture_replacePixels },
 	{ "renderTo", w_Texture_renderTo },
+	{ "getDebugName", w_Texture_getDebugName },
 
 	// Deprecated
 	{ "newImageData", w_Texture_newImageData },

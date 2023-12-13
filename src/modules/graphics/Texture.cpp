@@ -178,6 +178,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	, requestedMSAA(settings.msaa > 1 ? settings.msaa : 0)
 	, samplerState()
 	, graphicsMemorySize(0)
+	, debugName(settings.debugName)
 {
 	const auto &caps = gfx->getCapabilities();
 	int requestedMipmapCount = settings.mipmapCount;
@@ -975,6 +976,7 @@ static StringMap<Texture::SettingType, Texture::SETTING_MAX_ENUM>::Entry setting
 	{ "canvas",       Texture::SETTING_RENDER_TARGET },
 	{ "computewrite", Texture::SETTING_COMPUTE_WRITE },
 	{ "readable",     Texture::SETTING_READABLE      },
+	{ "debugname",    Texture::SETTING_DEBUGNAME     },
 };
 
 static StringMap<Texture::SettingType, Texture::SETTING_MAX_ENUM> settingTypes(settingTypeEntries, sizeof(settingTypeEntries));

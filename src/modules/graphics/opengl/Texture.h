@@ -78,7 +78,6 @@ private:
 	GLenum textureGLError;
 
 	int actualSamples;
-
 }; // Texture
 
 } // opengl

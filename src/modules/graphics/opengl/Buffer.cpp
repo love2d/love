@@ -164,6 +164,9 @@ bool Buffer::load(const void *initialdata)
 		glTexBuffer(target, glformat, buffer);
 	}
 
+	if (!debugName.empty())
+		glObjectLabel(GL_BUFFER, buffer, -1, debugName.c_str());
+
 	return (glGetError() == GL_NO_ERROR);
 }
 

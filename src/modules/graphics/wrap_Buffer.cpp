@@ -413,6 +413,17 @@ static int w_Buffer_isBufferType(lua_State *L)
 	return 1;
 }
 
+static int w_Buffer_getDebugName(lua_State *L)
+{
+	Buffer *t = luax_checkbuffer(L, 1);
+	const std::string &debugName = t->getDebugName();
+	if (debugName.empty())
+		lua_pushnil(L);
+	else
+		luax_pushstring(L, debugName);
+	return 1;
+}
+
 static const luaL_Reg w_Buffer_functions[] =
 {
 	{ "setArrayData", w_Buffer_setArrayData },
@@ -422,6 +433,7 @@ static const luaL_Reg w_Buffer_functions[] =
 	{ "getSize", w_Buffer_getSize },
 	{ "getFormat", w_Buffer_getFormat },
 	{ "isBufferType", w_Buffer_isBufferType },
+	{ "getDebugName", w_Buffer_getDebugName },
 	{ 0, 0 }
 };
 
