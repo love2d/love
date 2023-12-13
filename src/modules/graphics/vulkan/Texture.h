@@ -85,7 +85,6 @@ private:
 	Slices slices;
 	int layerCount = 0;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
-	std::string debugName;
 };
 
 } // vulkan

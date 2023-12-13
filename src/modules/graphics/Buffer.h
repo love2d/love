@@ -24,6 +24,7 @@
 #include "common/config.h"
 #include "common/int.h"
 #include "common/Object.h"
+#include "common/Optional.h"
 #include "vertex.h"
 #include "Resource.h"
 
@@ -89,12 +90,13 @@ public:
 		BufferUsageFlags usageFlags;
 		BufferDataUsage dataUsage;
 		bool zeroInitialize;
-		std::string debugName;
+		Optional<std::string> debugName;
 
 		Settings(uint32 usageflags, BufferDataUsage dataUsage)
 			: usageFlags((BufferUsageFlags)usageflags)
 			, dataUsage(dataUsage)
 			, zeroInitialize(false)
+			, debugName()
 		{}
 	};
 
@@ -112,6 +114,7 @@ public:
 	const DataMember &getDataMember(int index) const { return dataMembers[index]; }
 	size_t getMemberOffset(int index) const { return dataMembers[index].offset; }
 	int getDataMemberIndex(const std::string &name) const;
+	const Optional<std::string> &getDebugName() const { return debugName; }
 
 	void setImmutable(bool immutable) { this->immutable = immutable; };
 	bool isImmutable() const { return immutable; }
@@ -185,7 +188,7 @@ protected:
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
 	BufferDataUsage dataUsage;
 
-	std::string debugName;
+	Optional<std::string> debugName;
 
 	bool mapped;
 	MapType mappedType;

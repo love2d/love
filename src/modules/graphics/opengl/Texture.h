@@ -78,9 +78,6 @@ private:
 	GLenum textureGLError;
 
 	int actualSamples;
-
-	std::string debugName;
-
 }; // Texture
 
 } // opengl

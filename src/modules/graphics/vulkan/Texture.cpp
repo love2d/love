@@ -34,7 +34,6 @@ namespace vulkan
 Texture::Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data)
 	: love::graphics::Texture(gfx, settings, data)
 	, vgfx(dynamic_cast<Graphics*>(gfx))
-	, debugName(settings.debugName)
 	, slices(settings.type)
 	, imageAspect(0)
 {
@@ -202,7 +201,7 @@ bool Texture::loadVolatile()
 
 	setGraphicsMemorySize(memsize);
 
-	if (!debugName.empty())
+	if (debugName.hasValue)
 	{
 		if (vgfx->getEnabledOptionalInstanceExtensions().debugInfo)
 		{
@@ -210,7 +209,7 @@ bool Texture::loadVolatile()
 			nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
 			nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
 			nameInfo.objectHandle = (uint64_t)textureImage;
-			nameInfo.pObjectName = debugName.c_str();
+			nameInfo.pObjectName = debugName.value.c_str();
 			vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
 		}
 	}

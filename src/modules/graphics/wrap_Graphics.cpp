@@ -741,7 +741,7 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_DEBUGNAME));
 	if (!lua_isnoneornil(L, -1))
 	{
-		s.debugName = luaL_checkstring(L, -1);
+		s.debugName.set(luaL_checkstring(L, -1));
 	}
 	lua_pop(L, 1);
 

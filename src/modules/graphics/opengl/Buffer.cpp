@@ -68,7 +68,6 @@ static GLenum getGLFormat(DataFormat format)
 
 Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 	: love::graphics::Buffer(gfx, settings, format, size, arraylength)
-	, debugName(settings.debugName)
 {
 	size = getSize();
 	arraylength = getArrayLength();
@@ -165,8 +164,8 @@ bool Buffer::load(const void *initialdata)
 		glTexBuffer(target, glformat, buffer);
 	}
 
-	if (!debugName.empty())
-		glObjectLabel(GL_BUFFER, buffer, -1, debugName.c_str());
+	if (debugName.hasValue)
+		glObjectLabel(GL_BUFFER, buffer, -1, debugName.value.c_str());
 
 	return (glGetError() == GL_NO_ERROR);
 }

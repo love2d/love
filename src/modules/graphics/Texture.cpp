@@ -178,6 +178,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	, requestedMSAA(settings.msaa > 1 ? settings.msaa : 0)
 	, samplerState()
 	, graphicsMemorySize(0)
+	, debugName(settings.debugName)
 {
 	const auto &caps = gfx->getCapabilities();
 	int requestedMipmapCount = settings.mipmapCount;
