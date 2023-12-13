@@ -79,6 +79,8 @@ private:
 
 	int actualSamples;
 
+	std::string debugName;
+
 }; // Texture
 
 } // opengl

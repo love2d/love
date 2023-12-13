@@ -58,6 +58,7 @@ static VkBufferUsageFlags getVulkanUsageFlags(BufferUsageFlags flags)
 Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 	: love::graphics::Buffer(gfx, settings, format, size, arraylength)
 	, zeroInitialize(settings.zeroInitialize)
+	, debugName(settings.debugName)
 	, initialData(data)
 	, vgfx(dynamic_cast<Graphics*>(gfx))
 	, usageFlags(settings.usageFlags)
@@ -107,6 +108,18 @@ bool Buffer::loadVolatile()
 		coherent = true;
 	else
 		coherent = false;
+
+	if (!debugName.empty() && vgfx->getEnabledOptionalInstanceExtensions().debugInfo)
+	{
+		auto device = vgfx->getDevice();
+
+		VkDebugUtilsObjectNameInfoEXT nameInfo{};
+		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
+		nameInfo.objectHandle = (uint64_t)buffer;
+		nameInfo.pObjectName = debugName.c_str();
+		vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
+	}
 
 	return true;
 }

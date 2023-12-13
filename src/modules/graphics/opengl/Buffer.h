@@ -81,6 +81,8 @@ private:
 
 	Range mappedRange;
 
+	std::string debugName;
+
 }; // Buffer
 
 } // opengl

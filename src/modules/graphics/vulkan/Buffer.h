@@ -71,6 +71,7 @@ private:
 	BufferUsageFlags usageFlags;
 	Range mappedRange;
 	bool coherent;
+	std::string debugName;
 };
 
 } // vulkan

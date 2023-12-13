@@ -89,6 +89,7 @@ public:
 		BufferUsageFlags usageFlags;
 		BufferDataUsage dataUsage;
 		bool zeroInitialize;
+		std::string debugName;
 
 		Settings(uint32 usageflags, BufferDataUsage dataUsage)
 			: usageFlags((BufferUsageFlags)usageflags)
@@ -183,6 +184,8 @@ protected:
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
 	BufferDataUsage dataUsage;
+
+	std::string debugName;
 
 	bool mapped;
 	MapType mappedType;

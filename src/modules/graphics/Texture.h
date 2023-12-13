@@ -175,6 +175,7 @@ public:
 		SETTING_RENDER_TARGET,
 		SETTING_COMPUTE_WRITE,
 		SETTING_READABLE,
+		SETTING_DEBUGNAME,
 		SETTING_MAX_ENUM
 	};
 
@@ -194,6 +195,7 @@ public:
 		bool renderTarget = false;
 		bool computeWrite = false;
 		OptionalBool readable;
+		std::string debugName;
 	};
 
 	struct Slices
