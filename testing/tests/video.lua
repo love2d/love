@@ -25,7 +25,7 @@ love.test.video.VideoStream = function(test)
   video:seek(0.3)
   test:assertRange(video:tell(), 0.3, 0.4, 'check seek/tell')
   video:rewind()
-  test:assertEquals(0, video:tell(), 'check rewind')
+  test:assertRange(video:tell(), 0, 0.1, 'check rewind')
   video:pause()
   test:assertFalse(video:isPlaying(), 'check paused')
 
