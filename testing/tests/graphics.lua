@@ -98,7 +98,7 @@ love.test.graphics.Canvas = function(test)
     love.graphics.rectangle('fill', 0, 0, 200, 200)
     love.graphics.setColor(1, 1, 1, 1)
   end)
-  local imgdata1 = love.graphics.readbackTexture(canvas, {100, 0, 0, 0, 100, 100})
+  local imgdata1 = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata1, {
     red = {{0, 0},{0,99},{99,0},{99,99}},
   }, 'font draw check')
@@ -109,7 +109,7 @@ love.test.graphics.Canvas = function(test)
   love.graphics.setCanvas(xcanvas)
     love.graphics.draw(canvas, 0, 0)
   love.graphics.setCanvas()
-  local imgdata2 = love.graphics.readbackTexture(canvas, {100, 0, 0, 0, 100, 100})
+  local imgdata2 = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata2, {
     red = {{0, 0},{0,99},{99,0},{99,99}},
   }, 'font draw check')
@@ -177,7 +177,7 @@ love.test.graphics.Font = function(test)
     love.graphics.setFont(font)
     love.graphics.print('Aa', 0, 5)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     white = {{0,3},{4,3},{7,4},{9,4},{10,5},{0,8},{4,8},{10,8}},
   }, 'font draw check')
@@ -193,7 +193,7 @@ love.test.graphics.Font = function(test)
     love.graphics.print('AB', 0, 0) -- should come from fontab
     love.graphics.print('CD', 0, 9) -- should come from fontcd
   love.graphics.setCanvas()
-  local imgdata2 = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata2 = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata2, {
     green = {{1,8},{6,8},{2,10},{5,10},{9,10}},
     black = {{9,9},{14,8},{14,10},{14,1},{1,10}}
@@ -293,7 +293,7 @@ love.test.graphics.Image = function(test)
   love.graphics.setCanvas(canvas)
     love.graphics.draw(image, 0, 0)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  local imgdata = love.graphics.readbackTexture(canvas)
   local r1, g1, b1 = imgdata:getPixel(25, 25)
   test:assertEquals(3, r1+g1+b1, 'check back to white')
   test:compareImg(imgdata)
@@ -653,7 +653,7 @@ love.test.graphics.ParticleSystem = function(test)
   love.graphics.setCanvas()
   -- this should result in a bunch of red pixels on the left 2px of the canvas
   -- and a bunch of green pixels on the right 2px of the canvas
-  local imgdata = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test.pixel_tolerance = 1
   test:compareImg(imgdata)
   
@@ -683,7 +683,7 @@ love.test.graphics.Quad = function(test)
     quad:setViewport(32, 32, 32, 32, 64, 64)
     love.graphics.draw(texture, quad, 32, 32)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     white = {{17,31},{31,31},{31,24},{32,32},{46,32},{32,46}},
     lovepink = {{2,31},{31,2}},
@@ -760,7 +760,7 @@ love.test.graphics.Shader = function(test)
     love.graphics.setShader()
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     red = {{1,1},{1,7},{7,7},{7,1}},
     yellow = {{8,8},{8,15},{15,15},{15,8}}
@@ -838,7 +838,7 @@ love.test.graphics.SpriteBatch = function(test)
     love.graphics.clear(0, 0, 0, 1)
     love.graphics.draw(sbatch, 0, 0)
   love.graphics.setCanvas()
-  local imgdata1 = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  local imgdata1 = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata1, {
     lovepink = {{0,0},{63,2},{0,32},{63,32},{63,0},{63,2}}
   }, 'sbatch draw normal')
@@ -852,7 +852,7 @@ love.test.graphics.SpriteBatch = function(test)
     love.graphics.clear(0, 0, 0, 1)
     love.graphics.draw(sbatch, 0, 0)
   love.graphics.setCanvas()
-  local imgdata2 = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  local imgdata2 = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata2, {
     lovepink = {{0,32},{63,32}},
     black = {{0,0},{63,0}},
@@ -866,7 +866,7 @@ love.test.graphics.SpriteBatch = function(test)
     love.graphics.clear(0, 0, 0, 1)
     love.graphics.draw(sbatch, 0, 0)
   love.graphics.setCanvas()
-  local imgdata3 = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  local imgdata3 = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata3, {
     lovepink = {{0,32},{63,32}},
     black = {{0,0},{63,0},{0,48},{63,48}},
@@ -880,7 +880,7 @@ love.test.graphics.SpriteBatch = function(test)
     love.graphics.clear(0, 0, 0, 1)
     love.graphics.draw(sbatch, 0, 0)
   love.graphics.setCanvas()
-  local imgdata4 = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  local imgdata4 = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata4, {
     black = {{0,0},{63,0},{0,32},{63,32},{0,63},{63,63}},
   }, 'sbatch draw clear')
@@ -906,7 +906,7 @@ love.test.graphics.SpriteBatch = function(test)
     love.graphics.clear(0, 0, 0, 1)
     love.graphics.draw(asbatch, 0, 0)
   love.graphics.setCanvas()
-  local imgdata5 = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  local imgdata5 = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata5, {
     loveblue = {{31,2},{63,2},{3,30},{3,33},{16,47},{63,47}},
     lovepink = {{17,48},{63,48},{31,61},{63,61}},
@@ -952,7 +952,7 @@ love.test.graphics.Text = function(test)
   love.graphics.setCanvas(canvas)
     love.graphics.draw(colortext, 0, 10)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     yellow = {{1,9},{8,13},{16,11},{22,10},{25,7},{29,9},{32,13},{34,15}},
     white = {{17,13},{30,12},{38,9},{44,13},{58,13},{8,29},{58,29},{57,37},{5,39},{57,45},{1,55}}
@@ -1017,7 +1017,7 @@ love.test.graphics.Video = function(test)
     love.graphics.clear(1, 0, 0, 1)
     love.graphics.draw(video, 0, 0)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {500, 0, 0, 0, 500, 500})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     black = {{0,0},{495,0},{495,499},{0,499}},
     red = {{499,0},{499,499}}
@@ -1049,7 +1049,7 @@ love.test.graphics.arc = function(test)
     love.graphics.arc('line', "pie", 16, 16, 16, 180 * (math.pi/180), 135 * (math.pi/180), 10)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata1 = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata1 = love.graphics.readbackTexture(canvas)
   -- draw some arcs with open format
   love.graphics.setCanvas(canvas)
     love.graphics.clear(0, 0, 0, 1)
@@ -1061,7 +1061,7 @@ love.test.graphics.arc = function(test)
     love.graphics.arc('fill', "open", 16, 16, 16, 180 * (math.pi/180), 270 * (math.pi/180), 10)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata2 = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata2 = love.graphics.readbackTexture(canvas)
   -- draw some arcs with closed format
   love.graphics.setCanvas(canvas)
     love.graphics.clear(0, 0, 0, 1)
@@ -1073,7 +1073,7 @@ love.test.graphics.arc = function(test)
     love.graphics.arc('line', "closed", 16, 16, 16, 180 * (math.pi/180), 90 * (math.pi/180), 10)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata3 = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata3 = love.graphics.readbackTexture(canvas)
   if GITHUB_RUNNER and love.system.getOS() == 'OS X' then
     -- on macosx runners, the arcs are not drawn as accurately at low res
     -- there's a couple pixels different in the curve of the arc but as we
@@ -1104,7 +1104,7 @@ love.test.graphics.circle = function(test)
     love.graphics.circle('fill', 16, 16, 4)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     white = {{13,8},{18,8},{23,13},{23,18}},
     green = {
@@ -1130,7 +1130,7 @@ love.test.graphics.clear = function(test)
     love.graphics.clear(0, 0, 0, 1)
     love.graphics.clear(1, 1, 0, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     yellow = {{0,0},{15,0},{0,15},{15,15},{8,8}}
   }, 'clear')
@@ -1165,7 +1165,7 @@ love.test.graphics.draw = function(test)
     love.graphics.draw(canvas1, 16, 16, 0, 0.5, 0.5)
     love.graphics.draw(canvas1, transform)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas2, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas2)
   test:assertPixels(imgdata, {
     lovepink = {{23,3},{23,19},{7,19},{0,0},{16,0},{0,16},{16,16}},
     loveblue = {{0,31},{15,17},{15,31},{16,31},{31,17},{31,31},{16,15},{31,15}},
@@ -1191,7 +1191,7 @@ love.test.graphics.drawInstanced = function(test)
     love.graphics.clear(0, 0, 0, 1)
     love.graphics.drawInstanced(mesh, 1000, 0, 0, 0, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {64, 0, 0, 0, 64, 64})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     red = {{0,0}},
     green = {{63,0}},
@@ -1218,7 +1218,7 @@ love.test.graphics.drawLayer = function(test)
     love.graphics.drawLayer(image, 4, 0, 32, 0, 0.5, 0.5)
     love.graphics.drawLayer(image, 3, 32, 32, 0, 2, 2, 16, 16)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     lovepink = {{30,2},{33,2},{2,30},{2,33},{4,60},{4,63},{60,4},{63,4},{31,23},{32,23}},
     loveblue = {{14,33},{17,33},{46,1},{49,1},{1,46},{1,49},{33,14},{33,17}},
@@ -1242,7 +1242,7 @@ love.test.graphics.ellipse = function(test)
     love.graphics.ellipse('fill', 16, 0, 8, 16)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     red = {{0,14},{0,17},{7,9},{7,22},{14,15},{14,16}},
     pink = {{15,15},{16,15},{8,0},{8,4},{23,0},{23,4},{13,14},{18,14}},
@@ -1279,7 +1279,7 @@ love.test.graphics.line = function(test)
     love.graphics.line({0,0,8,8,16,0,8,8,16,16,8,8,0,16})
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     yellow = {{0,0},{15,0},{0,15},{15,15},{7,7},{8,7},{8,7},{8,8}},
     red = {{1,0},{14,0},{0,1},{0,14},{15,1},{15,14},{1,15},{14,15}}
@@ -1299,7 +1299,7 @@ love.test.graphics.points = function(test)
     love.graphics.points({2,2,8,8,15,2,8,9,15,15,9,9,2,15,9,8})
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   -- on macOS runners points are drawn 1px off from the target
   if GITHUB_RUNNER and love.system.getOS() == 'OS X' then
     test.pixel_tolerance = 1
@@ -1319,7 +1319,7 @@ love.test.graphics.polygon = function(test)
     love.graphics.polygon("line", {2, 2, 4, 5, 3, 7, 8, 15, 12, 4, 5, 10})
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     yellow = {{1,0},{1,1},{5,9},{7,14},{8,14},{12,3}},
     red = {{2,1},{1,2},{1,7},{5,15},{14,15},{8,8},{14,2},{7,1}}
@@ -1342,7 +1342,7 @@ love.test.graphics.print = function(test)
     love.graphics.print('hello', 0, 3, 90*(math.pi/180), 1, 1, 0, 8)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     red = {{0,0},{1,0},{1,1},{2,6},{4,4},{7,6},{10,2},{11,5},{14,3},{14,4}},
     green = {
@@ -1372,7 +1372,7 @@ love.test.graphics.printf = function(test)
     love.graphics.printf('love', 0, 7, 32, "center")
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     red = {
       {1,0},{1,1},{0,3},{2,3},{2,7},{0,9},{3,11},{4,10},{0,15},{4,15},{2,19},
@@ -1400,7 +1400,7 @@ love.test.graphics.rectangle = function(test)
     love.graphics.rectangle('fill', 6, 6, 4, 4)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata1 = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata1 = love.graphics.readbackTexture(canvas)
   -- test, check red bg and blue central square
   test:assertPixels(imgdata1, {
     red = {{0,0},{15,0},{15,15},{0,15}},
@@ -1417,7 +1417,7 @@ love.test.graphics.rectangle = function(test)
     love.graphics.rectangle('line', 11, 1, 5, 15) -- 6x16 right aligned green outline
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata2 = love.graphics.readbackTexture(canvas, {1, 1, 0, 0, 16, 16})
+  local imgdata2 = love.graphics.readbackTexture(canvas)
   -- -- check corners and inner corners
   test:assertPixels(imgdata2, {
     red = {{3,0},{9,0},{3,15,9,15}},
@@ -1869,7 +1869,7 @@ love.test.graphics.intersectScissor = function(test)
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.setScissor()
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { 
     red = {{0,0},{3,3}},
     black ={{4,0},{0,4},{4,4}}
@@ -1965,7 +1965,7 @@ love.test.graphics.setBlendMode = function(test)
     love.graphics.rectangle('fill', 0, 15, 1, 1)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   -- check the 4 corners
   test:assertPixels(imgdata, {
     redpale = {{0,0}},
@@ -1994,7 +1994,7 @@ love.test.graphics.setCanvas = function(test)
     love.graphics.draw(canvas1, 0, 0)
   love.graphics.setCanvas()
   test:assertEquals(nil, love.graphics.getCanvas(), 'check no canvas set')
-  local imgdata = love.graphics.readbackTexture(canvas2, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas2)
   -- check 2nd canvas is red
   test:assertPixels(imgdata, {
     red = {{0,0},{15,0},{15,15},{0,15}}
@@ -2025,7 +2025,7 @@ love.test.graphics.setColor = function(test)
     love.graphics.rectangle('fill', 0, 3, 16, 1)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     red = {{0,0},{5,0},{10,0},{15,0}},
     yellow = {{0,1},{5,1},{10,1},{15,1}},
@@ -2054,7 +2054,7 @@ love.test.graphics.setColorMask = function(test)
     love.graphics.rectangle('fill', 0, 0, 16, 16)
     love.graphics.setColorMask(true, true, true, true)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     yellow = {{0,0},{0,15},{15,15},{15,0}}
   }, 'set color mask')
@@ -2102,7 +2102,7 @@ love.test.graphics.setFont = function(test)
     love.graphics.print('love', 0, 3)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     red = {
       {0,0},{0,6},{2,6},{6,2},
@@ -2151,7 +2151,7 @@ love.test.graphics.setLineJoin = function(test)
     love.graphics.setLineWidth(1)
     love.graphics.origin()
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     black = {{8,0}},
     red = {{8,4}},
@@ -2179,7 +2179,7 @@ love.test.graphics.setLineStyle = function(test)
     love.graphics.setColor(1, 1, 1)
     love.graphics.origin()
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     red = {{0,0},{7,0},{15,0}},
     red07 = {{0,4},{7,4},{15,4}}
@@ -2214,7 +2214,7 @@ love.test.graphics.setLineWidth = function(test)
     love.graphics.setLineWidth(1)
     love.graphics.origin()
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     black = {{0,2},{6,2},{0,6},{5,6},{0,11},{5,11}},
     red = {{0,0},{0,1},{7,2},{8,2}},
@@ -2253,7 +2253,7 @@ love.test.graphics.setScissor = function(test)
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.setScissor()
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { 
     red = {{0,0},{7,0},{0,15},{7,15}},
     black ={{8,0},{8,15},{15,0},{15,15}}
@@ -2287,7 +2287,7 @@ love.test.graphics.setShader = function(test)
     love.graphics.setShader()
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { 
     yellow = {{0,0},{15,0},{0,15},{15,15}},
   }, 'check shader set to yellow')
@@ -2308,7 +2308,7 @@ love.test.graphics.setStencilMode = function(test)
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.setStencilMode()
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { 
     red = {{6,2},{9,2},{2,6},{2,9},{13,6},{9,6},{6,13},{9,13}}
   }, 'check stencil test')
@@ -2332,7 +2332,7 @@ love.test.graphics.setWireframe = function(test)
       love.graphics.setColor(1, 1, 1, 1)
     love.graphics.setCanvas()
     love.graphics.setWireframe(false)
-    local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+    local imgdata = love.graphics.readbackTexture(canvas)
     -- on macOS runners wireframes are drawn 1px off from the target
     if GITHUB_RUNNER and love.system.getOS() == 'OS X' then
       test.pixel_tolerance = 1
@@ -2362,7 +2362,7 @@ love.test.graphics.applyTransform = function(test)
     love.graphics.rectangle('fill', 0, 0, 1, 1)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { red = {{10, 0}} }, 'apply transform 10')
   test:compareImg(imgdata)
 end
@@ -2399,7 +2399,7 @@ love.test.graphics.origin = function(test)
     love.graphics.rectangle('fill', 0, 0, 1, 1)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { red = {{0, 0}} }, 'origin check')
   test:compareImg(imgdata)
 end
@@ -2421,7 +2421,7 @@ love.test.graphics.pop = function(test)
     love.graphics.rectangle('fill', 0, 0, 1, 1)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { red = {{0, 0}} }, 'pop 1')
   test:compareImg(imgdata)
 end
@@ -2444,7 +2444,7 @@ love.test.graphics.push = function(test)
     love.graphics.rectangle('fill', 0, 0, 1, 1)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { red = {{1, 1}} }, 'push 1')
   test:compareImg(imgdata)
 end
@@ -2466,7 +2466,7 @@ love.test.graphics.replaceTransform = function(test)
     love.graphics.rectangle('fill', 0, 0, 1, 1)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { red = {{10, 0}} }, 'replace transform 10')
   test:compareImg(imgdata)
 end
@@ -2485,7 +2485,7 @@ love.test.graphics.rotate = function(test)
     love.graphics.rectangle('fill', 0, 0, 4, 4)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { red = {{0,0},{3,0},{3,3},{0,3}} }, 'rotate 90')
   test:compareImg(imgdata)
 end
@@ -2503,7 +2503,7 @@ love.test.graphics.scale = function(test)
     love.graphics.rectangle('fill', 0, 0, 4, 4)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { red = {{1,1},{1,15},{15,1},{15,15}} }, 'scale 4x')
 end
 
@@ -2521,7 +2521,7 @@ love.test.graphics.shear = function(test)
     love.graphics.rectangle('fill', 0, 0, 4, 4)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata1 = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata1 = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata1, { red = {{1,0},{4,0},{7,3},{10,3}} }, 'shear x')
   -- same again at 0,0, we shear by 2y and then draw
   -- we can then check the drawn rectangle has moved down
@@ -2533,7 +2533,7 @@ love.test.graphics.shear = function(test)
     love.graphics.rectangle('fill', 0, 0, 4, 4)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata2 = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata2 = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata2, { red = { {0,1},{0,4},{3,7},{3,10}} }, 'shear y')
   test:compareImg(imgdata1)
   test:compareImg(imgdata2)
@@ -2572,7 +2572,7 @@ love.test.graphics.translate = function(test)
     love.graphics.rectangle('fill', 0, 0, 1, 1)
     love.graphics.setColor(1, 1, 1, 1)
   love.graphics.setCanvas()
-  local imgdata = love.graphics.readbackTexture(canvas, {16, 0, 0, 0, 16, 16})
+  local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { red = {{5,0},{0,5},{5,5},{0,0}} }, 'translate 4x')
   test:compareImg(imgdata)
 end
