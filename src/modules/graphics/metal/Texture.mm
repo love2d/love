@@ -86,6 +86,9 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 	if (texture == nil)
 		throw love::Exception("Out of graphics memory.");
 
+	if (!debugName.empty())
+		texture.label = @(debugName.c_str());
+
 	actualMSAASamples = gfx->getClosestMSAASamples(getRequestedMSAA());
 
 	if (actualMSAASamples > 1)
@@ -100,6 +103,9 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 			texture = nil;
 			throw love::Exception("Out of graphics memory.");
 		}
+
+		if (!debugName.empty())
+			msaaTexture.label = [@(debugName.c_str()) stringByAppendingString:@" (MSAA buffer)"];
 	}
 
 	int mipcount = getMipmapCount();

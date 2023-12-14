@@ -76,6 +76,9 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 	if (buffer == nil)
 		throw love::Exception("Could not create buffer with %d bytes (out of VRAM?)", size);
 
+	if (!debugName.empty())
+		buffer.label = @(debugName.c_str());
+
 	if (usageFlags & BUFFERUSAGEFLAG_TEXEL)
 	{
 		if (@available(iOS 12, macOS 10.14, *))
