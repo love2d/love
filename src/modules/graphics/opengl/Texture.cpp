@@ -422,12 +422,18 @@ bool Texture::loadVolatile()
 
 	setGraphicsMemorySize(memsize);
 
-	if (!debugName.empty())
+	if (!debugName.empty() && (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_2))
 	{
 		if (texture)
 			glObjectLabel(GL_TEXTURE, texture, -1, debugName.c_str());
-		else
-			glObjectLabel(GL_FRAMEBUFFER, renderbuffer, -1, debugName.c_str());
+
+		if (renderbuffer)
+		{
+			std::string rname = debugName;
+			if (actualSamples > 1)
+				rname += " (MSAA buffer)";
+			glObjectLabel(GL_RENDERBUFFER, renderbuffer, -1, rname.c_str());
+		}
 	}
 
 	return true;

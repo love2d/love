@@ -164,7 +164,7 @@ bool Buffer::load(const void *initialdata)
 		glTexBuffer(target, glformat, buffer);
 	}
 
-	if (!debugName.empty())
+	if (!debugName.empty() && (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_2))
 		glObjectLabel(GL_BUFFER, buffer, -1, debugName.c_str());
 
 	return (glGetError() == GL_NO_ERROR);
