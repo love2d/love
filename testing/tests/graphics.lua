@@ -18,7 +18,8 @@ love.test.graphics.Canvas = function(test)
     readable = true,
     msaa = 0,
     dpiscale = love.graphics.getDPIScale(),
-    mipmaps = 'auto'
+    mipmaps = 'auto',
+    debugname = 'testcanvas'
   })
   test:assertObject(canvas)
 
@@ -87,6 +88,9 @@ love.test.graphics.Canvas = function(test)
   end
   test:assertGreaterEqual(2, canvas:getMipmapCount()) -- docs say no mipmaps should return 1
   test:assertEquals('auto', canvas:getMipmapMode())
+
+  -- check debug name
+  test:assertEquals('testcanvas', canvas:getDebugName())
 
   -- check basic rendering
   canvas:renderTo(function()
