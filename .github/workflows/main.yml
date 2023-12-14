@@ -152,7 +152,7 @@ jobs:
     strategy:
       matrix:
         platform: [Win32, x64, ARM64]
-        install: [compat, modern]
+        install: [modern]
         exclude:
         - platform: ARM64
           install: compat
