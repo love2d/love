@@ -35,10 +35,10 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	, size(size)
 	, usageFlags(settings.usageFlags)
 	, dataUsage(settings.dataUsage)
+	, debugName(settings.debugName)
 	, mapped(false)
 	, mappedType(MAP_WRITE_INVALIDATE)
 	, immutable(false)
-	, debugName(settings.debugName)
 {
 	if (size == 0 && arraylength == 0)
 		throw love::Exception("Size or array length must be specified.");
