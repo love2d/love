@@ -325,24 +325,17 @@ end
 -- love.math.random
 love.test.math.random = function(test)
   -- check some random ranges
-  test:assertRange(love.math.random(10), 1, 10, 'check within 1 - 10')
-  test:assertRange(love.math.random(10), 1, 10, 'check within 1 - 10')
-  test:assertRange(love.math.random(10), 1, 10, 'check within 1 - 10')
-  test:assertRange(love.math.random(10), 1, 10, 'check within 1 - 10')
-  test:assertRange(love.math.random(10), 1, 10, 'check within 1 - 10')
-  test:assertRange(love.math.random(5, 100), 5, 100, 'check within 5 - 100')
-  test:assertRange(love.math.random(5, 100), 5, 100, 'check within 5 - 100')
-  test:assertRange(love.math.random(5, 100), 5, 100, 'check within 5 - 100')
-  test:assertRange(love.math.random(5, 100), 5, 100, 'check within 5 - 100')
-  test:assertRange(love.math.random(5, 100), 5, 100, 'check within 5 - 100')
+  love.math.setRandomSeed(123)
+  test:assertRange(love.math.random(), 0.37068322251462, 0.37068322251464, "check random algorithm")
+  test:assertEquals(love.math.random(10), 4, "check single random param")
+  test:assertEquals(love.math.random(15, 100), 92, "check two random params")
 end
 
 
 -- love.math.randomNormal
--- @NOTE i dont _really_ get the range expected based on stddev + mean
--- so feel free to change to be more accurate
 love.test.math.randomNormal = function(test)
-  test:assertRange(love.math.randomNormal(1, 0), -3, 3, 'check within -3 - 3')
+  love.math.setRandomSeed(1234)
+  test:assertRange(love.math.randomNormal(1, 2), 1.0813614997253, 1.0813614997255, 'check randomNormal two params')
 end
 
 
