@@ -61,15 +61,16 @@ function graphics.stencil(func, action, value, keepvalues)
 
 	if value == nil then value = 1 end
 
-	graphics.setStencilMode(action, "always", value)
-
+	local action2, mode2, value2, readmask2, writemask2 = graphics.getStencilMode()
 	local mr, mg, mb, ma = graphics.getColorMask()
+
+	graphics.setStencilMode(action, "always", value)
 	graphics.setColorMask(false)
 
 	local success, err = pcall(func)
 
+	graphics.setStencilMode(action2, mode2, value2, readmask2, writemask2)
 	graphics.setColorMask(mr, mg, mb, ma)
-	graphics.setStencilMode()
 
 	if not success then
 		error(err, 2)
