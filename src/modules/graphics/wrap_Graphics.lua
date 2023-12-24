@@ -64,7 +64,7 @@ function graphics.stencil(func, action, value, keepvalues)
 	local action2, mode2, value2, readmask2, writemask2 = graphics.getStencilMode()
 	local mr, mg, mb, ma = graphics.getColorMask()
 
-	graphics.setStencilMode(action, "always", value)s
+	graphics.setStencilMode(action, "always", value)
 	graphics.setColorMask(false)
 
 	local success, err = pcall(func)
