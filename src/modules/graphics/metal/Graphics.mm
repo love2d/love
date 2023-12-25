@@ -2210,10 +2210,6 @@ void Graphics::initCapabilities()
 				families.macCatalyst[1 + i] = true;
 		}
 	}
-	else
-	{
-		// TODO: feature set API
-	}
 
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = true;
