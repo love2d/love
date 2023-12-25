@@ -2422,8 +2422,10 @@ Graphics::Stats Graphics::getStats() const
 	stats.drawCallsBatched = drawCallsBatched;
 	stats.textures = Texture::textureCount;
 	stats.fonts = Font::fontCount;
+	stats.buffers = Buffer::bufferCount;
 	stats.textureMemory = Texture::totalGraphicsMemory;
-	
+	stats.bufferMemory = Buffer::totalGraphicsMemory;
+
 	return stats;
 }
 

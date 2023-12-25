@@ -3005,8 +3005,14 @@ int w_getStats(lua_State *L)
 	lua_pushinteger(L, stats.fonts);
 	lua_setfield(L, -2, "fonts");
 
-	lua_pushinteger(L, stats.textureMemory);
+	lua_pushinteger(L, stats.buffers);
+	lua_setfield(L, -2, "buffers");
+
+	lua_pushnumber(L, (lua_Number) stats.textureMemory);
 	lua_setfield(L, -2, "texturememory");
+
+	lua_pushnumber(L, (lua_Number) stats.bufferMemory);
+	lua_setfield(L, -2, "buffermemory");
 
 	return 1;
 }

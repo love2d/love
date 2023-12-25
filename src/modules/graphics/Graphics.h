@@ -230,7 +230,9 @@ public:
 		int shaderSwitches;
 		int textures;
 		int fonts;
+		int buffers;
 		int64 textureMemory;
+		int64 bufferMemory;
 	};
 
 	struct DrawCommand

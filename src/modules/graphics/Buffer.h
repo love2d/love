@@ -49,6 +49,9 @@ public:
 
 	static love::Type type;
 
+	static int bufferCount;
+	static int64 totalGraphicsMemory;
+
 	static const size_t SHADER_STORAGE_BUFFER_MAX_STRIDE = 2048;
 
 	enum MapType
