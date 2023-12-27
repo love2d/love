@@ -195,6 +195,7 @@ Graphics::Graphics()
 	, quadIndexBuffer(nullptr)
 	, fanIndexBuffer(nullptr)
 	, capabilities()
+	, defaultTextures()
 	, cachedShaderStages()
 {
 	transformStack.reserve(16);
@@ -216,6 +217,8 @@ Graphics::~Graphics()
 		quadIndexBuffer->release();
 	if (fanIndexBuffer != nullptr)
 		fanIndexBuffer->release();
+
+	releaseDefaultResources();
 
 	// Clean up standard shaders before the active shader. If we do it after,
 	// the active shader may try to activate a standard shader when deactivating
@@ -528,6 +531,90 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 	}
 
 	return Shader::validate(stages, err);
+}
+
+Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType)
+{
+	Texture *tex = defaultTextures[type][dataType];
+	if (tex != nullptr)
+		return tex;
+
+	Texture::Settings settings;
+	settings.type = type;
+
+	switch (dataType)
+	{
+	case DATA_BASETYPE_INT:
+		settings.format = PIXELFORMAT_RGBA8_INT;
+		break;
+	case DATA_BASETYPE_UINT:
+		settings.format = PIXELFORMAT_RGBA8_UINT;
+		break;
+	case DATA_BASETYPE_FLOAT:
+	default:
+		settings.format = PIXELFORMAT_RGBA8_UNORM;
+		break;
+	}
+
+	std::string name = "default_";
+
+	const char *tname = "unknown";
+	Texture::getConstant(type, tname);
+	name += tname;
+
+	const char *formatname = "unknown";
+	love::getConstant(settings.format, formatname);
+	name += std::string("_") + formatname;
+
+	settings.debugName = name;
+
+	tex = newTexture(settings);
+
+	SamplerState s;
+	s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
+	s.wrapU = s.wrapV = s.wrapW = SamplerState::WRAP_CLAMP;
+	tex->setSamplerState(s);
+
+	uint8 pixel[] = {255, 255, 255, 255};
+	if (isPixelFormatInteger(settings.format))
+		pixel[0] = pixel[1] = pixel[2] = pixel[3] = 1;
+
+	for (int slice = 0; slice < (type == TEXTURE_CUBE ? 6 : 1); slice++)
+		tex->replacePixels(pixel, sizeof(pixel), slice, 0, {0, 0, 1, 1}, false);
+
+	defaultTextures[type][dataType] = tex;
+
+	return tex;
+}
+
+void Graphics::releaseDefaultResources()
+{
+	for (int type = 0; type < TEXTURE_MAX_ENUM; type++)
+	{
+		for (int dataType = 0; dataType < DATA_BASETYPE_MAX_ENUM; dataType++)
+		{
+			if (defaultTextures[type][dataType])
+				defaultTextures[type][dataType]->release();
+			defaultTextures[type][dataType] = nullptr;
+		}
+	}
+}
+
+Texture *Graphics::getTextureOrDefaultForActiveShader(Texture *tex)
+{
+	if (tex != nullptr)
+		return tex;
+
+	Shader *shader = Shader::current;
+
+	if (shader != nullptr)
+	{
+		auto texinfo = shader->getMainTextureInfo();
+		if (texinfo != nullptr && texinfo->textureType != TEXTURE_MAX_ENUM)
+			return getDefaultTexture(texinfo->textureType, texinfo->dataBaseType);
+	}
+
+	return getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT);
 }
 
 int Graphics::getWidth() const
@@ -1825,7 +1912,7 @@ void Graphics::flushBatchedDraws()
 		cmd.indexCount = sbstate.indexCount;
 		cmd.indexType = INDEX_UINT16;
 		cmd.indexBufferOffset = sbstate.indexBuffer->unmap(usedsizes[2]);
-		cmd.texture = sbstate.texture;
+		cmd.texture = getTextureOrDefaultForActiveShader(sbstate.texture);
 		draw(cmd);
 
 		sbstate.indexBufferMap = StreamBuffer::MapInfo();
@@ -1836,7 +1923,7 @@ void Graphics::flushBatchedDraws()
 		cmd.primitiveType = sbstate.primitiveMode;
 		cmd.vertexStart = 0;
 		cmd.vertexCount = sbstate.vertexCount;
-		cmd.texture = sbstate.texture;
+		cmd.texture = getTextureOrDefaultForActiveShader(sbstate.texture);
 		draw(cmd);
 	}
 
@@ -1933,7 +2020,7 @@ void Graphics::drawFromShader(PrimitiveType primtype, int vertexcount, int insta
 	cmd.primitiveType = primtype;
 	cmd.vertexCount = vertexcount;
 	cmd.instanceCount = std::max(1, instancecount);
-	cmd.texture = maintexture;
+	cmd.texture = getTextureOrDefaultForActiveShader(maintexture);
 
 	draw(cmd);
 }
@@ -1974,7 +2061,7 @@ void Graphics::drawFromShader(Buffer *indexbuffer, int indexcount, int instancec
 	cmd.indexType = getIndexDataType(indexbuffer->getDataMember(0).decl.format);
 	cmd.indexBufferOffset = startindex * getIndexDataSize(cmd.indexType);
 
-	cmd.texture = maintexture;
+	cmd.texture = getTextureOrDefaultForActiveShader(maintexture);
 
 	draw(cmd);
 }
@@ -2001,7 +2088,7 @@ void Graphics::drawFromShaderIndirect(PrimitiveType primtype, Buffer *indirectar
 	cmd.primitiveType = primtype;
 	cmd.indirectBuffer = indirectargs;
 	cmd.indirectBufferOffset = argsindex * indirectargs->getArrayStride();
-	cmd.texture = maintexture;
+	cmd.texture = getTextureOrDefaultForActiveShader(maintexture);
 
 	draw(cmd);
 }
@@ -2029,7 +2116,7 @@ void Graphics::drawFromShaderIndirect(Buffer *indexbuffer, Buffer *indirectargs,
 	cmd.indexType = getIndexDataType(indexbuffer->getDataMember(0).decl.format);
 	cmd.indirectBuffer = indirectargs;
 	cmd.indexBufferOffset = argsindex * indirectargs->getArrayStride();
-	cmd.texture = maintexture;
+	cmd.texture = getTextureOrDefaultForActiveShader(maintexture);
 
 	draw(cmd);
 }

@@ -395,7 +395,10 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	count = std::min(count, next - start);
 
 	if (count > 0)
-		gfx->drawQuads(start, count, attributes, buffers, texture);
+	{
+		Texture *tex = gfx->getTextureOrDefaultForActiveShader(texture);
+		gfx->drawQuads(start, count, attributes, buffers, tex);
+	}
 }
 
 } // graphics

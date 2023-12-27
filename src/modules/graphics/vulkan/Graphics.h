@@ -367,7 +367,6 @@ private:
 	void createCommandPool();
 	void createCommandBuffers();
 	void createSyncObjects();
-	void createDefaultTexture();
 	void cleanup();
 	void cleanupSwapChain();
 	void recreateSwapChain();
@@ -442,7 +441,6 @@ private:
 	bool swapChainRecreationRequested = false;
 	bool transitionColorDepthLayouts = false;
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;
-	StrongRef<love::graphics::Texture> defaultTexture;
 	StrongRef<love::graphics::Buffer> defaultConstantColor;
 	StrongRef<love::graphics::Buffer> defaultConstantTexCoord;
 	// functions that need to be called to cleanup objects that were needed for rendering a frame.

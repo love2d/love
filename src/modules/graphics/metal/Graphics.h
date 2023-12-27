@@ -139,7 +139,6 @@ public:
 
 	StreamBuffer *getUniformBuffer() const { return uniformBuffer; }
 	Buffer *getDefaultAttributesBuffer() const { return defaultAttributesBuffer; }
-	Texture *getDefaultTexture(TextureType textype) const { return defaultTextures[textype]; }
 
 	int getClosestMSAASamples(int requestedsamples);
 
@@ -246,8 +245,6 @@ private:
 	size_t uniformBufferOffset;
 
 	Buffer *defaultAttributesBuffer;
-
-	Texture *defaultTextures[TEXTURE_MAX_ENUM];
 
 	std::map<uint64, void *> cachedSamplers;
 	std::unordered_map<uint64, void *> cachedDepthStencilStates;

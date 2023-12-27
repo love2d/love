@@ -1086,7 +1086,8 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 	BufferBindings vertexbuffers;
 	vertexbuffers.set(0, buffer, 0);
 
-	gfx->drawQuads(0, pCount, vertexAttributes, vertexbuffers, texture);
+	Texture *tex = gfx->getTextureOrDefaultForActiveShader(texture);
+	gfx->drawQuads(0, pCount, vertexAttributes, vertexbuffers, tex);
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)

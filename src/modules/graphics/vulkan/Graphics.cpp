@@ -157,7 +157,6 @@ Graphics::~Graphics()
 {
 	defaultConstantTexCoord.set(nullptr);
 	defaultConstantColor.set(nullptr);
-	defaultTexture.set(nullptr);
 
 	Volatile::unloadAll();
 	cleanup();
@@ -676,7 +675,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 			defaultConstantColor = newBuffer(settings, { format }, whiteColor, sizeof(whiteColor), 1);
 		}
 
-		createDefaultTexture();
 		createDefaultShaders();
 		Shader::current = Shader::standardShaders[Shader::StandardShader::STANDARD_DEFAULT];
 		createQuadIndexBuffer();
@@ -2384,10 +2382,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		offsets.push_back((VkDeviceSize)0);
 	}
 
-	if (texture == nullptr)
-		configuration.shader->setMainTex(defaultTexture);
-	else
-		configuration.shader->setMainTex(texture);
+	configuration.shader->setMainTex(texture);
 
 	ensureGraphicsPipelineConfiguration(configuration);
 
@@ -3033,15 +3028,6 @@ void Graphics::createSyncObjects()
 			vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores.at(i)) != VK_SUCCESS ||
 			vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences.at(i)) != VK_SUCCESS)
 			throw love::Exception("failed to create synchronization objects for a frame!");
-}
-
-void Graphics::createDefaultTexture()
-{
-	Texture::Settings settings;
-	defaultTexture.set(newTexture(settings, nullptr), Acquire::NORETAIN);
-
-	uint8_t whitePixels[] = {255, 255, 255, 255};
-	defaultTexture->replacePixels(whitePixels, sizeof(whitePixels), 0, 0, { 0, 0, 1, 1 }, false);
 }
 
 void Graphics::cleanup()

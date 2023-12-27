@@ -323,8 +323,6 @@ void OpenGL::setupContext()
 	setStencilWriteMask(state.stencilWriteMask);
 	setColorWriteMask(state.colorWriteMask);
 
-	createDefaultTexture();
-
 	contextInitialized = true;
 
 #ifdef LOVE_ANDROID
@@ -340,18 +338,6 @@ void OpenGL::deInitContext()
 {
 	if (!contextInitialized)
 		return;
-
-	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
-	{
-		for (int datatype = DATA_BASETYPE_FLOAT; datatype <= DATA_BASETYPE_UINT; datatype++)
-		{
-			if (state.defaultTexture[i][datatype] != 0)
-			{
-				gl.deleteTexture(state.defaultTexture[i][datatype]);
-				state.defaultTexture[i][datatype] = 0;
-			}
-		}
-	}
 
 	contextInitialized = false;
 }
@@ -604,71 +590,6 @@ void OpenGL::initMaxValues()
 		maxLODBias = 0.0f;
 }
 
-void OpenGL::createDefaultTexture()
-{
-	// Set the 'default' texture as a repeating white pixel. Otherwise, texture
-	// calls inside a shader would return black when drawing graphics primitives
-	// which would create the need to use different "passthrough" shaders for
-	// untextured primitives vs images.
-	const GLubyte pix[] = {255, 255, 255, 255};
-	const GLubyte intpix[] = {1, 1, 1, 1};
-
-	SamplerState s;
-	s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
-	s.wrapU = s.wrapV = s.wrapW = SamplerState::WRAP_CLAMP;
-
-	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
-	{
-		for (int datatype = (int)DATA_BASETYPE_FLOAT; datatype <= (int)DATA_BASETYPE_UINT; datatype++)
-		{
-			state.defaultTexture[i][datatype] = 0;
-
-			TextureType type = (TextureType) i;
-
-			if (!isTextureTypeSupported(type))
-				continue;
-
-			if (datatype != DATA_BASETYPE_FLOAT && !(GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0))
-				continue;
-
-			GLuint curtexture = state.boundTextures[type][0];
-
-			glGenTextures(1, &state.defaultTexture[type][datatype]);
-			bindTextureToUnit(type, state.defaultTexture[type][datatype], 0, false);
-
-			setSamplerState(type, s);
-
-			PixelFormat format = PIXELFORMAT_RGBA8_UNORM;
-			if (datatype == DATA_BASETYPE_INT)
-				format = PIXELFORMAT_RGBA8_INT;
-			else if (datatype == DATA_BASETYPE_UINT)
-				format = PIXELFORMAT_RGBA8_UINT;
-
-			const GLubyte *p = datatype == DATA_BASETYPE_FLOAT ? pix : intpix;
-
-			rawTexStorage(type, 1, format, 1, 1);
-
-			TextureFormat fmt = convertPixelFormat(format, false);
-			int slices = type == TEXTURE_CUBE ? 6 : 1;
-
-			for (int slice = 0; slice < slices; slice++)
-			{
-				GLenum gltarget = getGLTextureType(type);
-
-				if (type == TEXTURE_CUBE)
-					gltarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
-
-				if (type == TEXTURE_2D || type == TEXTURE_CUBE)
-					glTexSubImage2D(gltarget, 0, 0, 0, 1, 1, fmt.externalformat, fmt.type, p);
-				else if (type == TEXTURE_2D_ARRAY || type == TEXTURE_VOLUME)
-					glTexSubImage3D(gltarget, 0, 0, 0, slice, 1, 1, 1, fmt.externalformat, fmt.type, p);
-			}
-
-			bindTextureToUnit(type, curtexture, 0, false);
-		}
-	}
-}
-
 void OpenGL::prepareDraw(love::graphics::Graphics *gfx)
 {
 	TempDebugGroup debuggroup("Prepare OpenGL draw");
@@ -702,6 +623,7 @@ GLenum OpenGL::getGLBufferType(BufferUsage usage)
 		case BUFFERUSAGE_VERTEX: return GL_ARRAY_BUFFER;
 		case BUFFERUSAGE_INDEX: return GL_ELEMENT_ARRAY_BUFFER;
 		case BUFFERUSAGE_TEXEL: return GL_TEXTURE_BUFFER;
+		case BUFFERUSAGE_UNIFORM: return GL_UNIFORM_BUFFER;
 		case BUFFERUSAGE_SHADER_STORAGE: return GL_SHADER_STORAGE_BUFFER;
 		case BUFFERUSAGE_INDIRECT_ARGUMENTS: return GL_DRAW_INDIRECT_BUFFER;
 		case BUFFERUSAGE_MAX_ENUM: return GL_ZERO;
@@ -1191,11 +1113,6 @@ GLuint OpenGL::getDefaultFBO() const
 #endif
 }
 
-GLuint OpenGL::getDefaultTexture(TextureType type, DataBaseType datatype) const
-{
-	return state.defaultTexture[type][datatype];
-}
-
 void OpenGL::setTextureUnit(int textureunit)
 {
 	if (textureunit != state.curTextureUnit)
@@ -1234,31 +1151,8 @@ void OpenGL::bindBufferTextureToUnit(GLuint texture, int textureunit, bool resto
 
 void OpenGL::bindTextureToUnit(Texture *texture, int textureunit, bool restoreprev, bool bindforedit)
 {
-	TextureType textype = TEXTURE_2D;
-	GLuint handle = 0;
-
-	if (texture != nullptr)
-	{
-		textype = texture->getTextureType();
-		handle = (GLuint) texture->getHandle();
-	}
-	else
-	{
-		DataBaseType datatype = DATA_BASETYPE_FLOAT;
-
-		if (textureunit == 0 && Shader::current != nullptr)
-		{
-			const Shader::UniformInfo *info = Shader::current->getMainTextureInfo();
-			if (info != nullptr)
-			{
-				textype = info->textureType;
-				datatype = info->dataBaseType;
-			}
-		}
-
-		handle = getDefaultTexture(textype, datatype);
-	}
-
+	TextureType textype = texture->getTextureType();
+	GLuint handle = (GLuint) texture->getHandle();
 	bindTextureToUnit(textype, handle, textureunit, restoreprev, bindforedit);
 }
 
@@ -1537,6 +1431,8 @@ bool OpenGL::isBufferUsageSupported(BufferUsage usage) const
 		return true;
 	case BUFFERUSAGE_TEXEL:
 		return GLAD_VERSION_3_1 || GLAD_ES_VERSION_3_2;
+	case BUFFERUSAGE_UNIFORM:
+		return GLAD_VERSION_3_1 || GLAD_ES_VERSION_3_0;
 	case BUFFERUSAGE_SHADER_STORAGE:
 		return (GLAD_VERSION_4_3 && isCoreProfile()) || GLAD_ES_VERSION_3_1;
 	case BUFFERUSAGE_INDIRECT_ARGUMENTS:

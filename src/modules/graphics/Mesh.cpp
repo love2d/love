@@ -667,7 +667,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 		cmd.primitiveType = primitiveType;
 		cmd.indexType = indexDataType;
 		cmd.instanceCount = instancecount;
-		cmd.texture = texture;
+		cmd.texture = gfx->getTextureOrDefaultForActiveShader(texture);
 		cmd.cullMode = gfx->getMeshCullMode();
 
 		cmd.indexBufferOffset = r.getOffset() * indexbuffer->getArrayStride();
@@ -691,7 +691,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 		cmd.vertexStart = (int) r.getOffset();
 		cmd.vertexCount = (int) r.getSize();
 		cmd.instanceCount = instancecount;
-		cmd.texture = texture;
+		cmd.texture = gfx->getTextureOrDefaultForActiveShader(texture);
 		cmd.cullMode = gfx->getMeshCullMode();
 
 		cmd.indirectBuffer = indirectargs;

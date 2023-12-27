@@ -1765,7 +1765,10 @@ uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 		// Make sure at least something is bound to a color attachment. I believe
 		// this is required on ES2 but I'm not positive.
 		if (isPixelFormatDepthStencil(format))
-			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, gl.getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT), 0, 0, 0);
+		{
+			love::graphics::Texture *tex = getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT);
+			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, (GLuint) tex->getHandle(), 0, 0, 0);
+		}
 
 		if (readable)
 		{

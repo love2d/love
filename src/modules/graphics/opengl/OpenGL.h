@@ -331,11 +331,6 @@ public:
 	GLuint getDefaultFBO() const;
 
 	/**
-	 * Gets the ID for love's default texture (used for "untextured" primitives.)
-	 **/
-	GLuint getDefaultTexture(TextureType type, DataBaseType datatype) const;
-
-	/**
 	 * Gets the texture ID for love's default texel buffer.
 	 **/
 	GLuint getDefaultTexelBuffer() const { return state.defaultTexelBuffer; }
@@ -492,7 +487,6 @@ private:
 	void initVendor();
 	void initOpenGLFunctions();
 	void initMaxValues();
-	void createDefaultTexture();
 
 	bool contextInitialized;
 
@@ -550,7 +544,6 @@ private:
 
 		GLuint boundFramebuffers[2];
 
-		GLuint defaultTexture[TEXTURE_MAX_ENUM][DATA_BASETYPE_MAX_ENUM];
 		GLuint defaultTexelBuffer;
 		GLuint defaultStorageBuffer;
 

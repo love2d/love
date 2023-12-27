@@ -290,7 +290,10 @@ void TextBatch::draw(Graphics *gfx, const Matrix4 &m)
 	Graphics::TempTransform transform(gfx, m);
 
 	for (const Font::DrawCommand &cmd : drawCommands)
-		gfx->drawQuads(cmd.startvertex / 4, cmd.vertexcount / 4, vertexAttributes, vertexBuffers, cmd.texture);
+	{
+		Texture *tex = gfx->getTextureOrDefaultForActiveShader(cmd.texture);
+		gfx->drawQuads(cmd.startvertex / 4, cmd.vertexcount / 4, vertexAttributes, vertexBuffers, tex);
+	}
 }
 
 } // graphics
