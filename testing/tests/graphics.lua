@@ -710,11 +710,12 @@ love.test.graphics.Shader = function(test)
       return transform_projection * vertex_position; 
     }
   ]]
-  local shader1 = love.graphics.newShader(pixelcode1, vertexcode1)
+  local shader1 = love.graphics.newShader(pixelcode1, vertexcode1, {debugname = 'testshader'})
   test:assertObject(shader1)
   test:assertEquals('vertex shader:\npixel shader:\n', shader1:getWarnings(), 'check shader valid')
   test:assertFalse(shader1:hasUniform('tex1'), 'check invalid uniform')
   test:assertTrue(shader1:hasUniform('tex2'), 'check valid uniform')
+  test:assertEquals('testshader', shader1:getDebugName())
 
   -- check invalid shader
   local pixelcode2 = [[

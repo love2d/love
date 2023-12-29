@@ -52,7 +52,7 @@ public:
 		GLenum internalFormat;
 	};
 
-	Shader(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]);
+	Shader(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const CompileOptions &options);
 	virtual ~Shader();
 
 	// Implements Volatile

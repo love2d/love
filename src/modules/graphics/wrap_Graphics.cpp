@@ -1463,6 +1463,11 @@ static int w_getShaderSource(lua_State *L, int startidx, std::vector<std::string
 			}
 		}
 		lua_pop(L, 1);
+
+		lua_getfield(L, optionsidx, "debugname");
+		if (!lua_isnoneornil(L, -1))
+			options.debugName = luax_checkstring(L, -1);
+		lua_pop(L, 1);
 	}
 
 	return 0;

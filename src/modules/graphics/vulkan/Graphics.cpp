@@ -1150,9 +1150,9 @@ graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, c
 	return new ShaderStage(this, stage, source, gles, cachekey);
 }
 
-graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
+graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const Shader::CompileOptions &options)
 {
-	return new Shader(stages);
+	return new Shader(stages, options);
 }
 
 graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)

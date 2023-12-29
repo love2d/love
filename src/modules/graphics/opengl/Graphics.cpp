@@ -168,9 +168,9 @@ love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType st
 	return new ShaderStage(this, stage, source, gles, cachekey);
 }
 
-love::graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
+love::graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const Shader::CompileOptions &options)
 {
-	return new Shader(stages);
+	return new Shader(stages, options);
 }
 
 love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)

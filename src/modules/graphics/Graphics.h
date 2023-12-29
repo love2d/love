@@ -1020,7 +1020,7 @@ protected:
 
 	ShaderStage *newShaderStage(ShaderStageType stage, const std::string &source, const Shader::CompileOptions &options, const Shader::SourceInfo &info, bool cache);
 	virtual ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
-	virtual Shader *newShaderInternal(StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) = 0;
+	virtual Shader *newShaderInternal(StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const Shader::CompileOptions &options) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) = 0;
 
 	virtual GraphicsReadback *newReadbackInternal(ReadbackMethod method, Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) = 0;

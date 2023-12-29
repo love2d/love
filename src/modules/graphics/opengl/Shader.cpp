@@ -43,8 +43,8 @@ static bool isBuffer(Shader::UniformType utype)
 	return utype == Shader::UNIFORM_TEXELBUFFER || utype == Shader::UNIFORM_STORAGEBUFFER;
 }
 
-Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
-	: love::graphics::Shader(stages)
+Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const CompileOptions &options)
+	: love::graphics::Shader(stages, options)
 	, program(0)
 	, splitUniformsPerDraw(false)
 	, builtinUniforms()
@@ -511,6 +511,9 @@ bool Shader::loadVolatile()
 
 	if (program == 0)
 		throw love::Exception("Cannot create shader program object.");
+
+	if (!debugName.empty() && (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_2))
+		glObjectLabel(GL_PROGRAM, program, -1, debugName.c_str());
 
 	for (const auto &stage : stages)
 	{

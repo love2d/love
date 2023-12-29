@@ -686,8 +686,9 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	return ss.str();
 }
 
-Shader::Shader(StrongRef<ShaderStage> _stages[])
+Shader::Shader(StrongRef<ShaderStage> _stages[], const CompileOptions &options)
 	: stages()
+	, debugName(options.debugName)
 {
 	std::string err;
 	if (!validateInternal(_stages, err, validationReflection))
@@ -1248,6 +1249,20 @@ bool Shader::fillUniformReflectionData(UniformInfo &u)
 	}
 
 	return true;
+}
+
+std::string Shader::getShaderStageDebugName(ShaderStageType stage) const
+{
+	std::string name = debugName;
+
+	if (!name.empty())
+	{
+		const char *stagename = "unknown";
+		ShaderStage::getConstant(stage, stagename);
+		name += " (" + std::string(stagename) + ")";
+	}
+
+	return name;
 }
 
 bool Shader::initialize()

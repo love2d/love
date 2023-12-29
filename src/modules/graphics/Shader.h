@@ -111,6 +111,7 @@ public:
 	struct CompileOptions
 	{
 		std::map<std::string, std::string> defines;
+		std::string debugName;
 	};
 
 	struct SourceInfo
@@ -189,7 +190,7 @@ public:
 	// Pointer to the default Shader.
 	static Shader *standardShaders[STANDARD_MAX_ENUM];
 
-	Shader(StrongRef<ShaderStage> stages[]);
+	Shader(StrongRef<ShaderStage> stages[], const CompileOptions &options);
 	virtual ~Shader();
 
 	/**
@@ -216,6 +217,8 @@ public:
 	 * Returns any warnings this Shader may have generated.
 	 **/
 	virtual std::string getWarnings() const = 0;
+
+	const std::string &getDebugName() const { return debugName; }
 
 	virtual int getVertexAttributeIndex(const std::string &name) = 0;
 
@@ -291,6 +294,8 @@ protected:
 
 	bool fillUniformReflectionData(UniformInfo &u);
 
+	std::string getShaderStageDebugName(ShaderStageType stage) const;
+
 	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, ValidationReflection &reflection);
 	static DataBaseType getDataBaseType(PixelFormat format);
 	static bool isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b);
@@ -301,6 +306,8 @@ protected:
 	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
 
 	ValidationReflection validationReflection;
+
+	std::string debugName;
 
 }; // Shader
 

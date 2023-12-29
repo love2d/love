@@ -249,8 +249,8 @@ static EShLanguage getGLSLangStage(ShaderStageType stage)
 	return EShLangCount;
 }
 
-Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
-	: love::graphics::Shader(stages)
+Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const CompileOptions &options)
+	: love::graphics::Shader(stages, options)
 	, functions()
 	, builtinUniformInfo()
 	, localUniformStagingData(nullptr)
@@ -758,6 +758,10 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 			}
 
 			functions[stageindex] = [library newFunctionWithName:library.functionNames[0]];
+
+			std::string debugname = getShaderStageDebugName((ShaderStageType)stageindex);
+			if (!debugname.empty())
+				functions[stageindex].label = @(debugname.c_str());
 
 			auto setTextureBinding = [this](CompilerMSL &msl, int stageindex, const spirv_cross::Resource &resource) -> void
 			{

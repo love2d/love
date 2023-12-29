@@ -517,6 +517,17 @@ int w_Shader_getLocalThreadgroupSize(lua_State* L)
 	return 3;
 }
 
+int w_Shader_getDebugName(lua_State *L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+	const std::string &debugName = shader->getDebugName();
+	if (debugName.empty())
+		lua_pushnil(L);
+	else
+		luax_pushstring(L, debugName);
+	return 1;
+}
+
 static const luaL_Reg w_Shader_functions[] =
 {
 	{ "getWarnings",             w_Shader_getWarnings },
@@ -525,6 +536,7 @@ static const luaL_Reg w_Shader_functions[] =
 	{ "hasUniform",              w_Shader_hasUniform },
 	{ "hasStage",                w_Shader_hasStage },
 	{ "getLocalThreadgroupSize", w_Shader_getLocalThreadgroupSize },
+	{ "getDebugName",            w_Shader_getDebugName },
 	{ 0, 0 }
 };
 

@@ -402,7 +402,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource, const 
 
 	}
 
-	return newShaderInternal(stages);
+	return newShaderInternal(stages, options);
 }
 
 Shader *Graphics::newComputeShader(const std::string &source, const Shader::CompileOptions &options)
@@ -418,7 +418,7 @@ Shader *Graphics::newComputeShader(const std::string &source, const Shader::Comp
 	// shouldn't be much reuse.
 	stages[SHADERSTAGE_COMPUTE].set(newShaderStage(SHADERSTAGE_COMPUTE, source, options, info, false));
 
-	return newShaderInternal(stages);
+	return newShaderInternal(stages, options);
 }
 
 Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)

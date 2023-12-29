@@ -52,7 +52,7 @@ class Shader final
 	, public Volatile
 {
 public:
-	Shader(StrongRef<love::graphics::ShaderStage> stages[]);
+	Shader(StrongRef<love::graphics::ShaderStage> stages[], const CompileOptions &options);
 	virtual ~Shader();
 
 	bool loadVolatile() override;

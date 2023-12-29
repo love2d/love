@@ -241,8 +241,8 @@ static bool usesLocalUniformData(const graphics::Shader::UniformInfo *info)
 		info->baseType == graphics::Shader::UNIFORM_UINT;
 }
 
-Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[])
-	: graphics::Shader(stages)
+Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[], const CompileOptions &options)
+	: graphics::Shader(stages, options)
 {
 	auto gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
 	vgfx = dynamic_cast<Graphics*>(gfx);
@@ -948,6 +948,19 @@ void Shader::compileShaders()
 
 		if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 			throw love::Exception("failed to create shader module");
+
+		std::string debugname = getShaderStageDebugName(shaderStage);
+		if (!debugname.empty() && vgfx->getEnabledOptionalInstanceExtensions().debugInfo)
+		{
+			auto device = vgfx->getDevice();
+
+			VkDebugUtilsObjectNameInfoEXT nameInfo{};
+			nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+			nameInfo.objectType = VK_OBJECT_TYPE_SHADER_MODULE;
+			nameInfo.objectHandle = (uint64_t)shaderModule;
+			nameInfo.pObjectName = debugname.c_str();
+			vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
+		}
 
 		shaderModules.push_back(shaderModule);
 
