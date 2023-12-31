@@ -8,6 +8,97 @@
 --------------------------------------------------------------------------------
 
 
+-- GraphicsBuffer (love.graphics.newBuffer)
+love.test.graphics.Buffer = function(test)
+  local vertexformat = {
+    {name="VertexPosition", format="floatvec2"},
+    {name="VertexTexCoord", format="floatvec2"},
+    {name="VertexColor", format="unorm8vec4"},
+  }
+
+  local vertexdata = {
+    {0,  0,  0, 0, 1, 0, 1, 1},
+    {10, 0,  1, 0, 0, 1, 1, 1},
+    {10, 10, 1, 1, 0, 0, 1, 1},
+    {0,  10, 0, 1, 1, 0, 0, 1},
+  }
+
+  local flatvertexdata = {}
+  for i, vert in ipairs(vertexdata) do
+    for j, v in ipairs(vert) do
+      table.insert(flatvertexdata, v)
+    end
+  end
+
+  local vertexbuffer1 = love.graphics.newBuffer(vertexformat, 4, {vertex=true, debugname='testvertexbuffer'})
+  local vertexbuffer2 = love.graphics.newBuffer(vertexformat, vertexdata, {vertex=true})
+
+  test:assertObject(vertexbuffer1)
+  test:assertObject(vertexbuffer2)
+
+  test:assertEquals(4, vertexbuffer1:getElementCount(), 'check vertex count 1')
+  test:assertEquals(4, vertexbuffer2:getElementCount(), 'check vertex count 2')
+
+  -- vertex buffers have their elements tightly packed.
+  test:assertEquals(20, vertexbuffer1:getElementStride(), 'check vertex array stride')
+
+  test:assertEquals(20 * 4, vertexbuffer1:getSize(), 'check vertex buffer size')
+
+  vertexbuffer1:setArrayData(vertexdata)
+  vertexbuffer1:setArrayData(flatvertexdata)
+
+  vertexbuffer1:clear(8, 8) -- partial clear (the first texcoord)
+
+  test:assertTrue(vertexbuffer1:isBufferType('vertex'), 'check is vertex buffer')
+  test:assertFalse(vertexbuffer1:isBufferType('index'), 'check is not index buffer')
+  test:assertFalse(vertexbuffer1:isBufferType('texel'), 'check is not texel buffer')
+  test:assertFalse(vertexbuffer1:isBufferType('shaderstorage'), 'check is not shader storage buffer')
+
+  test:assertEquals('testvertexbuffer', vertexbuffer1:getDebugName(), 'check buffer debug name')
+
+  local format = vertexbuffer1:getFormat()
+  test:assertEquals('table', type(format), 'check buffer format is table')
+  test:assertEquals(#vertexformat, #format, 'check buffer format length')
+
+  for i, v in ipairs(vertexformat) do
+    test:assertEquals(v.name, format[i].name, string.format('check buffer format %d name', i))
+    test:assertEquals(v.format, format[i].format, string.format('check buffer format %d format', i))
+    test:assertEquals(0, format[i].arraylength, string.format('check buffer format %d array length', i))
+    test:assertNotNil(format[i].offset)
+  end
+
+  local indexbuffer = love.graphics.newBuffer('uint16', 128, {index=true})
+  test:assertTrue(indexbuffer:isBufferType('index'), 'check is index buffer')
+end
+
+
+-- Shader Storage GraphicsBuffer (love.graphics.newBuffer)
+-- Separated from the above test so we can skip it when they aren't supported.
+love.test.graphics.ShaderStorageBuffer = function(test)
+  if not love.graphics.getSupported().glsl4 then
+    test:skipTest('GLSL 4 and shader storage buffers are not supported on this system')
+    return
+  end
+
+  local format = {
+    { name="1", format="float" },
+    { name="2", format="floatmat4x4" },
+    { name="3", format="floatvec2" }
+  }
+
+  local buffer = love.graphics.newBuffer(format, 1, {shaderstorage = true})
+
+  test:assertEquals(96, buffer:getElementStride(), 'check shader storage buffer element stride')
+
+  local data = {}
+  for i = 1, 19 do
+    data[i] = 0
+  end
+
+  buffer:setArrayData(data)
+end
+
+
 -- Canvas (love.graphics.newCanvas)
 love.test.graphics.Canvas = function(test)
 
