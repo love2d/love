@@ -18,7 +18,7 @@ platform/unix/love.desktop: platform/unix/love.desktop.in
 	$(MKDIR_P) platform/unix
 	rm -f $@ $@.tmp
 	$(SED) \
-		-e "s|@bindir[@]|$(bindir)|" \
+		-e "s|@CMAKE_INSTALL_FULL_BINDIR[@]|$(bindir)|" \
 		${srcdir}/$@.in > $@.tmp
 	chmod a-w $@.tmp
 	mv $@.tmp $@

@@ -2179,8 +2179,12 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 
 	include(CPack)
 elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+	include(GNUInstallDirs)
+
 	file(COPY platform/unix/debian/ DESTINATION debian PATTERN "*.in" EXCLUDE)
 	configure_file(platform/unix/debian/control.in debian/control @ONLY)
 	configure_file(platform/unix/debian/changelog.in debian/changelog @ONLY)
 	configure_file(platform/unix/debian/rules.in debian/rules @ONLY)
+
+	configure_file(platform/unix/love.desktop.in love.desktop @ONLY)
 endif()
