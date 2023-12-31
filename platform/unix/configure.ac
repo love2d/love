@@ -33,14 +33,6 @@ ACLOVE_CPP14_TEST
 CFLAGS="-fvisibility=hidden $CFLAGS"
 CXXFLAGS="-fvisibility=hidden -fvisibility-inlines-hidden $CXXFLAGS"
 
-# Allow people on OSX to use autotools, they need their platform files
-AC_ARG_ENABLE([osx],
-			  AC_HELP_STRING([--enable-osx], [Compile platform-specific files for OSX]), [], [enable_osx=no])
-AS_VAR_IF([enable_osx], [no], [], #else
-		  ac_cv_search_glLoadIdentity="-framework OpenGL"
-		  AC_SUBST([LDFLAGS], ["${LDFLAGS} -framework CoreFoundation -framework Cocoa"])
-		  AC_SUBST([CPPFLAGS], ["${CPPFLAGS} -I../platform/macosx"]))
-
 # --with-lua and --with-luaversion
 AC_ARG_WITH([lua], [AS_HELP_STRING([--with-lua], [Select the lua implementation])],
 	[], [with_lua=luajit])
@@ -112,7 +104,6 @@ AS_VAR_IF([enable_exe], [no], [], #else
 	  AC_DEFINE([LOVE_BUILD_EXE], [], [Skip building launcher]))
 
 AM_CONDITIONAL([LOVE_BUILD_EXE], [test "x$enable_exe" != xno])
-AM_CONDITIONAL([LOVE_TARGET_OSX], [test "x$enable_osx" != xno])
 
 # Automatic script file rebuilding
 AC_CHECK_PROGS([LUA_EXECUTABLE], ["${with_lua}${with_luaversion}" "${with_lua}" "lua"], [:])

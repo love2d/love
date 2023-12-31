@@ -120,14 +120,7 @@ bin_PROGRAMS = love${love_suffix}
 #love_LDFLAGS =
 love${love_amsuffix}_LDADD = liblove${love_suffix}.la \$(lua_LIBS)
 love${love_amsuffix}_SOURCES = love.cpp
-
-if LOVE_TARGET_OSX
-love${love_amsuffix}_LIBTOOLFLAGS = --tag=OBJCXX
-love${love_amsuffix}_SOURCES += \\
-    ./common/macosx.mm
-else
 love${love_amsuffix}_LIBTOOLFLAGS = --tag=CXX
-endif
 endif
 
 # Compile scripts
