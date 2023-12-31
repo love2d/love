@@ -260,6 +260,28 @@ function(love_disable_warnings ARG_TARGET)
 	set_target_properties(${ARG_TARGET} PROPERTIES COMPILE_FLAGS ${NEW_FLAGS})
 endfunction()
 
+###################################
+# Version
+###################################
+
+# Extract version.h contents.
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h LOVE_VERSION_FILE_CONTENTS)
+
+# Extract one of LOVE_VERSION_MAJOR/MINOR/REV.
+function(match_version ARG_STRING OUT_VAR)
+	string(REGEX MATCH "VERSION_${ARG_STRING} = ([0-9]+);" TMP_VER "${LOVE_VERSION_FILE_CONTENTS}")
+	string(REGEX MATCH "[0-9]+" TMP_VER "${TMP_VER}")
+	set(${OUT_VAR} ${TMP_VER} PARENT_SCOPE)
+endfunction()
+
+match_version("MAJOR" LOVE_VERSION_MAJOR)
+match_version("MINOR" LOVE_VERSION_MINOR)
+match_version("REV" LOVE_VERSION_REV)
+
+set(LOVE_VERSION_STR "${LOVE_VERSION_MAJOR}.${LOVE_VERSION_MINOR}")
+
+message(STATUS "Version: ${LOVE_VERSION_STR}")
+
 #
 # common
 #
@@ -1996,6 +2018,10 @@ add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
 set_target_properties(${LOVE_LIB_NAME} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
 target_link_libraries(${LOVE_LIB_NAME} ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
 
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+	set_target_properties(${LOVE_LIB_NAME} PROPERTIES LIBRARY_OUTPUT_NAME "${LOVE_EXE_NAME}-${LOVE_VERSION_STR}")
+endif()
+
 if(LOVE_EXTRA_DEPENDECIES)
 	add_dependencies(${LOVE_LIB_NAME} ${LOVE_EXTRA_DEPENDECIES})
 endif()
@@ -2043,28 +2069,6 @@ if(NOT ANDROID)
 endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-	###################################
-	# Version
-	###################################
-
-	# Extract version.h contents.
-	file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h LOVE_VERSION_FILE_CONTENTS)
-
-	# Extract one of LOVE_VERSION_MAJOR/MINOR/REV.
-	function(match_version ARG_STRING OUT_VAR)
-		string(REGEX MATCH "VERSION_${ARG_STRING} = ([0-9]+);" TMP_VER "${LOVE_VERSION_FILE_CONTENTS}")
-		string(REGEX MATCH "[0-9]+" TMP_VER "${TMP_VER}")
-		set(${OUT_VAR} ${TMP_VER} PARENT_SCOPE)
-	endfunction()
-
-	match_version("MAJOR" LOVE_VERSION_MAJOR)
-	match_version("MINOR" LOVE_VERSION_MINOR)
-	match_version("REV" LOVE_VERSION_REV)
-
-	set(LOVE_VERSION_STR "${LOVE_VERSION_MAJOR}.${LOVE_VERSION_MINOR}")
-
-	message(STATUS "Version: ${LOVE_VERSION_STR}")
-
 	###################################
 	# CPack
 	###################################
