@@ -2187,4 +2187,17 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 	configure_file(platform/unix/debian/rules.in debian/rules @ONLY)
 
 	configure_file(platform/unix/love.desktop.in love.desktop @ONLY)
+
+	install(TARGETS ${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
+	install(FILES platform/unix/love.6
+			DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+			RENAME love.1)
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/love.desktop
+			DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
+	install(FILES platform/unix/love.xml
+			DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages)
+	install(FILES platform/unix/love.svg
+			DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pixmaps)
+	install(FILES platform/unix/application-x-love-game.svg
+			DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/mimetypes)
 endif()
