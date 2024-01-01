@@ -21,6 +21,8 @@
 #include "Buffer.h"
 #include "Graphics.h"
 
+#include "common/memory.h"
+
 namespace love
 {
 namespace graphics
@@ -65,6 +67,19 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 	size = getSize();
 	arraylength = getArrayLength();
 
+	if (usageFlags & BUFFERUSAGEFLAG_TEXEL)
+	{
+		if (@available(iOS 12, macOS 10.14, *))
+		{
+			MTLPixelFormat pixformat = getMTLPixelFormat(getDataMember(0).decl.format);
+			NSUInteger alignment = 1;
+			if (pixformat != MTLPixelFormatInvalid)
+				alignment = [device minimumTextureBufferAlignmentForPixelFormat:pixformat];
+
+			size = alignUp(size, (size_t) alignment);
+		}
+	}
+
 	MTLResourceOptions opts = 0;
 	if (settings.dataUsage == BUFFERDATAUSAGE_READBACK)
 		opts |= MTLResourceStorageModeShared;
@@ -83,8 +98,6 @@ Buffer::Buffer(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settin
 	{
 		if (@available(iOS 12, macOS 10.14, *))
 		{
-			// TODO: minimumTextureBufferAlignmentForPixelFormat
-
 			MTLPixelFormat pixformat = getMTLPixelFormat(getDataMember(0).decl.format);
 			if (pixformat == MTLPixelFormatInvalid)
 				throw love::Exception("Could not create Metal texel buffer: invalid format.");
