@@ -137,6 +137,8 @@ public:
 
 	id<MTLSamplerState> getCachedSampler(const SamplerState &s);
 
+	bool isDepthCompareSamplerSupported() const;
+
 	StreamBuffer *getUniformBuffer() const { return uniformBuffer; }
 	Buffer *getDefaultAttributesBuffer() const { return defaultAttributesBuffer; }
 

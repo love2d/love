@@ -810,7 +810,7 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 	desc.lodMinClamp = s.minLod;
 	desc.lodMaxClamp = s.maxLod;
 
-	// TODO: This isn't supported on some older iOS devices...
+	// This isn't supported on some older iOS devices. Texture code checks for support.
 	if (s.depthSampleMode.hasValue)
 		desc.compareFunction = getMTLCompareFunction(s.depthSampleMode.value);
 
@@ -821,6 +821,11 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 
 	return sampler;
 }}
+
+bool Graphics::isDepthCompareSamplerSupported() const
+{
+	return families.mac[1] || families.macCatalyst[1] || families.apple[3];
+}
 
 id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil)
 {
