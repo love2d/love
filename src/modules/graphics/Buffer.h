@@ -141,7 +141,7 @@ public:
 	/**
 	 * Reset the given portion of this buffer's data to 0.
 	 */
-	virtual void clear(size_t offset, size_t size) = 0;
+	void clear(size_t offset, size_t size);
 
 	/**
 	 * Copy a portion of this Buffer's data to another buffer, using the GPU.
@@ -177,6 +177,8 @@ public:
 	}; // Mapper
 
 protected:
+
+	virtual void clearInternal(size_t offset, size_t size) = 0;
 
 	std::vector<DataMember> dataMembers;
 	size_t arrayLength;
