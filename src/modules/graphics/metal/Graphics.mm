@@ -846,7 +846,7 @@ id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &
 	 * example, if the compare function is GREATER then the stencil test will
 	 * pass if the reference value is greater than the value in the stencil
 	 * buffer. With our API it's more intuitive to assume that
-	 * setStencilMode(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
+	 * setStencilState(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
 	 * stencil buffer has a value greater than 4.
 	 **/
 	stencildesc.stencilCompareFunction = getMTLCompareFunction(getReversedCompareMode(stencil.compare));
@@ -1760,7 +1760,7 @@ void Graphics::setScissor()
 	}
 }
 
-void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask)
+void Graphics::setStencilState(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask)
 {
 	DisplayState &state = states.back();
 

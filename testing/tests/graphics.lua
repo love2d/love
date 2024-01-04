@@ -1929,20 +1929,20 @@ love.test.graphics.getStackDepth = function(test)
 end
 
 
--- love.graphics.getStencilMode
-love.test.graphics.getStencilMode = function(test)
+-- love.graphics.getStencilState
+love.test.graphics.getStencilState = function(test)
   -- check default vals
-  local action, comparemode, value = love.graphics.getStencilMode( )
+  local action, comparemode, value = love.graphics.getStencilState( )
   test:assertEquals('keep', action, 'check default stencil action')
   test:assertEquals('always', comparemode, 'check default stencil compare')
   test:assertEquals(0, value, 'check default stencil value')
   -- check set stencil values is returned
-  love.graphics.setStencilMode('replace', 'less', 255)
-  local action, comparemode, value = love.graphics.getStencilMode()
+  love.graphics.setStencilState('replace', 'less', 255)
+  local action, comparemode, value = love.graphics.getStencilState()
   test:assertEquals('replace', action, 'check changed stencil action')
   test:assertEquals('less', comparemode, 'check changed stencil compare')
   test:assertEquals(255, value, 'check changed stencil value')
-  love.graphics.setStencilMode() -- reset
+  love.graphics.setStencilState() -- reset
 end
 
 
@@ -2387,18 +2387,18 @@ love.test.graphics.setShader = function(test)
 end
 
 
--- love.graphics.setStencilMode
-love.test.graphics.setStencilMode = function(test)
+-- love.graphics.setStencilState
+love.test.graphics.setStencilState = function(test)
   local canvas = love.graphics.newCanvas(16, 16)
   love.graphics.setCanvas({canvas, stencil=true})
     love.graphics.clear(0, 0, 0, 1)
-    love.graphics.setStencilMode('replace', 'always', 1)
+    love.graphics.setStencilState('replace', 'always', 1)
     love.graphics.circle('fill', 8, 8, 6)
-    love.graphics.setStencilMode('keep', 'greater', 0)
+    love.graphics.setStencilState('keep', 'greater', 0)
     love.graphics.setColor(1, 0, 0, 1)
     love.graphics.rectangle('fill', 0, 0, 16, 16)
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.setStencilMode()
+    love.graphics.setStencilState()
   love.graphics.setCanvas()
   local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, { 

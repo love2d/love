@@ -608,7 +608,40 @@ int w_setStencilMode(lua_State *L)
 {
 	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
 	{
-		luax_catchexcept(L, [&](){ instance()->setStencilMode(); });
+		luax_catchexcept(L, [&]() { instance()->setStencilMode(); });
+		return 0;
+	}
+
+	StencilMode mode = STENCIL_MODE_OFF;
+	const char *modestr = luaL_checkstring(L, 1);
+	if (!getConstant(modestr, mode))
+		return luax_enumerror(L, "stencil mode", getConstants(mode), modestr);
+
+	int value = (int) luaL_optinteger(L, 3, 1);
+
+	luax_catchexcept(L, [&]() { instance()->setStencilMode(mode, value); });
+	return 0;
+}
+
+int w_getStencilMode(lua_State *L)
+{
+	int value = 0;
+	StencilMode mode = instance()->getStencilMode(value);
+
+	const char *modestr;
+	if (!getConstant(mode, modestr))
+		return luaL_error(L, "Unknown stencil mode.");
+
+	lua_pushstring(L, modestr);
+	lua_pushinteger(L, value);
+	return 2;
+}
+
+int w_setStencilState(lua_State *L)
+{
+	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
+	{
+		luax_catchexcept(L, [&](){ instance()->setStencilState(); });
 		return 0;
 	}
 
@@ -627,11 +660,11 @@ int w_setStencilMode(lua_State *L)
 	uint32 readmask = (uint32) luaL_optnumber(L, 4, LOVE_UINT32_MAX);
 	uint32 writemask = (uint32) luaL_optnumber(L, 5, LOVE_UINT32_MAX);
 
-	luax_catchexcept(L, [&](){ instance()->setStencilMode(action, compare, value, readmask, writemask); });
+	luax_catchexcept(L, [&](){ instance()->setStencilState(action, compare, value, readmask, writemask); });
 	return 0;
 }
 
-int w_getStencilMode(lua_State *L)
+int w_getStencilState(lua_State *L)
 {
 	StencilAction action = STENCIL_KEEP;
 	CompareMode compare = COMPARE_ALWAYS;
@@ -639,7 +672,7 @@ int w_getStencilMode(lua_State *L)
 	uint32 readmask = LOVE_UINT32_MAX;
 	uint32 writemask = LOVE_UINT32_MAX;
 
-	instance()->getStencilMode(action, compare, value, readmask, writemask);
+	instance()->getStencilState(action, compare, value, readmask, writemask);
 
 	const char *actionstr;
 	if (!getConstant(action, actionstr))
@@ -651,7 +684,7 @@ int w_getStencilMode(lua_State *L)
 
 	lua_pushstring(L, actionstr);
 	lua_pushstring(L, comparestr);
-	lua_pushnumber(L, value);
+	lua_pushinteger(L, value);
 	lua_pushnumber(L, readmask);
 	lua_pushnumber(L, writemask);
 	return 5;
@@ -3936,6 +3969,8 @@ static const luaL_Reg functions[] =
 
 	{ "setStencilMode", w_setStencilMode },
 	{ "getStencilMode", w_getStencilMode },
+	{ "setStencilState", w_setStencilState },
+	{ "getStencilState", w_getStencilState },
 
 	{ "points", w_points },
 	{ "line", w_line },

@@ -68,7 +68,8 @@ Released: N/A
 * Added APIs to override the default orthographic projection: love.graphics.setOrthoProjection, setPerspectiveProjection, and resetProjection.
 * Added ability to set point size within a vertex shader by setting the 'love_PointSize' variable.
 * Added love.graphics.setBlendState, which gives lower level control over blend operations than setBlendMode.
-* Added love.graphics.setStencilMode and getStencilMode. Replaces love.graphics.stencil as well as setStencilTest.
+* Added high level love.graphics.setStencilMode and getStencilMode functions. Replaces love.graphics.stencil and setStencilTest.
+* Added lower level love.graphics.setStencilState and getStencilState functions.
 * Added a variant of love.graphics.setColorMask which accepts a single boolean.
 * Added new 'clampone' wrap mode.
 * Added 'clampone', 'texelbuffer', 'indexbuffer32bit', 'mipmaprange', and 'indirectdraw' graphics feature enums.
@@ -113,8 +114,8 @@ Released: N/A
 * Deprecated love.graphics.setNewFont (use love.graphics.newFont and love.graphics.setFont instead).
 * Deprecated love.graphics.newText (renamed to love.graphics.newTextBatch).
 * Deprecated love.graphics.getImageFormats and love.graphics.getCanvasFormats (replaced by getTextureFormats).
-* Deprecated love.graphics.stencil (replaced by love.graphics.setStencilMode).
-* Deprecated love.graphics.setStencilTest and love.graphics.getStencilTest (replaced by love.graphics.setStencilMode and getStencilMode).
+* Deprecated love.graphics.stencil (replaced by love.graphics.setStencilMode or love.graphics.setStencilState).
+* Deprecated love.graphics.setStencilTest and love.graphics.getStencilTest (replaced by love.graphics.setStencilMode or setStencilState).
 * Deprecated t.window.highdpi in love.conf and the highdpi flag of love.window.setMode (replaced by t.highdpi in love.conf).
 * Deprecated t.accelerometerjoystick in love.conf (replaced by love.sensor module).
 * Deprecated the variants of Mesh:attachAttribute and SpriteBatch:attachAttribute which accept a Mesh (replaced by variants which accept a Buffer).

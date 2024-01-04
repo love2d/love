@@ -613,9 +613,13 @@ public:
 	 */
 	bool getScissor(Rect &rect) const;
 
-	virtual void setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) = 0;
+	void setStencilMode(StencilMode mode, int value);
 	void setStencilMode();
-	void getStencilMode(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const;
+	StencilMode getStencilMode(int &value) const;
+
+	virtual void setStencilState(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) = 0;
+	void setStencilState();
+	void getStencilState(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const;
 
 	virtual void setDepthMode(CompareMode compare, bool write) = 0;
 	void setDepthMode();

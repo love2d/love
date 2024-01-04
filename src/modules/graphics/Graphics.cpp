@@ -700,7 +700,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setShader(s.shader.get());
 	setRenderTargets(s.renderTargets);
 
-	setStencilMode(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
+	setStencilState(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
 	setDepthMode(s.depthTest, s.depthWrite);
 
 	setColorMask(s.colorMask);
@@ -776,7 +776,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 		setRenderTargets(s.renderTargets);
 
 	if (!(s.stencil == cur.stencil))
-		setStencilMode(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
+		setStencilState(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
 
 	if (s.depthTest != cur.depthTest || s.depthWrite != cur.depthWrite)
 		setDepthMode(s.depthTest, s.depthWrite);
@@ -1309,12 +1309,37 @@ bool Graphics::getScissor(Rect &rect) const
 	return state.scissor;
 }
 
-void Graphics::setStencilMode()
+void Graphics::setStencilMode(StencilMode mode, int value)
 {
-	setStencilMode(STENCIL_KEEP, COMPARE_ALWAYS, 0, LOVE_UINT32_MAX, LOVE_UINT32_MAX);
+	StencilState s = computeStencilState(mode, value);
+	setStencilState(s.action, s.compare, s.value, s.readMask, s.writeMask);
+	if (mode == STENCIL_MODE_DRAW)
+		setColorMask({ false, false, false, false });
+	else
+		setColorMask({ true, true, true, true });
 }
 
-void Graphics::getStencilMode(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const
+void Graphics::setStencilMode()
+{
+	StencilState s = computeStencilState(STENCIL_MODE_OFF, 0);
+	setStencilState(s.action, s.compare, s.value, s.readMask, s.writeMask);
+	setColorMask({ true, true, true, true });
+}
+
+StencilMode Graphics::getStencilMode(int &value) const
+{
+	const DisplayState& state = states.back();
+	StencilMode mode = computeStencilMode(state.stencil);
+	value = state.stencil.value;
+	return mode;
+}
+
+void Graphics::setStencilState()
+{
+	setStencilState(STENCIL_KEEP, COMPARE_ALWAYS, 0, LOVE_UINT32_MAX, LOVE_UINT32_MAX);
+}
+
+void Graphics::getStencilState(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const
 {
 	const DisplayState &state = states.back();
 	action = state.stencil.action;

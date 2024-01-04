@@ -1001,7 +1001,7 @@ void Graphics::setScissor()
 	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 }
 
-void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask)
+void Graphics::setStencilState(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask)
 {
 	if (action != STENCIL_KEEP)
 	{
