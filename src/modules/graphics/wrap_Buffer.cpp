@@ -46,7 +46,7 @@ template <typename T>
 static inline size_t writeSNormData(lua_State *L, int startidx, int components, char *data)
 {
 	auto componentdata = (T *) data;
-	const auto maxval = std::numeric_limits<T>::max();
+	constexpr auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		componentdata[i] = (T) (luax_optnumberclamped(L, startidx + i, -1.0, 1.0, defaultComponents[i]) * maxval);
@@ -58,7 +58,7 @@ template <typename T>
 static inline size_t writeUNormData(lua_State *L, int startidx, int components, char *data)
 {
 	auto componentdata = (T *) data;
-	const auto maxval = std::numeric_limits<T>::max();
+	constexpr auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		componentdata[i] = (T) (luax_optnumberclamped01(L, startidx + i, 1.0) * maxval);
@@ -145,7 +145,7 @@ template <typename T>
 static inline size_t readSNormData(lua_State *L, int components, const char *data)
 {
 	const auto componentdata = (const T *) data;
-	const auto maxval = std::numeric_limits<T>::max();
+	constexpr auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, std::max(-1.0, (lua_Number) componentdata[i] / (lua_Number)maxval));
@@ -157,7 +157,7 @@ template <typename T>
 static inline size_t readUNormData(lua_State *L, int components, const char *data)
 {
 	const auto componentdata = (const T *) data;
-	const auto maxval = std::numeric_limits<T>::max();
+	constexpr auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, (lua_Number) componentdata[i] / (lua_Number)maxval);
