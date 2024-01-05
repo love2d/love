@@ -700,7 +700,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setShader(s.shader.get());
 	setRenderTargets(s.renderTargets);
 
-	setStencilState(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
+	setStencilState(s.stencil);
 	setDepthMode(s.depthTest, s.depthWrite);
 
 	setColorMask(s.colorMask);
@@ -776,7 +776,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 		setRenderTargets(s.renderTargets);
 
 	if (!(s.stencil == cur.stencil))
-		setStencilState(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
+		setStencilState(s.stencil);
 
 	if (s.depthTest != cur.depthTest || s.depthWrite != cur.depthWrite)
 		setDepthMode(s.depthTest, s.depthWrite);
@@ -1311,8 +1311,7 @@ bool Graphics::getScissor(Rect &rect) const
 
 void Graphics::setStencilMode(StencilMode mode, int value)
 {
-	StencilState s = computeStencilState(mode, value);
-	setStencilState(s.action, s.compare, s.value, s.readMask, s.writeMask);
+	setStencilState(computeStencilState(mode, value));
 	if (mode == STENCIL_MODE_DRAW)
 		setColorMask({ false, false, false, false });
 	else
@@ -1321,8 +1320,7 @@ void Graphics::setStencilMode(StencilMode mode, int value)
 
 void Graphics::setStencilMode()
 {
-	StencilState s = computeStencilState(STENCIL_MODE_OFF, 0);
-	setStencilState(s.action, s.compare, s.value, s.readMask, s.writeMask);
+	setStencilState(computeStencilState(STENCIL_MODE_OFF, 0));
 	setColorMask({ true, true, true, true });
 }
 
@@ -1336,17 +1334,14 @@ StencilMode Graphics::getStencilMode(int &value) const
 
 void Graphics::setStencilState()
 {
-	setStencilState(STENCIL_KEEP, COMPARE_ALWAYS, 0, LOVE_UINT32_MAX, LOVE_UINT32_MAX);
+	StencilState s;
+	setStencilState(s);
 }
 
-void Graphics::getStencilState(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const
+const StencilState &Graphics::getStencilState() const
 {
 	const DisplayState &state = states.back();
-	action = state.stencil.action;
-	compare = state.stencil.compare;
-	value = state.stencil.value;
-	readmask = state.stencil.readMask;
-	writemask = state.stencil.writeMask;
+	return state.stencil;
 }
 
 void Graphics::setDepthMode()

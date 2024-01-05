@@ -645,48 +645,41 @@ int w_setStencilState(lua_State *L)
 		return 0;
 	}
 
-	StencilAction action = STENCIL_KEEP;
+	StencilState s;
+
 	const char *actionstr = luaL_checkstring(L, 1);
-	if (!getConstant(actionstr, action))
-		return luax_enumerror(L, "stencil draw action", getConstants(action), actionstr);
+	if (!getConstant(actionstr, s.action))
+		return luax_enumerror(L, "stencil draw action", getConstants(s.action), actionstr);
 
-	CompareMode compare = COMPARE_ALWAYS;
 	const char *comparestr = luaL_checkstring(L, 2);
-	if (!getConstant(comparestr, compare))
-		return luax_enumerror(L, "compare mode", getConstants(compare), comparestr);
+	if (!getConstant(comparestr, s.compare))
+		return luax_enumerror(L, "compare mode", getConstants(s.compare), comparestr);
 
-	int value = (int) luaL_optinteger(L, 3, 0);
+	s.value = (int) luaL_optinteger(L, 3, 0);
+	s.readMask = (uint32) luaL_optnumber(L, 4, LOVE_UINT32_MAX);
+	s.writeMask = (uint32) luaL_optnumber(L, 5, LOVE_UINT32_MAX);
 
-	uint32 readmask = (uint32) luaL_optnumber(L, 4, LOVE_UINT32_MAX);
-	uint32 writemask = (uint32) luaL_optnumber(L, 5, LOVE_UINT32_MAX);
-
-	luax_catchexcept(L, [&](){ instance()->setStencilState(action, compare, value, readmask, writemask); });
+	luax_catchexcept(L, [&](){ instance()->setStencilState(s); });
 	return 0;
 }
 
 int w_getStencilState(lua_State *L)
 {
-	StencilAction action = STENCIL_KEEP;
-	CompareMode compare = COMPARE_ALWAYS;
-	int value = 1;
-	uint32 readmask = LOVE_UINT32_MAX;
-	uint32 writemask = LOVE_UINT32_MAX;
-
-	instance()->getStencilState(action, compare, value, readmask, writemask);
+	const StencilState &s = instance()->getStencilState();
 
 	const char *actionstr;
-	if (!getConstant(action, actionstr))
+	if (!getConstant(s.action, actionstr))
 		return luaL_error(L, "Unknown stencil draw action.");
 
 	const char *comparestr;
-	if (!getConstant(compare, comparestr))
+	if (!getConstant(s.compare, comparestr))
 		return luaL_error(L, "Unknown compare mode.");
 
 	lua_pushstring(L, actionstr);
 	lua_pushstring(L, comparestr);
-	lua_pushinteger(L, value);
-	lua_pushnumber(L, readmask);
-	lua_pushnumber(L, writemask);
+	lua_pushinteger(L, s.value);
+	lua_pushnumber(L, s.readMask);
+	lua_pushnumber(L, s.writeMask);
 	return 5;
 }
 

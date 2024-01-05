@@ -1001,9 +1001,9 @@ void Graphics::setScissor()
 	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 }
 
-void Graphics::setStencilState(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask)
+void Graphics::setStencilState(const StencilState &s)
 {
-	if (action != STENCIL_KEEP)
+	if (s.action != STENCIL_KEEP)
 	{
 		const auto& rts = states.back().renderTargets;
 		auto dsTexture = rts.depthStencil.texture.get();
@@ -1016,23 +1016,19 @@ void Graphics::setStencilState(StencilAction action, CompareMode compare, int va
 
 	flushBatchedDraws();
 
-	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, writemask);
+	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, s.writeMask);
 	
-	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, readmask);
-	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, value);
+	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, s.readMask);
+	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, s.value);
 
 	if (optionalDeviceExtensions.extendedDynamicState)
 		vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FRONT_AND_BACK,
-			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(action),
-			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(getReversedCompareMode(compare)));
+			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(s.action),
+			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(getReversedCompareMode(s.compare)));
 
-	states.back().stencil.action = action;
-	states.back().stencil.compare = compare;
-	states.back().stencil.value = value;
-	states.back().stencil.readMask = readmask;
-	states.back().stencil.writeMask = writemask;
+	states.back().stencil = s;
 }
 
 void Graphics::setDepthMode(CompareMode compare, bool write)

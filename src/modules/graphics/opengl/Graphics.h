@@ -92,7 +92,7 @@ public:
 	void setScissor(const Rect &rect) override;
 	void setScissor() override;
 
-	void setStencilState(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) override;
+	void setStencilState(const StencilState &s) override;
 
 	void setDepthMode(CompareMode compare, bool write) override;
 

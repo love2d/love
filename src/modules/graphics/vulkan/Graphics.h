@@ -293,7 +293,7 @@ public:
 	void setColor(Colorf c) override;
 	void setScissor(const Rect &rect) override;
 	void setScissor() override;
-	void setStencilState(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override;
+	void setStencilState(const StencilState &s) override;
 	void setDepthMode(CompareMode compare, bool write) override;
 	void setFrontFaceWinding(Winding winding) override;
 	void setColorMask(ColorChannelMask mask) override;

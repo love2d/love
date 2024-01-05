@@ -1434,11 +1434,11 @@ void Graphics::setScissor()
 		gl.setEnableState(OpenGL::ENABLE_SCISSOR_TEST, false);
 }
 
-void Graphics::setStencilState(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask)
+void Graphics::setStencilState(const StencilState &s)
 {
 	DisplayState &state = states.back();
 
-	if (action != STENCIL_KEEP)
+	if (s.action != STENCIL_KEEP)
 	{
 		const auto &rts = state.renderTargets;
 		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
@@ -1451,13 +1451,13 @@ void Graphics::setStencilState(StencilAction action, CompareMode compare, int va
 
 	flushBatchedDraws();
 
-	bool enablestencil = action != STENCIL_KEEP || compare != COMPARE_ALWAYS;
+	bool enablestencil = s.action != STENCIL_KEEP || s.compare != COMPARE_ALWAYS;
 	if (enablestencil != gl.isStateEnabled(OpenGL::ENABLE_STENCIL_TEST))
 		gl.setEnableState(OpenGL::ENABLE_STENCIL_TEST, enablestencil);
 
 	GLenum glaction = GL_KEEP;
 
-	switch (action)
+	switch (s.action)
 	{
 	case STENCIL_KEEP:
 		glaction = GL_KEEP;
@@ -1496,22 +1496,18 @@ void Graphics::setStencilState(StencilAction action, CompareMode compare, int va
 	 * setStencilState(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
 	 * stencil buffer has a value greater than 4.
 	 **/
-	GLenum glcompare = OpenGL::getGLCompareMode(getReversedCompareMode(compare));
+	GLenum glcompare = OpenGL::getGLCompareMode(getReversedCompareMode(s.compare));
 
 	if (enablestencil)
 	{
-		glStencilFunc(glcompare, value, readmask);
+		glStencilFunc(glcompare, s.value, s.readMask);
 		glStencilOp(GL_KEEP, GL_KEEP, glaction);
 	}
 
-	if (writemask != gl.getStencilWriteMask())
-		gl.setStencilWriteMask(writemask);
+	if (s.writeMask != gl.getStencilWriteMask())
+		gl.setStencilWriteMask(s.writeMask);
 
-	state.stencil.action = action;
-	state.stencil.compare = compare;
-	state.stencil.value = value;
-	state.stencil.readMask = readmask;
-	state.stencil.writeMask = writemask;
+	state.stencil = s;
 }
 
 void Graphics::setDepthMode(CompareMode compare, bool write)

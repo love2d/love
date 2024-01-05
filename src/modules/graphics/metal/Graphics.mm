@@ -1760,11 +1760,11 @@ void Graphics::setScissor()
 	}
 }
 
-void Graphics::setStencilState(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask)
+void Graphics::setStencilState(const StencilState &s)
 {
 	DisplayState &state = states.back();
 
-	if (action != STENCIL_KEEP)
+	if (s.action != STENCIL_KEEP)
 	{
 		const auto &rts = state.renderTargets;
 		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
@@ -1777,11 +1777,7 @@ void Graphics::setStencilState(StencilAction action, CompareMode compare, int va
 
 	flushBatchedDraws();
 
-	state.stencil.action = action;
-	state.stencil.compare = compare;
-	state.stencil.value = value;
-	state.stencil.readMask = readmask;
-	state.stencil.writeMask = writemask;
+	state.stencil = s;
 
 	dirtyRenderState |= STATEBIT_STENCIL;
 }

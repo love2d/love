@@ -617,9 +617,9 @@ public:
 	void setStencilMode();
 	StencilMode getStencilMode(int &value) const;
 
-	virtual void setStencilState(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) = 0;
+	virtual void setStencilState(const StencilState &state) = 0;
 	void setStencilState();
-	void getStencilState(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const;
+	const StencilState &getStencilState() const;
 
 	virtual void setDepthMode(CompareMode compare, bool write) = 0;
 	void setDepthMode();
