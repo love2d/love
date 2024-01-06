@@ -200,12 +200,22 @@ Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool render
 	return calculateDeviceProjection(projection, flags);
 }
 
-void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
+void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 {
+	bool changed = width != this->width || height != this->height
+		|| pixelwidth != this->pixelWidth || pixelheight != this->pixelHeight;
+
+	changed |= backbufferstencil != this->backbufferHasStencil || backbufferdepth != this->backbufferHasDepth;
+	changed |= msaa != this->requestedBackbufferMSAA;
+
 	this->width = width;
 	this->height = height;
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
+
+	this->backbufferHasStencil = backbufferstencil;
+	this->backbufferHasDepth = backbufferdepth;
+	this->requestedBackbufferMSAA = msaa;
 
 	if (!isRenderTargetActive())
 	{
@@ -220,11 +230,9 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 		resetProjection();
 	}
 
-	updateBackbuffer(width, height, pixelwidth, pixelheight, requestedBackbufferMSAA);
-}
+	if (!changed)
+		return;
 
-void Graphics::updateBackbuffer(int width, int height, int /*pixelwidth*/, int pixelheight, int msaa)
-{
 	bool useinternalbackbuffer = false;
 	if (msaa > 1)
 		useinternalbackbuffer = true;
@@ -253,8 +261,17 @@ void Graphics::updateBackbuffer(int width, int height, int /*pixelwidth*/, int p
 		settings.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_sRGB : PIXELFORMAT_RGBA8_UNORM;
 		internalBackbuffer.set(newTexture(settings), Acquire::NORETAIN);
 
-		settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-		internalBackbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+		internalBackbufferDepthStencil.set(nullptr);
+		if (backbufferstencil || backbufferdepth)
+		{
+			if (backbufferstencil && backbufferdepth)
+				settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+			else if (backbufferstencil)
+				settings.format = PIXELFORMAT_STENCIL8;
+			else if (backbufferdepth)
+				settings.format = PIXELFORMAT_DEPTH24_UNORM;
+			internalBackbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+		}
 
 		RenderTargets rts;
 		rts.colors.push_back(internalBackbuffer.get());
@@ -268,8 +285,6 @@ void Graphics::updateBackbuffer(int width, int height, int /*pixelwidth*/, int p
 		internalBackbufferDepthStencil.set(nullptr);
 		internalBackbufferFBO = 0;
 	}
-
-	requestedBackbufferMSAA = msaa;
 
 	if (restoreFBO)
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, prevFBO);
@@ -300,14 +315,8 @@ GLuint Graphics::getSystemBackbufferFBO() const
 #endif
 }
 
-bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
+bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 {
-	this->width = width;
-	this->height = height;
-
-	this->windowHasStencil = windowhasstencil;
-	this->requestedBackbufferMSAA = msaa;
-
 	// Okay, setup OpenGL.
 	gl.initContext();
 
@@ -364,7 +373,7 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 
 	setDebug(isDebugEnabled());
 
-	setViewportSize(width, height, pixelwidth, pixelheight);
+	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferstencil, backbufferdepth, msaa);
 
 	if (batchedDrawState.vb[0] == nullptr)
 	{
@@ -1436,18 +1445,7 @@ void Graphics::setScissor()
 
 void Graphics::setStencilState(const StencilState &s)
 {
-	DisplayState &state = states.back();
-
-	if (s.action != STENCIL_KEEP)
-	{
-		const auto &rts = state.renderTargets;
-		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
-
-		if (!isRenderTargetActive() && !windowHasStencil)
-			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
-		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
-			throw love::Exception("Drawing to the stencil buffer with a render target active requires either stencil=true or a custom stencil-type texture to be used, in setRenderTarget.");
-	}
+	validateStencilState(s);
 
 	flushBatchedDraws();
 
@@ -1507,11 +1505,13 @@ void Graphics::setStencilState(const StencilState &s)
 	if (s.writeMask != gl.getStencilWriteMask())
 		gl.setStencilWriteMask(s.writeMask);
 
-	state.stencil = s;
+	states.back().stencil = s;
 }
 
 void Graphics::setDepthMode(CompareMode compare, bool write)
 {
+	validateDepthState(write);
+
 	DisplayState &state = states.back();
 
 	if (state.depthTest != compare || state.depthWrite != write)

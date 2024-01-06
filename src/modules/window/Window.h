@@ -262,7 +262,7 @@ struct WindowSettings
 	int vsync = 1;
 	int msaa = 0;
 	bool stencil = true;
-	int depth = 0;
+	bool depth = false;
 	bool resizable = false;
 	int minwidth = 1;
 	int minheight = 1;

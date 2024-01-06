@@ -68,13 +68,22 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	settings.fullscreen = luax_boolflag(L, idx, settingName(Window::SETTING_FULLSCREEN), settings.fullscreen);
 	settings.msaa = luax_intflag(L, idx, settingName(Window::SETTING_MSAA), settings.msaa);
 	settings.stencil = luax_boolflag(L, idx, settingName(Window::SETTING_STENCIL), settings.stencil);
-	settings.depth = luax_intflag(L, idx, settingName(Window::SETTING_DEPTH), settings.depth);
 	settings.resizable = luax_boolflag(L, idx, settingName(Window::SETTING_RESIZABLE), settings.resizable);
 	settings.minwidth = luax_intflag(L, idx, settingName(Window::SETTING_MIN_WIDTH), settings.minwidth);
 	settings.minheight = luax_intflag(L, idx, settingName(Window::SETTING_MIN_HEIGHT), settings.minheight);
 	settings.borderless = luax_boolflag(L, idx, settingName(Window::SETTING_BORDERLESS), settings.borderless);
 	settings.centered = luax_boolflag(L, idx, settingName(Window::SETTING_CENTERED), settings.centered);
 	settings.usedpiscale = luax_boolflag(L, idx, settingName(Window::SETTING_USE_DPISCALE), settings.usedpiscale);
+
+	lua_getfield(L, idx, settingName(Window::SETTING_DEPTH));
+	if (lua_type(L, -1) == LUA_TNUMBER)
+	{
+		luax_markdeprecated(L, 1, "window.depth number", API_FIELD, DEPRECATED_REPLACED, "window.depth boolean field");
+		settings.depth = (int) luaL_checknumber(L, -1);
+	}
+	else if (!lua_isnoneornil(L, -1))
+		settings.depth = lua_toboolean(L, -1);
+	lua_pop(L, 1);
 
 	settings.displayindex = luax_intflag(L, idx, settingName(Window::SETTING_DISPLAYINDEX), settings.displayindex + 1) - 1;
 	lua_getfield(L, idx, settingName(Window::SETTING_DISPLAY));
@@ -197,7 +206,7 @@ int w_getMode(lua_State *L)
 	luax_pushboolean(L, settings.stencil);
 	lua_setfield(L, -2, settingName(Window::SETTING_STENCIL));
 
-	lua_pushinteger(L, settings.depth);
+	luax_pushboolean(L, settings.depth);
 	lua_setfield(L, -2, settingName(Window::SETTING_DEPTH));
 
 	luax_pushboolean(L, settings.resizable);

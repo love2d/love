@@ -64,8 +64,8 @@ public:
 
 	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
 
-	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
+	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
+	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;

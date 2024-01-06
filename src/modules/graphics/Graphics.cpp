@@ -185,6 +185,8 @@ Graphics::Graphics()
 	, height(0)
 	, pixelWidth(0)
 	, pixelHeight(0)
+	, backbufferHasStencil(false)
+	, backbufferHasDepth(false)
 	, created(false)
 	, active(true)
 	, batchedDrawState()
@@ -617,6 +619,34 @@ Texture *Graphics::getTextureOrDefaultForActiveShader(Texture *tex)
 	return getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT);
 }
 
+void Graphics::validateStencilState(const StencilState &s) const
+{
+	if (s.action != STENCIL_KEEP)
+	{
+		const auto &rts = states.back().renderTargets;
+		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
+
+		if (!isRenderTargetActive() && !backbufferHasStencil)
+			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
+		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
+			throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
+	}
+}
+
+void Graphics::validateDepthState(bool depthwrite) const
+{
+	if (depthwrite)
+	{
+		const auto &rts = states.back().renderTargets;
+		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
+
+		if (!isRenderTargetActive() && !backbufferHasDepth)
+			throw love::Exception("The window must have depth enabled to draw to the main screen's depth buffer.");
+		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) == 0 && (dstexture == nullptr || !isPixelFormatDepth(dstexture->getPixelFormat())))
+			throw love::Exception("Drawing to the depth buffer with a Canvas active requires either depth=true or a custom depth-type Canvas to be used, in setCanvas.");
+	}
+}
+
 int Graphics::getWidth() const
 {
 	return width;
@@ -669,6 +699,11 @@ void Graphics::reset()
 	DisplayState s;
 	restoreState(s);
 	origin();
+}
+
+void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight)
+{
+	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferHasStencil, backbufferHasDepth, getRequestedBackbufferMSAA());
 }
 
 /**

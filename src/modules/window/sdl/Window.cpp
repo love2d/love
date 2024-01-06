@@ -127,8 +127,7 @@ void Window::setGLFramebufferAttributes(bool sRGB)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
 
-	// Always use 24/8 depth/stencil (make sure any Graphics implementations
-	// that have their own backbuffer match this, too).
+	// Always use 24/8 depth/stencil.
 	// Changing this after initial window creation would need the context to be
 	// destroyed and recreated, which we really don't want.
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -639,12 +638,12 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 				context = (void *) SDL_Metal_GetLayer(metalView);
 #endif
 
-			graphics->setMode(context, (int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.msaa);
+			graphics->setMode(context, (int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.depth, f.msaa);
 			this->settings.msaa = graphics->getBackbufferMSAA();
 		}
 		else
 		{
-			graphics->setViewportSize((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
+			graphics->backbufferChanged((int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.depth, f.msaa);
 		}
 	}
 
@@ -687,7 +686,7 @@ bool Window::onSizeChanged(int width, int height)
 	{
 		double scaledw, scaledh;
 		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
-		graphics->setViewportSize((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
+		graphics->backbufferChanged((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
 	}
 
 	return true;
@@ -771,7 +770,7 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	{
 		double scaledw, scaledh;
 		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
-		graphics->setViewportSize((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
+		graphics->backbufferChanged((int) scaledw, (int) scaledh, pixelWidth, pixelHeight);
 	}
 }
 
