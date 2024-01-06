@@ -1927,7 +1927,7 @@ void Graphics::flushBatchedDraws()
 {
 	auto &sbstate = batchedDrawState;
 
-	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0 || sbstate.flushing)
+	if ((sbstate.vertexCount == 0 && sbstate.indexCount == 0) || sbstate.flushing)
 		return;
 
 	VertexAttributes attributes;
