@@ -3,9 +3,7 @@ Section: games
 Priority: extra
 Maintainer: Bart van Strien <bart.bes@gmail.com>
 Build-Depends: debhelper (>= 9),
-               dh-autoreconf,
-               pkg-config,
-               libtool,
+               cmake,
                g++ (>= 4.7.0),
                libfreetype6-dev,
                libharfbuzz-dev,
