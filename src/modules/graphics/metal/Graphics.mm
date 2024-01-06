@@ -327,7 +327,7 @@ Graphics::Graphics()
 
 	initCapabilities();
 
-	uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+	uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, 1024 * 512 * 1);
 
 	{
 		std::vector<Buffer::DataDeclaration> dataformat = {
