@@ -989,6 +989,8 @@ protected:
 		StreamBuffer::MapInfo vbMap[2];
 		StreamBuffer::MapInfo indexBufferMap = StreamBuffer::MapInfo();
 
+		bool flushing = false;
+
 		BatchedDrawState()
 		{
 			vb[0] = vb[1] = nullptr;

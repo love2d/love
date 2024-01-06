@@ -1927,7 +1927,7 @@ void Graphics::flushBatchedDraws()
 {
 	auto &sbstate = batchedDrawState;
 
-	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
+	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0 || sbstate.flushing)
 		return;
 
 	VertexAttributes attributes;
@@ -1951,6 +1951,8 @@ void Graphics::flushBatchedDraws()
 
 	if (attributes.enableBits == 0)
 		return;
+
+	sbstate.flushing = true;
 
 	Colorf nc = getColor();
 	if (attributes.isEnabled(ATTRIB_COLOR))
@@ -1996,8 +1998,9 @@ void Graphics::flushBatchedDraws()
 	if (attributes.isEnabled(ATTRIB_COLOR))
 		setColor(nc);
 
-	batchedDrawState.vertexCount = 0;
-	batchedDrawState.indexCount = 0;
+	sbstate.vertexCount = 0;
+	sbstate.indexCount = 0;
+	sbstate.flushing = false;
 }
 
 void Graphics::flushBatchedDrawsGlobal()
