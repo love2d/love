@@ -1,5 +1,5 @@
-love@LOVE_SUFFIX@ (11.2~pre3458ppa1) trusty; urgency=medium
+@LOVE_EXE_NAME@ (@LOVE_VERSION_STR@ppa1) focal; urgency=medium
 
   * Upstream testing release
 
- -- Bart van Strien <bart.bes@gmail.com>  Tue, 10 Jul 2018 19:22:30 +0200
+ -- Bart van Strien <bart.bes@gmail.com>  @LOVE_CONFIGURE_TIMESTAMP@

@@ -23,7 +23,7 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
 	message(FATAL_ERROR "Prevented in-tree build.")
 endif()
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.7)
 
 project(love)
 
@@ -2184,6 +2184,8 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 	include(CPack)
 elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 	include(GNUInstallDirs)
+
+	string(TIMESTAMP LOVE_CONFIGURE_TIMESTAMP "%a, %d %b %Y %H:%M:%S +0000" UTC)
 
 	file(COPY platform/unix/debian/ DESTINATION debian PATTERN "*.in" EXCLUDE)
 	configure_file(platform/unix/debian/control.in debian/control @ONLY)
