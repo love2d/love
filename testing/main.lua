@@ -36,7 +36,7 @@ love.load = function(args)
 
   -- setup basic img to display
   if love.window ~= nil then
-    love.window.setMode(360, 240, {
+    love.window.updateMode(360, 240, {
       fullscreen = false,
       resizable = true,
       centered = true
