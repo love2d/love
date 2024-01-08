@@ -1753,8 +1753,6 @@ set(LOVE_SRC_3P_SPIRV_CROSS
 	src/libraries/spirv_cross/spirv_common.hpp
 	src/libraries/spirv_cross/spirv_cpp.cpp
 	src/libraries/spirv_cross/spirv_cpp.hpp
-	src/libraries/spirv_cross/spirv_cross_c.cpp
-	src/libraries/spirv_cross/spirv_cross_c.h
 	src/libraries/spirv_cross/spirv_cross_containers.hpp
 	src/libraries/spirv_cross/spirv_cross_error_handling.hpp
 	src/libraries/spirv_cross/spirv_cross_parsed_ir.cpp
@@ -1773,7 +1771,6 @@ set(LOVE_SRC_3P_SPIRV_CROSS
 	src/libraries/spirv_cross/spirv_parser.hpp
 	src/libraries/spirv_cross/spirv_reflect.cpp
 	src/libraries/spirv_cross/spirv_reflect.hpp
-	src/libraries/spirv_cross/spirv.h
 	src/libraries/spirv_cross/spirv.hpp
 )
 
