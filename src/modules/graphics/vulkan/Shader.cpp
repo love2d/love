@@ -26,6 +26,7 @@
 #include "libraries/glslang/glslang/Public/ResourceLimits.h"
 #include "libraries/glslang/SPIRV/GlslangToSpv.h"
 
+#include <array>
 
 namespace love
 {
