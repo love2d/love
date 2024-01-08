@@ -26,8 +26,8 @@ includes=
 AC_DEFUN([LOVE_MSG_ERROR],
 		 [AC_MSG_ERROR([LÖVE needs "$1"[,] please install "$1" with development files and try again])])
 
-# C++14 support in cpp14.m4
-ACLOVE_CPP14_TEST
+# C++17 support in cpp14.m4
+ACLOVE_CPP17_TEST
 
 # Add -fvisibility=hidden and -fvisibility-inlines-hidden
 CFLAGS="-fvisibility=hidden $CFLAGS"
