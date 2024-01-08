@@ -679,8 +679,6 @@
 		FA18CF2B23DCF67900263725 /* spirv_cross_util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0423DCF67800263725 /* spirv_cross_util.cpp */; };
 		FA18CF2C23DCF67900263725 /* spirv_cross.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0523DCF67800263725 /* spirv_cross.cpp */; };
 		FA18CF2D23DCF67900263725 /* spirv_cross.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0523DCF67800263725 /* spirv_cross.cpp */; };
-		FA18CF2E23DCF67900263725 /* spirv_cross_c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0623DCF67800263725 /* spirv_cross_c.cpp */; };
-		FA18CF2F23DCF67900263725 /* spirv_cross_c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0623DCF67800263725 /* spirv_cross_c.cpp */; };
 		FA18CF3023DCF67900263725 /* spirv_hlsl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0723DCF67800263725 /* spirv_hlsl.cpp */; };
 		FA18CF3123DCF67900263725 /* spirv_hlsl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0723DCF67800263725 /* spirv_hlsl.cpp */; };
 		FA18CF3223DCF67900263725 /* spirv_cfg.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0823DCF67800263725 /* spirv_cfg.hpp */; };
@@ -688,8 +686,6 @@
 		FA18CF3423DCF67900263725 /* spirv_cpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0923DCF67800263725 /* spirv_cpp.cpp */; };
 		FA18CF3523DCF67900263725 /* spirv_cross_parsed_ir.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0A23DCF67800263725 /* spirv_cross_parsed_ir.cpp */; };
 		FA18CF3623DCF67900263725 /* spirv_cross_parsed_ir.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0A23DCF67800263725 /* spirv_cross_parsed_ir.cpp */; };
-		FA18CF3723DCF67900263725 /* spirv.h in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0B23DCF67800263725 /* spirv.h */; };
-		FA18CF3823DCF67900263725 /* spirv_cross_c.h in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0C23DCF67800263725 /* spirv_cross_c.h */; };
 		FA18CF3923DCF67900263725 /* spirv_msl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0D23DCF67800263725 /* spirv_msl.hpp */; };
 		FA18CF3A23DCF67900263725 /* spirv_reflect.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0E23DCF67800263725 /* spirv_reflect.hpp */; };
 		FA18CF3B23DCF67900263725 /* spirv_cross_util.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0F23DCF67800263725 /* spirv_cross_util.hpp */; };
@@ -1839,13 +1835,10 @@
 		FA18CF0323DCF67800263725 /* spirv_msl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_msl.cpp; sourceTree = "<group>"; };
 		FA18CF0423DCF67800263725 /* spirv_cross_util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_cross_util.cpp; sourceTree = "<group>"; };
 		FA18CF0523DCF67800263725 /* spirv_cross.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_cross.cpp; sourceTree = "<group>"; };
-		FA18CF0623DCF67800263725 /* spirv_cross_c.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_cross_c.cpp; sourceTree = "<group>"; };
 		FA18CF0723DCF67800263725 /* spirv_hlsl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_hlsl.cpp; sourceTree = "<group>"; };
 		FA18CF0823DCF67800263725 /* spirv_cfg.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv_cfg.hpp; sourceTree = "<group>"; };
 		FA18CF0923DCF67800263725 /* spirv_cpp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_cpp.cpp; sourceTree = "<group>"; };
 		FA18CF0A23DCF67800263725 /* spirv_cross_parsed_ir.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_cross_parsed_ir.cpp; sourceTree = "<group>"; };
-		FA18CF0B23DCF67800263725 /* spirv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spirv.h; sourceTree = "<group>"; };
-		FA18CF0C23DCF67800263725 /* spirv_cross_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spirv_cross_c.h; sourceTree = "<group>"; };
 		FA18CF0D23DCF67800263725 /* spirv_msl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv_msl.hpp; sourceTree = "<group>"; };
 		FA18CF0E23DCF67800263725 /* spirv_reflect.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv_reflect.hpp; sourceTree = "<group>"; };
 		FA18CF0F23DCF67800263725 /* spirv_cross_util.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv_cross_util.hpp; sourceTree = "<group>"; };
@@ -3458,8 +3451,6 @@
 				FA18CF1423DCF67800263725 /* spirv_common.hpp */,
 				FA18CF0923DCF67800263725 /* spirv_cpp.cpp */,
 				FA18CF0023DCF67800263725 /* spirv_cpp.hpp */,
-				FA18CF0623DCF67800263725 /* spirv_cross_c.cpp */,
-				FA18CF0C23DCF67800263725 /* spirv_cross_c.h */,
 				FA18CF1223DCF67800263725 /* spirv_cross_containers.hpp */,
 				FA18CEF423DCF67800263725 /* spirv_cross_error_handling.hpp */,
 				FA18CF0A23DCF67800263725 /* spirv_cross_parsed_ir.cpp */,
@@ -3478,7 +3469,6 @@
 				FA18CEF223DCF67800263725 /* spirv_parser.hpp */,
 				FA18CF0223DCF67800263725 /* spirv_reflect.cpp */,
 				FA18CF0E23DCF67800263725 /* spirv_reflect.hpp */,
-				FA18CF0B23DCF67800263725 /* spirv.h */,
 				FA18CEFE23DCF67800263725 /* spirv.hpp */,
 			);
 			path = spirv_cross;
@@ -4155,7 +4145,6 @@
 				FAF140AB1E20934C00F898D2 /* SymbolTable.h in Headers */,
 				FA18CF1E23DCF67900263725 /* external_interface.h in Headers */,
 				FA0B7ED71A95902D000E1D17 /* Timer.h in Headers */,
-				FA18CF3723DCF67900263725 /* spirv.h in Headers */,
 				FA0B7AC31A958EA3000E1D17 /* list.h in Headers */,
 				FA0B7B2D1A958EA3000E1D17 /* core.h in Headers */,
 				FA1E88841DF363DB00E808AA /* Filter.h in Headers */,
@@ -4399,7 +4388,6 @@
 				FA18CF2023DCF67900263725 /* spirv_hlsl.hpp in Headers */,
 				FA0B7D271A95902C000E1D17 /* wrap_Font.h in Headers */,
 				FA0B7DAA1A95902C000E1D17 /* PVRHandler.h in Headers */,
-				FA18CF3823DCF67900263725 /* spirv_cross_c.h in Headers */,
 				FA27B3B51B498151008A9DCE /* wrap_Video.h in Headers */,
 				FABDA9BC2552448300B5C523 /* b2_fixture.h in Headers */,
 				FA0B7D7B1A95902C000E1D17 /* Quad.h in Headers */,
@@ -5015,7 +5003,6 @@
 				FACA02F81F5E39760084B28F /* CompressedData.cpp in Sources */,
 				FA0B7ADA1A958EA3000E1D17 /* glad.cpp in Sources */,
 				FAF140541E20934C00F898D2 /* CodeGen.cpp in Sources */,
-				FA18CF2F23DCF67900263725 /* spirv_cross_c.cpp in Sources */,
 				FA0B7E1F1A95902C000E1D17 /* Physics.cpp in Sources */,
 				FA6A2B7B1F60B8250074C308 /* wrap_ByteData.cpp in Sources */,
 				FA0B7E821A95902C000E1D17 /* Shape.cpp in Sources */,
@@ -5302,7 +5289,6 @@
 				FA0B7E301A95902C000E1D17 /* Shape.cpp in Sources */,
 				FA93C4541F315B960087CCD4 /* FormatHandler.cpp in Sources */,
 				FA0B7E481A95902C000E1D17 /* wrap_DistanceJoint.cpp in Sources */,
-				FA18CF2E23DCF67900263725 /* spirv_cross_c.cpp in Sources */,
 				FABDA9A72552448300B5C523 /* b2_motor_joint.cpp in Sources */,
 				FA0B792F1A958E3B000E1D17 /* Module.cpp in Sources */,
 				FA0B7E2A1A95902C000E1D17 /* RevoluteJoint.cpp in Sources */,
