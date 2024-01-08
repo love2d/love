@@ -33,8 +33,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#if !defined(GLSLANG_WEB) && !defined(GLSLANG_ANGLE)
-
 #include "../Include/Common.h"
 #include "reflection.h"
 #include "LiveTraverser.h"
@@ -251,7 +249,7 @@ public:
     void blowUpActiveAggregate(const TType& baseType, const TString& baseName, const TList<TIntermBinary*>& derefs,
                                TList<TIntermBinary*>::const_iterator deref, int offset, int blockIndex, int arraySize,
                                int topLevelArraySize, int topLevelArrayStride, TStorageQualifier baseStorage, bool active,
-							   const TConstUnionArray* constArray = nullptr)
+                               const TConstUnionArray* constArray = nullptr)
     {
         // when strictArraySuffix is enabled, we closely follow the rules from ARB_program_interface_query.
         // Broadly:
@@ -266,18 +264,18 @@ public:
         // process the part of the dereference chain that was explicit in the shader
         TString name = baseName;
         const TType* terminalType = &baseType;
-		const TConstUnionArray* terminalConstArray = constArray;
+        const TConstUnionArray* terminalConstArray = constArray;
         for (; deref != derefs.end(); ++deref) {
             TIntermBinary* visitNode = *deref;
             terminalType = &visitNode->getType();
-			if (visitNode->getAsSymbolNode())
-				terminalConstArray = &visitNode->getAsSymbolNode()->getConstArray();
-			else if (visitNode->getAsConstantUnion())
-				terminalConstArray = &visitNode->getAsConstantUnion()->getConstArray();
-			else if (visitNode->getLeft() != nullptr && visitNode->getLeft()->getAsSymbolNode())
-				terminalConstArray = &visitNode->getLeft()->getAsSymbolNode()->getConstArray();
-			else
-				terminalConstArray = nullptr;
+            if (visitNode->getAsSymbolNode())
+                terminalConstArray = &visitNode->getAsSymbolNode()->getConstArray();
+            else if (visitNode->getAsConstantUnion())
+                terminalConstArray = &visitNode->getAsConstantUnion()->getConstArray();
+            else if (visitNode->getLeft() != nullptr && visitNode->getLeft()->getAsSymbolNode())
+                terminalConstArray = &visitNode->getLeft()->getAsSymbolNode()->getConstArray();
+            else
+                terminalConstArray = nullptr;
             int index;
             switch (visitNode->getOp()) {
             case EOpIndexIndirect: {
@@ -692,7 +690,7 @@ public:
     }
 
     // For a binary operation indexing into an aggregate, chase down the base of the aggregate.
-    // Return 0 if the topology does not fit this situation.
+    // Return nullptr if the topology does not fit this situation.
     TIntermSymbol* findBase(const TIntermBinary* node)
     {
         TIntermSymbol *base = node->getLeft()->getAsSymbolNode();
@@ -1280,5 +1278,3 @@ void TReflection::dump()
 }
 
 } // end namespace glslang
-
-#endif // !GLSLANG_WEB && !GLSLANG_ANGLE
