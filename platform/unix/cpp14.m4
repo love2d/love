@@ -24,7 +24,7 @@ AC_DEFUN([ACLOVE_GET_CLANG_VERSION], [
 
 AC_DEFUN([ACLOVE_CPP17_TEST_FLAG], [
 	aclove_cpp17_test_cxx17name="no"
-	ACLOVE_CXX_FLAG_TEST([-std=c++17], aclove_cpp17_test_cxx14name="c++17", [])
+	ACLOVE_CXX_FLAG_TEST([-std=c++17], aclove_cpp17_test_cxx17name="c++17", [])
 	AS_VAR_IF([aclove_cpp17_test_cxx17name], [no],
 		[AC_MSG_ERROR([LÖVE needs a C++ compiler with C++17 support])],
 		[CXXFLAGS="$CXXFLAGS -std=$aclove_cpp17_test_cxx17name"])
