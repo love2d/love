@@ -123,7 +123,7 @@ public:
 	double fromPixels(double x) const override;
 	void fromPixels(double px, double py, double &wx, double &wy) const override;
 
-	const void *getHandle() const override;
+	void *getHandle() const override;
 
 	bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) override;
 	int showMessageBox(const MessageBoxData &data) override;

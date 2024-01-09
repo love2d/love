@@ -647,6 +647,12 @@ int w_requestAttention(lua_State *L)
 	return 0;
 }
 
+int w_getPointer(lua_State *L)
+{
+	lua_pushlightuserdata(L, instance()->getHandle());
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getDisplayCount", w_getDisplayCount },
@@ -688,6 +694,7 @@ static const luaL_Reg functions[] =
 	{ "isMinimized", w_isMinimized },
 	{ "showMessageBox", w_showMessageBox },
 	{ "requestAttention", w_requestAttention },
+	{ "getPointer", w_getPointer },
 	{ 0, 0 }
 };
 

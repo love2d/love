@@ -1405,7 +1405,7 @@ void Window::fromPixels(double px, double py, double &wx, double &wy) const
 	wy = py / scale;
 }
 
-const void *Window::getHandle() const
+void *Window::getHandle() const
 {
 	return window;
 }

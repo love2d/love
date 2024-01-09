@@ -217,7 +217,7 @@ public:
 	virtual double fromPixels(double x) const = 0;
 	virtual void fromPixels(double px, double py, double &wx, double &wy) const = 0;
 
-	virtual const void *getHandle() const = 0;
+	virtual void *getHandle() const = 0;
 
 	virtual bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) = 0;
 	virtual int showMessageBox(const MessageBoxData &data) = 0;
