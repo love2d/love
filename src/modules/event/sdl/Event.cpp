@@ -603,7 +603,8 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 		break;
 	case SDL_WINDOWEVENT_SHOWN:
 	case SDL_WINDOWEVENT_HIDDEN:
-		vargs.emplace_back(e.window.event == SDL_WINDOWEVENT_SHOWN);
+	case SDL_WINDOWEVENT_EXPOSED:
+		vargs.emplace_back(e.window.event != SDL_WINDOWEVENT_HIDDEN);
 		msg = new Message("visible", vargs);
 		break;
 	case SDL_WINDOWEVENT_RESIZED:
