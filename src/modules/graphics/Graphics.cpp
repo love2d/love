@@ -198,6 +198,8 @@ Graphics::Graphics()
 	, fanIndexBuffer(nullptr)
 	, capabilities()
 	, defaultTextures()
+	, defaultTexelBuffers()
+	, defaultStorageBuffer(nullptr)
 	, cachedShaderStages()
 {
 	transformStack.reserve(16);
