@@ -112,7 +112,6 @@ Graphics::Graphics()
 	, requestedBackbufferMSAA(0)
 	, bufferMapMemory(nullptr)
 	, bufferMapMemorySize(2 * 1024 * 1024)
-	, defaultBuffers()
 	, pixelFormatUsage()
 {
 	gl = OpenGL();
@@ -383,43 +382,6 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 		batchedDrawState.vb[1] = CreateStreamBuffer(BUFFERUSAGE_VERTEX, 256  * 1024 * 1);
 		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
-
-	// TODO: one buffer each for float, int, uint
-	if (capabilities.features[FEATURE_TEXEL_BUFFER] && defaultBuffers[BUFFERUSAGE_TEXEL].get() == nullptr)
-	{
-		Buffer::Settings settings(BUFFERUSAGEFLAG_TEXEL, BUFFERDATAUSAGE_STATIC);
-		std::vector<Buffer::DataDeclaration> format = {{"", DATAFORMAT_FLOAT_VEC4, 0}};
-
-		const float texel[] = {0.0f, 0.0f, 0.0f, 1.0f};
-
-		auto buffer = newBuffer(settings, format, texel, sizeof(texel), 1);
-		defaultBuffers[BUFFERUSAGE_TEXEL].set(buffer, Acquire::NORETAIN);
-	}
-
-	if (capabilities.features[FEATURE_GLSL4] && defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].get() == nullptr)
-	{
-		Buffer::Settings settings(BUFFERUSAGEFLAG_SHADER_STORAGE, BUFFERDATAUSAGE_STATIC);
-		std::vector<Buffer::DataDeclaration> format = {{"", DATAFORMAT_FLOAT, 0}};
-
-		std::vector<float> data;
-		data.resize(Buffer::SHADER_STORAGE_BUFFER_MAX_STRIDE / 4);
-
-		auto buffer = newBuffer(settings, format, data.data(), data.size() * sizeof(float), data.size());
-		defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].set(buffer, Acquire::NORETAIN);
-	}
-
-	// Load default resources before other Volatile.
-	for (int i = 0; i < BUFFERUSAGE_MAX_ENUM; i++)
-	{
-		if (defaultBuffers[i].get())
-			((Buffer *) defaultBuffers[i].get())->loadVolatile();
-	}
-
-	if (defaultBuffers[BUFFERUSAGE_TEXEL].get())
-		gl.setDefaultTexelBuffer((GLuint) defaultBuffers[BUFFERUSAGE_TEXEL]->getTexelBufferHandle());
-
-	if (defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].get())
-		gl.setDefaultStorageBuffer((GLuint) defaultBuffers[BUFFERUSAGE_SHADER_STORAGE]->getHandle());
 
 	// Reload all volatile objects.
 	if (!Volatile::loadAll())

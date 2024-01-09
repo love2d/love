@@ -173,9 +173,6 @@ private:
 	char *bufferMapMemory;
 	size_t bufferMapMemorySize;
 
-	// Only needed for buffer types that can be bound to shaders.
-	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERUSAGE_MAX_ENUM];
-
 	// [non-readable, readable]
 	uint32 pixelFormatUsage[PIXELFORMAT_MAX_ENUM][2];
 

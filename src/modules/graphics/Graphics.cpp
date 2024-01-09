@@ -589,6 +589,55 @@ Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType)
 	return tex;
 }
 
+Buffer *Graphics::getDefaultTexelBuffer(DataBaseType dataType)
+{
+	Buffer *buffer = defaultTexelBuffers[dataType];
+	if (buffer != nullptr)
+		return buffer;
+
+	Buffer::Settings settings(BUFFERUSAGEFLAG_TEXEL, BUFFERDATAUSAGE_STATIC);
+	settings.zeroInitialize = true;
+	settings.debugName = "default_texelbuffer_";
+
+	DataFormat format = DATAFORMAT_FLOAT;
+	switch (dataType)
+	{
+	case DATA_BASETYPE_FLOAT:
+	default:
+		format = DATAFORMAT_FLOAT;
+		settings.debugName += "float";
+		break;
+	case DATA_BASETYPE_INT:
+		format = DATAFORMAT_INT32;
+		settings.debugName += "int";
+		break;
+	case DATA_BASETYPE_UINT:
+		format = DATAFORMAT_UINT32;
+		settings.debugName += "uint";
+		break;
+	}
+
+	buffer = newBuffer(settings, format, nullptr, sizeof(float), 1);
+
+	defaultTexelBuffers[dataType] = buffer;
+
+	return buffer;
+}
+
+Buffer *Graphics::getDefaultStorageBuffer()
+{
+	if (defaultStorageBuffer != nullptr)
+		return defaultStorageBuffer;
+
+	Buffer::Settings settings(BUFFERUSAGEFLAG_SHADER_STORAGE, BUFFERDATAUSAGE_STATIC);
+	settings.zeroInitialize = true;
+	settings.debugName = "default_storagebuffer";
+
+	defaultStorageBuffer = newBuffer(settings, DATAFORMAT_FLOAT, nullptr, Buffer::SHADER_STORAGE_BUFFER_MAX_STRIDE, 0);
+
+	return defaultStorageBuffer;
+}
+
 void Graphics::releaseDefaultResources()
 {
 	for (int type = 0; type < TEXTURE_MAX_ENUM; type++)
@@ -600,6 +649,17 @@ void Graphics::releaseDefaultResources()
 			defaultTextures[type][dataType] = nullptr;
 		}
 	}
+
+	for (int dataType = 0; dataType < DATA_BASETYPE_MAX_ENUM; dataType++)
+	{
+		if (defaultTexelBuffers[dataType])
+			defaultTexelBuffers[dataType]->release();
+		defaultTexelBuffers[dataType] = nullptr;
+	}
+
+	if (defaultStorageBuffer)
+		defaultStorageBuffer->release();
+	defaultStorageBuffer = nullptr;
 }
 
 Texture *Graphics::getTextureOrDefaultForActiveShader(Texture *tex)

@@ -331,15 +331,6 @@ public:
 	GLuint getDefaultFBO() const;
 
 	/**
-	 * Gets the texture ID for love's default texel buffer.
-	 **/
-	GLuint getDefaultTexelBuffer() const { return state.defaultTexelBuffer; }
-	void setDefaultTexelBuffer(GLuint tex) { state.defaultTexelBuffer = tex; }
-
-	GLuint getDefaultStorageBuffer() const { return state.defaultStorageBuffer; }
-	void setDefaultStorageBuffer(GLuint buf) { state.defaultStorageBuffer = buf; }
-
-	/**
 	 * Helper for setting the active texture unit.
 	 *
 	 * @param textureunit Index in the range of [0, maxtextureunits-1]
@@ -543,9 +534,6 @@ private:
 		uint32 colorWriteMask = LOVE_UINT32_MAX;
 
 		GLuint boundFramebuffers[2];
-
-		GLuint defaultTexelBuffer;
-		GLuint defaultStorageBuffer;
 
 	} state;
 
