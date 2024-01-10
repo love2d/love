@@ -390,20 +390,24 @@ void Shader::addImage(const spirv_cross::CompilerMSL &msl, const spirv_cross::Re
 	case spv::Dim2D:
 		u.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
 		u.textures = new love::graphics::Texture*[u.count];
+		memset(u.textures, 0, sizeof(love::graphics::Texture *) * u.count);
 		break;
 	case spv::Dim3D:
 		u.textureType = TEXTURE_VOLUME;
 		u.textures = new love::graphics::Texture*[u.count];
+		memset(u.textures, 0, sizeof(love::graphics::Texture *) * u.count);
 		break;
 	case spv::DimCube:
 		if (basetype.image.arrayed)
 			throw love::Exception("Cubemap Arrays are not currently supported.");
 		u.textureType = TEXTURE_CUBE;
 		u.textures = new love::graphics::Texture*[u.count];
+		memset(u.textures, 0, sizeof(love::graphics::Texture *) * u.count);
 		break;
 	case spv::DimBuffer:
 		u.baseType = UNIFORM_TEXELBUFFER;
 		u.buffers = new love::graphics::Buffer*[u.count];
+		memset(u.buffers, 0, sizeof(love::graphics::Buffer *) * u.count);
 		break;
 	default:
 		// TODO: error? continue?
@@ -414,33 +418,6 @@ void Shader::addImage(const spirv_cross::CompilerMSL &msl, const spirv_cross::Re
 	u.data = malloc(u.dataSize);
 	for (int i = 0; i < u.count; i++)
 		u.ints[i] = -1; // Initialized below, after compiling.
-
-	if (u.baseType == UNIFORM_SAMPLER)
-	{
-		auto tex = Graphics::getInstance()->getDefaultTexture(u.textureType, u.dataBaseType);
-		for (int i = 0; i < u.count; i++)
-		{
-			tex->retain();
-			u.textures[i] = tex;
-		}
-	}
-	else if (u.baseType == UNIFORM_TEXELBUFFER)
-	{
-		for (int i = 0; i < u.count; i++)
-			u.buffers[i] = nullptr; // TODO
-	}
-	else if (u.baseType == UNIFORM_STORAGETEXTURE)
-	{
-		Texture *tex = nullptr;
-		if ((u.access & ACCESS_WRITE) == 0)
-			tex = Graphics::getInstance()->getDefaultTexture(u.textureType, u.dataBaseType);
-		for (int i = 0; i < u.count; i++)
-		{
-			if (tex)
-				tex->retain();
-			u.textures[i] = tex;
-		}
-	}
 
 	uniforms[u.name] = u;
 
@@ -571,7 +548,7 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 				for (int i = 0; i < u.count; i++)
 				{
 					u.ints[i] = -1; // Initialized below, after compiling.
-					u.buffers[i] = nullptr; // TODO
+					u.buffers[i] = nullptr;
 				}
 
 				uniforms[u.name] = u;
@@ -668,7 +645,11 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 				uint32 samplerbinding = msl.get_automatic_msl_resource_binding_secondary(resource.id);
 
 				if (texturebinding == (uint32)-1)
+				{
+					// No valid binding, the uniform was likely optimized out because it's not used.
+					uniforms.erase(resource.name);
 					return;
+				}
 
 				for (int i = 0; i < u.count; i++)
 				{
@@ -678,15 +659,8 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 						TextureBinding b = {};
 						b.access = u.access;
 
-						if (u.baseType == UNIFORM_TEXELBUFFER)
+						if (u.baseType == UNIFORM_SAMPLER)
 						{
-							// TODO
-						}
-						else
-						{
-							b.texture = getMTLTexture(u.textures[i]);
-							b.samplerTexture = u.textures[i];
-
 							BuiltinUniform builtin = BUILTIN_MAX_ENUM;
 							if (getConstant(u.name.c_str(), builtin) && builtin == BUILTIN_TEXTURE_MAIN)
 								b.isMainTexture = true;
@@ -726,7 +700,11 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 
 				uint32 bufferbinding = msl.get_automatic_msl_resource_binding(resource.id);
 				if (bufferbinding == (uint32)-1)
+				{
+					// No valid binding, the uniform was likely optimized out because it's not used.
+					uniforms.erase(resource.name);
 					continue;
+				}
 
 				for (int i = 0; i < u.count; i++)
 				{
@@ -749,6 +727,25 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 		catch (std::exception &e)
 		{
 			printf("Error parsing SPIR-V shader source: %s\n", e.what());
+		}
+	}
+
+	// Initialize default resource bindings.
+	for (auto &kvp : uniforms)
+	{
+		UniformInfo &info = kvp.second;
+		switch (info.baseType)
+		{
+		case UNIFORM_SAMPLER:
+		case UNIFORM_STORAGETEXTURE:
+			sendTextures(&info, info.textures, info.count);
+			break;
+		case UNIFORM_TEXELBUFFER:
+		case UNIFORM_STORAGEBUFFER:
+			sendBuffers(&info, info.buffers, info.count);
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -878,6 +875,7 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 	for (int i = 0; i < count; i++)
 	{
 		love::graphics::Texture *tex = textures[i];
+		bool isdefault = tex == nullptr;
 
 		if (tex != nullptr)
 		{
@@ -897,8 +895,17 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 
 		info->textures[i] = tex;
 
-		textureBindings[info->ints[i]].texture = getMTLTexture(tex);
-		textureBindings[info->ints[i]].samplerTexture = tex;
+		auto &binding = textureBindings[info->ints[i]];
+		if (isdefault && (binding.access & ACCESS_WRITE) != 0)
+		{
+			binding.texture = nil;
+			binding.samplerTexture = nullptr;
+		}
+		else
+		{
+			binding.texture = getMTLTexture(tex);
+			binding.samplerTexture = tex;
+		}
 	}
 }}
 
@@ -919,13 +926,23 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 	for (int i = 0; i < count; i++)
 	{
 		love::graphics::Buffer *buffer = buffers[i];
+		bool isdefault = buffer == nullptr;
 
 		if (buffer != nullptr)
 		{
 			if (!validateBuffer(info, buffer, false))
 				continue;
-			buffer->retain();
 		}
+		else
+		{
+			auto gfx = Graphics::getInstance();
+			if (texelbinding)
+				buffer = gfx->getDefaultTexelBuffer(info->dataBaseType);
+			else
+				buffer = gfx->getDefaultStorageBuffer();
+		}
+
+		buffer->retain();
 
 		if (info->buffers[i] != nullptr)
 			info->buffers[i]->release();
@@ -938,8 +955,11 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 		}
 		else if (storagebinding)
 		{
-			// TODO
-			bufferBindings[info->ints[i]].buffer = getMTLBuffer(buffer);
+			auto &binding = bufferBindings[info->ints[i]];
+			if (isdefault && (binding.access & ACCESS_WRITE) != 0)
+				binding.buffer = nil;
+			else
+				binding.buffer = getMTLBuffer(buffer);
 		}
 	}
 }

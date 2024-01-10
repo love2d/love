@@ -1063,7 +1063,7 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 			if ((b.access & Shader::ACCESS_WRITE) != 0 && texture == nil)
 				allWritableVariablesSet = false;
 		}
-		
+
 		if (sampindex != LOVE_UINT8_MAX)
 			setSampler(encoder, bindings, sampindex, samplertex);
 	}
