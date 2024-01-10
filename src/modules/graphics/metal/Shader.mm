@@ -30,6 +30,7 @@
 #include "libraries/spirv_cross/spirv_reflect.hpp"
 
 #include <algorithm>
+#include <memory>
 
 namespace love
 {
@@ -456,277 +457,281 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 		std::string msgs = logger.getAllMessages();
 //		printf("spirv length: %ld, messages:\n%s\n", spirv.size(), msgs.c_str());
 
+//		printf("GLSL INPUT SOURCE:\n\n%s\n\n", pixel->getSource().c_str());
+
+		std::unique_ptr<CompilerMSL> mslpointer;
+
 		try
 		{
-//			printf("GLSL INPUT SOURCE:\n\n%s\n\n", pixel->getSource().c_str());
-
-			CompilerMSL msl(std::move(spirv));
-
-			auto interfacevars = msl.get_active_interface_variables();
-
-			msl.set_enabled_interface_variables(interfacevars);
-
-			ShaderResources resources = msl.get_shader_resources();
-
-			for (const auto &resource : resources.storage_images)
-			{
-				addImage(msl, resource, UNIFORM_STORAGETEXTURE);
-			}
-
-			for (const auto &resource : resources.sampled_images)
-			{
-				addImage(msl, resource, UNIFORM_SAMPLER);
-			}
-
-			for (const auto &resource : resources.uniform_buffers)
-			{
-				MSLResourceBinding binding;
-				binding.stage = msl.get_execution_model();
-				binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
-				binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
-
-				if (resource.name == "gl_DefaultUniformBlock")
-				{
-					binding.msl_buffer = getUniformBufferBinding();
-					msl.add_msl_resource_binding(binding);
-
-					const SPIRType &type = msl.get_type(resource.base_type_id);
-					size_t size = msl.get_declared_struct_size(type);
-
-					if (localUniformBufferSize != 0)
-					{
-						if (localUniformBufferSize != size)
-							throw love::Exception("Local uniform buffer size mismatch");
-						continue;
-					}
-
-					localUniformStagingData = new uint8[size];
-					localUniformBufferData = new uint8[size];
-					localUniformBufferSize = size;
-
-					memset(localUniformStagingData, 0, size);
-					memset(localUniformBufferData, 0, size);
-
-					std::string basename("");
-					buildLocalUniforms(msl, type, 0, basename);
-				}
-				else
-				{
-					binding.msl_buffer = metalBufferIndices[stageindex]++;
-					msl.add_msl_resource_binding(binding);
-				}
-			}
-
-			for (const auto &resource : resources.storage_buffers)
-			{
-				MSLResourceBinding binding;
-				binding.stage = msl.get_execution_model();
-				binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
-				binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
-				binding.msl_buffer = metalBufferIndices[stageindex]++;
-				msl.add_msl_resource_binding(binding);
-
-				auto it = uniforms.find(resource.name);
-				if (it != uniforms.end())
-					continue;
-
-				const SPIRType &type = msl.get_type(resource.type_id);
-
-				UniformInfo u = {};
-				u.baseType = UNIFORM_STORAGEBUFFER;
-				u.components = 1;
-				u.name = resource.name;
-				u.count = type.array.empty() ? 1 : type.array[0];
-
-				if (!fillUniformReflectionData(u))
-					continue;
-
-				u.buffers = new love::graphics::Buffer*[u.count];
-				u.dataSize = sizeof(int) * u.count;
-				u.data = malloc(u.dataSize);
-
-				for (int i = 0; i < u.count; i++)
-				{
-					u.ints[i] = -1; // Initialized below, after compiling.
-					u.buffers[i] = nullptr;
-				}
-
-				uniforms[u.name] = u;
-			}
-
-			if (stageindex == SHADERSTAGE_VERTEX)
-			{
-				int nextattributeindex = ATTRIB_MAX_ENUM;
-
-				for (const auto &var : interfacevars)
-				{
-					spv::StorageClass storage = msl.get_storage_class(var);
-					const std::string &name = msl.get_name(var);
-
-					if (storage == spv::StorageClassInput)
-					{
-						int index = 0;
-
-						BuiltinVertexAttribute builtinattribute;
-						if (graphics::getConstant(name.c_str(), builtinattribute))
-							index = (int) builtinattribute;
-						else
-							index = nextattributeindex++;
-
-						msl.set_decoration(var, spv::DecorationLocation, index);
-						attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
-					}
-				}
-
-				for (const auto &varying : resources.stage_outputs)
-				{
-//					printf("vertex shader output %s: %d\n", inp.name.c_str(), msl.get_decoration(inp.id, spv::DecorationLocation));
-					varyings[varying.name] = nextVaryingLocation;
-					msl.set_decoration(varying.id, spv::DecorationLocation, nextVaryingLocation++);
-				}
-			}
-			else if (stageindex == SHADERSTAGE_PIXEL)
-			{
-				for (const auto &varying : resources.stage_inputs)
-				{
-					const auto it = varyings.find(varying.name);
-					if (it != varyings.end())
-						msl.set_decoration(varying.id, spv::DecorationLocation, it->second);
-				}
-			}
-
-			CompilerMSL::Options options;
-			options.set_msl_version(2, 1);
-			options.texture_buffer_native = true;
-#ifdef LOVE_IOS
-			options.platform = CompilerMSL::Options::iOS;
-#else
-			options.platform = CompilerMSL::Options::macOS;
-#endif
-
-			msl.set_msl_options(options);
-
-			std::string source = msl.compile();
-//			printf("// MSL SOURCE for stage %d:\n\n%s\n\n", stageindex, source.c_str());
-
-			NSString *nssource = [[NSString alloc] initWithBytes:source.c_str()
-														  length:source.length()
-														encoding:NSUTF8StringEncoding];
-
-			MTLCompileOptions *opts = [MTLCompileOptions new];
-
-			// Silences warning. We already only use metal on these OS versions.
-			if (@available(macOS 10.14, iOS 12.0, *))
-				opts.languageVersion = MTLLanguageVersion2_1;
-
-			NSError *err = nil;
-			id<MTLLibrary> library = [device newLibraryWithSource:nssource options:opts error:&err];
-			if (library == nil && err != nil)
-			{
-				NSLog(@"errors: %@", err);
-				throw love::Exception("Error compiling converted Metal shader code");
-			}
-
-			functions[stageindex] = [library newFunctionWithName:library.functionNames[0]];
-
-			std::string debugname = getShaderStageDebugName((ShaderStageType)stageindex);
-			if (!debugname.empty())
-				functions[stageindex].label = @(debugname.c_str());
-
-			auto setTextureBinding = [this](CompilerMSL &msl, int stageindex, const spirv_cross::Resource &resource) -> void
-			{
-				auto it = uniforms.find(resource.name);
-				if (it == uniforms.end())
-					return;
-
-				UniformInfo &u = it->second;
-
-				uint32 texturebinding = msl.get_automatic_msl_resource_binding(resource.id);
-				uint32 samplerbinding = msl.get_automatic_msl_resource_binding_secondary(resource.id);
-
-				if (texturebinding == (uint32)-1)
-				{
-					// No valid binding, the uniform was likely optimized out because it's not used.
-					uniforms.erase(resource.name);
-					return;
-				}
-
-				for (int i = 0; i < u.count; i++)
-				{
-					if (u.ints[i] == -1)
-					{
-						u.ints[i] = (int)textureBindings.size();
-						TextureBinding b = {};
-						b.access = u.access;
-
-						if (u.baseType == UNIFORM_SAMPLER)
-						{
-							BuiltinUniform builtin = BUILTIN_MAX_ENUM;
-							if (getConstant(u.name.c_str(), builtin) && builtin == BUILTIN_TEXTURE_MAIN)
-								b.isMainTexture = true;
-						}
-
-						for (uint8 &stagebinding : b.textureStages)
-							stagebinding = LOVE_UINT8_MAX;
-						for (uint8 &stagebinding : b.samplerStages)
-							stagebinding = LOVE_UINT8_MAX;
-
-						textureBindings.push_back(b);
-					}
-
-					auto &b = textureBindings[u.ints[i]];
-					b.textureStages[stageindex] = (uint8) texturebinding;
-					b.samplerStages[stageindex] = (uint8) samplerbinding;
-				}
-			};
-
-			for (const auto &resource : resources.sampled_images)
-			{
-				setTextureBinding(msl, stageindex, resource);
-			}
-
-			for (const auto &resource : resources.storage_images)
-			{
-				setTextureBinding(msl, stageindex, resource);
-			}
-
-			for (const auto &resource : resources.storage_buffers)
-			{
-				auto it = uniforms.find(resource.name);
-				if (it == uniforms.end())
-					continue;
-
-				UniformInfo &u = it->second;
-
-				uint32 bufferbinding = msl.get_automatic_msl_resource_binding(resource.id);
-				if (bufferbinding == (uint32)-1)
-				{
-					// No valid binding, the uniform was likely optimized out because it's not used.
-					uniforms.erase(resource.name);
-					continue;
-				}
-
-				for (int i = 0; i < u.count; i++)
-				{
-					if (u.ints[i] == -1)
-					{
-						u.ints[i] = (int)bufferBindings.size();
-						BufferBinding b = {};
-						b.access = u.access;
-
-						for (uint8 &stagebinding : b.stages)
-							stagebinding = LOVE_UINT8_MAX;
-
-						bufferBindings.push_back(b);
-					}
-
-					bufferBindings[u.ints[i]].stages[stageindex] = (uint8) bufferbinding;
-				}
-			}
+			mslpointer.reset(new CompilerMSL(std::move(spirv)));
 		}
 		catch (std::exception &e)
 		{
-			printf("Error parsing SPIR-V shader source: %s\n", e.what());
+			throw love::Exception("Error parsing SPIR-V shader source: %s", e.what());
+		}
+
+		auto &msl = *mslpointer;
+
+		auto interfacevars = msl.get_active_interface_variables();
+
+		msl.set_enabled_interface_variables(interfacevars);
+
+		ShaderResources resources = msl.get_shader_resources();
+
+		for (const auto &resource : resources.storage_images)
+		{
+			addImage(msl, resource, UNIFORM_STORAGETEXTURE);
+		}
+
+		for (const auto &resource : resources.sampled_images)
+		{
+			addImage(msl, resource, UNIFORM_SAMPLER);
+		}
+
+		for (const auto &resource : resources.uniform_buffers)
+		{
+			MSLResourceBinding binding;
+			binding.stage = msl.get_execution_model();
+			binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+			binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
+			if (resource.name == "gl_DefaultUniformBlock")
+			{
+				binding.msl_buffer = getUniformBufferBinding();
+				msl.add_msl_resource_binding(binding);
+
+				const SPIRType &type = msl.get_type(resource.base_type_id);
+				size_t size = msl.get_declared_struct_size(type);
+
+				if (localUniformBufferSize != 0)
+				{
+					if (localUniformBufferSize != size)
+						throw love::Exception("Local uniform buffer size mismatch");
+					continue;
+				}
+
+				localUniformStagingData = new uint8[size];
+				localUniformBufferData = new uint8[size];
+				localUniformBufferSize = size;
+
+				memset(localUniformStagingData, 0, size);
+				memset(localUniformBufferData, 0, size);
+
+				std::string basename("");
+				buildLocalUniforms(msl, type, 0, basename);
+			}
+			else
+			{
+				binding.msl_buffer = metalBufferIndices[stageindex]++;
+				msl.add_msl_resource_binding(binding);
+			}
+		}
+
+		for (const auto &resource : resources.storage_buffers)
+		{
+			MSLResourceBinding binding;
+			binding.stage = msl.get_execution_model();
+			binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+			binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+			binding.msl_buffer = metalBufferIndices[stageindex]++;
+			msl.add_msl_resource_binding(binding);
+
+			auto it = uniforms.find(resource.name);
+			if (it != uniforms.end())
+				continue;
+
+			const SPIRType &type = msl.get_type(resource.type_id);
+
+			UniformInfo u = {};
+			u.baseType = UNIFORM_STORAGEBUFFER;
+			u.components = 1;
+			u.name = resource.name;
+			u.count = type.array.empty() ? 1 : type.array[0];
+
+			if (!fillUniformReflectionData(u))
+				continue;
+
+			u.buffers = new love::graphics::Buffer*[u.count];
+			u.dataSize = sizeof(int) * u.count;
+			u.data = malloc(u.dataSize);
+
+			for (int i = 0; i < u.count; i++)
+			{
+				u.ints[i] = -1; // Initialized below, after compiling.
+				u.buffers[i] = nullptr;
+			}
+
+			uniforms[u.name] = u;
+		}
+
+		if (stageindex == SHADERSTAGE_VERTEX)
+		{
+			int nextattributeindex = ATTRIB_MAX_ENUM;
+
+			for (const auto &var : interfacevars)
+			{
+				spv::StorageClass storage = msl.get_storage_class(var);
+				const std::string &name = msl.get_name(var);
+
+				if (storage == spv::StorageClassInput)
+				{
+					int index = 0;
+
+					BuiltinVertexAttribute builtinattribute;
+					if (graphics::getConstant(name.c_str(), builtinattribute))
+						index = (int) builtinattribute;
+					else
+						index = nextattributeindex++;
+
+					msl.set_decoration(var, spv::DecorationLocation, index);
+					attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
+				}
+			}
+
+			for (const auto &varying : resources.stage_outputs)
+			{
+//				printf("vertex shader output %s: %d\n", inp.name.c_str(), msl.get_decoration(inp.id, spv::DecorationLocation));
+				varyings[varying.name] = nextVaryingLocation;
+				msl.set_decoration(varying.id, spv::DecorationLocation, nextVaryingLocation++);
+			}
+		}
+		else if (stageindex == SHADERSTAGE_PIXEL)
+		{
+			for (const auto &varying : resources.stage_inputs)
+			{
+				const auto it = varyings.find(varying.name);
+				if (it != varyings.end())
+					msl.set_decoration(varying.id, spv::DecorationLocation, it->second);
+			}
+		}
+
+		CompilerMSL::Options options;
+		options.set_msl_version(2, 1);
+		options.texture_buffer_native = true;
+#ifdef LOVE_IOS
+		options.platform = CompilerMSL::Options::iOS;
+#else
+		options.platform = CompilerMSL::Options::macOS;
+#endif
+
+		msl.set_msl_options(options);
+
+		std::string source = msl.compile();
+//		printf("// MSL SOURCE for stage %d:\n\n%s\n\n", stageindex, source.c_str());
+
+		NSString *nssource = [[NSString alloc] initWithBytes:source.c_str()
+													  length:source.length()
+													encoding:NSUTF8StringEncoding];
+
+		MTLCompileOptions *opts = [MTLCompileOptions new];
+
+		// Silences warning. We already only use metal on these OS versions.
+		if (@available(macOS 10.14, iOS 12.0, *))
+			opts.languageVersion = MTLLanguageVersion2_1;
+
+		NSError *err = nil;
+		id<MTLLibrary> library = [device newLibraryWithSource:nssource options:opts error:&err];
+		if (library == nil && err != nil)
+		{
+			NSLog(@"errors: %@", err);
+			throw love::Exception("Error compiling converted Metal shader code");
+		}
+
+		functions[stageindex] = [library newFunctionWithName:library.functionNames[0]];
+
+		std::string debugname = getShaderStageDebugName((ShaderStageType)stageindex);
+		if (!debugname.empty())
+			functions[stageindex].label = @(debugname.c_str());
+
+		auto setTextureBinding = [this](CompilerMSL &msl, int stageindex, const spirv_cross::Resource &resource) -> void
+		{
+			auto it = uniforms.find(resource.name);
+			if (it == uniforms.end())
+				return;
+
+			UniformInfo &u = it->second;
+
+			uint32 texturebinding = msl.get_automatic_msl_resource_binding(resource.id);
+			uint32 samplerbinding = msl.get_automatic_msl_resource_binding_secondary(resource.id);
+
+			if (texturebinding == (uint32)-1)
+			{
+				// No valid binding, the uniform was likely optimized out because it's not used.
+				uniforms.erase(resource.name);
+				return;
+			}
+
+			for (int i = 0; i < u.count; i++)
+			{
+				if (u.ints[i] == -1)
+				{
+					u.ints[i] = (int)textureBindings.size();
+					TextureBinding b = {};
+					b.access = u.access;
+
+					if (u.baseType == UNIFORM_SAMPLER)
+					{
+						BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+						if (getConstant(u.name.c_str(), builtin) && builtin == BUILTIN_TEXTURE_MAIN)
+							b.isMainTexture = true;
+					}
+
+					for (uint8 &stagebinding : b.textureStages)
+						stagebinding = LOVE_UINT8_MAX;
+					for (uint8 &stagebinding : b.samplerStages)
+						stagebinding = LOVE_UINT8_MAX;
+
+					textureBindings.push_back(b);
+				}
+
+				auto &b = textureBindings[u.ints[i]];
+				b.textureStages[stageindex] = (uint8) texturebinding;
+				b.samplerStages[stageindex] = (uint8) samplerbinding;
+			}
+		};
+
+		for (const auto &resource : resources.sampled_images)
+		{
+			setTextureBinding(msl, stageindex, resource);
+		}
+
+		for (const auto &resource : resources.storage_images)
+		{
+			setTextureBinding(msl, stageindex, resource);
+		}
+
+		for (const auto &resource : resources.storage_buffers)
+		{
+			auto it = uniforms.find(resource.name);
+			if (it == uniforms.end())
+				continue;
+
+			UniformInfo &u = it->second;
+
+			uint32 bufferbinding = msl.get_automatic_msl_resource_binding(resource.id);
+			if (bufferbinding == (uint32)-1)
+			{
+				// No valid binding, the uniform was likely optimized out because it's not used.
+				uniforms.erase(resource.name);
+				continue;
+			}
+
+			for (int i = 0; i < u.count; i++)
+			{
+				if (u.ints[i] == -1)
+				{
+					u.ints[i] = (int)bufferBindings.size();
+					BufferBinding b = {};
+					b.access = u.access;
+
+					for (uint8 &stagebinding : b.stages)
+						stagebinding = LOVE_UINT8_MAX;
+
+					bufferBindings.push_back(b);
+				}
+
+				bufferBindings[u.ints[i]].stages[stageindex] = (uint8) bufferbinding;
+			}
 		}
 	}
 
