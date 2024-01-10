@@ -787,6 +787,7 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 	for (int i = 0; i < count; i++)
 	{
 		love::graphics::Texture *tex = textures[i];
+		bool isdefault = tex == nullptr;
 
 		if (tex != nullptr)
 		{
@@ -813,11 +814,19 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 			int bindingindex = info->ints[i];
 			auto &binding = storageTextureBindings[bindingindex];
 
-			binding.texture = tex;
-			binding.gltexture = gltex;
+			if (isdefault && (info->access & ACCESS_WRITE) != 0)
+			{
+				binding.texture = nullptr;
+				binding.gltexture = 0;
+			}
+			else
+			{
+				binding.texture = tex;
+				binding.gltexture = gltex;
 
-			if (shaderactive)
-				glBindImageTexture(bindingindex, binding.gltexture, 0, GL_TRUE, 0, binding.access, binding.internalFormat);
+				if (shaderactive)
+					glBindImageTexture(bindingindex, binding.gltexture, 0, GL_TRUE, 0, binding.access, binding.internalFormat);
+			}
 		}
 		else
 		{
@@ -858,7 +867,7 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 	for (int i = 0; i < count; i++)
 	{
 		love::graphics::Buffer *buffer = buffers[i];
-		bool isdefault = buffer != nullptr;
+		bool isdefault = buffer == nullptr;
 
 		if (buffer != nullptr)
 		{
