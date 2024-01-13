@@ -124,20 +124,6 @@ bool Mouse::isCursorSupported() const
 	return SDL_GetDefaultCursor() != nullptr;
 }
 
-double Mouse::getX() const
-{
-	double x, y;
-	getPosition(x, y);
-	return x;
-}
-
-double Mouse::getY() const
-{
-	double x, y;
-	getPosition(x, y);
-	return y;
-}
-
 void Mouse::getPosition(double &x, double &y) const
 {
 	int mx, my;
@@ -173,14 +159,34 @@ void Mouse::setPosition(double x, double y)
 	SDL_PumpEvents();
 }
 
-void Mouse::setX(double x)
+void Mouse::getGlobalPosition(double &x, double &y, int &displayindex) const
 {
-	setPosition(x, getY());
-}
+	int globalx, globaly;
+	SDL_GetGlobalMouseState(&globalx, &globaly);
 
-void Mouse::setY(double y)
-{
-	setPosition(getX(), y);
+	int mx = globalx;
+	int my = globaly;
+
+	int displaycount = SDL_GetNumVideoDisplays();
+
+	for (displayindex = 0; displayindex < displaycount; displayindex++)
+	{
+		SDL_Rect rect = {};
+		SDL_GetDisplayBounds(displayindex, &rect);
+
+		mx -= rect.x;
+		my -= rect.y;
+
+		SDL_Point p = { globalx, globaly };
+		if (SDL_PointInRect(&p, &rect))
+			break;
+	}
+
+	if (displayindex >= displaycount)
+		displayindex = 0;
+
+	x = (double)mx;
+	y = (double)my;
 }
 
 void Mouse::setVisible(bool visible)
