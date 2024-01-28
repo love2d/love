@@ -64,8 +64,8 @@ public:
 
 	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
 
-	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
+	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
+	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;
@@ -92,7 +92,7 @@ public:
 	void setScissor(const Rect &rect) override;
 	void setScissor() override;
 
-	void setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) override;
+	void setStencilState(const StencilState &s) override;
 
 	void setDepthMode(CompareMode compare, bool write) override;
 
@@ -172,9 +172,6 @@ private:
 
 	char *bufferMapMemory;
 	size_t bufferMapMemorySize;
-
-	// Only needed for buffer types that can be bound to shaders.
-	StrongRef<love::graphics::Buffer> defaultBuffers[BUFFERUSAGE_MAX_ENUM];
 
 	// [non-readable, readable]
 	uint32 pixelFormatUsage[PIXELFORMAT_MAX_ENUM][2];

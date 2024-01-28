@@ -299,17 +299,8 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 	return true;
 }
 
-void Buffer::clear(size_t offset, size_t size)
+void Buffer::clearInternal(size_t offset, size_t size)
 {
-	if (isImmutable())
-		throw love::Exception("Cannot clear an immutable Buffer.");
-	else if (isMapped())
-		throw love::Exception("Cannot clear a mapped Buffer.");
-	else if (offset + size > getSize())
-		throw love::Exception("The given offset and size parameters to clear() are not within the Buffer's size.");
-	else if (offset % 4 != 0 || size % 4 != 0)
-		throw love::Exception("clear() must be used with offset and size parameters that are multiples of 4 bytes.");
-
 	if (GLAD_VERSION_4_3)
 	{
 		gl.bindBuffer(mapUsage, buffer);

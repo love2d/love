@@ -46,7 +46,7 @@ template <typename T>
 static inline size_t writeSNormData(lua_State *L, int startidx, int components, char *data)
 {
 	auto componentdata = (T *) data;
-	const auto maxval = std::numeric_limits<T>::max();
+	constexpr auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		componentdata[i] = (T) (luax_optnumberclamped(L, startidx + i, -1.0, 1.0, defaultComponents[i]) * maxval);
@@ -58,10 +58,21 @@ template <typename T>
 static inline size_t writeUNormData(lua_State *L, int startidx, int components, char *data)
 {
 	auto componentdata = (T *) data;
-	const auto maxval = std::numeric_limits<T>::max();
+	constexpr auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		componentdata[i] = (T) (luax_optnumberclamped01(L, startidx + i, 1.0) * maxval);
+
+	return sizeof(T) * components;
+}
+
+template <typename T>
+static inline size_t writeDataRequired(lua_State *L, int startidx, int components, char *data)
+{
+	auto componentdata = (T*)data;
+
+	for (int i = 0; i < components; i++)
+		componentdata[i] = (T)(luaL_checknumber(L, startidx + i));
 
 	return sizeof(T) * components;
 }
@@ -75,17 +86,17 @@ void luax_writebufferdata(lua_State *L, int startidx, DataFormat format, char *d
 		case DATAFORMAT_FLOAT_VEC3: writeData<float>(L, startidx, 3, data); break;
 		case DATAFORMAT_FLOAT_VEC4: writeData<float>(L, startidx, 4, data); break;
 
-		case DATAFORMAT_FLOAT_MAT2X2: writeData<float>(L, startidx, 4, data); break;
-		case DATAFORMAT_FLOAT_MAT2X3: writeData<float>(L, startidx, 6, data); break;
-		case DATAFORMAT_FLOAT_MAT2X4: writeData<float>(L, startidx, 8, data); break;
+		case DATAFORMAT_FLOAT_MAT2X2: writeDataRequired<float>(L, startidx, 4, data); break;
+		case DATAFORMAT_FLOAT_MAT2X3: writeDataRequired<float>(L, startidx, 6, data); break;
+		case DATAFORMAT_FLOAT_MAT2X4: writeDataRequired<float>(L, startidx, 8, data); break;
 
-		case DATAFORMAT_FLOAT_MAT3X2: writeData<float>(L, startidx, 6, data); break;
-		case DATAFORMAT_FLOAT_MAT3X3: writeData<float>(L, startidx, 9, data); break;
-		case DATAFORMAT_FLOAT_MAT3X4: writeData<float>(L, startidx, 12, data); break;
+		case DATAFORMAT_FLOAT_MAT3X2: writeDataRequired<float>(L, startidx, 6, data); break;
+		case DATAFORMAT_FLOAT_MAT3X3: writeDataRequired<float>(L, startidx, 9, data); break;
+		case DATAFORMAT_FLOAT_MAT3X4: writeDataRequired<float>(L, startidx, 12, data); break;
 
-		case DATAFORMAT_FLOAT_MAT4X2: writeData<float>(L, startidx, 8, data); break;
-		case DATAFORMAT_FLOAT_MAT4X3: writeData<float>(L, startidx, 12, data); break;
-		case DATAFORMAT_FLOAT_MAT4X4: writeData<float>(L, startidx, 16, data); break;
+		case DATAFORMAT_FLOAT_MAT4X2: writeDataRequired<float>(L, startidx, 8, data); break;
+		case DATAFORMAT_FLOAT_MAT4X3: writeDataRequired<float>(L, startidx, 12, data); break;
+		case DATAFORMAT_FLOAT_MAT4X4: writeDataRequired<float>(L, startidx, 16, data); break;
 
 		case DATAFORMAT_INT32:      writeData<int32>(L, startidx, 1, data); break;
 		case DATAFORMAT_INT32_VEC2: writeData<int32>(L, startidx, 2, data); break;
@@ -134,7 +145,7 @@ template <typename T>
 static inline size_t readSNormData(lua_State *L, int components, const char *data)
 {
 	const auto componentdata = (const T *) data;
-	const auto maxval = std::numeric_limits<T>::max();
+	constexpr auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, std::max(-1.0, (lua_Number) componentdata[i] / (lua_Number)maxval));
@@ -146,7 +157,7 @@ template <typename T>
 static inline size_t readUNormData(lua_State *L, int components, const char *data)
 {
 	const auto componentdata = (const T *) data;
-	const auto maxval = std::numeric_limits<T>::max();
+	constexpr auto maxval = std::numeric_limits<T>::max();
 
 	for (int i = 0; i < components; i++)
 		lua_pushnumber(L, (lua_Number) componentdata[i] / (lua_Number)maxval);

@@ -68,8 +68,8 @@ public:
 
 	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
 
-	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
+	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
+	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;
@@ -96,7 +96,7 @@ public:
 	void setScissor(const Rect &rect) override;
 	void setScissor() override;
 
-	void setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) override;
+	void setStencilState(const StencilState &s) override;
 
 	void setDepthMode(CompareMode compare, bool write) override;
 
@@ -136,6 +136,8 @@ public:
 	void submitComputeEncoder();
 
 	id<MTLSamplerState> getCachedSampler(const SamplerState &s);
+
+	bool isDepthCompareSamplerSupported() const;
 
 	StreamBuffer *getUniformBuffer() const { return uniformBuffer; }
 	Buffer *getDefaultAttributesBuffer() const { return defaultAttributesBuffer; }
@@ -229,7 +231,6 @@ private:
 	uint32 dirtyRenderState;
 	CullMode lastCullMode;
 	Shader::RenderPipelineKey lastRenderPipelineKey;
-	bool windowHasStencil;
 	int shaderSwitches;
 
 	StrongRef<love::graphics::Texture> backbufferMSAA;

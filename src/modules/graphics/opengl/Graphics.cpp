@@ -112,7 +112,6 @@ Graphics::Graphics()
 	, requestedBackbufferMSAA(0)
 	, bufferMapMemory(nullptr)
 	, bufferMapMemorySize(2 * 1024 * 1024)
-	, defaultBuffers()
 	, pixelFormatUsage()
 {
 	gl = OpenGL();
@@ -200,12 +199,22 @@ Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool render
 	return calculateDeviceProjection(projection, flags);
 }
 
-void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
+void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 {
+	bool changed = width != this->width || height != this->height
+		|| pixelwidth != this->pixelWidth || pixelheight != this->pixelHeight;
+
+	changed |= backbufferstencil != this->backbufferHasStencil || backbufferdepth != this->backbufferHasDepth;
+	changed |= msaa != this->requestedBackbufferMSAA;
+
 	this->width = width;
 	this->height = height;
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
+
+	this->backbufferHasStencil = backbufferstencil;
+	this->backbufferHasDepth = backbufferdepth;
+	this->requestedBackbufferMSAA = msaa;
 
 	if (!isRenderTargetActive())
 	{
@@ -220,11 +229,9 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 		resetProjection();
 	}
 
-	updateBackbuffer(width, height, pixelwidth, pixelheight, requestedBackbufferMSAA);
-}
+	if (!changed)
+		return;
 
-void Graphics::updateBackbuffer(int width, int height, int /*pixelwidth*/, int pixelheight, int msaa)
-{
 	bool useinternalbackbuffer = false;
 	if (msaa > 1)
 		useinternalbackbuffer = true;
@@ -253,8 +260,17 @@ void Graphics::updateBackbuffer(int width, int height, int /*pixelwidth*/, int p
 		settings.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_sRGB : PIXELFORMAT_RGBA8_UNORM;
 		internalBackbuffer.set(newTexture(settings), Acquire::NORETAIN);
 
-		settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-		internalBackbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+		internalBackbufferDepthStencil.set(nullptr);
+		if (backbufferstencil || backbufferdepth)
+		{
+			if (backbufferstencil && backbufferdepth)
+				settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+			else if (backbufferstencil)
+				settings.format = PIXELFORMAT_STENCIL8;
+			else if (backbufferdepth)
+				settings.format = PIXELFORMAT_DEPTH24_UNORM;
+			internalBackbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+		}
 
 		RenderTargets rts;
 		rts.colors.push_back(internalBackbuffer.get());
@@ -268,8 +284,6 @@ void Graphics::updateBackbuffer(int width, int height, int /*pixelwidth*/, int p
 		internalBackbufferDepthStencil.set(nullptr);
 		internalBackbufferFBO = 0;
 	}
-
-	requestedBackbufferMSAA = msaa;
 
 	if (restoreFBO)
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, prevFBO);
@@ -300,14 +314,8 @@ GLuint Graphics::getSystemBackbufferFBO() const
 #endif
 }
 
-bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
+bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 {
-	this->width = width;
-	this->height = height;
-
-	this->windowHasStencil = windowhasstencil;
-	this->requestedBackbufferMSAA = msaa;
-
 	// Okay, setup OpenGL.
 	gl.initContext();
 
@@ -364,7 +372,7 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 
 	setDebug(isDebugEnabled());
 
-	setViewportSize(width, height, pixelwidth, pixelheight);
+	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferstencil, backbufferdepth, msaa);
 
 	if (batchedDrawState.vb[0] == nullptr)
 	{
@@ -374,43 +382,6 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 		batchedDrawState.vb[1] = CreateStreamBuffer(BUFFERUSAGE_VERTEX, 256  * 1024 * 1);
 		batchedDrawState.indexBuffer = CreateStreamBuffer(BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 	}
-
-	// TODO: one buffer each for float, int, uint
-	if (capabilities.features[FEATURE_TEXEL_BUFFER] && defaultBuffers[BUFFERUSAGE_TEXEL].get() == nullptr)
-	{
-		Buffer::Settings settings(BUFFERUSAGEFLAG_TEXEL, BUFFERDATAUSAGE_STATIC);
-		std::vector<Buffer::DataDeclaration> format = {{"", DATAFORMAT_FLOAT_VEC4, 0}};
-
-		const float texel[] = {0.0f, 0.0f, 0.0f, 1.0f};
-
-		auto buffer = newBuffer(settings, format, texel, sizeof(texel), 1);
-		defaultBuffers[BUFFERUSAGE_TEXEL].set(buffer, Acquire::NORETAIN);
-	}
-
-	if (capabilities.features[FEATURE_GLSL4] && defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].get() == nullptr)
-	{
-		Buffer::Settings settings(BUFFERUSAGEFLAG_SHADER_STORAGE, BUFFERDATAUSAGE_STATIC);
-		std::vector<Buffer::DataDeclaration> format = {{"", DATAFORMAT_FLOAT, 0}};
-
-		std::vector<float> data;
-		data.resize(Buffer::SHADER_STORAGE_BUFFER_MAX_STRIDE / 4);
-
-		auto buffer = newBuffer(settings, format, data.data(), data.size() * sizeof(float), data.size());
-		defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].set(buffer, Acquire::NORETAIN);
-	}
-
-	// Load default resources before other Volatile.
-	for (int i = 0; i < BUFFERUSAGE_MAX_ENUM; i++)
-	{
-		if (defaultBuffers[i].get())
-			((Buffer *) defaultBuffers[i].get())->loadVolatile();
-	}
-
-	if (defaultBuffers[BUFFERUSAGE_TEXEL].get())
-		gl.setDefaultTexelBuffer((GLuint) defaultBuffers[BUFFERUSAGE_TEXEL]->getTexelBufferHandle());
-
-	if (defaultBuffers[BUFFERUSAGE_SHADER_STORAGE].get())
-		gl.setDefaultStorageBuffer((GLuint) defaultBuffers[BUFFERUSAGE_SHADER_STORAGE]->getHandle());
 
 	// Reload all volatile objects.
 	if (!Volatile::loadAll())
@@ -1434,30 +1405,19 @@ void Graphics::setScissor()
 		gl.setEnableState(OpenGL::ENABLE_SCISSOR_TEST, false);
 }
 
-void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask)
+void Graphics::setStencilState(const StencilState &s)
 {
-	DisplayState &state = states.back();
-
-	if (action != STENCIL_KEEP)
-	{
-		const auto &rts = state.renderTargets;
-		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
-
-		if (!isRenderTargetActive() && !windowHasStencil)
-			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
-		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
-			throw love::Exception("Drawing to the stencil buffer with a render target active requires either stencil=true or a custom stencil-type texture to be used, in setRenderTarget.");
-	}
+	validateStencilState(s);
 
 	flushBatchedDraws();
 
-	bool enablestencil = action != STENCIL_KEEP || compare != COMPARE_ALWAYS;
+	bool enablestencil = s.action != STENCIL_KEEP || s.compare != COMPARE_ALWAYS;
 	if (enablestencil != gl.isStateEnabled(OpenGL::ENABLE_STENCIL_TEST))
 		gl.setEnableState(OpenGL::ENABLE_STENCIL_TEST, enablestencil);
 
 	GLenum glaction = GL_KEEP;
 
-	switch (action)
+	switch (s.action)
 	{
 	case STENCIL_KEEP:
 		glaction = GL_KEEP;
@@ -1493,29 +1453,27 @@ void Graphics::setStencilMode(StencilAction action, CompareMode compare, int val
 	 * example, if the compare function is GREATER then the stencil test will
 	 * pass if the reference value is greater than the value in the stencil
 	 * buffer. With our API it's more intuitive to assume that
-	 * setStencilMode(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
+	 * setStencilState(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
 	 * stencil buffer has a value greater than 4.
 	 **/
-	GLenum glcompare = OpenGL::getGLCompareMode(getReversedCompareMode(compare));
+	GLenum glcompare = OpenGL::getGLCompareMode(getReversedCompareMode(s.compare));
 
 	if (enablestencil)
 	{
-		glStencilFunc(glcompare, value, readmask);
+		glStencilFunc(glcompare, s.value, s.readMask);
 		glStencilOp(GL_KEEP, GL_KEEP, glaction);
 	}
 
-	if (writemask != gl.getStencilWriteMask())
-		gl.setStencilWriteMask(writemask);
+	if (s.writeMask != gl.getStencilWriteMask())
+		gl.setStencilWriteMask(s.writeMask);
 
-	state.stencil.action = action;
-	state.stencil.compare = compare;
-	state.stencil.value = value;
-	state.stencil.readMask = readmask;
-	state.stencil.writeMask = writemask;
+	states.back().stencil = s;
 }
 
 void Graphics::setDepthMode(CompareMode compare, bool write)
 {
+	validateDepthState(write);
+
 	DisplayState &state = states.back();
 
 	if (state.depthTest != compare || state.depthWrite != write)

@@ -274,7 +274,6 @@ Graphics::Graphics()
 	, dirtyRenderState(STATEBIT_ALL)
 	, lastCullMode(CULL_MAX_ENUM)
 	, lastRenderPipelineKey()
-	, windowHasStencil(false)
 	, shaderSwitches(0)
 	, requestedBackbufferMSAA(0)
 	, attachmentStoreActions()
@@ -327,7 +326,7 @@ Graphics::Graphics()
 
 	initCapabilities();
 
-	uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+	uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, 1024 * 512 * 1);
 
 	{
 		std::vector<Buffer::DataDeclaration> dataformat = {
@@ -464,12 +463,22 @@ Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool /*rend
 	return calculateDeviceProjection(projection, flags);
 }
 
-void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
+void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 {
+	bool sizechanged = width != this->width || height != this->height
+		|| pixelwidth != this->pixelWidth || pixelheight != this->pixelHeight;
+
+	bool dschanged = backbufferstencil != this->backbufferHasStencil || backbufferdepth != this->backbufferHasDepth;
+	bool msaachanged = msaa != this->requestedBackbufferMSAA;
+
 	this->width = width;
 	this->height = height;
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
+
+	this->backbufferHasStencil = backbufferstencil;
+	this->backbufferHasDepth = backbufferdepth;
+	this->requestedBackbufferMSAA = msaa;
 
 	if (!isRenderTargetActive())
 	{
@@ -485,25 +494,37 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	settings.renderTarget = true;
 	settings.readable.set(false);
 
-	backbufferMSAA.set(nullptr);
-	if (settings.msaa > 1)
+	if (sizechanged || msaachanged)
 	{
-		settings.format = isGammaCorrect() ? PIXELFORMAT_BGRA8_sRGB : PIXELFORMAT_BGRA8_UNORM;
-		backbufferMSAA.set(newTexture(settings), Acquire::NORETAIN);
+		backbufferMSAA.set(nullptr);
+		if (settings.msaa > 1)
+		{
+			settings.format = isGammaCorrect() ? PIXELFORMAT_BGRA8_sRGB : PIXELFORMAT_BGRA8_UNORM;
+			backbufferMSAA.set(newTexture(settings), Acquire::NORETAIN);
+		}
 	}
 
-	settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-	backbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+	if (sizechanged || msaachanged || dschanged)
+	{
+		backbufferDepthStencil.set(nullptr);
+		if (backbufferstencil || backbufferdepth)
+		{
+			if (backbufferstencil && backbufferdepth)
+				settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+			else if (backbufferstencil)
+				settings.format = PIXELFORMAT_STENCIL8;
+			else if (backbufferdepth)
+				settings.format = PIXELFORMAT_DEPTH24_UNORM;
+			backbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+		}
+	}
 }
 
-bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
+bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 { @autoreleasepool {
 	this->width = width;
 	this->height = height;
 	this->metalLayer = (__bridge CAMetalLayer *) context;
-
-	this->windowHasStencil = windowhasstencil;
-	this->requestedBackbufferMSAA = msaa;
 
 	metalLayer.device = device;
 	metalLayer.pixelFormat = isGammaCorrect() ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
@@ -516,7 +537,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	metalLayer.magnificationFilter = kCAFilterNearest;
 #endif
 
-	setViewportSize(width, height, pixelwidth, pixelheight);
+	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferstencil, backbufferdepth, msaa);
 
 	created = true;
 
@@ -660,8 +681,10 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 			passDesc.colorAttachments[0].depthPlane = 0;
 
 			RenderTarget rt(backbufferDepthStencil);
-			setAttachment(rt, passDesc.depthAttachment, attachmentStoreActions.depth, false);
-			setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil, false);
+			if (rt.texture != nullptr && isPixelFormatDepth(rt.texture->getPixelFormat()))
+				setAttachment(rt, passDesc.depthAttachment, attachmentStoreActions.depth, false);
+			if (rt.texture != nullptr && isPixelFormatStencil(rt.texture->getPixelFormat()))
+				setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil, false);
 			attachmentStoreActions.depth = MTLStoreActionDontCare;
 			attachmentStoreActions.stencil = MTLStoreActionDontCare;
 
@@ -700,11 +723,15 @@ void Graphics::submitRenderEncoder(SubmitType type)
 		for (size_t i = 0; i < rts.colors.size(); i++)
 			[renderEncoder setColorStoreAction:(store ? MTLStoreActionStore : actions.color[i]) atIndex:i];
 
-		if (rts.depthStencil.texture.get() || rts.temporaryRTFlags != 0 || isbackbuffer)
-		{
+		love::graphics::Texture *ds = rts.depthStencil.texture.get();
+		if (isbackbuffer)
+			ds = backbufferDepthStencil;
+
+		if ((rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) != 0 || (ds != nullptr && isPixelFormatDepth(ds->getPixelFormat())))
 			[renderEncoder setDepthStoreAction:store ? MTLStoreActionStore : actions.depth];
+
+		if ((rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) != 0 || (ds != nullptr && isPixelFormatStencil(ds->getPixelFormat())))
 			[renderEncoder setStencilStoreAction:store ? MTLStoreActionStore : actions.stencil];
-		}
 
 		[renderEncoder endEncoding];
 		renderEncoder = nil;
@@ -810,7 +837,7 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 	desc.lodMinClamp = s.minLod;
 	desc.lodMaxClamp = s.maxLod;
 
-	// TODO: This isn't supported on some older iOS devices...
+	// This isn't supported on some older iOS devices. Texture code checks for support.
 	if (s.depthSampleMode.hasValue)
 		desc.compareFunction = getMTLCompareFunction(s.depthSampleMode.value);
 
@@ -821,6 +848,11 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 
 	return sampler;
 }}
+
+bool Graphics::isDepthCompareSamplerSupported() const
+{
+	return families.mac[1] || families.macCatalyst[1] || families.apple[3];
+}
 
 id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil)
 {
@@ -841,7 +873,7 @@ id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &
 	 * example, if the compare function is GREATER then the stencil test will
 	 * pass if the reference value is greater than the value in the stencil
 	 * buffer. With our API it's more intuitive to assume that
-	 * setStencilMode(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
+	 * setStencilState(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
 	 * stencil buffer has a value greater than 4.
 	 **/
 	stencildesc.stencilCompareFunction = getMTLCompareFunction(getReversedCompareMode(stencil.compare));
@@ -1031,7 +1063,7 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 			if ((b.access & Shader::ACCESS_WRITE) != 0 && texture == nil)
 				allWritableVariablesSet = false;
 		}
-		
+
 		if (sampindex != LOVE_UINT8_MAX)
 			setSampler(encoder, bindings, sampindex, samplertex);
 	}
@@ -1755,34 +1787,20 @@ void Graphics::setScissor()
 	}
 }
 
-void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask)
+void Graphics::setStencilState(const StencilState &s)
 {
-	DisplayState &state = states.back();
-
-	if (action != STENCIL_KEEP)
-	{
-		const auto &rts = state.renderTargets;
-		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
-
-		if (!isRenderTargetActive() && !windowHasStencil)
-			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
-		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
-			throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
-	}
+	validateStencilState(s);
 
 	flushBatchedDraws();
 
-	state.stencil.action = action;
-	state.stencil.compare = compare;
-	state.stencil.value = value;
-	state.stencil.readMask = readmask;
-	state.stencil.writeMask = writemask;
-
+	states.back().stencil = s;
 	dirtyRenderState |= STATEBIT_STENCIL;
 }
 
 void Graphics::setDepthMode(CompareMode compare, bool write)
 {
+	validateDepthState(write);
+
 	DisplayState &state = states.back();
 
 	if (state.depthTest != compare || state.depthWrite != write)

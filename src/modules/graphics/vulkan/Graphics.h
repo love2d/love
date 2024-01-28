@@ -284,8 +284,8 @@ public:
 	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
 	void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override;
 	void present(void *screenshotCallbackdata) override;
-	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
+	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
+	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
 	void unSetMode() override;
 	void setActive(bool active) override;
 	int getRequestedBackbufferMSAA() const override;
@@ -293,7 +293,7 @@ public:
 	void setColor(Colorf c) override;
 	void setScissor(const Rect &rect) override;
 	void setScissor() override;
-	void setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask) override;
+	void setStencilState(const StencilState &s) override;
 	void setDepthMode(CompareMode compare, bool write) override;
 	void setFrontFaceWinding(Winding winding) override;
 	void setColorMask(ColorChannelMask mask) override;
@@ -394,7 +394,6 @@ private:
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	uint32_t deviceApiVersion = VK_API_VERSION_1_0;
-	bool windowHasStencil = false;
 	int requestedMsaa = 0;
 	VkDevice device = VK_NULL_HANDLE; 
 	OptionalInstanceExtensions optionalInstanceExtensions;

@@ -1413,6 +1413,7 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
 	src/libraries/glslang/glslang/MachineIndependent/Scan.h
 	src/libraries/glslang/glslang/MachineIndependent/ScanContext.h
 	src/libraries/glslang/glslang/MachineIndependent/ShaderLang.cpp
+	src/libraries/glslang/glslang/MachineIndependent/span.h
 	src/libraries/glslang/glslang/MachineIndependent/SpirvIntrinsics.cpp
 	src/libraries/glslang/glslang/MachineIndependent/SymbolTable.cpp
 	src/libraries/glslang/glslang/MachineIndependent/SymbolTable.h
@@ -1427,7 +1428,6 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
 if(MSVC OR MINGW)
 	set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
 		${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
-		src/libraries/glslang/glslang/OSDependent/Windows/main.cpp
 		src/libraries/glslang/glslang/OSDependent/Windows/ossource.cpp
 	)
 else()
@@ -1438,7 +1438,12 @@ else()
 endif()
 
 set(LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC
+	src/libraries/glslang/glslang/Public/ResourceLimits.h
 	src/libraries/glslang/glslang/Public/ShaderLang.h
+)
+
+set(LOVE_SRC_3P_GLSLANG_GLSLANG_RESOURCELIMITS
+	src/libraries/glslang/glslang/ResourceLimits/ResourceLimits.cpp
 )
 
 set(LOVE_SRC_3P_GLSLANG_GLSLANG
@@ -1448,11 +1453,7 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG
 	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT}
 	${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
 	${LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC}
-)
-
-set(LOVE_SRC_3P_GLSLANG_OGLCOMPILERSDLL
-	src/libraries/glslang/OGLCompilersDLL/InitializeDll.cpp
-	src/libraries/glslang/OGLCompilersDLL/InitializeDll.h
+	${LOVE_SRC_3P_GLSLANG_GLSLANG_RESOURCELIMITS}
 )
 
 set(LOVE_SRC_3P_GLSLANG_SPIRV
@@ -1462,9 +1463,11 @@ set(LOVE_SRC_3P_GLSLANG_SPIRV
 	src/libraries/glslang/SPIRV/doc.cpp
 	src/libraries/glslang/SPIRV/doc.h
 	src/libraries/glslang/SPIRV/GLSL.ext.AMD.h
+	src/libraries/glslang/SPIRV/GLSL.ext.ARM.h
 	src/libraries/glslang/SPIRV/GLSL.ext.EXT.h
 	src/libraries/glslang/SPIRV/GLSL.ext.KHR.h
 	src/libraries/glslang/SPIRV/GLSL.ext.NV.h
+	src/libraries/glslang/SPIRV/GLSL.ext.QCOM.h
 	src/libraries/glslang/SPIRV/GLSL.std.450.h
 	src/libraries/glslang/SPIRV/GlslangToSpv.cpp
 	src/libraries/glslang/SPIRV/GlslangToSpv.h
@@ -1473,6 +1476,7 @@ set(LOVE_SRC_3P_GLSLANG_SPIRV
 	src/libraries/glslang/SPIRV/Logger.cpp
 	src/libraries/glslang/SPIRV/Logger.h
 	src/libraries/glslang/SPIRV/NonSemanticDebugPrintf.h
+	src/libraries/glslang/SPIRV/NonSemanticShaderDebugInfo100.h
 	src/libraries/glslang/SPIRV/spirv.hpp
 	src/libraries/glslang/SPIRV/SpvBuilder.cpp
 	src/libraries/glslang/SPIRV/SpvBuilder.h
@@ -1486,7 +1490,6 @@ set(LOVE_SRC_3P_GLSLANG_SPIRV
 
 set(LOVE_SRC_3P_GLSLANG
 	${LOVE_SRC_3P_GLSLANG_GLSLANG}
-	${LOVE_SRC_3P_GLSLANG_OGLCOMPILERSDLL}
 	${LOVE_SRC_3P_GLSLANG_SPIRV}
 )
 
@@ -1772,8 +1775,6 @@ set(LOVE_SRC_3P_SPIRV_CROSS
 	src/libraries/spirv_cross/spirv_common.hpp
 	src/libraries/spirv_cross/spirv_cpp.cpp
 	src/libraries/spirv_cross/spirv_cpp.hpp
-	src/libraries/spirv_cross/spirv_cross_c.cpp
-	src/libraries/spirv_cross/spirv_cross_c.h
 	src/libraries/spirv_cross/spirv_cross_containers.hpp
 	src/libraries/spirv_cross/spirv_cross_error_handling.hpp
 	src/libraries/spirv_cross/spirv_cross_parsed_ir.cpp
@@ -1792,7 +1793,6 @@ set(LOVE_SRC_3P_SPIRV_CROSS
 	src/libraries/spirv_cross/spirv_parser.hpp
 	src/libraries/spirv_cross/spirv_reflect.cpp
 	src/libraries/spirv_cross/spirv_reflect.hpp
-	src/libraries/spirv_cross/spirv.h
 	src/libraries/spirv_cross/spirv.hpp
 )
 

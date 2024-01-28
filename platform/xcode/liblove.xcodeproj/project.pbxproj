@@ -64,6 +64,15 @@
 		D9DAB92D2961F10000C64820 /* TextShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9282961F10000C64820 /* TextShaper.cpp */; };
 		D9DAB92E2961F10000C64820 /* TextShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9282961F10000C64820 /* TextShaper.cpp */; };
 		D9DAB9322963CD7500C64820 /* harfbuzz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9DAB9312963CD7500C64820 /* harfbuzz.framework */; };
+		D9DB6E272B4B40660037A1F6 /* ResourceLimits.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DB6E252B4B40660037A1F6 /* ResourceLimits.h */; };
+		D9DB6E292B4B40970037A1F6 /* span.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DB6E282B4B40970037A1F6 /* span.h */; };
+		D9DB6E362B4B41100037A1F6 /* ResourceLimits.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DB6E332B4B41100037A1F6 /* ResourceLimits.cpp */; };
+		D9DB6E372B4B41100037A1F6 /* ResourceLimits.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DB6E332B4B41100037A1F6 /* ResourceLimits.cpp */; };
+		D9DB6E3E2B4B41580037A1F6 /* NonSemanticDebugPrintf.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DB6E382B4B41570037A1F6 /* NonSemanticDebugPrintf.h */; };
+		D9DB6E3F2B4B41580037A1F6 /* NonSemanticShaderDebugInfo100.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DB6E392B4B41570037A1F6 /* NonSemanticShaderDebugInfo100.h */; };
+		D9DB6E402B4B41580037A1F6 /* GLSL.ext.ARM.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DB6E3A2B4B41570037A1F6 /* GLSL.ext.ARM.h */; };
+		D9DB6E412B4B41580037A1F6 /* GLSL.ext.QCOM.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DB6E3B2B4B41580037A1F6 /* GLSL.ext.QCOM.h */; };
+		D9DB6E452B4B80E80037A1F6 /* build_info.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DB6E442B4B80E80037A1F6 /* build_info.h */; };
 		FA0A3A5F23366CE9001C269E /* floattypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0A3A5D23366CE9001C269E /* floattypes.h */; };
 		FA0A3A6023366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
 		FA0A3A6123366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
@@ -670,8 +679,6 @@
 		FA18CF2B23DCF67900263725 /* spirv_cross_util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0423DCF67800263725 /* spirv_cross_util.cpp */; };
 		FA18CF2C23DCF67900263725 /* spirv_cross.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0523DCF67800263725 /* spirv_cross.cpp */; };
 		FA18CF2D23DCF67900263725 /* spirv_cross.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0523DCF67800263725 /* spirv_cross.cpp */; };
-		FA18CF2E23DCF67900263725 /* spirv_cross_c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0623DCF67800263725 /* spirv_cross_c.cpp */; };
-		FA18CF2F23DCF67900263725 /* spirv_cross_c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0623DCF67800263725 /* spirv_cross_c.cpp */; };
 		FA18CF3023DCF67900263725 /* spirv_hlsl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0723DCF67800263725 /* spirv_hlsl.cpp */; };
 		FA18CF3123DCF67900263725 /* spirv_hlsl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0723DCF67800263725 /* spirv_hlsl.cpp */; };
 		FA18CF3223DCF67900263725 /* spirv_cfg.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0823DCF67800263725 /* spirv_cfg.hpp */; };
@@ -679,8 +686,6 @@
 		FA18CF3423DCF67900263725 /* spirv_cpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0923DCF67800263725 /* spirv_cpp.cpp */; };
 		FA18CF3523DCF67900263725 /* spirv_cross_parsed_ir.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0A23DCF67800263725 /* spirv_cross_parsed_ir.cpp */; };
 		FA18CF3623DCF67900263725 /* spirv_cross_parsed_ir.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA18CF0A23DCF67800263725 /* spirv_cross_parsed_ir.cpp */; };
-		FA18CF3723DCF67900263725 /* spirv.h in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0B23DCF67800263725 /* spirv.h */; };
-		FA18CF3823DCF67900263725 /* spirv_cross_c.h in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0C23DCF67800263725 /* spirv_cross_c.h */; };
 		FA18CF3923DCF67900263725 /* spirv_msl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0D23DCF67800263725 /* spirv_msl.hpp */; };
 		FA18CF3A23DCF67900263725 /* spirv_reflect.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0E23DCF67800263725 /* spirv_reflect.hpp */; };
 		FA18CF3B23DCF67900263725 /* spirv_cross_util.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FA18CF0F23DCF67800263725 /* spirv_cross_util.hpp */; };
@@ -1288,9 +1293,6 @@
 		FAF140BB1E20934C00F898D2 /* ossource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF140211E20934C00F898D2 /* ossource.cpp */; };
 		FAF140BC1E20934C00F898D2 /* ossource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF140211E20934C00F898D2 /* ossource.cpp */; };
 		FAF140C41E20934C00F898D2 /* ShaderLang.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF140291E20934C00F898D2 /* ShaderLang.h */; };
-		FAF140DB1E20934C00F898D2 /* InitializeDll.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */; };
-		FAF140DC1E20934C00F898D2 /* InitializeDll.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */; };
-		FAF140DD1E20934C00F898D2 /* InitializeDll.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF1403C1E20934C00F898D2 /* InitializeDll.h */; };
 		FAF6C9DA23C2DE2900D7B5BC /* SPVRemapper.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF6C9C123C2DE2900D7B5BC /* SPVRemapper.h */; };
 		FAF6C9DB23C2DE2900D7B5BC /* SpvBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF6C9C223C2DE2900D7B5BC /* SpvBuilder.h */; };
 		FAF6C9DC23C2DE2900D7B5BC /* SpvPostProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF6C9C323C2DE2900D7B5BC /* SpvPostProcess.cpp */; };
@@ -1409,6 +1411,14 @@
 		D9DAB9272961F0FF00C64820 /* TextShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextShaper.h; sourceTree = "<group>"; };
 		D9DAB9282961F10000C64820 /* TextShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextShaper.cpp; sourceTree = "<group>"; };
 		D9DAB9312963CD7500C64820 /* harfbuzz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = harfbuzz.framework; path = macosx/Frameworks/harfbuzz.framework; sourceTree = "<group>"; };
+		D9DB6E252B4B40660037A1F6 /* ResourceLimits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResourceLimits.h; sourceTree = "<group>"; };
+		D9DB6E282B4B40970037A1F6 /* span.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = span.h; sourceTree = "<group>"; };
+		D9DB6E332B4B41100037A1F6 /* ResourceLimits.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ResourceLimits.cpp; sourceTree = "<group>"; };
+		D9DB6E382B4B41570037A1F6 /* NonSemanticDebugPrintf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NonSemanticDebugPrintf.h; sourceTree = "<group>"; };
+		D9DB6E392B4B41570037A1F6 /* NonSemanticShaderDebugInfo100.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NonSemanticShaderDebugInfo100.h; sourceTree = "<group>"; };
+		D9DB6E3A2B4B41570037A1F6 /* GLSL.ext.ARM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLSL.ext.ARM.h; sourceTree = "<group>"; };
+		D9DB6E3B2B4B41580037A1F6 /* GLSL.ext.QCOM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLSL.ext.QCOM.h; sourceTree = "<group>"; };
+		D9DB6E442B4B80E80037A1F6 /* build_info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = build_info.h; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "liblove-macosx.plist"; path = "macosx/liblove-macosx.plist"; sourceTree = "<group>"; };
 		FA0A3A5D23366CE9001C269E /* floattypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = floattypes.h; sourceTree = "<group>"; };
 		FA0A3A5E23366CE9001C269E /* floattypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = floattypes.cpp; sourceTree = "<group>"; };
@@ -1825,13 +1835,10 @@
 		FA18CF0323DCF67800263725 /* spirv_msl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_msl.cpp; sourceTree = "<group>"; };
 		FA18CF0423DCF67800263725 /* spirv_cross_util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_cross_util.cpp; sourceTree = "<group>"; };
 		FA18CF0523DCF67800263725 /* spirv_cross.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_cross.cpp; sourceTree = "<group>"; };
-		FA18CF0623DCF67800263725 /* spirv_cross_c.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_cross_c.cpp; sourceTree = "<group>"; };
 		FA18CF0723DCF67800263725 /* spirv_hlsl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_hlsl.cpp; sourceTree = "<group>"; };
 		FA18CF0823DCF67800263725 /* spirv_cfg.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv_cfg.hpp; sourceTree = "<group>"; };
 		FA18CF0923DCF67800263725 /* spirv_cpp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_cpp.cpp; sourceTree = "<group>"; };
 		FA18CF0A23DCF67800263725 /* spirv_cross_parsed_ir.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spirv_cross_parsed_ir.cpp; sourceTree = "<group>"; };
-		FA18CF0B23DCF67800263725 /* spirv.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spirv.h; sourceTree = "<group>"; };
-		FA18CF0C23DCF67800263725 /* spirv_cross_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = spirv_cross_c.h; sourceTree = "<group>"; };
 		FA18CF0D23DCF67800263725 /* spirv_msl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv_msl.hpp; sourceTree = "<group>"; };
 		FA18CF0E23DCF67800263725 /* spirv_reflect.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv_reflect.hpp; sourceTree = "<group>"; };
 		FA18CF0F23DCF67800263725 /* spirv_cross_util.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv_cross_util.hpp; sourceTree = "<group>"; };
@@ -1945,8 +1952,6 @@
 		FA7DA04C1C16874A0056B200 /* wrap_Math.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = wrap_Math.lua; sourceTree = "<group>"; };
 		FA7E9206277E120900C24CB2 /* theora.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = theora.xcframework; path = ios/libraries/theora.xcframework; sourceTree = "<group>"; };
 		FA84DE5D2778D7DB002674C6 /* SpirvIntrinsics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpirvIntrinsics.h; sourceTree = "<group>"; };
-		FA84DE5E2778D7DC002674C6 /* glslang_c_interface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = glslang_c_interface.h; sourceTree = "<group>"; };
-		FA84DE5F2778D7DC002674C6 /* glslang_c_shader_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = glslang_c_shader_types.h; sourceTree = "<group>"; };
 		FA84DE602778D7F3002674C6 /* SpirvIntrinsics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpirvIntrinsics.cpp; sourceTree = "<group>"; };
 		FA84DE6427791C36002674C6 /* GraphicsReadback.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GraphicsReadback.cpp; sourceTree = "<group>"; };
 		FA84DE6527791C36002674C6 /* GraphicsReadback.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GraphicsReadback.h; sourceTree = "<group>"; };
@@ -2199,7 +2204,6 @@
 		FADF543A1E3DAFF700012CC0 /* wrap_Graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrap_Graphics.h; sourceTree = "<group>"; };
 		FAE272501C05A15B00A67640 /* ParticleSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleSystem.cpp; sourceTree = "<group>"; };
 		FAE272511C05A15B00A67640 /* ParticleSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleSystem.h; sourceTree = "<group>"; };
-		FAEC229F2534F25100EBD925 /* build_info.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = build_info.h; sourceTree = "<group>"; };
 		FAECA1B01F3164700095D008 /* CompressedSlice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CompressedSlice.cpp; sourceTree = "<group>"; };
 		FAECA1B11F3164700095D008 /* CompressedSlice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CompressedSlice.h; sourceTree = "<group>"; };
 		FAF13FC21E20934C00F898D2 /* CodeGen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CodeGen.cpp; sourceTree = "<group>"; };
@@ -2261,8 +2265,6 @@
 		FAF140031E20934C00F898D2 /* osinclude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = osinclude.h; sourceTree = "<group>"; };
 		FAF140211E20934C00F898D2 /* ossource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ossource.cpp; sourceTree = "<group>"; };
 		FAF140291E20934C00F898D2 /* ShaderLang.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShaderLang.h; sourceTree = "<group>"; };
-		FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InitializeDll.cpp; sourceTree = "<group>"; };
-		FAF1403C1E20934C00F898D2 /* InitializeDll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitializeDll.h; sourceTree = "<group>"; };
 		FAF1889C1E9DA834008C1479 /* Optional.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Optional.h; sourceTree = "<group>"; };
 		FAF6C9C123C2DE2900D7B5BC /* SPVRemapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SPVRemapper.h; sourceTree = "<group>"; };
 		FAF6C9C223C2DE2900D7B5BC /* SpvBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpvBuilder.h; sourceTree = "<group>"; };
@@ -2370,6 +2372,14 @@
 			name = love;
 			sourceTree = "<group>";
 			usesTabs = 1;
+		};
+		D9DB6E312B4B41100037A1F6 /* ResourceLimits */ = {
+			isa = PBXGroup;
+			children = (
+				D9DB6E332B4B41100037A1F6 /* ResourceLimits.cpp */,
+			);
+			path = ResourceLimits;
+			sourceTree = "<group>";
 		};
 		FA08F5AC16C751BA00F007B5 /* Resources */ = {
 			isa = PBXGroup;
@@ -3441,8 +3451,6 @@
 				FA18CF1423DCF67800263725 /* spirv_common.hpp */,
 				FA18CF0923DCF67800263725 /* spirv_cpp.cpp */,
 				FA18CF0023DCF67800263725 /* spirv_cpp.hpp */,
-				FA18CF0623DCF67800263725 /* spirv_cross_c.cpp */,
-				FA18CF0C23DCF67800263725 /* spirv_cross_c.h */,
 				FA18CF1223DCF67800263725 /* spirv_cross_containers.hpp */,
 				FA18CEF423DCF67800263725 /* spirv_cross_error_handling.hpp */,
 				FA18CF0A23DCF67800263725 /* spirv_cross_parsed_ir.cpp */,
@@ -3461,7 +3469,6 @@
 				FA18CEF223DCF67800263725 /* spirv_parser.hpp */,
 				FA18CF0223DCF67800263725 /* spirv_reflect.cpp */,
 				FA18CF0E23DCF67800263725 /* spirv_reflect.hpp */,
-				FA18CF0B23DCF67800263725 /* spirv.h */,
 				FA18CEFE23DCF67800263725 /* spirv.hpp */,
 			);
 			path = spirv_cross;
@@ -3870,7 +3877,6 @@
 			isa = PBXGroup;
 			children = (
 				FAF13FC01E20934C00F898D2 /* glslang */,
-				FAF1403A1E20934C00F898D2 /* OGLCompilersDLL */,
 				FAF6C9C023C2DE2900D7B5BC /* SPIRV */,
 			);
 			path = glslang;
@@ -3879,12 +3885,13 @@
 		FAF13FC01E20934C00F898D2 /* glslang */ = {
 			isa = PBXGroup;
 			children = (
-				FAEC229F2534F25100EBD925 /* build_info.h */,
+				D9DB6E442B4B80E80037A1F6 /* build_info.h */,
 				FAF13FC11E20934C00F898D2 /* GenericCodeGen */,
 				FAF13FC41E20934C00F898D2 /* Include */,
 				FAF13FD21E20934C00F898D2 /* MachineIndependent */,
 				FAF140021E20934C00F898D2 /* OSDependent */,
 				FAF140281E20934C00F898D2 /* Public */,
+				D9DB6E312B4B41100037A1F6 /* ResourceLimits */,
 			);
 			path = glslang;
 			sourceTree = "<group>";
@@ -3905,8 +3912,6 @@
 				FAF13FC61E20934C00F898D2 /* BaseTypes.h */,
 				FAF13FC71E20934C00F898D2 /* Common.h */,
 				FAF13FC81E20934C00F898D2 /* ConstantUnion.h */,
-				FA84DE5E2778D7DC002674C6 /* glslang_c_interface.h */,
-				FA84DE5F2778D7DC002674C6 /* glslang_c_shader_types.h */,
 				FAF13FC91E20934C00F898D2 /* InfoSink.h */,
 				FAF13FCA1E20934C00F898D2 /* InitializeGlobals.h */,
 				FAF13FCB1E20934C00F898D2 /* intermediate.h */,
@@ -3958,6 +3963,7 @@
 				FAF13FFB1E20934C00F898D2 /* Scan.h */,
 				FAF13FFC1E20934C00F898D2 /* ScanContext.h */,
 				FAF13FFD1E20934C00F898D2 /* ShaderLang.cpp */,
+				D9DB6E282B4B40970037A1F6 /* span.h */,
 				FA84DE602778D7F3002674C6 /* SpirvIntrinsics.cpp */,
 				FAF13FFE1E20934C00F898D2 /* SymbolTable.cpp */,
 				FAF13FFF1E20934C00F898D2 /* SymbolTable.h */,
@@ -4001,18 +4007,10 @@
 		FAF140281E20934C00F898D2 /* Public */ = {
 			isa = PBXGroup;
 			children = (
+				D9DB6E252B4B40660037A1F6 /* ResourceLimits.h */,
 				FAF140291E20934C00F898D2 /* ShaderLang.h */,
 			);
 			path = Public;
-			sourceTree = "<group>";
-		};
-		FAF1403A1E20934C00F898D2 /* OGLCompilersDLL */ = {
-			isa = PBXGroup;
-			children = (
-				FAF1403B1E20934C00F898D2 /* InitializeDll.cpp */,
-				FAF1403C1E20934C00F898D2 /* InitializeDll.h */,
-			);
-			path = OGLCompilersDLL;
 			sourceTree = "<group>";
 		};
 		FAF6C9C023C2DE2900D7B5BC /* SPIRV */ = {
@@ -4024,9 +4022,11 @@
 				FAF6C9D823C2DE2900D7B5BC /* doc.cpp */,
 				FAF6C9C823C2DE2900D7B5BC /* doc.h */,
 				FAF6C9C723C2DE2900D7B5BC /* GLSL.ext.AMD.h */,
+				D9DB6E3A2B4B41570037A1F6 /* GLSL.ext.ARM.h */,
 				FAF6C9CB23C2DE2900D7B5BC /* GLSL.ext.EXT.h */,
 				FAF6C9CC23C2DE2900D7B5BC /* GLSL.ext.KHR.h */,
 				FAF6C9CD23C2DE2900D7B5BC /* GLSL.ext.NV.h */,
+				D9DB6E3B2B4B41580037A1F6 /* GLSL.ext.QCOM.h */,
 				FAF6C9D323C2DE2900D7B5BC /* GLSL.std.450.h */,
 				FAF6C9CE23C2DE2900D7B5BC /* GlslangToSpv.cpp */,
 				FAF6C9D223C2DE2900D7B5BC /* GlslangToSpv.h */,
@@ -4034,6 +4034,8 @@
 				FAF6C9C623C2DE2900D7B5BC /* InReadableOrder.cpp */,
 				FAF6C9D523C2DE2900D7B5BC /* Logger.cpp */,
 				FAF6C9D723C2DE2900D7B5BC /* Logger.h */,
+				D9DB6E382B4B41570037A1F6 /* NonSemanticDebugPrintf.h */,
+				D9DB6E392B4B41570037A1F6 /* NonSemanticShaderDebugInfo100.h */,
 				FAF6C9C923C2DE2900D7B5BC /* spirv.hpp */,
 				FAF6C9CA23C2DE2900D7B5BC /* SpvBuilder.cpp */,
 				FAF6C9C223C2DE2900D7B5BC /* SpvBuilder.h */,
@@ -4091,6 +4093,7 @@
 				FAF6C9EF23C2DE2900D7B5BC /* disassemble.h in Headers */,
 				FA18CF4123DCF67900263725 /* spirv_common.hpp in Headers */,
 				FAC7CD901FE35E95006A60C7 /* physfs_miniz.h in Headers */,
+				D9DB6E3F2B4B41580037A1F6 /* NonSemanticShaderDebugInfo100.h in Headers */,
 				FA0B791D1A958E3B000E1D17 /* b64.h in Headers */,
 				FA0B7DC61A95902C000E1D17 /* wrap_JoystickModule.h in Headers */,
 				FA0B7D201A95902C000E1D17 /* ImageRasterizer.h in Headers */,
@@ -4109,6 +4112,7 @@
 				FAF140871E20934C00F898D2 /* parseVersions.h in Headers */,
 				FA0B7AC61A958EA3000E1D17 /* types.h in Headers */,
 				FA0B7DBD1A95902C000E1D17 /* Joystick.h in Headers */,
+				D9DB6E452B4B80E80037A1F6 /* build_info.h in Headers */,
 				FA0B7D0E1A95902C000E1D17 /* wrap_Filesystem.h in Headers */,
 				FA0B7EE41A95902D000E1D17 /* Window.h in Headers */,
 				FA0B7CFC1A95902C000E1D17 /* Filesystem.h in Headers */,
@@ -4141,7 +4145,6 @@
 				FAF140AB1E20934C00F898D2 /* SymbolTable.h in Headers */,
 				FA18CF1E23DCF67900263725 /* external_interface.h in Headers */,
 				FA0B7ED71A95902D000E1D17 /* Timer.h in Headers */,
-				FA18CF3723DCF67900263725 /* spirv.h in Headers */,
 				FA0B7AC31A958EA3000E1D17 /* list.h in Headers */,
 				FA0B7B2D1A958EA3000E1D17 /* core.h in Headers */,
 				FA1E88841DF363DB00E808AA /* Filter.h in Headers */,
@@ -4297,12 +4300,14 @@
 				FA0B7AC81A958EA3000E1D17 /* utility.h in Headers */,
 				FABDA9BA2552448300B5C523 /* b2_weld_joint.h in Headers */,
 				FA522D5323F9FF2A0059EE3C /* dr_mp3.h in Headers */,
+				D9DB6E272B4B40660037A1F6 /* ResourceLimits.h in Headers */,
 				FA0B791F1A958E3B000E1D17 /* Data.h in Headers */,
 				FA18CF4523DD1A8100263725 /* ShaderStage.h in Headers */,
 				217DFBE41D9F6D490055D849 /* headers.lua.h in Headers */,
 				FA0B7D021A95902C000E1D17 /* Filesystem.h in Headers */,
 				FA0B7E471A95902C000E1D17 /* wrap_Contact.h in Headers */,
 				FA0B7E021A95902C000E1D17 /* CircleShape.h in Headers */,
+				D9DB6E3E2B4B41580037A1F6 /* NonSemanticDebugPrintf.h in Headers */,
 				FABDA9E92552448300B5C523 /* b2_timer.h in Headers */,
 				FA0B7E111A95902C000E1D17 /* FrictionJoint.h in Headers */,
 				FA0B7AE01A958EA3000E1D17 /* lodepng.h in Headers */,
@@ -4362,6 +4367,7 @@
 				FA0B7DC31A95902C000E1D17 /* wrap_Joystick.h in Headers */,
 				FA18CF3B23DCF67900263725 /* spirv_cross_util.hpp in Headers */,
 				FAF140631E20934C00F898D2 /* Types.h in Headers */,
+				D9DB6E292B4B40970037A1F6 /* span.h in Headers */,
 				FACA06AF293EE5CD001A2557 /* Sensor.h in Headers */,
 				FA4F2BE61DE6650600CA37D7 /* wrap_Transform.h in Headers */,
 				FA0B7EE71A95902D000E1D17 /* Window.h in Headers */,
@@ -4378,12 +4384,10 @@
 				FABDA9DD2552448300B5C523 /* b2_contact.h in Headers */,
 				FABDA9802552448200B5C523 /* b2_circle_contact.h in Headers */,
 				217DFC101D9F6D490055D849 /* url.lua.h in Headers */,
-				FAF140DD1E20934C00F898D2 /* InitializeDll.h in Headers */,
 				FA0B7DF31A95902C000E1D17 /* wrap_Cursor.h in Headers */,
 				FA18CF2023DCF67900263725 /* spirv_hlsl.hpp in Headers */,
 				FA0B7D271A95902C000E1D17 /* wrap_Font.h in Headers */,
 				FA0B7DAA1A95902C000E1D17 /* PVRHandler.h in Headers */,
-				FA18CF3823DCF67900263725 /* spirv_cross_c.h in Headers */,
 				FA27B3B51B498151008A9DCE /* wrap_Video.h in Headers */,
 				FABDA9BC2552448300B5C523 /* b2_fixture.h in Headers */,
 				FA0B7D7B1A95902C000E1D17 /* Quad.h in Headers */,
@@ -4437,6 +4441,7 @@
 				217DFC021D9F6D490055D849 /* tcp.h in Headers */,
 				FA3C5E441F8C368C0003C579 /* ShaderStage.h in Headers */,
 				FA0B79261A958E3B000E1D17 /* Exception.h in Headers */,
+				D9DB6E402B4B41580037A1F6 /* GLSL.ext.ARM.h in Headers */,
 				FA0B7D4D1A95902C000E1D17 /* Shader.h in Headers */,
 				FA0B793D1A958E3B000E1D17 /* runtime.h in Headers */,
 				FAF6C9E323C2DE2900D7B5BC /* GLSL.ext.AMD.h in Headers */,
@@ -4463,6 +4468,7 @@
 				FA6BDF90281219E900240F2A /* DataStream.h in Headers */,
 				FAF6C9DB23C2DE2900D7B5BC /* SpvBuilder.h in Headers */,
 				FA0B7EA21A95902C000E1D17 /* Sound.h in Headers */,
+				D9DB6E412B4B41580037A1F6 /* GLSL.ext.QCOM.h in Headers */,
 				FA0B7B331A958EA3000E1D17 /* wuff_config.h in Headers */,
 				FA0B7D3B1A95902C000E1D17 /* Graphics.h in Headers */,
 				FA0B7E6E1A95902C000E1D17 /* wrap_RevoluteJoint.h in Headers */,
@@ -4636,6 +4642,7 @@
 				FAF140A81E20934C00F898D2 /* ShaderLang.cpp in Sources */,
 				FA1BA09E1E16CFCE00AA2803 /* Font.cpp in Sources */,
 				FABDA9A12552448300B5C523 /* b2_gear_joint.cpp in Sources */,
+				D9DB6E372B4B41100037A1F6 /* ResourceLimits.cpp in Sources */,
 				FAE64A8A2071363100BC7981 /* physfs_archiver_wad.c in Sources */,
 				FA18CF4723DD1A8100263725 /* ShaderStage.mm in Sources */,
 				FA0B7ECC1A95902C000E1D17 /* wrap_Channel.cpp in Sources */,
@@ -4746,7 +4753,6 @@
 				FAF140AD1E20934C00F898D2 /* Versions.cpp in Sources */,
 				FA0B793C1A958E3B000E1D17 /* runtime.cpp in Sources */,
 				FA6BDF8A280B62A000240F2A /* GraphicsReadback.mm in Sources */,
-				FAF140DC1E20934C00F898D2 /* InitializeDll.cpp in Sources */,
 				FA0B7DBC1A95902C000E1D17 /* Joystick.cpp in Sources */,
 				FA0B7DAF1A95902C000E1D17 /* wrap_CompressedImageData.cpp in Sources */,
 				FA0B7AD51A958EA3000E1D17 /* unix.c in Sources */,
@@ -4997,7 +5003,6 @@
 				FACA02F81F5E39760084B28F /* CompressedData.cpp in Sources */,
 				FA0B7ADA1A958EA3000E1D17 /* glad.cpp in Sources */,
 				FAF140541E20934C00F898D2 /* CodeGen.cpp in Sources */,
-				FA18CF2F23DCF67900263725 /* spirv_cross_c.cpp in Sources */,
 				FA0B7E1F1A95902C000E1D17 /* Physics.cpp in Sources */,
 				FA6A2B7B1F60B8250074C308 /* wrap_ByteData.cpp in Sources */,
 				FA0B7E821A95902C000E1D17 /* Shape.cpp in Sources */,
@@ -5065,6 +5070,7 @@
 				FA0B7D7C1A95902C000E1D17 /* Texture.cpp in Sources */,
 				FAF140BB1E20934C00F898D2 /* ossource.cpp in Sources */,
 				FA0B7ECB1A95902C000E1D17 /* wrap_Channel.cpp in Sources */,
+				D9DB6E362B4B41100037A1F6 /* ResourceLimits.cpp in Sources */,
 				FACA02F21F5E396B0084B28F /* HashFunction.cpp in Sources */,
 				FABDA9A02552448300B5C523 /* b2_gear_joint.cpp in Sources */,
 				FAF140A71E20934C00F898D2 /* ShaderLang.cpp in Sources */,
@@ -5186,7 +5192,6 @@
 				FAC7CD811FE35E95006A60C7 /* physfs_platform_os2.c in Sources */,
 				FABDA9962552448300B5C523 /* b2_distance_joint.cpp in Sources */,
 				FA0B7DBB1A95902C000E1D17 /* Joystick.cpp in Sources */,
-				FAF140DB1E20934C00F898D2 /* InitializeDll.cpp in Sources */,
 				FA0B7DAE1A95902C000E1D17 /* wrap_CompressedImageData.cpp in Sources */,
 				FA6A2B701F5F845F0074C308 /* wrap_DataView.cpp in Sources */,
 				FAB17BE61ABFAA9000F9BA27 /* lz4.c in Sources */,
@@ -5284,7 +5289,6 @@
 				FA0B7E301A95902C000E1D17 /* Shape.cpp in Sources */,
 				FA93C4541F315B960087CCD4 /* FormatHandler.cpp in Sources */,
 				FA0B7E481A95902C000E1D17 /* wrap_DistanceJoint.cpp in Sources */,
-				FA18CF2E23DCF67900263725 /* spirv_cross_c.cpp in Sources */,
 				FABDA9A72552448300B5C523 /* b2_motor_joint.cpp in Sources */,
 				FA0B792F1A958E3B000E1D17 /* Module.cpp in Sources */,
 				FA0B7E2A1A95902C000E1D17 /* RevoluteJoint.cpp in Sources */,
@@ -5509,7 +5513,7 @@
 					"\"$(SRCROOT)/../../src/modules\"",
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				ONLY_ACTIVE_ARCH = NO;
@@ -5575,7 +5579,7 @@
 					"\"$(SRCROOT)/../../src/modules\"",
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				ONLY_ACTIVE_ARCH = YES;
@@ -5713,7 +5717,7 @@
 					"\"$(SRCROOT)/../../src/modules\"",
 					"\"$(SRCROOT)/../../src/libraries/enet/libenet/include\"",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LIBRARY_SEARCH_PATHS = "";
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;

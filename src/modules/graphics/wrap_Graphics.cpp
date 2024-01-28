@@ -608,52 +608,78 @@ int w_setStencilMode(lua_State *L)
 {
 	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
 	{
-		luax_catchexcept(L, [&](){ instance()->setStencilMode(); });
+		luax_catchexcept(L, [&]() { instance()->setStencilMode(); });
 		return 0;
 	}
 
-	StencilAction action = STENCIL_KEEP;
-	const char *actionstr = luaL_checkstring(L, 1);
-	if (!getConstant(actionstr, action))
-		return luax_enumerror(L, "stencil draw action", getConstants(action), actionstr);
+	StencilMode mode = STENCIL_MODE_OFF;
+	const char *modestr = luaL_checkstring(L, 1);
+	if (!getConstant(modestr, mode))
+		return luax_enumerror(L, "stencil mode", getConstants(mode), modestr);
 
-	CompareMode compare = COMPARE_ALWAYS;
-	const char *comparestr = luaL_checkstring(L, 2);
-	if (!getConstant(comparestr, compare))
-		return luax_enumerror(L, "compare mode", getConstants(compare), comparestr);
+	int value = (int) luaL_optinteger(L, 3, 1);
 
-	int value = (int) luaL_optinteger(L, 3, 0);
-
-	uint32 readmask = (uint32) luaL_optnumber(L, 4, LOVE_UINT32_MAX);
-	uint32 writemask = (uint32) luaL_optnumber(L, 5, LOVE_UINT32_MAX);
-
-	luax_catchexcept(L, [&](){ instance()->setStencilMode(action, compare, value, readmask, writemask); });
+	luax_catchexcept(L, [&]() { instance()->setStencilMode(mode, value); });
 	return 0;
 }
 
 int w_getStencilMode(lua_State *L)
 {
-	StencilAction action = STENCIL_KEEP;
-	CompareMode compare = COMPARE_ALWAYS;
-	int value = 1;
-	uint32 readmask = LOVE_UINT32_MAX;
-	uint32 writemask = LOVE_UINT32_MAX;
+	int value = 0;
+	StencilMode mode = instance()->getStencilMode(value);
 
-	instance()->getStencilMode(action, compare, value, readmask, writemask);
+	const char *modestr;
+	if (!getConstant(mode, modestr))
+		return luaL_error(L, "Unknown stencil mode.");
+
+	lua_pushstring(L, modestr);
+	lua_pushinteger(L, value);
+	return 2;
+}
+
+int w_setStencilState(lua_State *L)
+{
+	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
+	{
+		luax_catchexcept(L, [&](){ instance()->setStencilState(); });
+		return 0;
+	}
+
+	StencilState s;
+
+	const char *actionstr = luaL_checkstring(L, 1);
+	if (!getConstant(actionstr, s.action))
+		return luax_enumerror(L, "stencil draw action", getConstants(s.action), actionstr);
+
+	const char *comparestr = luaL_checkstring(L, 2);
+	if (!getConstant(comparestr, s.compare))
+		return luax_enumerror(L, "compare mode", getConstants(s.compare), comparestr);
+
+	s.value = (int) luaL_optinteger(L, 3, 0);
+	s.readMask = (uint32) luaL_optnumber(L, 4, LOVE_UINT32_MAX);
+	s.writeMask = (uint32) luaL_optnumber(L, 5, LOVE_UINT32_MAX);
+
+	luax_catchexcept(L, [&](){ instance()->setStencilState(s); });
+	return 0;
+}
+
+int w_getStencilState(lua_State *L)
+{
+	const StencilState &s = instance()->getStencilState();
 
 	const char *actionstr;
-	if (!getConstant(action, actionstr))
+	if (!getConstant(s.action, actionstr))
 		return luaL_error(L, "Unknown stencil draw action.");
 
 	const char *comparestr;
-	if (!getConstant(compare, comparestr))
+	if (!getConstant(s.compare, comparestr))
 		return luaL_error(L, "Unknown compare mode.");
 
 	lua_pushstring(L, actionstr);
 	lua_pushstring(L, comparestr);
-	lua_pushnumber(L, value);
-	lua_pushnumber(L, readmask);
-	lua_pushnumber(L, writemask);
+	lua_pushinteger(L, s.value);
+	lua_pushnumber(L, s.readMask);
+	lua_pushnumber(L, s.writeMask);
 	return 5;
 }
 
@@ -3936,6 +3962,8 @@ static const luaL_Reg functions[] =
 
 	{ "setStencilMode", w_setStencilMode },
 	{ "getStencilMode", w_getStencilMode },
+	{ "setStencilState", w_setStencilState },
+	{ "getStencilState", w_getStencilState },
 
 	{ "points", w_points },
 	{ "line", w_line },

@@ -55,12 +55,9 @@ public:
 
 	bool isCursorSupported() const override;
 
-	double getX() const override;
-	double getY() const override;
 	void getPosition(double &x, double &y) const override;
-	void setX(double x) override;
-	void setY(double y) override;
 	void setPosition(double x, double y) override;
+	void getGlobalPosition(double &x, double &y, int &displayindex) const override;
 	void setVisible(bool visible) override;
 	bool isDown(const std::vector<int> &buttons) const override;
 	bool isVisible() const override;

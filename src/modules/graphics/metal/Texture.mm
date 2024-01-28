@@ -339,6 +339,9 @@ void Texture::copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, 
 
 void Texture::setSamplerState(const SamplerState &s)
 { @autoreleasepool {
+	if (s.depthSampleMode.hasValue && !Graphics::getInstance()->isDepthCompareSamplerSupported())
+		throw love::Exception("Depth comparison sampling in shaders is not supported on this system.");
+
 	// Base class does common validation and assigns samplerState.
 	love::graphics::Texture::setSamplerState(s);
 

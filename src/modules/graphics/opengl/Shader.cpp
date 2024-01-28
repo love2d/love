@@ -149,17 +149,8 @@ void Shader::mapActiveUniforms()
 			TextureUnit unit;
 			unit.type = u.textureType;
 			unit.active = true;
-
-			if (u.baseType == UNIFORM_TEXELBUFFER)
-			{
-				unit.isTexelBuffer = true;
-				unit.texture = gl.getDefaultTexelBuffer();
-			}
-			else
-			{
-				unit.isTexelBuffer = false;
-				unit.texture = 0; // Handled below.
-			}
+			unit.texture = 0; // Handled below.
+			unit.isTexelBuffer = u.baseType == UNIFORM_TEXELBUFFER;
 
 			for (int i = 0; i < u.count; i++)
 				textureUnits.push_back(unit);
@@ -414,7 +405,7 @@ void Shader::mapActiveUniforms()
 
 			BufferBinding binding;
 			binding.bindingindex = u.ints[0];
-			binding.buffer = gl.getDefaultStorageBuffer();
+			binding.buffer = 0;
 
 			if (binding.bindingindex >= 0)
 			{
@@ -796,6 +787,7 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 	for (int i = 0; i < count; i++)
 	{
 		love::graphics::Texture *tex = textures[i];
+		bool isdefault = tex == nullptr;
 
 		if (tex != nullptr)
 		{
@@ -822,11 +814,19 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 			int bindingindex = info->ints[i];
 			auto &binding = storageTextureBindings[bindingindex];
 
-			binding.texture = tex;
-			binding.gltexture = gltex;
+			if (isdefault && (info->access & ACCESS_WRITE) != 0)
+			{
+				binding.texture = nullptr;
+				binding.gltexture = 0;
+			}
+			else
+			{
+				binding.texture = tex;
+				binding.gltexture = gltex;
 
-			if (shaderactive)
-				glBindImageTexture(bindingindex, binding.gltexture, 0, GL_TRUE, 0, binding.access, binding.internalFormat);
+				if (shaderactive)
+					glBindImageTexture(bindingindex, binding.gltexture, 0, GL_TRUE, 0, binding.access, binding.internalFormat);
+			}
 		}
 		else
 		{
@@ -867,13 +867,23 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 	for (int i = 0; i < count; i++)
 	{
 		love::graphics::Buffer *buffer = buffers[i];
+		bool isdefault = buffer == nullptr;
 
 		if (buffer != nullptr)
 		{
 			if (!validateBuffer(info, buffer, internalUpdate))
 				continue;
-			buffer->retain();
 		}
+		else
+		{
+			auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
+			if (texelbinding)
+				buffer = gfx->getDefaultTexelBuffer(info->dataBaseType);
+			else
+				buffer = gfx->getDefaultStorageBuffer();
+		}
+
+		buffer->retain();
 
 		if (info->buffers[i] != nullptr)
 			info->buffers[i]->release();
@@ -882,12 +892,7 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 
 		if (texelbinding)
 		{
-			GLuint gltex = 0;
-			if (buffer != nullptr)
-				gltex = (GLuint) buffer->getTexelBufferHandle();
-			else
-				gltex = gl.getDefaultTexelBuffer();
-
+			GLuint gltex = (GLuint) buffer->getTexelBufferHandle();
 			int texunit = info->ints[i];
 
 			if (shaderactive)
@@ -898,13 +903,8 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 		}
 		else if (storagebinding)
 		{
+			GLuint glbuffer = (GLuint)buffer->getHandle();
 			int bindingindex = info->ints[i];
-
-			GLuint glbuffer = 0;
-			if (buffer != nullptr)
-				glbuffer = (GLuint) buffer->getHandle();
-			else
-				glbuffer = gl.getDefaultStorageBuffer();
 
 			if (shaderactive)
 				gl.bindIndexedBuffer(glbuffer, BUFFERUSAGE_SHADER_STORAGE, bindingindex);
@@ -915,7 +915,7 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 				activeStorageBufferBindings[activeindex.first].buffer = glbuffer;
 
 			if (activeindex.second >= 0)
-				activeWritableStorageBuffers[activeindex.second] = buffer;
+				activeWritableStorageBuffers[activeindex.second] = isdefault ? nullptr : buffer;
 		}
 	}
 }

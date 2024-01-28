@@ -38,6 +38,7 @@
 //
 
 #include "ParseHelper.h"
+#include "Initialize.h"
 #include "Scan.h"
 
 #include "../OSDependent/osinclude.h"
@@ -57,11 +58,8 @@ TParseContext::TParseContext(TSymbolTable& symbolTable, TIntermediate& interm, b
                               infoSink, forwardCompatible, messages, entryPoint),
             inMain(false),
             blockName(nullptr),
-            limits(resources.limits)
-#ifndef GLSLANG_WEB
-            ,
+            limits(resources.limits),
             atomicUintOffsets(nullptr), anyIndexLimits(false)
-#endif
 {
     // decide whether precision qualifiers should be ignored or respected
     if (isEsProfile() || spvVersion.vulkan > 0) {
@@ -80,10 +78,6 @@ TParseContext::TParseContext(TSymbolTable& symbolTable, TIntermediate& interm, b
     globalBufferDefaults.layoutMatrix = ElmColumnMajor;
     globalBufferDefaults.layoutPacking = spvVersion.spv != 0 ? ElpStd430 : ElpShared;
 
-    // use storage buffer on SPIR-V 1.3 and up
-    if (spvVersion.spv >= EShTargetSpv_1_3)
-        intermediate.setUseStorageBuffer();
-
     globalInputDefaults.clear();
     globalOutputDefaults.clear();
 
@@ -91,7 +85,6 @@ TParseContext::TParseContext(TSymbolTable& symbolTable, TIntermediate& interm, b
     globalSharedDefaults.layoutMatrix = ElmColumnMajor;
     globalSharedDefaults.layoutPacking = ElpStd430;
 
-#ifndef GLSLANG_WEB
     // "Shaders in the transform
     // feedback capturing mode have an initial global default of
     //     layout(xfb_buffer = 0) out;"
@@ -103,7 +96,6 @@ TParseContext::TParseContext(TSymbolTable& symbolTable, TIntermediate& interm, b
 
     if (language == EShLangGeometry)
         globalOutputDefaults.layoutStream = 0;
-#endif
 
     if (entryPoint != nullptr && entryPoint->size() > 0 && *entryPoint != "main")
         infoSink.info.message(EPrefixError, "Source entry point must be \"main\"");
@@ -111,9 +103,7 @@ TParseContext::TParseContext(TSymbolTable& symbolTable, TIntermediate& interm, b
 
 TParseContext::~TParseContext()
 {
-#ifndef GLSLANG_WEB
     delete [] atomicUintOffsets;
-#endif
 }
 
 // Set up all default precisions as needed by the current environment.
@@ -177,7 +167,6 @@ void TParseContext::setLimits(const TBuiltInResource& r)
     resources = r;
     intermediate.setLimits(r);
 
-#ifndef GLSLANG_WEB
     anyIndexLimits = ! limits.generalAttributeMatrixVectorIndexing ||
                      ! limits.generalConstantMatrixVectorIndexing ||
                      ! limits.generalSamplerIndexing ||
@@ -192,7 +181,6 @@ void TParseContext::setLimits(const TBuiltInResource& r)
     atomicUintOffsets = new int[resources.maxAtomicCounterBindings];
     for (int b = 0; b < resources.maxAtomicCounterBindings; ++b)
         atomicUintOffsets[b] = 0;
-#endif
 }
 
 //
@@ -339,7 +327,6 @@ void TParseContext::setInvariant(const TSourceLoc& loc, const char* builtin) {
 
 void TParseContext::handlePragma(const TSourceLoc& loc, const TVector<TString>& tokens)
 {
-#ifndef GLSLANG_WEB
     if (pragmaCallback)
         pragmaCallback(loc.line, tokens);
 
@@ -441,7 +428,6 @@ void TParseContext::handlePragma(const TSourceLoc& loc, const TVector<TString>& 
         setInvariant(loc, "gl_FragColor");
         setInvariant(loc, "gl_FragData");
     }
-#endif
 }
 
 //
@@ -455,7 +441,6 @@ TIntermTyped* TParseContext::handleVariable(const TSourceLoc& loc, TSymbol* symb
     if (symbol && symbol->getNumExtensions())
         requireExtensions(loc, symbol->getNumExtensions(), symbol->getExtensions(), symbol->getName().c_str());
 
-#ifndef GLSLANG_WEB
     if (symbol && symbol->isReadOnly()) {
         // All shared things containing an unsized array must be copied up
         // on first use, so that all future references will share its array structure,
@@ -475,7 +460,6 @@ TIntermTyped* TParseContext::handleVariable(const TSourceLoc& loc, TSymbol* symb
                 makeEditable(symbol);
         }
     }
-#endif
 
     const TVariable* variable;
     const TAnonMember* anon = symbol ? symbol->getAsAnonMember() : nullptr;
@@ -501,6 +485,16 @@ TIntermTyped* TParseContext::handleVariable(const TSourceLoc& loc, TSymbol* symb
             if (variable->getType().isUnusableName()) {
                 error(loc, "cannot be used (maybe an instance name is needed)", string->c_str(), "");
                 variable = nullptr;
+            }
+
+            if (language == EShLangMesh && variable) {
+                TLayoutGeometry primitiveType = intermediate.getOutputPrimitive();
+                if ((variable->getMangledName() == "gl_PrimitiveTriangleIndicesEXT" && primitiveType != ElgTriangles) ||
+                    (variable->getMangledName() == "gl_PrimitiveLineIndicesEXT" && primitiveType != ElgLines) ||
+                    (variable->getMangledName() == "gl_PrimitivePointIndicesEXT" && primitiveType != ElgPoints)) {
+                    error(loc, "cannot be used (ouput primitive type mismatch)", string->c_str(), "");
+                    variable = nullptr;
+                }
             }
         } else {
             if (symbol)
@@ -570,7 +564,6 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
     // at least one of base and index is not a front-end constant variable...
     TIntermTyped* result = nullptr;
 
-#ifndef GLSLANG_WEB
     if (base->isReference() && ! base->isArray()) {
         requireExtensions(loc, 1, &E_GL_EXT_buffer_reference2, "buffer reference indexing");
         if (base->getType().getReferentType()->containsUnsizedArray()) {
@@ -589,15 +582,22 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
     }
     if (base->getAsSymbolNode() && isIoResizeArray(base->getType()))
         handleIoResizeArrayAccess(loc, base);
-#endif
 
     if (index->getQualifier().isFrontEndConstant())
         checkIndex(loc, base->getType(), indexValue);
 
     if (index->getQualifier().isFrontEndConstant()) {
-#ifndef GLSLANG_WEB
         if (base->getType().isUnsizedArray()) {
             base->getWritableType().updateImplicitArraySize(indexValue + 1);
+            base->getWritableType().setImplicitlySized(true);
+            if (base->getQualifier().builtIn == EbvClipDistance &&
+                indexValue >= resources.maxClipDistances) {
+                error(loc, "gl_ClipDistance", "[", "array index out of range '%d'", indexValue);
+            }
+            else if (base->getQualifier().builtIn == EbvCullDistance &&
+                indexValue >= resources.maxCullDistances) {
+                error(loc, "gl_CullDistance", "[", "array index out of range '%d'", indexValue);
+            }
             // For 2D per-view builtin arrays, update the inner dimension size in parent type
             if (base->getQualifier().isPerView() && base->getQualifier().builtIn != EbvNone) {
                 TIntermBinary* binaryNode = base->getAsBinaryNode();
@@ -609,11 +609,9 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
                 }
             }
         } else
-#endif
             checkIndex(loc, base->getType(), indexValue);
         result = intermediate.addIndex(EOpIndexDirect, base, index, loc);
     } else {
-#ifndef GLSLANG_WEB
         if (base->getType().isUnsizedArray()) {
             // we have a variable index into an unsized array, which is okay,
             // depending on the situation
@@ -625,7 +623,6 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
             }
             base->getWritableType().setArrayVariablyIndexed();
         }
-#endif
         if (base->getBasicType() == EbtBlock) {
             if (base->getQualifier().storage == EvqBuffer)
                 requireProfile(base->getLoc(), ~EEsProfile, "variable indexing buffer block array");
@@ -635,7 +632,7 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
             else {
                 // input/output blocks either don't exist or can't be variably indexed
             }
-        } else if (language == EShLangFragment && base->getQualifier().isPipeOutput())
+        } else if (language == EShLangFragment && base->getQualifier().isPipeOutput() && base->getQualifier().builtIn != EbvSampleMask)
             requireProfile(base->getLoc(), ~EEsProfile, "variable indexing fragment shader output array");
         else if (base->getBasicType() == EbtSampler && version >= 130) {
             const char* explanation = "variable indexing sampler array";
@@ -661,7 +658,6 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
     }
     result->setType(newType);
 
-#ifndef GLSLANG_WEB
     inheritMemoryQualifiers(base->getQualifier(), result->getWritableType().getQualifier());
 
     // Propagate nonuniform
@@ -670,12 +666,9 @@ TIntermTyped* TParseContext::handleBracketDereference(const TSourceLoc& loc, TIn
 
     if (anyIndexLimits)
         handleIndexLimits(loc, base, index);
-#endif
 
     return result;
 }
-
-#ifndef GLSLANG_WEB
 
 // for ES 2.0 (version 100) limitations for almost all index operations except vertex-shader uniforms
 void TParseContext::handleIndexLimits(const TSourceLoc& /*loc*/, TIntermTyped* base, TIntermTyped* index)
@@ -716,8 +709,8 @@ bool TParseContext::isIoResizeArray(const TType& type) const
             (language == EShLangTessControl && type.getQualifier().storage == EvqVaryingOut &&
                 ! type.getQualifier().patch) ||
             (language == EShLangFragment && type.getQualifier().storage == EvqVaryingIn &&
-                type.getQualifier().pervertexNV) ||
-            (language == EShLangMeshNV && type.getQualifier().storage == EvqVaryingOut &&
+                (type.getQualifier().pervertexNV || type.getQualifier().pervertexEXT)) ||
+            (language == EShLangMesh && type.getQualifier().storage == EvqVaryingOut &&
                 !type.getQualifier().perTaskNV));
 }
 
@@ -794,7 +787,7 @@ void TParseContext::checkIoArraysConsistency(const TSourceLoc &loc, bool tailOnl
 
         // As I/O array sizes don't change, fetch requiredSize only once,
         // except for mesh shaders which could have different I/O array sizes based on type qualifiers.
-        if (firstIteration || (language == EShLangMeshNV)) {
+        if (firstIteration || (language == EShLangMesh)) {
             requiredSize = getIoArrayImplicitSize(type.getQualifier(), &featureString);
             if (requiredSize == 0)
                 break;
@@ -823,13 +816,18 @@ int TParseContext::getIoArrayImplicitSize(const TQualifier &qualifier, TString *
         // Number of vertices for Fragment shader is always three.
         expectedSize = 3;
         str = "vertices";
-    } else if (language == EShLangMeshNV) {
+    } else if (language == EShLangMesh) {
         unsigned int maxPrimitives =
             intermediate.getPrimitives() != TQualifier::layoutNotSet ? intermediate.getPrimitives() : 0;
         if (qualifier.builtIn == EbvPrimitiveIndicesNV) {
             expectedSize = maxPrimitives * TQualifier::mapGeometryToSize(intermediate.getOutputPrimitive());
             str = "max_primitives*";
             str += TQualifier::getGeometryString(intermediate.getOutputPrimitive());
+        }
+        else if (qualifier.builtIn == EbvPrimitiveTriangleIndicesEXT || qualifier.builtIn == EbvPrimitiveLineIndicesEXT ||
+                 qualifier.builtIn == EbvPrimitivePointIndicesEXT) {
+            expectedSize = maxPrimitives;
+            str = "max_primitives";
         }
         else if (qualifier.isPerPrimitive()) {
             expectedSize = maxPrimitives;
@@ -856,16 +854,14 @@ void TParseContext::checkIoArrayConsistency(const TSourceLoc& loc, int requiredS
             error(loc, "inconsistent output number of vertices for array size of", feature, name.c_str());
         else if (language == EShLangFragment) {
             if (type.getOuterArraySize() > requiredSize)
-                error(loc, " cannot be greater than 3 for pervertexNV", feature, name.c_str());
+                error(loc, " cannot be greater than 3 for pervertexEXT", feature, name.c_str());
         }
-        else if (language == EShLangMeshNV)
+        else if (language == EShLangMesh)
             error(loc, "inconsistent output array size of", feature, name.c_str());
         else
             assert(0);
     }
 }
-
-#endif // GLSLANG_WEB
 
 // Handle seeing a binary node with a math operation.
 // Returns nullptr if not semantically allowed.
@@ -902,8 +898,10 @@ TIntermTyped* TParseContext::handleBinaryMath(const TSourceLoc& loc, const char*
         result = intermediate.addBinaryMath(op, left, right, loc);
     }
 
-    if (result == nullptr)
-        binaryOpError(loc, str, left->getCompleteString(), right->getCompleteString());
+    if (result == nullptr) {
+        bool enhanced = intermediate.getEnhancedMsgs();
+        binaryOpError(loc, str, left->getCompleteString(enhanced), right->getCompleteString(enhanced));
+    }
 
     return result;
 }
@@ -926,8 +924,10 @@ TIntermTyped* TParseContext::handleUnaryMath(const TSourceLoc& loc, const char* 
 
     if (result)
         return result;
-    else
-        unaryOpError(loc, str, childNode->getCompleteString());
+    else {
+        bool enhanced = intermediate.getEnhancedMsgs();
+        unaryOpError(loc, str, childNode->getCompleteString(enhanced));
+    }
 
     return childNode;
 }
@@ -953,8 +953,8 @@ TIntermTyped* TParseContext::handleDotDereference(const TSourceLoc& loc, TInterm
             requireProfile(loc, ~EEsProfile, feature);
             profileRequires(loc, ~EEsProfile, 420, E_GL_ARB_shading_language_420pack, feature);
         } else if (!base->getType().isCoopMat()) {
-            error(loc, "does not operate on this type:", field.c_str(), base->getType().getCompleteString().c_str());
-
+            bool enhanced = intermediate.getEnhancedMsgs();
+            error(loc, "does not operate on this type:", field.c_str(), base->getType().getCompleteString(enhanced).c_str());
             return base;
         }
 
@@ -993,22 +993,44 @@ TIntermTyped* TParseContext::handleDotDereference(const TSourceLoc& loc, TInterm
                 break;
             }
         }
+
         if (fieldFound) {
-            if (base->getType().getQualifier().isFrontEndConstant())
-                result = intermediate.foldDereference(base, member, loc);
-            else {
-                blockMemberExtensionCheck(loc, base, member, field);
-                TIntermTyped* index = intermediate.addConstantUnion(member, loc);
-                result = intermediate.addIndex(EOpIndexDirectStruct, base, index, loc);
-                result->setType(*(*fields)[member].type);
-                if ((*fields)[member].type->getQualifier().isIo())
-                    intermediate.addIoAccessed(field);
+            if (spvVersion.vulkan != 0 && spvVersion.vulkanRelaxed)
+                result = vkRelaxedRemapDotDereference(loc, *base, *(*fields)[member].type, field);
+
+            if (result == base)
+            {
+                if (base->getType().getQualifier().isFrontEndConstant())
+                    result = intermediate.foldDereference(base, member, loc);
+                else {
+                    blockMemberExtensionCheck(loc, base, member, field);
+                    TIntermTyped* index = intermediate.addConstantUnion(member, loc);
+                    result = intermediate.addIndex(EOpIndexDirectStruct, base, index, loc);
+                    result->setType(*(*fields)[member].type);
+                    if ((*fields)[member].type->getQualifier().isIo())
+                        intermediate.addIoAccessed(field);
+                }
             }
+
             inheritMemoryQualifiers(base->getQualifier(), result->getWritableType().getQualifier());
-        } else
-            error(loc, "no such field in structure", field.c_str(), "");
+        } else {
+            auto baseSymbol = base;
+            while (baseSymbol->getAsSymbolNode() == nullptr) {
+                auto binaryNode = baseSymbol->getAsBinaryNode();
+                if (binaryNode == nullptr) break;
+                baseSymbol = binaryNode->getLeft();
+            }
+            if (baseSymbol->getAsSymbolNode() != nullptr) {
+                TString structName;
+                structName.append("\'").append(baseSymbol->getAsSymbolNode()->getName().c_str()).append("\'");
+                error(loc, "no such field in structure", field.c_str(), structName.c_str());
+            } else {
+                error(loc, "no such field in structure", field.c_str(), "");
+            }
+        }
     } else
-        error(loc, "does not apply to this type:", field.c_str(), base->getType().getCompleteString().c_str());
+        error(loc, "does not apply to this type:", field.c_str(),
+          base->getType().getCompleteString(intermediate.getEnhancedMsgs()).c_str());
 
     // Propagate noContraction up the dereference chain
     if (base->getQualifier().isNoContraction())
@@ -1127,7 +1149,6 @@ TFunction* TParseContext::handleFunctionDeclarator(const TSourceLoc& loc, TFunct
     TSymbol* symbol = symbolTable.find(function.getMangledName(), &builtIn);
     if (symbol && symbol->getAsFunction() && builtIn)
         requireProfile(loc, ~EEsProfile, "redefinition of built-in function");
-#ifndef GLSLANG_WEB
     // Check the validity of using spirv_literal qualifier
     for (int i = 0; i < function.getParamCount(); ++i) {
         if (function[i].type->getQualifier().isSpirvLiteral() && function.getBuiltInOp() != EOpSpirvInst)
@@ -1139,19 +1160,16 @@ TFunction* TParseContext::handleFunctionDeclarator(const TSourceLoc& loc, TFunct
     // respect this redeclared one.
     if (symbol && builtIn && function.getBuiltInOp() == EOpSpirvInst)
         symbol = nullptr;
-#endif
-    const TFunction* prevDec = symbol ? symbol->getAsFunction() : 0;
+    const TFunction* prevDec = symbol ? symbol->getAsFunction() : nullptr;
     if (prevDec) {
         if (prevDec->isPrototyped() && prototype)
             profileRequires(loc, EEsProfile, 300, nullptr, "multiple prototypes for same function");
         if (prevDec->getType() != function.getType())
             error(loc, "overloaded functions must have the same return type", function.getName().c_str(), "");
-#ifndef GLSLANG_WEB
         if (prevDec->getSpirvInstruction() != function.getSpirvInstruction()) {
             error(loc, "overloaded functions must have the same qualifiers", function.getName().c_str(),
                   "spirv_instruction");
         }
-#endif
         for (int i = 0; i < prevDec->getParamCount(); ++i) {
             if ((*prevDec)[i].type->getQualifier().storage != function[i].type->getQualifier().storage)
                 error(loc, "overloaded functions must have the same parameter storage qualifiers for argument", function[i].type->getStorageQualifierString(), "%d", i+1);
@@ -1233,6 +1251,8 @@ TIntermAggregate* TParseContext::handleFunctionDefinition(const TSourceLoc& loc,
             error(loc, "function cannot take any parameter(s)", function.getName().c_str(), "");
         if (function.getType().getBasicType() != EbtVoid)
             error(loc, "", function.getType().getBasicTypeString().c_str(), "entry point cannot return a value");
+        if (function.getLinkType() != ELinkNone)
+            error(loc, "main function cannot be exported", "", "");
     }
 
     //
@@ -1269,6 +1289,7 @@ TIntermAggregate* TParseContext::handleFunctionDefinition(const TSourceLoc& loc,
         } else
             paramNodes = intermediate.growAggregate(paramNodes, intermediate.addSymbol(*param.type, loc), loc);
     }
+    paramNodes->setLinkType(function.getLinkType());
     intermediate.setAggregateOperator(paramNodes, EOpParameters, TType(EbtVoid), loc);
     loopNestingLevel = 0;
     statementNestingLevel = 0;
@@ -1314,14 +1335,14 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
             //
             result = addConstructor(loc, arguments, type);
             if (result == nullptr)
-                error(loc, "cannot construct with these arguments", type.getCompleteString().c_str(), "");
+                error(loc, "cannot construct with these arguments", type.getCompleteString(intermediate.getEnhancedMsgs()).c_str(), "");
         }
     } else {
         //
         // Find it in the symbol table.
         //
         const TFunction* fnCandidate;
-        bool builtIn;
+        bool builtIn {false};
         fnCandidate = findFunction(loc, *function, builtIn);
         if (fnCandidate) {
             // This is a declared function that might map to
@@ -1339,7 +1360,10 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
                 requireInt16Arithmetic(loc, "built-in function", "(u)int16 types can only be in uniform block or buffer storage");
             if (builtIn && fnCandidate->getType().contains8BitInt())
                 requireInt8Arithmetic(loc, "built-in function", "(u)int8 types can only be in uniform block or buffer storage");
-
+            if (builtIn && (fnCandidate->getBuiltInOp() == EOpTextureFetch || fnCandidate->getBuiltInOp() == EOpTextureQuerySize)) {
+                if ((*fnCandidate)[0].type->getSampler().isMultiSample() && version <= 140)
+                    requireExtensions(loc, 1, &E_GL_ARB_texture_multisample, fnCandidate->getName().c_str());
+            }
             if (arguments != nullptr) {
                 // Make sure qualifications work for these arguments.
                 TIntermAggregate* aggregate = arguments->getAsAggregate();
@@ -1353,7 +1377,6 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
                         if (lValueErrorCheck(arguments->getLoc(), "assign", arg->getAsTyped()))
                             error(arguments->getLoc(), "Non-L-value cannot be passed for 'out' or 'inout' parameters.", "out", "");
                     }
-#ifndef GLSLANG_WEB
                     if (formalQualifier.isSpirvLiteral()) {
                         if (!arg->getAsTyped()->getQualifier().isFrontEndConstant()) {
                             error(arguments->getLoc(),
@@ -1361,12 +1384,11 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
                                   "spirv_literal", "");
                         }
                     }
-#endif
                     const TType& argType = arg->getAsTyped()->getType();
                     const TQualifier& argQualifier = argType.getQualifier();
-                    if (argQualifier.isMemory() && (argType.containsOpaque() || argType.isReference())) {
+                    bool containsBindlessSampler = intermediate.getBindlessMode() && argType.containsSampler();
+                    if (argQualifier.isMemory() && !containsBindlessSampler && (argType.containsOpaque() || argType.isReference())) {
                         const char* message = "argument cannot drop memory qualifier when passed to formal parameter";
-#ifndef GLSLANG_WEB
                         if (argQualifier.volatil && ! formalQualifier.volatil)
                             error(arguments->getLoc(), message, "volatile", "");
                         if (argQualifier.coherent && ! (formalQualifier.devicecoherent || formalQualifier.coherent))
@@ -1386,7 +1408,6 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
                         // Don't check 'restrict', it is different than the rest:
                         // "...but only restrict can be taken away from a calling argument, by a formal parameter that
                         // lacks the restrict qualifier..."
-#endif
                     }
                     if (!builtIn && argQualifier.getFormat() != formalQualifier.getFormat()) {
                         // we have mismatched formats, which should only be allowed if writeonly
@@ -1416,11 +1437,9 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
             if (builtIn && fnCandidate->getBuiltInOp() != EOpNull) {
                 // A function call mapped to a built-in operation.
                 result = handleBuiltInFunctionCall(loc, arguments, *fnCandidate);
-#ifndef GLSLANG_WEB
             } else if (fnCandidate->getBuiltInOp() == EOpSpirvInst) {
                 // When SPIR-V instruction qualifier is specified, the function call is still mapped to a built-in operation.
                 result = handleBuiltInFunctionCall(loc, arguments, *fnCandidate);
-#endif
             } else {
                 // This is a function call not mapped to built-in operator.
                 // It could still be a built-in function, but only if PureOperatorBuiltins == false.
@@ -1440,11 +1459,9 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
                         intermediate.addToCallGraph(infoSink, currentCaller, fnCandidate->getMangledName());
                 }
 
-#ifndef GLSLANG_WEB
                 if (builtIn)
                     nonOpBuiltInCheck(loc, *fnCandidate, *call);
                 else
-#endif
                     userFunctionCallCheck(loc, *call);
             }
 
@@ -1462,7 +1479,8 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
 
             if (result->getAsTyped()->getType().isCoopMat() &&
                !result->getAsTyped()->getType().isParameterized()) {
-                assert(fnCandidate->getBuiltInOp() == EOpCooperativeMatrixMulAdd);
+                assert(fnCandidate->getBuiltInOp() == EOpCooperativeMatrixMulAdd ||
+                       fnCandidate->getBuiltInOp() == EOpCooperativeMatrixMulAddNV);
 
                 result->setType(result->getAsAggregate()->getSequence()[2]->getAsTyped()->getType());
             }
@@ -1494,11 +1512,10 @@ TIntermTyped* TParseContext::handleBuiltInFunctionCall(TSourceLoc loc, TIntermNo
         else
             error(arguments->getLoc(), " wrong operand type", "Internal Error",
                                       "built in unary operator function.  Type: %s",
-                                      static_cast<TIntermTyped*>(arguments)->getCompleteString().c_str());
+                                      static_cast<TIntermTyped*>(arguments)->getCompleteString(intermediate.getEnhancedMsgs()).c_str());
     } else if (result->getAsOperator())
         builtInOpCheck(loc, function, *result->getAsOperator());
 
-#ifndef GLSLANG_WEB
     // Special handling for function call with SPIR-V instruction qualifier specified
     if (function.getBuiltInOp() == EOpSpirvInst) {
         if (auto agg = result->getAsAggregate()) {
@@ -1525,7 +1542,6 @@ TIntermTyped* TParseContext::handleBuiltInFunctionCall(TSourceLoc loc, TIntermNo
         } else
             assert(0);
     }
-#endif
 
     return result;
 }
@@ -1628,9 +1644,7 @@ void TParseContext::computeBuiltinPrecisions(TIntermTyped& node, const TFunction
 
 TIntermNode* TParseContext::handleReturnValue(const TSourceLoc& loc, TIntermTyped* value)
 {
-#ifndef GLSLANG_WEB
     storage16BitAssignmentCheck(loc, value->getType(), "return");
-#endif
 
     functionReturnsValue = true;
     TIntermBranch* branch = nullptr;
@@ -1650,9 +1664,15 @@ TIntermNode* TParseContext::handleReturnValue(const TSourceLoc& loc, TIntermType
             error(loc, "type does not match, or is not convertible to, the function's return type", "return", "");
             branch = intermediate.addBranch(EOpReturn, value, loc);
         }
-    } else
+    } else {
+        if (value->getType().isTexture() || value->getType().isImage()) {
+            if (spvVersion.spv != 0)
+                error(loc, "sampler or image cannot be used as return type when generating SPIR-V", "return", "");
+            else if (!extensionTurnedOn(E_GL_ARB_bindless_texture))
+                error(loc, "sampler or image can be used as return type only when the extension GL_ARB_bindless_texture enabled", "return", "");
+        }
         branch = intermediate.addBranch(EOpReturn, value, loc);
-
+    }
     branch->updatePrecision(currentFunctionType->getQualifier().precision);
     return branch;
 }
@@ -1660,7 +1680,6 @@ TIntermNode* TParseContext::handleReturnValue(const TSourceLoc& loc, TIntermType
 // See if the operation is being done in an illegal location.
 void TParseContext::checkLocation(const TSourceLoc& loc, TOperator op)
 {
-#ifndef GLSLANG_WEB
     switch (op) {
     case EOpBarrier:
         if (language == EShLangTessControl) {
@@ -1713,7 +1732,6 @@ void TParseContext::checkLocation(const TSourceLoc& loc, TOperator op)
     default:
         break;
     }
-#endif
 }
 
 // Finish processing object.length(). This started earlier in handleDotDereference(), where
@@ -1731,7 +1749,6 @@ TIntermTyped* TParseContext::handleLengthMethod(const TSourceLoc& loc, TFunction
         const TType& type = intermNode->getAsTyped()->getType();
         if (type.isArray()) {
             if (type.isUnsizedArray()) {
-#ifndef GLSLANG_WEB
                 if (intermNode->getAsSymbolNode() && isIoResizeArray(type)) {
                     // We could be between a layout declaration that gives a built-in io array implicit size and
                     // a user redeclaration of that array, meaning we have to substitute its implicit size here
@@ -1742,17 +1759,19 @@ TIntermTyped* TParseContext::handleLengthMethod(const TSourceLoc& loc, TFunction
                         name == "gl_MeshPrimitivesNV") {
                         length = getIoArrayImplicitSize(type.getQualifier());
                     }
+                } else if (const auto typed = intermNode->getAsTyped()) {
+                    if (typed->getQualifier().builtIn == EbvSampleMask) {
+                        requireProfile(loc, EEsProfile, "the array size of gl_SampleMask and gl_SampleMaskIn is ceil(gl_MaxSamples/32)");
+                        length = (resources.maxSamples + 31) / 32;
+                    }
                 }
-#endif
                 if (length == 0) {
-#ifndef GLSLANG_WEB
                     if (intermNode->getAsSymbolNode() && isIoResizeArray(type))
                         error(loc, "", function->getName().c_str(), "array must first be sized by a redeclaration or layout qualifier");
                     else if (isRuntimeLength(*intermNode->getAsTyped())) {
                         // Create a unary op and let the back end handle it
                         return intermediate.addBuiltInFunctionCall(loc, EOpArrayLength, true, intermNode, TType(EbtInt));
                     } else
-#endif
                         error(loc, "", function->getName().c_str(), "array must be declared with a size before using this method");
                 }
             } else if (type.getOuterArrayNode()) {
@@ -1785,7 +1804,6 @@ TIntermTyped* TParseContext::handleLengthMethod(const TSourceLoc& loc, TFunction
 //
 void TParseContext::addInputArgumentConversions(const TFunction& function, TIntermNode*& arguments) const
 {
-#ifndef GLSLANG_WEB
     TIntermAggregate* aggregate = arguments->getAsAggregate();
 
     // Process each argument's conversion
@@ -1813,7 +1831,6 @@ void TParseContext::addInputArgumentConversions(const TFunction& function, TInte
             }
         }
     }
-#endif
 }
 
 //
@@ -1825,9 +1842,6 @@ void TParseContext::addInputArgumentConversions(const TFunction& function, TInte
 //
 TIntermTyped* TParseContext::addOutputArgumentConversions(const TFunction& function, TIntermAggregate& intermNode) const
 {
-#ifdef GLSLANG_WEB
-    return &intermNode;
-#else
     TIntermSequence& arguments = intermNode.getSequence();
 
     // Will there be any output conversions?
@@ -1895,13 +1909,15 @@ TIntermTyped* TParseContext::addOutputArgumentConversions(const TFunction& funct
     conversionTree = intermediate.setAggregateOperator(conversionTree, EOpComma, intermNode.getType(), intermNode.getLoc());
 
     return conversionTree;
-#endif
 }
 
 TIntermTyped* TParseContext::addAssign(const TSourceLoc& loc, TOperator op, TIntermTyped* left, TIntermTyped* right)
 {
     if ((op == EOpAddAssign || op == EOpSubAssign) && left->isReference())
         requireExtensions(loc, 1, &E_GL_EXT_buffer_reference2, "+= and -= on a buffer reference");
+
+    if (op == EOpAssign && left->getBasicType() == EbtSampler && right->getBasicType() == EbtSampler)
+        requireExtensions(loc, 1, &E_GL_ARB_bindless_texture, "sampler assignment for bindless texture");
 
     return intermediate.addAssign(op, left, right, loc);
 }
@@ -1990,18 +2006,18 @@ void TParseContext::memorySemanticsCheck(const TSourceLoc& loc, const TFunction&
         break;
     }
 
-    if ((semantics & gl_SemanticsAcquire) && 
+    if ((semantics & gl_SemanticsAcquire) &&
         (callNode.getOp() == EOpAtomicStore || callNode.getOp() == EOpImageAtomicStore)) {
         error(loc, "gl_SemanticsAcquire must not be used with (image) atomic store",
               fnCandidate.getName().c_str(), "");
     }
-    if ((semantics & gl_SemanticsRelease) && 
+    if ((semantics & gl_SemanticsRelease) &&
         (callNode.getOp() == EOpAtomicLoad || callNode.getOp() == EOpImageAtomicLoad)) {
         error(loc, "gl_SemanticsRelease must not be used with (image) atomic load",
               fnCandidate.getName().c_str(), "");
     }
-    if ((semantics & gl_SemanticsAcquireRelease) && 
-        (callNode.getOp() == EOpAtomicStore || callNode.getOp() == EOpImageAtomicStore || 
+    if ((semantics & gl_SemanticsAcquireRelease) &&
+        (callNode.getOp() == EOpAtomicStore || callNode.getOp() == EOpImageAtomicStore ||
          callNode.getOp() == EOpAtomicLoad  || callNode.getOp() == EOpImageAtomicLoad)) {
         error(loc, "gl_SemanticsAcquireRelease must not be used with (image) atomic load/store",
               fnCandidate.getName().c_str(), "");
@@ -2102,7 +2118,6 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
     TString featureString;
     const char* feature = nullptr;
     switch (callNode.getOp()) {
-#ifndef GLSLANG_WEB
     case EOpTextureGather:
     case EOpTextureGatherOffset:
     case EOpTextureGatherOffsets:
@@ -2175,6 +2190,37 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         }
         break;
     }
+
+    case EOpTexture:
+    case EOpTextureLod:
+    {
+        if ((fnCandidate.getParamCount() > 2) && ((*argp)[1]->getAsTyped()->getType().getBasicType() == EbtFloat) &&
+            ((*argp)[1]->getAsTyped()->getType().getVectorSize() == 4) && fnCandidate[0].type->getSampler().shadow) {
+            featureString = fnCandidate.getName();
+            if (callNode.getOp() == EOpTexture)
+                featureString += "(..., float bias)";
+            else
+                featureString += "(..., float lod)";
+            feature = featureString.c_str();
+
+            if ((fnCandidate[0].type->getSampler().dim == Esd2D && fnCandidate[0].type->getSampler().arrayed) || //2D Array Shadow
+                (fnCandidate[0].type->getSampler().dim == EsdCube && fnCandidate[0].type->getSampler().arrayed && fnCandidate.getParamCount() > 3) || // Cube Array Shadow
+                (fnCandidate[0].type->getSampler().dim == EsdCube && callNode.getOp() == EOpTextureLod)) { // Cube Shadow
+                requireExtensions(loc, 1, &E_GL_EXT_texture_shadow_lod, feature);
+                if (isEsProfile()) {
+                    if (version < 320 &&
+                        !extensionsTurnedOn(Num_AEP_texture_cube_map_array, AEP_texture_cube_map_array))
+                        error(loc, "GL_EXT_texture_shadow_lod not supported for this ES version", feature, "");
+                    else
+                        profileRequires(loc, EEsProfile, 320, nullptr, feature);
+                } else { // Desktop
+                    profileRequires(loc, ~EEsProfile, 130, nullptr, feature);
+                }
+            }
+        }
+        break;
+    }
+
     case EOpSparseTextureGather:
     case EOpSparseTextureGatherOffset:
     case EOpSparseTextureGatherOffsets:
@@ -2243,7 +2289,6 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
 
         break;
     }
-#endif
 
     case EOpTextureOffset:
     case EOpTextureFetchOffset:
@@ -2271,12 +2316,10 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
 
         if (arg > 0) {
 
-#ifndef GLSLANG_WEB
             bool f16ShadowCompare = (*argp)[1]->getAsTyped()->getBasicType() == EbtFloat16 &&
                                     arg0->getType().getSampler().shadow;
             if (f16ShadowCompare)
                 ++arg;
-#endif
             if (! (*argp)[arg]->getAsTyped()->getQualifier().isConstant())
                 error(loc, "argument must be compile-time constant", "texel offset", "");
             else if ((*argp)[arg]->getAsConstantUnion()) {
@@ -2292,10 +2335,34 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             if (callNode.getOp() == EOpTextureOffset) {
                 TSampler s = arg0->getType().getSampler();
                 if (s.is2D() && s.isArrayed() && s.isShadow()) {
-                    if (isEsProfile())
+                    if (
+                        ((*argp)[1]->getAsTyped()->getType().getBasicType() == EbtFloat) && 
+                        ((*argp)[1]->getAsTyped()->getType().getVectorSize() == 4) &&
+                        (fnCandidate.getParamCount() == 4)) {
+                        featureString = fnCandidate.getName() + " for sampler2DArrayShadow";
+                        feature = featureString.c_str();
+                        requireExtensions(loc, 1, &E_GL_EXT_texture_shadow_lod, feature);
+                        profileRequires(loc, EEsProfile, 300, nullptr, feature);
+                        profileRequires(loc, ~EEsProfile, 130, nullptr, feature);
+                    }
+                    else if (isEsProfile())
                         error(loc, "TextureOffset does not support sampler2DArrayShadow : ", "sampler", "ES Profile");
                     else if (version <= 420)
                         error(loc, "TextureOffset does not support sampler2DArrayShadow : ", "sampler", "version <= 420");
+                }
+            }
+
+            if (callNode.getOp() == EOpTextureLodOffset) {
+                TSampler s = arg0->getType().getSampler();
+                if (s.is2D() && s.isArrayed() && s.isShadow() &&
+                    ((*argp)[1]->getAsTyped()->getType().getBasicType() == EbtFloat) &&
+                    ((*argp)[1]->getAsTyped()->getType().getVectorSize() == 4) &&
+                    (fnCandidate.getParamCount() == 4)) {
+                        featureString = fnCandidate.getName() + " for sampler2DArrayShadow";
+                        feature = featureString.c_str();
+                        profileRequires(loc, EEsProfile, 300, nullptr, feature);
+                        profileRequires(loc, ~EEsProfile, 130, nullptr, feature);
+                        requireExtensions(loc, 1, &E_GL_EXT_texture_shadow_lod, feature);
                 }
             }
         }
@@ -2303,7 +2370,6 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         break;
     }
 
-#ifndef GLSLANG_WEB
     case EOpTraceNV:
         if (!(*argp)[10]->getAsConstantUnion())
             error(loc, "argument must be compile-time constant", "payload number", "a");
@@ -2317,7 +2383,7 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             error(loc, "argument must be compile-time constant", "payload number", "a");
         else {
             unsigned int location = (*argp)[10]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
-            if (intermediate.checkLocationRT(0, location) < 0)
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(0, location) < 0)
                 error(loc, "with layout(location =", "no rayPayloadEXT/rayPayloadInEXT declared", "%d)", location);
         }
         break;
@@ -2330,8 +2396,81 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             error(loc, "argument must be compile-time constant", "callable data number", "");
         else {
             unsigned int location = (*argp)[1]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
-            if (intermediate.checkLocationRT(1, location) < 0)
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(1, location) < 0)
                 error(loc, "with layout(location =", "no callableDataEXT/callableDataInEXT declared", "%d)", location);
+        }
+        break;
+
+    case EOpHitObjectTraceRayNV:
+        if (!(*argp)[11]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "payload number", "");
+        else {
+            unsigned int location = (*argp)[11]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(0, location) < 0)
+                error(loc, "with layout(location =", "no rayPayloadEXT/rayPayloadInEXT declared", "%d)", location);
+        }
+        break;
+    case EOpHitObjectTraceRayMotionNV:
+        if (!(*argp)[12]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "payload number", "");
+        else {
+            unsigned int location = (*argp)[12]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(0, location) < 0)
+                error(loc, "with layout(location =", "no rayPayloadEXT/rayPayloadInEXT declared", "%d)", location);
+        }
+        break;
+    case EOpHitObjectExecuteShaderNV:
+        if (!(*argp)[1]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "payload number", "");
+        else {
+            unsigned int location = (*argp)[1]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(0, location) < 0)
+                error(loc, "with layout(location =", "no rayPayloadEXT/rayPayloadInEXT declared", "%d)", location);
+        }
+        break;
+    case EOpHitObjectRecordHitNV:
+        if (!(*argp)[12]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "hitobjectattribute number", "");
+        else {
+            unsigned int location = (*argp)[12]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(2, location) < 0)
+                error(loc, "with layout(location =", "no hitObjectAttributeNV declared", "%d)", location);
+        }
+        break;
+    case EOpHitObjectRecordHitMotionNV:
+        if (!(*argp)[13]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "hitobjectattribute number", "");
+        else {
+            unsigned int location = (*argp)[13]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(2, location) < 0)
+                error(loc, "with layout(location =", "no hitObjectAttributeNV declared", "%d)", location);
+        }
+        break;
+    case EOpHitObjectRecordHitWithIndexNV:
+        if (!(*argp)[11]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "hitobjectattribute number", "");
+        else {
+            unsigned int location = (*argp)[11]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(2, location) < 0)
+                error(loc, "with layout(location =", "no hitObjectAttributeNV declared", "%d)", location);
+        }
+        break;
+    case EOpHitObjectRecordHitWithIndexMotionNV:
+        if (!(*argp)[12]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "hitobjectattribute number", "");
+        else {
+            unsigned int location = (*argp)[12]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(2, location) < 0)
+                error(loc, "with layout(location =", "no hitObjectAttributeNV declared", "%d)", location);
+        }
+        break;
+    case EOpHitObjectGetAttributesNV:
+        if (!(*argp)[1]->getAsConstantUnion())
+            error(loc, "argument must be compile-time constant", "hitobjectattribute number", "");
+        else {
+            unsigned int location = (*argp)[1]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(2, location) < 0)
+                error(loc, "with layout(location =", "no hitObjectAttributeNV declared", "%d)", location);
         }
         break;
 
@@ -2348,6 +2487,7 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
     case EOpRayQueryGetIntersectionObjectRayOrigin:
     case EOpRayQueryGetIntersectionObjectToWorld:
     case EOpRayQueryGetIntersectionWorldToObject:
+    case EOpRayQueryGetIntersectionTriangleVertexPositionsEXT:
         if (!(*argp)[1]->getAsConstantUnion())
             error(loc, "argument must be compile-time constant", "committed", "");
         break;
@@ -2449,12 +2589,19 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             requireExtensions(loc, 1, &E_GL_EXT_shader_atomic_float2, fnCandidate.getName().c_str());
         }
 
-        const TIntermTyped* base = TIntermediate::findLValueBase(arg0, true , true);
-        const TType* refType = (base->getType().isReference()) ? base->getType().getReferentType() : nullptr;
-        const TQualifier& qualifier = (refType != nullptr) ? refType->getQualifier() : base->getType().getQualifier();
-        if (qualifier.storage != EvqShared && qualifier.storage != EvqBuffer)
-            error(loc,"Atomic memory function can only be used for shader storage block member or shared variable.",
-            fnCandidate.getName().c_str(), "");
+        const TIntermTyped* base = TIntermediate::traverseLValueBase(arg0, true, true);
+        const char* errMsg = "Only l-values corresponding to shader block storage or shared variables can be used with "
+                             "atomic memory functions.";
+        if (base) {
+            const TType* refType = (base->getType().isReference()) ? base->getType().getReferentType() : nullptr;
+            const TQualifier& qualifier =
+                (refType != nullptr) ? refType->getQualifier() : base->getType().getQualifier();
+            if (qualifier.storage != EvqShared && qualifier.storage != EvqBuffer &&
+                qualifier.storage != EvqtaskPayloadSharedEXT)
+                error(loc, errMsg, fnCandidate.getName().c_str(), "");
+        } else {
+            error(loc, errMsg, fnCandidate.getName().c_str(), "");
+        }
 
         break;
     }
@@ -2462,20 +2609,57 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
     case EOpInterpolateAtCentroid:
     case EOpInterpolateAtSample:
     case EOpInterpolateAtOffset:
-    case EOpInterpolateAtVertex:
-        // Make sure the first argument is an interpolant, or an array element of an interpolant
+    case EOpInterpolateAtVertex: {
         if (arg0->getType().getQualifier().storage != EvqVaryingIn) {
-            // It might still be an array element.
+            // Traverse down the left branch of arg0 to ensure this argument is a valid interpolant.
             //
-            // We could check more, but the semantics of the first argument are already met; the
-            // only way to turn an array into a float/vec* is array dereference and swizzle.
+            // For desktop GL >4.3 we effectively only need to ensure that arg0 represents an l-value from an
+            // input declaration.
             //
-            // ES and desktop 4.3 and earlier:  swizzles may not be used
-            // desktop 4.4 and later: swizzles may be used
-            bool swizzleOkay = (!isEsProfile()) && (version >= 440);
-            const TIntermTyped* base = TIntermediate::findLValueBase(arg0, swizzleOkay);
-            if (base == nullptr || base->getType().getQualifier().storage != EvqVaryingIn)
-                error(loc, "first argument must be an interpolant, or interpolant-array element", fnCandidate.getName().c_str(), "");
+            // For desktop GL <= 4.3 and ES, we must also ensure that swizzling is not used
+            //
+            // For ES, we must also ensure that a field selection operator (i.e., '.') is not used on a named
+            // struct.
+
+            const bool esProfile = isEsProfile();
+            const bool swizzleOkay = !esProfile && (version >= 440);
+
+            std::string interpolantErrorMsg = "first argument must be an interpolant, or interpolant-array element";
+            bool isValid = true; // Assume that the interpolant is valid until we find a condition making it invalid
+            bool isIn = false;   // Checks whether or not the interpolant is a shader input
+            bool structAccessOp = false; // Whether or not the previous node in the chain is a struct accessor
+            TIntermediate::traverseLValueBase(
+                arg0, swizzleOkay, false,
+                [&isValid, &isIn, &interpolantErrorMsg, esProfile, &structAccessOp](const TIntermNode& n) -> bool {
+                    auto* type = n.getAsTyped();
+                    if (type) {
+                        if (type->getType().getQualifier().storage == EvqVaryingIn) {
+                            isIn = true;
+                        }
+                        // If a field accessor was used, it can only be used to access a field with an input block, not a struct.
+                        if (structAccessOp && (type->getType().getBasicType() != EbtBlock)) {
+                            interpolantErrorMsg +=
+                                ". Using the field of a named struct as an interpolant argument is not "
+                                "allowed (ES-only).";
+                            isValid = false;
+                        }
+                    }
+
+                    // ES has different requirements for interpolants than GL
+                    if (esProfile) {
+                        // Swizzling will be taken care of by the 'swizzleOkay' argument passsed to traverseLValueBase,
+                        // so we only ned to check whether or not a field accessor has been used with a named struct.
+                        auto* binary = n.getAsBinaryNode();
+                        if (binary && (binary->getOp() == EOpIndexDirectStruct)) {
+                            structAccessOp = true;
+                        }
+                    }
+                    // Don't continue traversing if we know we have an invalid interpolant at this point.
+                    return isValid;
+                });
+            if (!isIn || !isValid) {
+                error(loc, interpolantErrorMsg.c_str(), fnCandidate.getName().c_str(), "");
+            }
         }
 
         if (callNode.getOp() == EOpInterpolateAtVertex) {
@@ -2491,10 +2675,12 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
                 }
             }
         }
-        break;
+    } break;
 
     case EOpEmitStreamVertex:
     case EOpEndStreamPrimitive:
+        if (version == 150)
+            requireExtensions(loc, 1, &E_GL_ARB_gpu_shader5, "if the verison is 150 , the EmitStreamVertex and EndStreamPrimitive only support at extension GL_ARB_gpu_shader5");
         intermediate.setMultiStream();
         break;
 
@@ -2548,7 +2734,7 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         }
 
         if (profile != EEsProfile && version < 450) {
-            if ((*argp)[0]->getAsTyped()->getBasicType() != EbtFloat && 
+            if ((*argp)[0]->getAsTyped()->getBasicType() != EbtFloat &&
                 (*argp)[0]->getAsTyped()->getBasicType() != EbtDouble &&
                 (*argp)[1]->getAsTyped()->getBasicType() != EbtFloat &&
                 (*argp)[1]->getAsTyped()->getBasicType() != EbtDouble &&
@@ -2558,7 +2744,6 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         }
 
         break;
-#endif
 
     default:
         break;
@@ -2597,32 +2782,30 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         // Check that if extended types are being used that the correct extensions are enabled.
         if (arg0 != nullptr) {
             const TType& type = arg0->getType();
+            bool enhanced = intermediate.getEnhancedMsgs();
             switch (type.getBasicType()) {
             default:
                 break;
             case EbtInt8:
             case EbtUint8:
-                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int8, type.getCompleteString().c_str());
+                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int8, type.getCompleteString(enhanced).c_str());
                 break;
             case EbtInt16:
             case EbtUint16:
-                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int16, type.getCompleteString().c_str());
+                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int16, type.getCompleteString(enhanced).c_str());
                 break;
             case EbtInt64:
             case EbtUint64:
-                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int64, type.getCompleteString().c_str());
+                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int64, type.getCompleteString(enhanced).c_str());
                 break;
             case EbtFloat16:
-                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_float16, type.getCompleteString().c_str());
+                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_float16, type.getCompleteString(enhanced).c_str());
                 break;
             }
         }
     }
 }
 
-#ifndef GLSLANG_WEB
-
-extern bool PureOperatorBuiltins;
 
 // Deprecated!  Use PureOperatorBuiltins == true instead, in which case this
 // functionality is handled in builtInOpCheck() instead of here.
@@ -2748,8 +2931,6 @@ void TParseContext::nonOpBuiltInCheck(const TSourceLoc& loc, const TFunction& fn
     }
 }
 
-#endif
-
 //
 // Do any extra checking for a user function call.
 //
@@ -2783,10 +2964,21 @@ TFunction* TParseContext::handleConstructorCall(const TSourceLoc& loc, const TPu
         profileRequires(loc, EEsProfile, 300, nullptr, "arrayed constructor");
     }
 
+    // Reuse EOpConstructTextureSampler for bindless image constructor
+    // uvec2 imgHandle;
+    // imageLoad(image1D(imgHandle), 0);
+    if (type.isImage() && extensionTurnedOn(E_GL_ARB_bindless_texture))
+    {
+        intermediate.setBindlessImageMode(currentCaller, AstRefTypeFunc);
+    }
+
     TOperator op = intermediate.mapTypeToConstructorOp(type);
 
     if (op == EOpNull) {
-        error(loc, "cannot construct this type", type.getBasicString(), "");
+      if (intermediate.getEnhancedMsgs() && type.getBasicType() == EbtSampler)
+            error(loc, "function not supported in this version; use texture() instead", "texture*D*", "");
+        else
+            error(loc, "cannot construct this type", type.getBasicString(), "");
         op = EOpConstructFloat;
         TType errorType(EbtFloat);
         type.shallowCopy(errorType);
@@ -2897,7 +3089,6 @@ bool TParseContext::lValueErrorCheck(const TSourceLoc& loc, const char* op, TInt
         bool errorReturn = false;
 
         switch(binaryNode->getOp()) {
-#ifndef GLSLANG_WEB
         case EOpIndexDirect:
         case EOpIndexIndirect:
             // ...  tessellation control shader ...
@@ -2914,7 +3105,6 @@ bool TParseContext::lValueErrorCheck(const TSourceLoc& loc, const char* op, TInt
                 }
             }
             break; // left node is checked by base class
-#endif
         case EOpVectorSwizzle:
             errorReturn = lValueErrorCheck(loc, op, binaryNode->getLeft());
             if (!errorReturn) {
@@ -2972,7 +3162,17 @@ bool TParseContext::lValueErrorCheck(const TSourceLoc& loc, const char* op, TInt
         if (isEsProfile() && intermediate.getEarlyFragmentTests())
             message = "can't modify gl_FragDepth if using early_fragment_tests";
         break;
+    case EvqFragStencil:
+        intermediate.setStencilReplacing();
+        // "In addition, it is an error to statically write to gl_FragDepth in the fragment shader."
+        if (isEsProfile() && intermediate.getEarlyFragmentTests())
+            message = "can't modify EvqFragStencil if using early_fragment_tests";
+        break;
 
+    case EvqtaskPayloadSharedEXT:
+        if (language == EShLangMesh)
+            message = "can't modify variable with storage qualifier taskPayloadSharedEXT in mesh shaders";
+        break;
     default:
         break;
     }
@@ -3011,7 +3211,7 @@ void TParseContext::rValueErrorCheck(const TSourceLoc& loc, const char* op, TInt
         if (symNode && symNode->getQualifier().isExplicitInterpolation())
             error(loc, "can't read from explicitly-interpolated object: ", op, symNode->getName().c_str());
 
-    // local_size_{xyz} must be assigned or specialized before gl_WorkGroupSize can be assigned. 
+    // local_size_{xyz} must be assigned or specialized before gl_WorkGroupSize can be assigned.
     if(node->getQualifier().builtIn == EbvWorkGroupSize &&
        !(intermediate.isLocalSizeSet() || intermediate.isLocalSizeSpecialized()))
         error(loc, "can't read from gl_WorkGroupSize before a fixed workgroup size has been declared", op, "");
@@ -3099,7 +3299,7 @@ void TParseContext::reservedPpErrorCheck(const TSourceLoc& loc, const char* iden
             ppWarn(loc, "\"defined\" is (un)defined:", op,  identifier);
         else
             ppError(loc, "\"defined\" can't be (un)defined:", op,  identifier);
-    else if (strstr(identifier, "__") != 0 && !extensionTurnedOn(E_GL_EXT_spirv_intrinsics)) {
+    else if (strstr(identifier, "__") != nullptr && !extensionTurnedOn(E_GL_EXT_spirv_intrinsics)) {
         // The extension GL_EXT_spirv_intrinsics allows us to declare macros prefixed with "__".
         if (isEsProfile() && version >= 300 &&
             (strcmp(identifier, "__LINE__") == 0 ||
@@ -3122,10 +3322,6 @@ void TParseContext::reservedPpErrorCheck(const TSourceLoc& loc, const char* iden
 //
 bool TParseContext::lineContinuationCheck(const TSourceLoc& loc, bool endOfComment)
 {
-#ifdef GLSLANG_WEB
-    return true;
-#endif
-
     const char* message = "line continuation";
 
     bool lineContinuationAllowed = (isEsProfile() && version >= 300) ||
@@ -3182,7 +3378,6 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     // it, in which case the type comes from the argument instead of from the
     // constructor function.
     switch (op) {
-#ifndef GLSLANG_WEB
     case EOpConstructNonuniform:
         if (node != nullptr && node->getAsTyped() != nullptr) {
             type.shallowCopy(node->getAsTyped()->getType());
@@ -3190,11 +3385,16 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             type.getQualifier().nonUniform = true;
         }
         break;
-#endif
     default:
         type.shallowCopy(function.getType());
         break;
     }
+
+    TString constructorString;
+    if (intermediate.getEnhancedMsgs())
+        constructorString.append(type.getCompleteString(true, false, false, true)).append(" constructor");
+    else
+        constructorString.append("constructor");
 
     // See if it's a matrix
     bool constructingMatrix = false;
@@ -3210,7 +3410,6 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     case EOpConstructMat4x2:
     case EOpConstructMat4x3:
     case EOpConstructMat4x4:
-#ifndef GLSLANG_WEB
     case EOpConstructDMat2x2:
     case EOpConstructDMat2x3:
     case EOpConstructDMat2x4:
@@ -3229,7 +3428,6 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     case EOpConstructF16Mat4x2:
     case EOpConstructF16Mat4x3:
     case EOpConstructF16Mat4x4:
-#endif
         constructingMatrix = true;
         break;
     default:
@@ -3253,7 +3451,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
         if (function[arg].type->isArray()) {
             if (function[arg].type->isUnsizedArray()) {
                 // Can't construct from an unsized array.
-                error(loc, "array argument must be sized", "constructor", "");
+                error(loc, "array argument must be sized", constructorString.c_str(), "");
                 return true;
             }
             arrayArg = true;
@@ -3283,29 +3481,28 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             intArgument = true;
         if (type.isStruct()) {
             if (function[arg].type->contains16BitFloat()) {
-                requireFloat16Arithmetic(loc, "constructor", "can't construct structure containing 16-bit type");
+                requireFloat16Arithmetic(loc, constructorString.c_str(), "can't construct structure containing 16-bit type");
             }
             if (function[arg].type->contains16BitInt()) {
-                requireInt16Arithmetic(loc, "constructor", "can't construct structure containing 16-bit type");
+                requireInt16Arithmetic(loc, constructorString.c_str(), "can't construct structure containing 16-bit type");
             }
             if (function[arg].type->contains8BitInt()) {
-                requireInt8Arithmetic(loc, "constructor", "can't construct structure containing 8-bit type");
+                requireInt8Arithmetic(loc, constructorString.c_str(), "can't construct structure containing 8-bit type");
             }
         }
     }
     if (op == EOpConstructNonuniform)
         constType = false;
 
-#ifndef GLSLANG_WEB
     switch (op) {
     case EOpConstructFloat16:
     case EOpConstructF16Vec2:
     case EOpConstructF16Vec3:
     case EOpConstructF16Vec4:
         if (type.isArray())
-            requireFloat16Arithmetic(loc, "constructor", "16-bit arrays not supported");
+            requireFloat16Arithmetic(loc, constructorString.c_str(), "16-bit arrays not supported");
         if (type.isVector() && function.getParamCount() != 1)
-            requireFloat16Arithmetic(loc, "constructor", "16-bit vectors only take vector types");
+            requireFloat16Arithmetic(loc, constructorString.c_str(), "16-bit vectors only take vector types");
         break;
     case EOpConstructUint16:
     case EOpConstructU16Vec2:
@@ -3316,9 +3513,9 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     case EOpConstructI16Vec3:
     case EOpConstructI16Vec4:
         if (type.isArray())
-            requireInt16Arithmetic(loc, "constructor", "16-bit arrays not supported");
+            requireInt16Arithmetic(loc, constructorString.c_str(), "16-bit arrays not supported");
         if (type.isVector() && function.getParamCount() != 1)
-            requireInt16Arithmetic(loc, "constructor", "16-bit vectors only take vector types");
+            requireInt16Arithmetic(loc, constructorString.c_str(), "16-bit vectors only take vector types");
         break;
     case EOpConstructUint8:
     case EOpConstructU8Vec2:
@@ -3329,14 +3526,13 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     case EOpConstructI8Vec3:
     case EOpConstructI8Vec4:
         if (type.isArray())
-            requireInt8Arithmetic(loc, "constructor", "8-bit arrays not supported");
+            requireInt8Arithmetic(loc, constructorString.c_str(), "8-bit arrays not supported");
         if (type.isVector() && function.getParamCount() != 1)
-            requireInt8Arithmetic(loc, "constructor", "8-bit vectors only take vector types");
+            requireInt8Arithmetic(loc, constructorString.c_str(), "8-bit vectors only take vector types");
         break;
     default:
         break;
     }
-#endif
 
     // inherit constness from children
     if (constType) {
@@ -3357,7 +3553,6 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             case EOpConstructUVec2:
             case EOpConstructUVec3:
             case EOpConstructUVec4:
-#ifndef GLSLANG_WEB
             case EOpConstructUint8:
             case EOpConstructInt16:
             case EOpConstructUint16:
@@ -3381,7 +3576,6 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             case EOpConstructU64Vec2:
             case EOpConstructU64Vec3:
             case EOpConstructU64Vec4:
-#endif
                 // This was the list of valid ones, if they aren't converting from float
                 // and aren't making an array.
                 makeSpecConst = ! floatArgument && ! type.isArray();
@@ -3413,7 +3607,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
 
     if (type.isArray()) {
         if (function.getParamCount() == 0) {
-            error(loc, "array constructor must have at least one argument", "constructor", "");
+            error(loc, "array constructor must have at least one argument", constructorString.c_str(), "");
             return true;
         }
 
@@ -3421,7 +3615,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             // auto adapt the constructor type to the number of arguments
             type.changeOuterArraySize(function.getParamCount());
         } else if (type.getOuterArraySize() != function.getParamCount()) {
-            error(loc, "array constructor needs one argument per array element", "constructor", "");
+            error(loc, "array constructor needs one argument per array element", constructorString.c_str(), "");
             return true;
         }
 
@@ -3434,7 +3628,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             // At least the dimensionalities have to match.
             if (! function[0].type->isArray() ||
                     arraySizes.getNumDims() != function[0].type->getArraySizes()->getNumDims() + 1) {
-                error(loc, "array constructor argument not correct type to construct array element", "constructor", "");
+                error(loc, "array constructor argument not correct type to construct array element", constructorString.c_str(), "");
                 return true;
             }
 
@@ -3451,7 +3645,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     }
 
     if (arrayArg && op != EOpConstructStruct && ! type.isArrayOfArrays()) {
-        error(loc, "constructing non-array constituent from array argument", "constructor", "");
+        error(loc, "constructing non-array constituent from array argument", constructorString.c_str(), "");
         return true;
     }
 
@@ -3461,51 +3655,62 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
         // "If a matrix argument is given to a matrix constructor,
         // it is a compile-time error to have any other arguments."
         if (function.getParamCount() != 1)
-            error(loc, "matrix constructed from matrix can only have one argument", "constructor", "");
+            error(loc, "matrix constructed from matrix can only have one argument", constructorString.c_str(), "");
         return false;
     }
 
     if (overFull) {
-        error(loc, "too many arguments", "constructor", "");
+        error(loc, "too many arguments", constructorString.c_str(), "");
         return true;
     }
 
     if (op == EOpConstructStruct && ! type.isArray() && (int)type.getStruct()->size() != function.getParamCount()) {
-        error(loc, "Number of constructor parameters does not match the number of structure fields", "constructor", "");
+        error(loc, "Number of constructor parameters does not match the number of structure fields", constructorString.c_str(), "");
         return true;
     }
 
     if ((op != EOpConstructStruct && size != 1 && size < type.computeNumComponents()) ||
         (op == EOpConstructStruct && size < type.computeNumComponents())) {
-        error(loc, "not enough data provided for construction", "constructor", "");
+        error(loc, "not enough data provided for construction", constructorString.c_str(), "");
         return true;
     }
 
     if (type.isCoopMat() && function.getParamCount() != 1) {
-        error(loc, "wrong number of arguments", "constructor", "");
+        error(loc, "wrong number of arguments", constructorString.c_str(), "");
         return true;
     }
     if (type.isCoopMat() &&
         !(function[0].type->isScalar() || function[0].type->isCoopMat())) {
-        error(loc, "Cooperative matrix constructor argument must be scalar or cooperative matrix", "constructor", "");
+        error(loc, "Cooperative matrix constructor argument must be scalar or cooperative matrix", constructorString.c_str(), "");
         return true;
     }
 
     TIntermTyped* typed = node->getAsTyped();
+    if (type.isCoopMat() && typed->getType().isCoopMat() &&
+        !type.sameCoopMatShapeAndUse(typed->getType())) {
+        error(loc, "Cooperative matrix type parameters mismatch", constructorString.c_str(), "");
+        return true;
+    }
+
     if (typed == nullptr) {
-        error(loc, "constructor argument does not have a type", "constructor", "");
+        error(loc, "constructor argument does not have a type", constructorString.c_str(), "");
         return true;
     }
     if (op != EOpConstructStruct && op != EOpConstructNonuniform && typed->getBasicType() == EbtSampler) {
-        error(loc, "cannot convert a sampler", "constructor", "");
-        return true;
+        if (op == EOpConstructUVec2 && extensionTurnedOn(E_GL_ARB_bindless_texture)) {
+            intermediate.setBindlessTextureMode(currentCaller, AstRefTypeFunc);
+        }
+        else {
+            error(loc, "cannot convert a sampler", constructorString.c_str(), "");
+            return true;
+        }
     }
     if (op != EOpConstructStruct && typed->isAtomic()) {
-        error(loc, "cannot convert an atomic_uint", "constructor", "");
+        error(loc, "cannot convert an atomic_uint", constructorString.c_str(), "");
         return true;
     }
     if (typed->getBasicType() == EbtVoid) {
-        error(loc, "cannot convert a void", "constructor", "");
+        error(loc, "cannot convert a void", constructorString.c_str(), "");
         return true;
     }
 
@@ -3518,6 +3723,26 @@ bool TParseContext::constructorTextureSamplerError(const TSourceLoc& loc, const 
 {
     TString constructorName = function.getType().getBasicTypeString();  // TODO: performance: should not be making copy; interface needs to change
     const char* token = constructorName.c_str();
+    // verify the constructor for bindless texture, the input must be ivec2 or uvec2
+    if (function.getParamCount() == 1) {
+        TType* pType = function[0].type;
+        TBasicType basicType = pType->getBasicType();
+        bool isIntegerVec2 = ((basicType == EbtUint || basicType == EbtInt) && pType->getVectorSize() == 2);
+        bool bindlessMode = extensionTurnedOn(E_GL_ARB_bindless_texture);
+        if (isIntegerVec2 && bindlessMode) {
+            if (pType->getSampler().isImage())
+                intermediate.setBindlessImageMode(currentCaller, AstRefTypeFunc);
+            else
+                intermediate.setBindlessTextureMode(currentCaller, AstRefTypeFunc);
+            return false;
+        } else {
+            if (!bindlessMode)
+                error(loc, "sampler-constructor requires the extension GL_ARB_bindless_texture enabled", token, "");
+            else
+                error(loc, "sampler-constructor requires the input to be ivec2 or uvec2", token, "");
+            return true;
+        }
+    }
 
     // exactly two arguments needed
     if (function.getParamCount() != 2) {
@@ -3613,17 +3838,37 @@ void TParseContext::samplerCheck(const TSourceLoc& loc, const TType& type, const
     if (type.getQualifier().storage == EvqUniform)
         return;
 
-    if (type.getBasicType() == EbtStruct && containsFieldWithBasicType(type, EbtSampler))
-        error(loc, "non-uniform struct contains a sampler or image:", type.getBasicTypeString().c_str(), identifier.c_str());
+    if (type.getBasicType() == EbtStruct && containsFieldWithBasicType(type, EbtSampler)) {
+        // For bindless texture, sampler can be declared as an struct member
+        if (extensionTurnedOn(E_GL_ARB_bindless_texture)) {
+            if (type.getSampler().isImage())
+                intermediate.setBindlessImageMode(currentCaller, AstRefTypeVar);
+            else
+                intermediate.setBindlessTextureMode(currentCaller, AstRefTypeVar);
+        }
+        else {
+            error(loc, "non-uniform struct contains a sampler or image:", type.getBasicTypeString().c_str(), identifier.c_str());
+        }
+    }
     else if (type.getBasicType() == EbtSampler && type.getQualifier().storage != EvqUniform) {
-        // non-uniform sampler
-        // not yet:  okay if it has an initializer
-        // if (! initializer)
-        error(loc, "sampler/image types can only be used in uniform variables or function parameters:", type.getBasicTypeString().c_str(), identifier.c_str());
+        // For bindless texture, sampler can be declared as an input/output/block member
+        if (extensionTurnedOn(E_GL_ARB_bindless_texture)) {
+            if (type.getSampler().isImage())
+                intermediate.setBindlessImageMode(currentCaller, AstRefTypeVar);
+            else
+                intermediate.setBindlessTextureMode(currentCaller, AstRefTypeVar);
+        }
+        else {
+            // non-uniform sampler
+            // not yet:  okay if it has an initializer
+            // if (! initializer)
+            if (type.getSampler().isAttachmentEXT() && type.getQualifier().storage != EvqTileImageEXT)
+                 error(loc, "can only be used in tileImageEXT variables or function parameters:", type.getBasicTypeString().c_str(), identifier.c_str());
+             else if (type.getQualifier().storage != EvqTileImageEXT)
+                 error(loc, "sampler/image types can only be used in uniform variables or function parameters:", type.getBasicTypeString().c_str(), identifier.c_str());
+        }
     }
 }
-
-#ifndef GLSLANG_WEB
 
 void TParseContext::atomicUintCheck(const TSourceLoc& loc, const TType& type, const TString& identifier)
 {
@@ -3648,8 +3893,6 @@ void TParseContext::accStructCheck(const TSourceLoc& loc, const TType& type, con
             type.getBasicTypeString().c_str(), identifier.c_str());
 
 }
-
-#endif // GLSLANG_WEB
 
 void TParseContext::transparentOpaqueCheck(const TSourceLoc& loc, const TType& type, const TString& identifier)
 {
@@ -3685,7 +3928,7 @@ void TParseContext::memberQualifierCheck(glslang::TPublicType& publicType)
 //
 // Check/fix just a full qualifier (no variables or types yet, but qualifier is complete) at global level.
 //
-void TParseContext::globalQualifierFixCheck(const TSourceLoc& loc, TQualifier& qualifier, bool isMemberCheck)
+void TParseContext::globalQualifierFixCheck(const TSourceLoc& loc, TQualifier& qualifier, bool isMemberCheck, const TPublicType* publicType)
 {
     bool nonuniformOkay = false;
 
@@ -3721,6 +3964,11 @@ void TParseContext::globalQualifierFixCheck(const TSourceLoc& loc, TQualifier& q
         {
             requireExtensions(loc, 1, &E_GL_EXT_scalar_block_layout, "default std430 layout for uniform");
         }
+
+        if (publicType != nullptr && publicType->isImage() &&
+            (qualifier.layoutFormat > ElfExtSizeGuard && qualifier.layoutFormat < ElfCount))
+            qualifier.layoutFormat = mapLegacyLayoutFormat(qualifier.layoutFormat, publicType->sampler.getBasicType());
+
         break;
     default:
         break;
@@ -3729,13 +3977,11 @@ void TParseContext::globalQualifierFixCheck(const TSourceLoc& loc, TQualifier& q
     if (!nonuniformOkay && qualifier.isNonUniform())
         error(loc, "for non-parameter, can only apply to 'in' or no storage qualifier", "nonuniformEXT", "");
 
-#ifndef GLSLANG_WEB
     if (qualifier.isSpirvByReference())
         error(loc, "can only apply to parameter", "spirv_by_reference", "");
 
     if (qualifier.isSpirvLiteral())
         error(loc, "can only apply to parameter", "spirv_literal", "");
-#endif
 
     // Storage qualifier isn't ready for memberQualifierCheck, we should skip invariantCheck for it.
     if (!isMemberCheck || structNestingLevel > 0)
@@ -3781,10 +4027,12 @@ void TParseContext::globalQualifierTypeCheck(const TSourceLoc& loc, const TQuali
         return;
     }
 
-    if (isTypeInt(publicType.basicType) || publicType.basicType == EbtDouble)
-        profileRequires(loc, EEsProfile, 300, nullptr, "shader input/output");
+    if (isTypeInt(publicType.basicType) || publicType.basicType == EbtDouble) {
+        profileRequires(loc, EEsProfile, 300, nullptr, "non-float shader input/output");
+        profileRequires(loc, ~EEsProfile, 130, nullptr, "non-float shader input/output");
+    }
 
-    if (!qualifier.flat && !qualifier.isExplicitInterpolation() && !qualifier.isPervertexNV()) {
+    if (!qualifier.flat && !qualifier.isExplicitInterpolation() && !qualifier.isPervertexNV() && !qualifier.isPervertexEXT()) {
         if (isTypeInt(publicType.basicType) ||
             publicType.basicType == EbtDouble ||
             (publicType.userDef && (   publicType.userDef->containsBasicType(EbtInt)
@@ -3803,6 +4051,9 @@ void TParseContext::globalQualifierTypeCheck(const TSourceLoc& loc, const TQuali
     if (qualifier.isPatch() && qualifier.isInterpolation())
         error(loc, "cannot use interpolation qualifiers with patch", "patch", "");
 
+    if (qualifier.isTaskPayload() && publicType.basicType == EbtBlock)
+        error(loc, "taskPayloadSharedEXT variables should not be declared as interface blocks", "taskPayloadSharedEXT", "");
+
     if (qualifier.isTaskMemory() && publicType.basicType != EbtBlock)
         error(loc, "taskNV variables can be declared only as blocks", "taskNV", "");
 
@@ -3810,7 +4061,7 @@ void TParseContext::globalQualifierTypeCheck(const TSourceLoc& loc, const TQuali
         switch (language) {
         case EShLangVertex:
             if (publicType.basicType == EbtStruct) {
-                error(loc, "cannot be a structure or array", GetStorageQualifierString(qualifier.storage), "");
+                error(loc, "cannot be a structure", GetStorageQualifierString(qualifier.storage), "");
                 return;
             }
             if (publicType.arraySizes) {
@@ -3836,12 +4087,10 @@ void TParseContext::globalQualifierTypeCheck(const TSourceLoc& loc, const TQuali
             if (! symbolTable.atBuiltInLevel())
                 error(loc, "global storage input qualifier cannot be used in a compute shader", "in", "");
             break;
-#ifndef GLSLANG_WEB
        case EShLangTessControl:
             if (qualifier.patch)
                 error(loc, "can only use on output in tessellation-control shader", "patch", "");
             break;
-#endif
         default:
             break;
         }
@@ -3880,12 +4129,10 @@ void TParseContext::globalQualifierTypeCheck(const TSourceLoc& loc, const TQuali
         case EShLangCompute:
             error(loc, "global storage output qualifier cannot be used in a compute shader", "out", "");
             break;
-#ifndef GLSLANG_WEB
         case EShLangTessEvaluation:
             if (qualifier.patch)
                 error(loc, "can only use on input in tessellation-evaluation shader", "patch", "");
             break;
-#endif
         default:
             break;
         }
@@ -3953,17 +4200,16 @@ void TParseContext::mergeQualifiers(const TSourceLoc& loc, TQualifier& dst, cons
     if (dst.precision == EpqNone || (force && src.precision != EpqNone))
         dst.precision = src.precision;
 
-#ifndef GLSLANG_WEB
     if (!force && ((src.coherent && (dst.devicecoherent || dst.queuefamilycoherent || dst.workgroupcoherent || dst.subgroupcoherent || dst.shadercallcoherent)) ||
                    (src.devicecoherent && (dst.coherent || dst.queuefamilycoherent || dst.workgroupcoherent || dst.subgroupcoherent || dst.shadercallcoherent)) ||
                    (src.queuefamilycoherent && (dst.coherent || dst.devicecoherent || dst.workgroupcoherent || dst.subgroupcoherent || dst.shadercallcoherent)) ||
                    (src.workgroupcoherent && (dst.coherent || dst.devicecoherent || dst.queuefamilycoherent || dst.subgroupcoherent || dst.shadercallcoherent)) ||
                    (src.subgroupcoherent  && (dst.coherent || dst.devicecoherent || dst.queuefamilycoherent || dst.workgroupcoherent || dst.shadercallcoherent)) ||
                    (src.shadercallcoherent && (dst.coherent || dst.devicecoherent || dst.queuefamilycoherent || dst.workgroupcoherent || dst.subgroupcoherent)))) {
-        error(loc, "only one coherent/devicecoherent/queuefamilycoherent/workgroupcoherent/subgroupcoherent/shadercallcoherent qualifier allowed", 
+        error(loc, "only one coherent/devicecoherent/queuefamilycoherent/workgroupcoherent/subgroupcoherent/shadercallcoherent qualifier allowed",
             GetPrecisionQualifierString(src.precision), "");
     }
-#endif
+
     // Layout qualifiers
     mergeObjectLayoutQualifiers(dst, src, false);
 
@@ -3975,7 +4221,6 @@ void TParseContext::mergeQualifiers(const TSourceLoc& loc, TQualifier& dst, cons
     MERGE_SINGLETON(smooth);
     MERGE_SINGLETON(flat);
     MERGE_SINGLETON(specConstant);
-#ifndef GLSLANG_WEB
     MERGE_SINGLETON(noContraction);
     MERGE_SINGLETON(nopersp);
     MERGE_SINGLETON(explicitInterp);
@@ -3996,15 +4241,13 @@ void TParseContext::mergeQualifiers(const TSourceLoc& loc, TQualifier& dst, cons
     MERGE_SINGLETON(readonly);
     MERGE_SINGLETON(writeonly);
     MERGE_SINGLETON(nonUniform);
-#endif
 
-#ifndef GLSLANG_WEB
     // SPIR-V storage class qualifier (GL_EXT_spirv_intrinsics)
     dst.spirvStorageClass = src.spirvStorageClass;
 
     // SPIR-V decorate qualifiers (GL_EXT_spirv_intrinsics)
-    if (src.hasSprivDecorate()) {
-        if (dst.hasSprivDecorate()) {
+    if (src.hasSpirvDecorate()) {
+        if (dst.hasSpirvDecorate()) {
             const TSpirvDecorate& srcSpirvDecorate = src.getSpirvDecorate();
             TSpirvDecorate& dstSpirvDecorate = dst.getSpirvDecorate();
             for (auto& decorate : srcSpirvDecorate.decorates) {
@@ -4025,13 +4268,12 @@ void TParseContext::mergeQualifiers(const TSourceLoc& loc, TQualifier& dst, cons
                 if (dstSpirvDecorate.decorates.find(decorateString.first) != dstSpirvDecorate.decorates.end())
                     error(loc, "too many SPIR-V decorate qualifiers", "spirv_decorate_string", "(decoration=%u)", decorateString.first);
                 else
-                    dstSpirvDecorate.decorates.insert(decorateString);
+                    dstSpirvDecorate.decorateStrings.insert(decorateString);
             }
         } else {
             dst.spirvDecorate = src.spirvDecorate;
         }
     }
-#endif
 
     if (repeated)
         error(loc, "replicated qualifiers", "", "");
@@ -4095,17 +4337,18 @@ TPrecisionQualifier TParseContext::getDefaultPrecision(TPublicType& publicType)
         return defaultPrecision[publicType.basicType];
 }
 
-void TParseContext::precisionQualifierCheck(const TSourceLoc& loc, TBasicType baseType, TQualifier& qualifier)
+void TParseContext::precisionQualifierCheck(const TSourceLoc& loc, TBasicType baseType, TQualifier& qualifier, bool isCoopMat)
 {
     // Built-in symbols are allowed some ambiguous precisions, to be pinned down
     // later by context.
     if (! obeyPrecisionQualifiers() || parsingBuiltins)
         return;
 
-#ifndef GLSLANG_WEB
     if (baseType == EbtAtomicUint && qualifier.precision != EpqNone && qualifier.precision != EpqHigh)
         error(loc, "atomic counters can only be highp", "atomic_uint", "");
-#endif
+
+    if (isCoopMat)
+        return;
 
     if (baseType == EbtFloat || baseType == EbtUint || baseType == EbtInt || baseType == EbtSampler || baseType == EbtAtomicUint) {
         if (qualifier.precision == EpqNone) {
@@ -4122,7 +4365,7 @@ void TParseContext::precisionQualifierCheck(const TSourceLoc& loc, TBasicType ba
 
 void TParseContext::parameterTypeCheck(const TSourceLoc& loc, TStorageQualifier qualifier, const TType& type)
 {
-    if ((qualifier == EvqOut || qualifier == EvqInOut) && type.isOpaque())
+    if ((qualifier == EvqOut || qualifier == EvqInOut) && type.isOpaque() && !intermediate.getBindlessMode())
         error(loc, "samplers and atomic_uints cannot be output parameters", type.getBasicTypeString().c_str(), "");
     if (!parsingBuiltins && type.contains16BitFloat())
         requireFloat16Arithmetic(loc, type.getBasicTypeString().c_str(), "float16 types can only be in uniform block or buffer storage");
@@ -4151,7 +4394,8 @@ bool TParseContext::containsFieldWithBasicType(const TType& type, TBasicType bas
 //
 // Do size checking for an array type's size.
 //
-void TParseContext::arraySizeCheck(const TSourceLoc& loc, TIntermTyped* expr, TArraySize& sizePair, const char *sizeType)
+void TParseContext::arraySizeCheck(const TSourceLoc& loc, TIntermTyped* expr, TArraySize& sizePair,
+                                   const char* sizeType, const bool allowZero)
 {
     bool isConst = false;
     sizePair.node = nullptr;
@@ -4171,9 +4415,8 @@ void TParseContext::arraySizeCheck(const TSourceLoc& loc, TIntermTyped* expr, TA
             TIntermSymbol* symbol = expr->getAsSymbolNode();
             if (symbol && symbol->getConstArray().size() > 0)
                 size = symbol->getConstArray()[0].getIConst();
-        } else if (expr->getAsUnaryNode() &&
-                   expr->getAsUnaryNode()->getOp() == glslang::EOpArrayLength &&
-                   expr->getAsUnaryNode()->getOperand()->getType().isCoopMat()) {
+        } else if (expr->getAsUnaryNode() && expr->getAsUnaryNode()->getOp() == glslang::EOpArrayLength &&
+                   expr->getAsUnaryNode()->getOperand()->getType().isCoopMatNV()) {
             isConst = true;
             size = 1;
             sizePair.node = expr->getAsUnaryNode();
@@ -4187,9 +4430,16 @@ void TParseContext::arraySizeCheck(const TSourceLoc& loc, TIntermTyped* expr, TA
         return;
     }
 
-    if (size <= 0) {
-        error(loc, sizeType, "", "must be a positive integer");
-        return;
+    if (allowZero) {
+        if (size < 0) {
+            error(loc, sizeType, "", "must be a non-negative integer");
+            return;
+        }
+    } else {
+        if (size <= 0) {
+            error(loc, sizeType, "", "must be a positive integer");
+            return;
+        }
     }
 }
 
@@ -4287,8 +4537,6 @@ void TParseContext::arraySizesCheck(const TSourceLoc& loc, const TQualifier& qua
         (qualifier.storage != EvqTemporary && qualifier.storage != EvqGlobal && qualifier.storage != EvqShared && qualifier.storage != EvqConst))
         error(loc, "only outermost dimension of an array of arrays can be a specialization constant", "[]", "");
 
-#ifndef GLSLANG_WEB
-
     // desktop always allows outer-dimension-unsized variable arrays,
     if (!isEsProfile())
         return;
@@ -4318,17 +4566,15 @@ void TParseContext::arraySizesCheck(const TSourceLoc& loc, const TQualifier& qua
                 extensionsTurnedOn(Num_AEP_tessellation_shader, AEP_tessellation_shader))
                 return;
         break;
-    case EShLangMeshNV:
+    case EShLangMesh:
         if (qualifier.storage == EvqVaryingOut)
             if ((isEsProfile() && version >= 320) ||
-                extensionTurnedOn(E_GL_NV_mesh_shader))
+                extensionsTurnedOn(Num_AEP_mesh_shader, AEP_mesh_shader))
                 return;
         break;
     default:
         break;
     }
-
-#endif
 
     // last member of ssbo block exception:
     if (qualifier.storage == EvqBuffer && lastMember)
@@ -4374,7 +4620,6 @@ void TParseContext::declareArray(const TSourceLoc& loc, const TString& identifie
             if (symbolTable.atGlobalLevel())
                 trackLinkage(*symbol);
 
-#ifndef GLSLANG_WEB
             if (! symbolTable.atBuiltInLevel()) {
                 if (isIoResizeArray(type)) {
                     ioArraySymbolResizeList.push_back(symbol);
@@ -4382,7 +4627,6 @@ void TParseContext::declareArray(const TSourceLoc& loc, const TString& identifie
                 } else
                     fixIoArraySize(loc, symbol->getWritableType());
             }
-#endif
 
             return;
         }
@@ -4420,7 +4664,6 @@ void TParseContext::declareArray(const TSourceLoc& loc, const TString& identifie
         return;
     }
 
-#ifndef GLSLANG_WEB
     if (existingType.isSizedArray()) {
         // be more leniant for input arrays to geometry shaders and tessellation control outputs, where the redeclaration is the same size
         if (! (isIoResizeArray(type) && existingType.getOuterArraySize() == type.getOuterArraySize()))
@@ -4434,10 +4677,7 @@ void TParseContext::declareArray(const TSourceLoc& loc, const TString& identifie
 
     if (isIoResizeArray(type))
         checkIoArraysConsistency(loc);
-#endif
 }
-
-#ifndef GLSLANG_WEB
 
 // Policy and error check for needing a runtime sized array.
 void TParseContext::checkRuntimeSizable(const TSourceLoc& loc, const TIntermTyped& base)
@@ -4466,7 +4706,7 @@ void TParseContext::checkRuntimeSizable(const TSourceLoc& loc, const TIntermType
 
     // check for additional things allowed by GL_EXT_nonuniform_qualifier
     if (base.getBasicType() == EbtSampler || base.getBasicType() == EbtAccStruct || base.getBasicType() == EbtRayQuery ||
-        (base.getBasicType() == EbtBlock && base.getType().getQualifier().isUniformOrBuffer()))
+        base.getBasicType() == EbtHitObjectNV || (base.getBasicType() == EbtBlock && base.getType().getQualifier().isUniformOrBuffer()))
         requireExtensions(loc, 1, &E_GL_EXT_nonuniform_qualifier, "variable index");
     else
         error(loc, "", "[", "array must be redeclared with a size before being indexed with a variable");
@@ -4521,8 +4761,6 @@ void TParseContext::checkAndResizeMeshViewDim(const TSourceLoc& loc, TType& type
     }
 }
 
-#endif // GLSLANG_WEB
-
 // Returns true if the first argument to the #line directive is the line number for the next line.
 //
 // Desktop, pre-version 3.30:  "After processing this directive
@@ -4565,7 +4803,6 @@ void TParseContext::nonInitConstCheck(const TSourceLoc& loc, TString& identifier
 TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TString& identifier,
                                                  const TQualifier& qualifier, const TShaderQualifiers& publicType)
 {
-#ifndef GLSLANG_WEB
     if (! builtInName(identifier) || symbolTable.atBuiltInLevel() || ! symbolTable.atGlobalLevel())
         return nullptr;
 
@@ -4589,7 +4826,7 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
 
     if (ssoPre150 ||
         (identifier == "gl_FragDepth"           && ((nonEsRedecls && version >= 420) || esRedecls)) ||
-        (identifier == "gl_FragCoord"           && ((nonEsRedecls && version >= 150) || esRedecls)) ||
+        (identifier == "gl_FragCoord"           && ((nonEsRedecls && version >= 140) || esRedecls)) ||
          identifier == "gl_ClipDistance"                                                            ||
          identifier == "gl_CullDistance"                                                            ||
          identifier == "gl_ShadingRateEXT"                                                          ||
@@ -4605,6 +4842,9 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
          identifier == "gl_SampleMask"                                                              ||
          identifier == "gl_Layer"                                                                   ||
          identifier == "gl_PrimitiveIndicesNV"                                                      ||
+         identifier == "gl_PrimitivePointIndicesEXT"                                                ||
+         identifier == "gl_PrimitiveLineIndicesEXT"                                                 ||
+         identifier == "gl_PrimitiveTriangleIndicesEXT"                                             ||
          identifier == "gl_TexCoord") {
 
         // Find the existing symbol, if any.
@@ -4658,7 +4898,7 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
                 symbolQualifier.storage != qualifier.storage)
                 error(loc, "cannot change qualification of", "redeclaration", symbol->getName().c_str());
         } else if (identifier == "gl_FragCoord") {
-            if (intermediate.inIoAccessed("gl_FragCoord"))
+            if (!intermediate.getTexCoordRedeclared() && intermediate.inIoAccessed("gl_FragCoord"))
                 error(loc, "cannot redeclare after use", "gl_FragCoord", "");
             if (qualifier.nopersp != symbolQualifier.nopersp || qualifier.flat != symbolQualifier.flat ||
                 qualifier.isMemory() || qualifier.isAuxiliary())
@@ -4668,6 +4908,9 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
             if (! builtIn && (publicType.pixelCenterInteger != intermediate.getPixelCenterInteger() ||
                               publicType.originUpperLeft != intermediate.getOriginUpperLeft()))
                 error(loc, "cannot redeclare with different qualification:", "redeclaration", symbol->getName().c_str());
+
+
+            intermediate.setTexCoordRedeclared();
             if (publicType.pixelCenterInteger)
                 intermediate.setPixelCenterInteger();
             if (publicType.originUpperLeft)
@@ -4684,10 +4927,22 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
                 if (! intermediate.setDepth(publicType.layoutDepth))
                     error(loc, "all redeclarations must use the same depth layout on", "redeclaration", symbol->getName().c_str());
             }
+        } else if (identifier == "gl_FragStencilRefARB") {
+            if (qualifier.nopersp != symbolQualifier.nopersp || qualifier.flat != symbolQualifier.flat ||
+                qualifier.isMemory() || qualifier.isAuxiliary())
+                error(loc, "can only change layout qualification of", "redeclaration", symbol->getName().c_str());
+            if (qualifier.storage != EvqVaryingOut)
+                error(loc, "cannot change output storage qualification of", "redeclaration", symbol->getName().c_str());
+            if (publicType.layoutStencil != ElsNone) {
+                if (intermediate.inIoAccessed("gl_FragStencilRefARB"))
+                    error(loc, "cannot redeclare after use", "gl_FragStencilRefARB", "");
+                if (!intermediate.setStencil(publicType.layoutStencil))
+                    error(loc, "all redeclarations must use the same stencil layout on", "redeclaration",
+                          symbol->getName().c_str());
+            }
         }
         else if (
-            identifier == "gl_PrimitiveIndicesNV" ||
-            identifier == "gl_FragStencilRefARB") {
+            identifier == "gl_PrimitiveIndicesNV") {
             if (qualifier.hasLayout())
                 error(loc, "cannot apply layout qualifier to", "redeclaration", symbol->getName().c_str());
             if (qualifier.storage != EvqVaryingOut)
@@ -4710,7 +4965,6 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
 
         return symbol;
     }
-#endif
 
     return nullptr;
 }
@@ -4722,13 +4976,13 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
 void TParseContext::redeclareBuiltinBlock(const TSourceLoc& loc, TTypeList& newTypeList, const TString& blockName,
     const TString* instanceName, TArraySizes* arraySizes)
 {
-#ifndef GLSLANG_WEB
     const char* feature = "built-in block redeclaration";
     profileRequires(loc, EEsProfile, 320, Num_AEP_shader_io_blocks, AEP_shader_io_blocks, feature);
     profileRequires(loc, ~EEsProfile, 410, E_GL_ARB_separate_shader_objects, feature);
 
     if (blockName != "gl_PerVertex" && blockName != "gl_PerFragment" &&
-        blockName != "gl_MeshPerVertexNV" && blockName != "gl_MeshPerPrimitiveNV") {
+        blockName != "gl_MeshPerVertexNV" && blockName != "gl_MeshPerPrimitiveNV" &&
+        blockName != "gl_MeshPerVertexEXT" && blockName != "gl_MeshPerPrimitiveEXT") {
         error(loc, "cannot redeclare block: ", "block declaration", blockName.c_str());
         return;
     }
@@ -4937,7 +5191,6 @@ void TParseContext::redeclareBuiltinBlock(const TSourceLoc& loc, TTypeList& newT
 
     // Save it in the AST for linker use.
     trackLinkage(*block);
-#endif // GLSLANG_WEB
 }
 
 void TParseContext::paramCheckFixStorage(const TSourceLoc& loc, const TStorageQualifier& qualifier, TType& type)
@@ -4950,6 +5203,7 @@ void TParseContext::paramCheckFixStorage(const TSourceLoc& loc, const TStorageQu
     case EvqIn:
     case EvqOut:
     case EvqInOut:
+    case EvqTileImageEXT:
         type.getQualifier().storage = qualifier;
         break;
     case EvqGlobal:
@@ -4965,7 +5219,6 @@ void TParseContext::paramCheckFixStorage(const TSourceLoc& loc, const TStorageQu
 
 void TParseContext::paramCheckFix(const TSourceLoc& loc, const TQualifier& qualifier, TType& type)
 {
-#ifndef GLSLANG_WEB
     if (qualifier.isMemory()) {
         type.getQualifier().volatil   = qualifier.volatil;
         type.getQualifier().coherent  = qualifier.coherent;
@@ -4979,7 +5232,6 @@ void TParseContext::paramCheckFix(const TSourceLoc& loc, const TQualifier& quali
         type.getQualifier().writeonly = qualifier.writeonly;
         type.getQualifier().restrict  = qualifier.restrict;
     }
-#endif
 
     if (qualifier.isAuxiliary() ||
         qualifier.isInterpolation())
@@ -4996,7 +5248,6 @@ void TParseContext::paramCheckFix(const TSourceLoc& loc, const TQualifier& quali
     }
     if (qualifier.isNonUniform())
         type.getQualifier().nonUniform = qualifier.nonUniform;
-#ifndef GLSLANG_WEB
     if (qualifier.isSpirvByReference())
         type.getQualifier().setSpirvByReference();
     if (qualifier.isSpirvLiteral()) {
@@ -5005,7 +5256,6 @@ void TParseContext::paramCheckFix(const TSourceLoc& loc, const TQualifier& quali
             type.getQualifier().setSpirvLiteral();
         else
             error(loc, "cannot use spirv_literal qualifier", type.getBasicTypeString().c_str(), "");
-#endif
     }
 
     paramCheckFixStorage(loc, qualifier.storage, type);
@@ -5036,21 +5286,18 @@ void TParseContext::arrayObjectCheck(const TSourceLoc& loc, const TType& type, c
 
 void TParseContext::opaqueCheck(const TSourceLoc& loc, const TType& type, const char* op)
 {
-    if (containsFieldWithBasicType(type, EbtSampler))
+    if (containsFieldWithBasicType(type, EbtSampler) && !extensionTurnedOn(E_GL_ARB_bindless_texture))
         error(loc, "can't use with samplers or structs containing samplers", op, "");
 }
 
 void TParseContext::referenceCheck(const TSourceLoc& loc, const TType& type, const char* op)
 {
-#ifndef GLSLANG_WEB
     if (containsFieldWithBasicType(type, EbtReference))
         error(loc, "can't use with reference types", op, "");
-#endif
 }
 
 void TParseContext::storage16BitAssignmentCheck(const TSourceLoc& loc, const TType& type, const char* op)
 {
-#ifndef GLSLANG_WEB
     if (type.getBasicType() == EbtStruct && containsFieldWithBasicType(type, EbtFloat16))
         requireFloat16Arithmetic(loc, op, "can't use with structs containing float16");
 
@@ -5080,7 +5327,6 @@ void TParseContext::storage16BitAssignmentCheck(const TSourceLoc& loc, const TTy
 
     if (type.isArray() && type.getBasicType() == EbtUint8)
         requireInt8Arithmetic(loc, op, "can't use with arrays containing uint8");
-#endif
 }
 
 void TParseContext::specializationCheck(const TSourceLoc& loc, const TType& type, const char* op)
@@ -5132,12 +5378,11 @@ void TParseContext::structTypeCheck(const TSourceLoc& /*loc*/, TPublicType& publ
 //
 void TParseContext::inductiveLoopCheck(const TSourceLoc& loc, TIntermNode* init, TIntermLoop* loop)
 {
-#ifndef GLSLANG_WEB
     // loop index init must exist and be a declaration, which shows up in the AST as an aggregate of size 1 of the declaration
     bool badInit = false;
     if (! init || ! init->getAsAggregate() || init->getAsAggregate()->getSequence().size() != 1)
         badInit = true;
-    TIntermBinary* binaryInit = 0;
+    TIntermBinary* binaryInit = nullptr;
     if (! badInit) {
         // get the declaration assignment
         binaryInit = init->getAsAggregate()->getSequence()[0]->getAsBinaryNode();
@@ -5228,10 +5473,8 @@ void TParseContext::inductiveLoopCheck(const TSourceLoc& loc, TIntermNode* init,
 
     // the body
     inductiveLoopBodyCheck(loop->getBody(), loopIndex, symbolTable);
-#endif
 }
 
-#ifndef GLSLANG_WEB
 // Do limit checks for built-in arrays.
 void TParseContext::arrayLimitCheck(const TSourceLoc& loc, const TString& identifier, int size)
 {
@@ -5246,7 +5489,6 @@ void TParseContext::arrayLimitCheck(const TSourceLoc& loc, const TString& identi
     else if (identifier.compare("gl_CullDistancePerViewNV") == 0)
         limitCheck(loc, size, "gl_MaxCullDistances", "gl_CullDistancePerViewNV array size");
 }
-#endif // GLSLANG_WEB
 
 // See if the provided value is less than or equal to the symbol indicated by limit,
 // which should be a constant in the symbol table.
@@ -5259,8 +5501,6 @@ void TParseContext::limitCheck(const TSourceLoc& loc, int value, const char* lim
     if (value > constArray[0].getIConst())
         error(loc, "must be less than or equal to", feature, "%s (%d)", limit, constArray[0].getIConst());
 }
-
-#ifndef GLSLANG_WEB
 
 //
 // Do any additional error checking, etc., once we know the parsing is done.
@@ -5297,11 +5537,11 @@ void TParseContext::finish()
         if (!isEsProfile() && version < 430)
             requireExtensions(getCurrentLoc(), 1, &E_GL_ARB_compute_shader, "compute shaders");
         break;
-    case EShLangTaskNV:
-        requireExtensions(getCurrentLoc(), 1, &E_GL_NV_mesh_shader, "task shaders");
+    case EShLangTask:
+        requireExtensions(getCurrentLoc(), Num_AEP_mesh_shader, AEP_mesh_shader, "task shaders");
         break;
-    case EShLangMeshNV:
-        requireExtensions(getCurrentLoc(), 1, &E_GL_NV_mesh_shader, "mesh shaders");
+    case EShLangMesh:
+        requireExtensions(getCurrentLoc(), Num_AEP_mesh_shader, AEP_mesh_shader, "mesh shaders");
         break;
     default:
         break;
@@ -5327,7 +5567,6 @@ void TParseContext::finish()
         }
     }
 }
-#endif // GLSLANG_WEB
 
 //
 // Layout qualifier stuff.
@@ -5371,7 +5610,6 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         publicType.qualifier.layoutPacking = ElpStd140;
         return;
     }
-#ifndef GLSLANG_WEB
     if (id == TQualifier::getLayoutPackingString(ElpStd430)) {
         requireProfile(loc, EEsProfile | ECoreProfile | ECompatibilityProfile, "std430");
         profileRequires(loc, ECoreProfile | ECompatibilityProfile, 430, E_GL_ARB_shader_storage_buffer_object, "std430");
@@ -5411,12 +5649,34 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         intermediate.setUsePhysicalStorageBuffer();
         return;
     }
-    if (language == EShLangGeometry || language == EShLangTessEvaluation || language == EShLangMeshNV) {
+    if (id == "bindless_sampler") {
+        requireExtensions(loc, 1, &E_GL_ARB_bindless_texture, "bindless_sampler");
+        publicType.qualifier.layoutBindlessSampler = true;
+        intermediate.setBindlessTextureMode(currentCaller, AstRefTypeLayout);
+        return;
+    }
+    if (id == "bindless_image") {
+        requireExtensions(loc, 1, &E_GL_ARB_bindless_texture, "bindless_image");
+        publicType.qualifier.layoutBindlessImage = true;
+        intermediate.setBindlessImageMode(currentCaller, AstRefTypeLayout);
+        return;
+    }
+    if (id == "bound_sampler") {
+        requireExtensions(loc, 1, &E_GL_ARB_bindless_texture, "bound_sampler");
+        publicType.qualifier.layoutBindlessSampler = false;
+        return;
+    }
+    if (id == "bound_image") {
+        requireExtensions(loc, 1, &E_GL_ARB_bindless_texture, "bound_image");
+        publicType.qualifier.layoutBindlessImage = false;
+        return;
+    }
+    if (language == EShLangGeometry || language == EShLangTessEvaluation || language == EShLangMesh) {
         if (id == TQualifier::getGeometryString(ElgTriangles)) {
             publicType.shaderQualifiers.geometry = ElgTriangles;
             return;
         }
-        if (language == EShLangGeometry || language == EShLangMeshNV) {
+        if (language == EShLangGeometry || language == EShLangMesh) {
             if (id == TQualifier::getGeometryString(ElgPoints)) {
                 publicType.shaderQualifiers.geometry = ElgPoints;
                 return;
@@ -5499,12 +5759,19 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
     }
     if (language == EShLangFragment) {
         if (id == "origin_upper_left") {
-            requireProfile(loc, ECoreProfile | ECompatibilityProfile, "origin_upper_left");
+            requireProfile(loc, ECoreProfile | ECompatibilityProfile | ENoProfile, "origin_upper_left");
+            if (profile == ENoProfile) {
+                profileRequires(loc,ECoreProfile | ECompatibilityProfile, 140, E_GL_ARB_fragment_coord_conventions, "origin_upper_left");
+            }
+
             publicType.shaderQualifiers.originUpperLeft = true;
             return;
         }
         if (id == "pixel_center_integer") {
-            requireProfile(loc, ECoreProfile | ECompatibilityProfile, "pixel_center_integer");
+            requireProfile(loc, ECoreProfile | ECompatibilityProfile | ENoProfile, "pixel_center_integer");
+            if (profile == ENoProfile) {
+                profileRequires(loc,ECoreProfile | ECompatibilityProfile, 140, E_GL_ARB_fragment_coord_conventions, "pixel_center_integer");
+            }
             publicType.shaderQualifiers.pixelCenterInteger = true;
             return;
         }
@@ -5512,6 +5779,12 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             profileRequires(loc, ENoProfile | ECoreProfile | ECompatibilityProfile, 420, E_GL_ARB_shader_image_load_store, "early_fragment_tests");
             profileRequires(loc, EEsProfile, 310, nullptr, "early_fragment_tests");
             publicType.shaderQualifiers.earlyFragmentTests = true;
+            return;
+        }
+        if (id == "early_and_late_fragment_tests_amd") {
+            profileRequires(loc, ENoProfile | ECoreProfile | ECompatibilityProfile, 420, E_GL_AMD_shader_early_and_late_fragment_tests, "early_and_late_fragment_tests_amd");
+            profileRequires(loc, EEsProfile, 310, nullptr, "early_and_late_fragment_tests_amd");
+            publicType.shaderQualifiers.earlyAndLateFragmentTestsAMD = true;
             return;
         }
         if (id == "post_depth_coverage") {
@@ -5522,11 +5795,35 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             publicType.shaderQualifiers.postDepthCoverage = true;
             return;
         }
+        /* id is transformed into lower case in the beginning of this function. */
+        if (id == "non_coherent_color_attachment_readext") {
+            requireExtensions(loc, 1, &E_GL_EXT_shader_tile_image, "non_coherent_color_attachment_readEXT");
+            publicType.shaderQualifiers.nonCoherentColorAttachmentReadEXT = true;
+            return;
+        }
+        if (id == "non_coherent_depth_attachment_readext") {
+            requireExtensions(loc, 1, &E_GL_EXT_shader_tile_image, "non_coherent_depth_attachment_readEXT");
+            publicType.shaderQualifiers.nonCoherentDepthAttachmentReadEXT = true;
+            return;
+        }
+        if (id == "non_coherent_stencil_attachment_readext") {
+            requireExtensions(loc, 1, &E_GL_EXT_shader_tile_image, "non_coherent_stencil_attachment_readEXT");
+            publicType.shaderQualifiers.nonCoherentStencilAttachmentReadEXT = true;
+            return;
+        }
         for (TLayoutDepth depth = (TLayoutDepth)(EldNone + 1); depth < EldCount; depth = (TLayoutDepth)(depth+1)) {
             if (id == TQualifier::getLayoutDepthString(depth)) {
                 requireProfile(loc, ECoreProfile | ECompatibilityProfile, "depth layout qualifier");
                 profileRequires(loc, ECoreProfile | ECompatibilityProfile, 420, nullptr, "depth layout qualifier");
                 publicType.shaderQualifiers.layoutDepth = depth;
+                return;
+            }
+        }
+        for (TLayoutStencil stencil = (TLayoutStencil)(ElsNone + 1); stencil < ElsCount; stencil = (TLayoutStencil)(stencil+1)) {
+            if (id == TQualifier::getLayoutStencilString(stencil)) {
+                requireProfile(loc, ECoreProfile | ECompatibilityProfile, "stencil layout qualifier");
+                profileRequires(loc, ECoreProfile | ECompatibilityProfile, 420, nullptr, "stencil layout qualifier");
+                publicType.shaderQualifiers.layoutStencil = stencil;
                 return;
             }
         }
@@ -5584,6 +5881,10 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
                 }
                 publicType.qualifier.layoutShaderRecord = true;
                 return;
+            } else if (id == "hitobjectshaderrecordnv") {
+                requireExtensions(loc, 1, &E_GL_NV_shader_invocation_reorder, "hitobject shader record NV");
+                publicType.qualifier.layoutHitObjectShaderRecordNV = true;
+                return;
             }
 
         }
@@ -5606,7 +5907,6 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         publicType.shaderQualifiers.layoutPrimitiveCulling = true;
         return;
     }
-#endif
 
     error(loc, "unrecognized layout identifier, or qualifier requires assignment (e.g., binding = 4)", id.c_str(), "");
 }
@@ -5673,7 +5973,7 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         return;
     } else if (id == "location") {
         profileRequires(loc, EEsProfile, 300, nullptr, "location");
-        const char* exts[2] = { E_GL_ARB_separate_shader_objects, E_GL_ARB_explicit_attrib_location }; 
+        const char* exts[2] = { E_GL_ARB_separate_shader_objects, E_GL_ARB_explicit_attrib_location };
         // GL_ARB_explicit_uniform_location requires 330 or GL_ARB_explicit_attrib_location we do not need to add it here
         profileRequires(loc, ~EEsProfile, 330, 2, exts, "location");
         if ((unsigned int)value >= TQualifier::layoutLocationEnd)
@@ -5694,10 +5994,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             error(loc, "needs a literal integer", "set", "");
         return;
     } else if (id == "binding") {
-#ifndef GLSLANG_WEB
         profileRequires(loc, ~EEsProfile, 420, E_GL_ARB_shading_language_420pack, "binding");
         profileRequires(loc, EEsProfile, 310, nullptr, "binding");
-#endif
         if ((unsigned int)value >= TQualifier::layoutBindingEnd)
             error(loc, "binding is too large", id.c_str(), "");
         else
@@ -5720,7 +6018,6 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             error(loc, "needs a literal integer", "constant_id", "");
         return;
     }
-#ifndef GLSLANG_WEB
     if (id == "component") {
         requireProfile(loc, ECoreProfile | ECompatibilityProfile, "component");
         profileRequires(loc, ECoreProfile | ECompatibilityProfile, 440, E_GL_ARB_enhanced_layouts, "component");
@@ -5818,10 +6115,8 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             error(loc, "needs a literal integer", "buffer_reference_align", "");
         return;
     }
-#endif
 
     switch (language) {
-#ifndef GLSLANG_WEB
     case EShLangTessControl:
         if (id == "vertices") {
             if (value == 0)
@@ -5883,40 +6178,49 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
         }
         break;
 
-    case EShLangMeshNV:
+    case EShLangMesh:
         if (id == "max_vertices") {
-            requireExtensions(loc, 1, &E_GL_NV_mesh_shader, "max_vertices");
+            requireExtensions(loc, Num_AEP_mesh_shader, AEP_mesh_shader, "max_vertices");
             publicType.shaderQualifiers.vertices = value;
-            if (value > resources.maxMeshOutputVerticesNV)
-                error(loc, "too large, must be less than gl_MaxMeshOutputVerticesNV", "max_vertices", "");
+            int max = extensionTurnedOn(E_GL_EXT_mesh_shader) ? resources.maxMeshOutputVerticesEXT
+                                                              : resources.maxMeshOutputVerticesNV;
+            if (value > max) {
+                TString maxsErrtring = "too large, must be less than ";
+                maxsErrtring.append(extensionTurnedOn(E_GL_EXT_mesh_shader) ? "gl_MaxMeshOutputVerticesEXT"
+                                                                            : "gl_MaxMeshOutputVerticesNV");
+                error(loc, maxsErrtring.c_str(), "max_vertices", "");
+            }
             if (nonLiteral)
                 error(loc, "needs a literal integer", "max_vertices", "");
             return;
         }
         if (id == "max_primitives") {
-            requireExtensions(loc, 1, &E_GL_NV_mesh_shader, "max_primitives");
+            requireExtensions(loc, Num_AEP_mesh_shader, AEP_mesh_shader, "max_primitives");
             publicType.shaderQualifiers.primitives = value;
-            if (value > resources.maxMeshOutputPrimitivesNV)
-                error(loc, "too large, must be less than gl_MaxMeshOutputPrimitivesNV", "max_primitives", "");
+            int max = extensionTurnedOn(E_GL_EXT_mesh_shader) ? resources.maxMeshOutputPrimitivesEXT
+                                                              : resources.maxMeshOutputPrimitivesNV;
+            if (value > max) {
+                TString maxsErrtring = "too large, must be less than ";
+                maxsErrtring.append(extensionTurnedOn(E_GL_EXT_mesh_shader) ? "gl_MaxMeshOutputPrimitivesEXT"
+                                                                            : "gl_MaxMeshOutputPrimitivesNV");
+                error(loc, maxsErrtring.c_str(), "max_primitives", "");
+            }
             if (nonLiteral)
                 error(loc, "needs a literal integer", "max_primitives", "");
             return;
         }
         // Fall through
 
-    case EShLangTaskNV:
+    case EShLangTask:
         // Fall through
-#endif
     case EShLangCompute:
         if (id.compare(0, 11, "local_size_") == 0) {
-#ifndef GLSLANG_WEB
-            if (language == EShLangMeshNV || language == EShLangTaskNV) {
-                requireExtensions(loc, 1, &E_GL_NV_mesh_shader, "gl_WorkGroupSize");
+            if (language == EShLangMesh || language == EShLangTask) {
+                requireExtensions(loc, Num_AEP_mesh_shader, AEP_mesh_shader, "gl_WorkGroupSize");
             } else {
-                profileRequires(loc, EEsProfile, 310, 0, "gl_WorkGroupSize");
+                profileRequires(loc, EEsProfile, 310, nullptr, "gl_WorkGroupSize");
                 profileRequires(loc, ~EEsProfile, 430, E_GL_ARB_compute_shader, "gl_WorkGroupSize");
             }
-#endif
             if (nonLiteral)
                 error(loc, "needs a literal integer", "local_size", "");
             if (id.size() == 12 && value == 0) {
@@ -5983,7 +6287,6 @@ void TParseContext::mergeObjectLayoutQualifiers(TQualifier& dst, const TQualifie
     if (src.hasPacking())
         dst.layoutPacking = src.layoutPacking;
 
-#ifndef GLSLANG_WEB
     if (src.hasStream())
         dst.layoutStream = src.layoutStream;
     if (src.hasFormat())
@@ -5992,7 +6295,6 @@ void TParseContext::mergeObjectLayoutQualifiers(TQualifier& dst, const TQualifie
         dst.layoutXfbBuffer = src.layoutXfbBuffer;
     if (src.hasBufferReferenceAlign())
         dst.layoutBufferReferenceAlign = src.layoutBufferReferenceAlign;
-#endif
 
     if (src.hasAlign())
         dst.layoutAlign = src.layoutAlign;
@@ -6010,7 +6312,6 @@ void TParseContext::mergeObjectLayoutQualifiers(TQualifier& dst, const TQualifie
         if (src.hasSpecConstantId())
             dst.layoutSpecConstantId = src.layoutSpecConstantId;
 
-#ifndef GLSLANG_WEB
         if (src.hasComponent())
             dst.layoutComponent = src.layoutComponent;
         if (src.hasIndex())
@@ -6035,9 +6336,16 @@ void TParseContext::mergeObjectLayoutQualifiers(TQualifier& dst, const TQualifie
             dst.layoutSecondaryViewportRelativeOffset = src.layoutSecondaryViewportRelativeOffset;
         if (src.layoutShaderRecord)
             dst.layoutShaderRecord = true;
+        if (src.layoutBindlessSampler)
+            dst.layoutBindlessSampler = true;
+        if (src.layoutBindlessImage)
+            dst.layoutBindlessImage = true;
         if (src.pervertexNV)
             dst.pervertexNV = true;
-#endif
+        if (src.pervertexEXT)
+            dst.pervertexEXT = true;
+        if (src.layoutHitObjectShaderRecordNV)
+            dst.layoutHitObjectShaderRecordNV = true;
     }
 }
 
@@ -6073,10 +6381,7 @@ void TParseContext::layoutObjectCheck(const TSourceLoc& loc, const TSymbol& symb
         switch (qualifier.storage) {
         case EvqVaryingIn:
         case EvqVaryingOut:
-            if (!type.getQualifier().isTaskMemory() &&
-#ifndef GLSLANG_WEB
-                !type.getQualifier().hasSprivDecorate() &&
-#endif
+            if (!type.getQualifier().isTaskMemory() && !type.getQualifier().hasSpirvDecorate() &&
                 (type.getBasicType() != EbtBlock ||
                  (!(*type.getStruct())[0].type->getQualifier().hasLocation() &&
                    (*type.getStruct())[0].type->getQualifier().builtIn == EbvNone)))
@@ -6138,11 +6443,6 @@ void TParseContext::layoutMemberLocationArrayCheck(const TSourceLoc& loc, bool m
 // Do layout error checking with respect to a type.
 void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
 {
-#ifndef GLSLANG_WEB
-    if (extensionTurnedOn(E_GL_EXT_spirv_intrinsics))
-        return; // Skip any check if GL_EXT_spirv_intrinsics is turned on
-#endif
-
     const TQualifier& qualifier = type.getQualifier();
 
     // first, intra-layout qualifier-only error checking
@@ -6184,15 +6484,22 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         case EvqBuffer:
             if (type.getBasicType() == EbtBlock)
                 error(loc, "cannot apply to uniform or buffer block", "location", "");
+            else if (type.getBasicType() == EbtSampler && type.getSampler().isAttachmentEXT())
+                error(loc, "only applies to", "location", "%s with storage tileImageEXT", type.getBasicTypeString().c_str());
             break;
-#ifndef GLSLANG_WEB
+        case EvqtaskPayloadSharedEXT:
+            error(loc, "cannot apply to taskPayloadSharedEXT", "location", "");
+            break;
         case EvqPayload:
         case EvqPayloadIn:
         case EvqHitAttr:
         case EvqCallableData:
         case EvqCallableDataIn:
+        case EvqHitObjectAttrNV:
+        case EvqSpirvStorageClass:
             break;
-#endif
+        case EvqTileImageEXT:
+            break;
         default:
             error(loc, "can only apply to uniform, buffer, in, or out storage qualifiers", "location", "");
             break;
@@ -6202,19 +6509,20 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         int repeated = intermediate.addUsedLocation(qualifier, type, typeCollision);
         if (repeated >= 0 && ! typeCollision)
             error(loc, "overlapping use of location", "location", "%d", repeated);
-        // "fragment-shader outputs ... if two variables are placed within the same
+        // "fragment-shader outputs/tileImageEXT ... if two variables are placed within the same
         // location, they must have the same underlying type (floating-point or integer)"
-        if (typeCollision && language == EShLangFragment && qualifier.isPipeOutput())
-            error(loc, "fragment outputs sharing the same location must be the same basic type", "location", "%d", repeated);
+        if (typeCollision && language == EShLangFragment && (qualifier.isPipeOutput() || qualifier.storage == EvqTileImageEXT))
+            error(loc, "fragment outputs or tileImageEXTs sharing the same location", "location", "%d must be the same basic type", repeated);
     }
 
-#ifndef GLSLANG_WEB
     if (qualifier.hasXfbOffset() && qualifier.hasXfbBuffer()) {
-        int repeated = intermediate.addXfbBufferOffset(type);
-        if (repeated >= 0)
-            error(loc, "overlapping offsets at", "xfb_offset", "offset %d in buffer %d", repeated, qualifier.layoutXfbBuffer);
-        if (type.isUnsizedArray())
+        if (type.isUnsizedArray()) {
             error(loc, "unsized array", "xfb_offset", "in buffer %d", qualifier.layoutXfbBuffer);
+        } else {
+            int repeated = intermediate.addXfbBufferOffset(type);
+            if (repeated >= 0)
+                error(loc, "overlapping offsets at", "xfb_offset", "offset %d in buffer %d", repeated, qualifier.layoutXfbBuffer);
+        }
 
         // "The offset must be a multiple of the size of the first component of the first
         // qualified variable or block member, or a compile-time error results. Further, if applied to an aggregate
@@ -6235,7 +6543,6 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         if (! intermediate.setXfbBufferStride(qualifier.layoutXfbBuffer, qualifier.layoutXfbStride))
             error(loc, "all stride settings must match for xfb buffer", "xfb_stride", "%d", qualifier.layoutXfbBuffer);
     }
-#endif
 
     if (qualifier.hasBinding()) {
         // Binding checking, from the spec:
@@ -6246,7 +6553,7 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         // an array of size N, all elements of the array from binding through binding + N - 1 must be within this
         // range."
         //
-        if (! type.isOpaque() && type.getBasicType() != EbtBlock)
+        if (!type.isOpaque() && type.getBasicType() != EbtBlock && type.getBasicType() != EbtSpirvType)
             error(loc, "requires block, or sampler/image, or atomic-counter type", "binding", "");
         if (type.getBasicType() == EbtSampler) {
             int lastBinding = qualifier.layoutBinding;
@@ -6255,16 +6562,12 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
                     if (type.isSizedArray())
                         lastBinding += (type.getCumulativeArraySize() - 1);
                     else {
-#ifndef GLSLANG_WEB
                         warn(loc, "assuming binding count of one for compile-time checking of binding numbers for unsized array", "[]", "");
-#endif
                     }
                 }
             }
-#ifndef GLSLANG_WEB
             if (spvVersion.vulkan == 0 && lastBinding >= resources.maxCombinedTextureImageUnits)
                 error(loc, "sampler binding not less than gl_MaxCombinedTextureImageUnits", "binding", type.isArray() ? "(using array)" : "");
-#endif
         }
         if (type.isAtomic() && !spvVersion.vulkanRelaxed) {
             if (qualifier.layoutBinding >= (unsigned int)resources.maxAtomicCounterBindings) {
@@ -6287,7 +6590,7 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
                        !qualifier.hasAttachment() &&
                        !qualifier.hasBufferReference())
                     error(loc, "uniform/buffer blocks require layout(binding=X)", "binding", "");
-                else if (spvVersion.vulkan > 0 && type.getBasicType() == EbtSampler)
+                else if (spvVersion.vulkan > 0 && type.getBasicType() == EbtSampler && !type.getSampler().isAttachmentEXT())
                     error(loc, "sampler/texture/image requires layout(binding=X)", "binding", "");
             }
         }
@@ -6309,7 +6612,7 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
 
     // Image format
     if (qualifier.hasFormat()) {
-        if (! type.isImage())
+        if (! type.isImage() && !intermediate.getBindlessImageMode())
             error(loc, "only apply to images", TQualifier::getLayoutFormatString(qualifier.getFormat()), "");
         else {
             if (type.getSampler().type == EbtFloat && qualifier.getFormat() > ElfFloatGuard)
@@ -6328,14 +6631,18 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
                 }
             }
         }
-    } else if (type.isImage() && ! qualifier.isWriteOnly()) {
+    } else if (type.isImage() && ! qualifier.isWriteOnly() && !intermediate.getBindlessImageMode()) {
         const char *explanation = "image variables not declared 'writeonly' and without a format layout qualifier";
         requireProfile(loc, ECoreProfile | ECompatibilityProfile, explanation);
         profileRequires(loc, ECoreProfile | ECompatibilityProfile, 0, E_GL_EXT_shader_image_load_formatted, explanation);
     }
 
-    if (qualifier.isPushConstant() && type.getBasicType() != EbtBlock)
-        error(loc, "can only be used with a block", "push_constant", "");
+    if (qualifier.isPushConstant()) {
+        if (type.getBasicType() != EbtBlock)
+            error(loc, "can only be used with a block", "push_constant", "");
+        if (type.isArray())
+            error(loc, "Push constants blocks can't be an array", "push_constant", "");
+    }
 
     if (qualifier.hasBufferReference() && type.getBasicType() != EbtBlock)
         error(loc, "can only be used with a block", "buffer_reference", "");
@@ -6345,6 +6652,8 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
 
     // input attachment
     if (type.isSubpass()) {
+        if (extensionTurnedOn(E_GL_EXT_shader_tile_image))
+	    error(loc, "can not be used with GL_EXT_shader_tile_image enabled", type.getSampler().getString().c_str(), "");
         if (! qualifier.hasAttachment())
             error(loc, "requires an input_attachment_index layout qualifier", "subpass", "");
     } else {
@@ -6414,7 +6723,6 @@ void TParseContext::layoutQualifierCheck(const TSourceLoc& loc, const TQualifier
         // output block declarations, and output block member declarations."
 
         switch (qualifier.storage) {
-#ifndef GLSLANG_WEB
         case EvqVaryingIn:
         {
             const char* feature = "location qualifier on input";
@@ -6449,7 +6757,6 @@ void TParseContext::layoutQualifierCheck(const TSourceLoc& loc, const TQualifier
             }
             break;
         }
-#endif
         case EvqUniform:
         case EvqBuffer:
         {
@@ -6512,6 +6819,14 @@ void TParseContext::layoutQualifierCheck(const TSourceLoc& loc, const TQualifier
             error(loc, "cannot be used with shaderRecordNV", "set", "");
 
     }
+
+    if (qualifier.storage == EvqTileImageEXT) {
+        if (qualifier.hasSet())
+            error(loc, "cannot be used with tileImageEXT", "set", "");
+        if (!qualifier.hasLocation())
+            error(loc, "can only be used with an explicit location", "tileImageEXT", "");
+    }
+
     if (qualifier.storage == EvqHitAttr && qualifier.hasLayout()) {
         error(loc, "cannot apply layout qualifiers to hitAttributeNV variable", "hitAttributeNV", "");
     }
@@ -6520,7 +6835,6 @@ void TParseContext::layoutQualifierCheck(const TSourceLoc& loc, const TQualifier
 // For places that can't have shader-level layout qualifiers
 void TParseContext::checkNoShaderLayouts(const TSourceLoc& loc, const TShaderQualifiers& shaderQualifiers)
 {
-#ifndef GLSLANG_WEB
     const char* message = "can only apply to a standalone qualifier";
 
     if (shaderQualifiers.geometry != ElgNone)
@@ -6540,7 +6854,7 @@ void TParseContext::checkNoShaderLayouts(const TSourceLoc& loc, const TShaderQua
             error(loc, message, "local_size id", "");
     }
     if (shaderQualifiers.vertices != TQualifier::layoutNotSet) {
-        if (language == EShLangGeometry || language == EShLangMeshNV)
+        if (language == EShLangGeometry || language == EShLangMesh)
             error(loc, message, "max_vertices", "");
         else if (language == EShLangTessControl)
             error(loc, message, "vertices", "");
@@ -6551,8 +6865,14 @@ void TParseContext::checkNoShaderLayouts(const TSourceLoc& loc, const TShaderQua
         error(loc, message, "early_fragment_tests", "");
     if (shaderQualifiers.postDepthCoverage)
         error(loc, message, "post_depth_coverage", "");
+    if (shaderQualifiers.nonCoherentColorAttachmentReadEXT)
+        error(loc, message, "non_coherent_color_attachment_readEXT", "");
+    if (shaderQualifiers.nonCoherentDepthAttachmentReadEXT)
+        error(loc, message, "non_coherent_depth_attachment_readEXT", "");
+    if (shaderQualifiers.nonCoherentStencilAttachmentReadEXT)
+        error(loc, message, "non_coherent_stencil_attachment_readEXT", "");
     if (shaderQualifiers.primitives != TQualifier::layoutNotSet) {
-        if (language == EShLangMeshNV)
+        if (language == EShLangMesh)
             error(loc, message, "max_primitives", "");
         else
             assert(0);
@@ -6565,14 +6885,12 @@ void TParseContext::checkNoShaderLayouts(const TSourceLoc& loc, const TShaderQua
         error(loc, message, TQualifier::getInterlockOrderingString(shaderQualifiers.interlockOrdering), "");
     if (shaderQualifiers.layoutPrimitiveCulling)
         error(loc, "can only be applied as standalone", "primitive_culling", "");
-#endif
 }
 
 // Correct and/or advance an object's offset layout qualifier.
 void TParseContext::fixOffset(const TSourceLoc& loc, TSymbol& symbol)
 {
     const TQualifier& qualifier = symbol.getType().getQualifier();
-#ifndef GLSLANG_WEB
     if (symbol.getType().isAtomic()) {
         if (qualifier.hasBinding() && (int)qualifier.layoutBinding < resources.maxAtomicCounterBindings) {
 
@@ -6606,7 +6924,6 @@ void TParseContext::fixOffset(const TSourceLoc& loc, TSymbol& symbol)
             atomicUintOffsets[qualifier.layoutBinding] = offset + numOffsets;
         }
     }
-#endif
 }
 
 //
@@ -6620,10 +6937,6 @@ const TFunction* TParseContext::findFunction(const TSourceLoc& loc, const TFunct
         error(loc, "can't use function syntax on variable", call.getName().c_str(), "");
         return nullptr;
     }
-
-#ifdef GLSLANG_WEB
-    return findFunctionExact(loc, call, builtIn);
-#endif
 
     const TFunction* function = nullptr;
 
@@ -6951,7 +7264,6 @@ TIntermTyped* TParseContext::vkRelaxedRemapFunctionCall(const TSourceLoc& loc, T
 {
     TIntermTyped* result = nullptr;
 
-#ifndef GLSLANG_WEB
     if (function->getBuiltInOp() != EOpNull) {
         return nullptr;
     }
@@ -6963,12 +7275,14 @@ TIntermTyped* TParseContext::vkRelaxedRemapFunctionCall(const TSourceLoc& loc, T
 
         TFunction realFunc(&name, function->getType());
 
+        // Use copyParam to avoid shared ownership of the 'type' field
+        // of the parameter.
         for (int i = 0; i < function->getParamCount(); ++i) {
-            realFunc.addParameter((*function)[i]);
+            realFunc.addParameter(TParameter().copyParam((*function)[i]));
         }
 
-        TParameter tmpP = { 0, &uintType };
-        realFunc.addParameter(tmpP);
+        TParameter tmpP = { nullptr, &uintType };
+        realFunc.addParameter(TParameter().copyParam(tmpP));
         arguments = intermediate.growAggregate(arguments, intermediate.addConstantUnion(1, loc, true));
 
         result = handleFunctionCall(loc, &realFunc, arguments);
@@ -6981,11 +7295,11 @@ TIntermTyped* TParseContext::vkRelaxedRemapFunctionCall(const TSourceLoc& loc, T
         TFunction realFunc(&name, function->getType());
 
         for (int i = 0; i < function->getParamCount(); ++i) {
-            realFunc.addParameter((*function)[i]);
+            realFunc.addParameter(TParameter().copyParam((*function)[i]));
         }
 
-        TParameter tmpP = { 0, &uintType };
-        realFunc.addParameter(tmpP);
+        TParameter tmpP = { nullptr, &uintType };
+        realFunc.addParameter(TParameter().copyParam(tmpP));
         arguments = intermediate.growAggregate(arguments, intermediate.addConstantUnion(-1, loc, true));
 
         result = handleFunctionCall(loc, &realFunc, arguments);
@@ -7000,7 +7314,6 @@ TIntermTyped* TParseContext::vkRelaxedRemapFunctionCall(const TSourceLoc& loc, T
             result = arguments->getAsTyped();
         }
     }
-#endif
 
     return result;
 }
@@ -7009,7 +7322,6 @@ TIntermTyped* TParseContext::vkRelaxedRemapFunctionCall(const TSourceLoc& loc, T
 // to establish defaults.
 void TParseContext::declareTypeDefaults(const TSourceLoc& loc, const TPublicType& publicType)
 {
-#ifndef GLSLANG_WEB
     if (publicType.basicType == EbtAtomicUint && publicType.qualifier.hasBinding()) {
         if (publicType.qualifier.layoutBinding >= (unsigned int)resources.maxAtomicCounterBindings) {
             error(loc, "atomic_uint binding is too large", "binding", "");
@@ -7026,19 +7338,51 @@ void TParseContext::declareTypeDefaults(const TSourceLoc& loc, const TPublicType
 
     if (publicType.qualifier.hasLayout() && !publicType.qualifier.hasBufferReference())
         warn(loc, "useless application of layout qualifier", "layout", "");
-#endif
 }
 
-bool TParseContext::vkRelaxedRemapUniformVariable(const TSourceLoc& loc, TString& identifier, const TPublicType&,
+void TParseContext::coopMatTypeParametersCheck(const TSourceLoc& loc, const TPublicType& publicType)
+{
+    if (parsingBuiltins)
+        return;
+    if (publicType.isCoopmatKHR()) {
+        if (publicType.typeParameters == nullptr) {
+            error(loc, "coopmat missing type parameters", "", "");
+            return;
+        }
+        switch (publicType.typeParameters->basicType) {
+        case EbtFloat:
+        case EbtFloat16:
+        case EbtInt:
+        case EbtInt8:
+        case EbtInt16:
+        case EbtUint:
+        case EbtUint8:
+        case EbtUint16:
+            break;
+        default:
+            error(loc, "coopmat invalid basic type", TType::getBasicString(publicType.typeParameters->basicType), "");
+            break;
+        }
+        if (publicType.typeParameters->arraySizes->getNumDims() != 4) {
+            error(loc, "coopmat incorrect number of type parameters", "", "");
+            return;
+        }
+        int use = publicType.typeParameters->arraySizes->getDimSize(3);
+        if (use < 0 || use > 2) {
+            error(loc, "coopmat invalid matrix Use", "", "");
+            return;
+        }
+    }
+}
+
+bool TParseContext::vkRelaxedRemapUniformVariable(const TSourceLoc& loc, TString& identifier, const TPublicType& publicType,
     TArraySizes*, TIntermTyped* initializer, TType& type)
 {
+    vkRelaxedRemapUniformMembers(loc, publicType, type, identifier);
+
     if (parsingBuiltins || symbolTable.atBuiltInLevel() || !symbolTable.atGlobalLevel() ||
         type.getQualifier().storage != EvqUniform ||
-        !(type.containsNonOpaque()
-#ifndef GLSLANG_WEB
-            || type.getBasicType() == EbtAtomicUint
-#endif
-        )) {
+        !(type.containsNonOpaque() || type.getBasicType() == EbtAtomicUint || (type.containsSampler() && type.isStruct()))) {
         return false;
     }
 
@@ -7067,7 +7411,6 @@ bool TParseContext::vkRelaxedRemapUniformVariable(const TSourceLoc& loc, TString
     int bufferBinding = TQualifier::layoutBindingEnd;
     TVariable* updatedBlock = nullptr;
 
-#ifndef GLSLANG_WEB
     // Convert atomic_uint into members of a buffer block
     if (type.isAtomic()) {
         type.setBasicType(EbtUint);
@@ -7083,7 +7426,6 @@ bool TParseContext::vkRelaxedRemapUniformVariable(const TSourceLoc& loc, TString
         growAtomicCounterBlock(bufferBinding, loc, type, identifier, nullptr);
         updatedBlock = atomicCounterBuffers[bufferBinding];
     }
-#endif
 
     if (!updatedBlock) {
         growGlobalUniformBlock(loc, type, identifier, nullptr);
@@ -7114,6 +7456,251 @@ bool TParseContext::vkRelaxedRemapUniformVariable(const TSourceLoc& loc, TString
     return true;
 }
 
+template <typename Function>
+static void ForEachOpaque(const TType& type, const TString& path, Function callback)
+{
+    auto recursion = [&callback](const TType& type, const TString& path, bool skipArray, auto& recursion) -> void {
+        if (!skipArray && type.isArray())
+        {
+            std::vector<int> indices(type.getArraySizes()->getNumDims());
+            for (int flatIndex = 0;
+                 flatIndex < type.getArraySizes()->getCumulativeSize();
+                 ++flatIndex)
+            {
+                TString subscriptPath = path;
+                for (size_t dimIndex = 0; dimIndex < indices.size(); ++dimIndex)
+                {
+                    int index = indices[dimIndex];
+                    subscriptPath.append("[");
+                    subscriptPath.append(String(index));
+                    subscriptPath.append("]");
+                }
+
+                recursion(type, subscriptPath, true, recursion);
+
+                for (size_t dimIndex = 0; dimIndex < indices.size(); ++dimIndex)
+                {
+                    ++indices[dimIndex];
+                    if (indices[dimIndex] < type.getArraySizes()->getDimSize(dimIndex))
+                        break;
+                    else
+                        indices[dimIndex] = 0;
+                }
+            }
+        }
+
+        else if (type.isStruct() && type.containsOpaque())
+        {
+            const TTypeList& types = *type.getStruct();
+            for (const TTypeLoc& typeLoc : types)
+            {
+                TString nextPath = path;
+                nextPath.append(".");
+                nextPath.append(typeLoc.type->getFieldName());
+
+                recursion(*(typeLoc.type), nextPath, false, recursion);
+            }
+        }
+
+        else if (type.isOpaque())
+        {
+            callback(type, path);
+        }
+    };
+
+    recursion(type, path, false, recursion);
+}
+
+void TParseContext::vkRelaxedRemapUniformMembers(const TSourceLoc& loc, const TPublicType& publicType, const TType& type,
+    const TString& identifier)
+{
+    if (!type.isStruct() || !type.containsOpaque())
+        return;
+
+    ForEachOpaque(type, identifier,
+                  [&publicType, &loc, this](const TType& type, const TString& path) {
+                      TArraySizes arraySizes = {};
+                      if (type.getArraySizes()) arraySizes = *type.getArraySizes();
+                      TTypeParameters typeParameters = {};
+                      if (type.getTypeParameters()) typeParameters = *type.getTypeParameters();
+
+                      TPublicType memberType{};
+                      memberType.basicType = type.getBasicType();
+                      memberType.sampler = type.getSampler();
+                      memberType.qualifier = type.getQualifier();
+                      memberType.vectorSize = type.getVectorSize();
+                      memberType.matrixCols = type.getMatrixCols();
+                      memberType.matrixRows = type.getMatrixRows();
+                      memberType.coopmatNV = type.isCoopMatNV();
+                      memberType.coopmatKHR = type.isCoopMatKHR();
+                      memberType.arraySizes = nullptr;
+                      memberType.userDef = nullptr;
+                      memberType.loc = loc;
+                      memberType.typeParameters = (type.getTypeParameters() ? &typeParameters : nullptr);
+                      memberType.spirvType = nullptr;
+
+                      memberType.qualifier.storage = publicType.qualifier.storage;
+                      memberType.shaderQualifiers = publicType.shaderQualifiers;
+
+                      TString& structMemberName = *NewPoolTString(path.c_str()); // A copy is required due to declareVariable() signature.
+                      declareVariable(loc, structMemberName, memberType, nullptr, nullptr);
+                  });
+}
+
+void TParseContext::vkRelaxedRemapFunctionParameter(TFunction* function, TParameter& param, std::vector<int>* newParams)
+{
+    function->addParameter(param);
+
+    if (!param.type->isStruct() || !param.type->containsOpaque())
+        return;
+
+    ForEachOpaque(*param.type, (param.name ? *param.name : param.type->getFieldName()),
+                  [function, param, newParams](const TType& type, const TString& path) {
+                      TString* memberName = NewPoolTString(path.c_str());
+
+                      TType* memberType = new TType();
+                      memberType->shallowCopy(type);
+                      memberType->getQualifier().storage = param.type->getQualifier().storage;
+                      memberType->clearArraySizes();
+
+                      TParameter memberParam = {};
+                      memberParam.name = memberName;
+                      memberParam.type = memberType;
+                      memberParam.defaultValue = nullptr;
+                      function->addParameter(memberParam);
+                      if (newParams)
+                          newParams->push_back(function->getParamCount()-1);
+                  });
+}
+
+//
+// Generates a valid GLSL dereferencing string for the input TIntermNode
+//
+struct AccessChainTraverser : public TIntermTraverser {
+    AccessChainTraverser() : TIntermTraverser(false, false, true)
+    {}
+
+    TString path = "";
+
+    bool visitBinary(TVisit, TIntermBinary* binary) override {
+        if (binary->getOp() == EOpIndexDirectStruct)
+        {
+            const TTypeList& members = *binary->getLeft()->getType().getStruct();
+            const TTypeLoc& member =
+                members[binary->getRight()->getAsConstantUnion()->getConstArray()[0].getIConst()];
+            TString memberName = member.type->getFieldName();
+
+            if (path != "")
+                path.append(".");
+
+            path.append(memberName);
+        }
+
+        if (binary->getOp() == EOpIndexDirect)
+        {
+            const TConstUnionArray& indices = binary->getRight()->getAsConstantUnion()->getConstArray();
+            for (int index = 0; index < indices.size(); ++index)
+            {
+                path.append("[");
+                path.append(String(indices[index].getIConst()));
+                path.append("]");
+            }
+        }
+
+        return true;
+    }
+
+    void visitSymbol(TIntermSymbol* symbol) override {
+        if (!IsAnonymous(symbol->getName()))
+            path.append(symbol->getName());
+    }
+};
+
+TIntermNode* TParseContext::vkRelaxedRemapFunctionArgument(const TSourceLoc& loc, TFunction* function, TIntermTyped* intermTyped)
+{
+    AccessChainTraverser accessChainTraverser{};
+    intermTyped->traverse(&accessChainTraverser);
+
+    TParameter param = { NewPoolTString(accessChainTraverser.path.c_str()), new TType };
+    param.type->shallowCopy(intermTyped->getType());
+
+    std::vector<int> newParams = {};
+    vkRelaxedRemapFunctionParameter(function, param, &newParams);
+
+    if (intermTyped->getType().isOpaque())
+    {
+        TIntermNode* remappedArgument = intermTyped;
+        {
+            TIntermSymbol* intermSymbol = nullptr;
+            TSymbol* symbol = symbolTable.find(*param.name);
+            if (symbol && symbol->getAsVariable())
+                intermSymbol = intermediate.addSymbol(*symbol->getAsVariable(), loc);
+            else
+            {
+                TVariable* variable = new TVariable(param.name, *param.type);
+                intermSymbol = intermediate.addSymbol(*variable, loc);
+            }
+
+            remappedArgument = intermSymbol;
+        }
+
+        return remappedArgument;
+    }
+    else if (!(intermTyped->isStruct() && intermTyped->getType().containsOpaque()))
+        return intermTyped;
+    else
+    {
+        TIntermNode* remappedArgument = intermTyped;
+        {
+            TSymbol* symbol = symbolTable.find(*param.name);
+            if (symbol && symbol->getAsVariable())
+                remappedArgument = intermediate.addSymbol(*symbol->getAsVariable(), loc);
+        }
+
+        if (!newParams.empty())
+            remappedArgument = intermediate.makeAggregate(remappedArgument, loc);
+
+        for (int paramIndex : newParams)
+        {
+            TParameter& newParam = function->operator[](paramIndex);
+            TIntermSymbol* intermSymbol = nullptr;
+            TSymbol* symbol = symbolTable.find(*newParam.name);
+            if (symbol && symbol->getAsVariable())
+                intermSymbol = intermediate.addSymbol(*symbol->getAsVariable(), loc);
+            else
+            {
+                TVariable* variable = new TVariable(newParam.name, *newParam.type);
+                intermSymbol = intermediate.addSymbol(*variable, loc);
+            }
+
+            remappedArgument = intermediate.growAggregate(remappedArgument, intermSymbol);
+        }
+
+        return remappedArgument;
+    }
+}
+
+TIntermTyped* TParseContext::vkRelaxedRemapDotDereference(const TSourceLoc&, TIntermTyped& base, const TType& member,
+    const TString& identifier)
+{
+    if (!member.isOpaque())
+        return &base;
+
+    AccessChainTraverser traverser{};
+    base.traverse(&traverser);
+    if (!traverser.path.empty())
+        traverser.path.append(".");
+    traverser.path.append(identifier);
+
+    const TSymbol* symbol = symbolTable.find(traverser.path);
+    if (!symbol)
+        return &base;
+
+    TIntermTyped* result = intermediate.addSymbol(*symbol->getAsVariable());
+    result->setType(symbol->getType());
+    return result;
+}
+
 //
 // Do everything necessary to handle a variable (non-block) declaration.
 // Either redeclaring a variable, or making a new one, updating the symbol
@@ -7138,32 +7725,49 @@ TIntermNode* TParseContext::declareVariable(const TSourceLoc& loc, TString& iden
     if (initializer) {
         if (type.getBasicType() == EbtRayQuery) {
             error(loc, "ray queries can only be initialized by using the rayQueryInitializeEXT intrinsic:", "=", identifier.c_str());
+        } else if (type.getBasicType() == EbtHitObjectNV) {
+            error(loc, "hit objects cannot be initialized using initializers", "=", identifier.c_str());
         }
+
     }
 
-    if (type.isCoopMat()) {
+    if (type.isCoopMatKHR()) {
         intermediate.setUseVulkanMemoryModel();
         intermediate.setUseStorageBuffer();
 
-        if (!publicType.typeParameters || publicType.typeParameters->getNumDims() != 4) {
+        if (!publicType.typeParameters || !publicType.typeParameters->arraySizes ||
+            publicType.typeParameters->arraySizes->getNumDims() != 3) {
+            error(loc, "unexpected number type parameters", identifier.c_str(), "");
+        }
+        if (publicType.typeParameters) {
+            if (!isTypeFloat(publicType.typeParameters->basicType) && !isTypeInt(publicType.typeParameters->basicType)) {
+                error(loc, "expected 8, 16, 32, or 64 bit signed or unsigned integer or 16, 32, or 64 bit float type", identifier.c_str(), "");
+            }
+        }
+    }
+    else if (type.isCoopMatNV()) {
+        intermediate.setUseVulkanMemoryModel();
+        intermediate.setUseStorageBuffer();
+
+        if (!publicType.typeParameters || publicType.typeParameters->arraySizes->getNumDims() != 4) {
             error(loc, "expected four type parameters", identifier.c_str(), "");
         }
         if (publicType.typeParameters) {
             if (isTypeFloat(publicType.basicType) &&
-                publicType.typeParameters->getDimSize(0) != 16 &&
-                publicType.typeParameters->getDimSize(0) != 32 &&
-                publicType.typeParameters->getDimSize(0) != 64) {
+                publicType.typeParameters->arraySizes->getDimSize(0) != 16 &&
+                publicType.typeParameters->arraySizes->getDimSize(0) != 32 &&
+                publicType.typeParameters->arraySizes->getDimSize(0) != 64) {
                 error(loc, "expected 16, 32, or 64 bits for first type parameter", identifier.c_str(), "");
             }
             if (isTypeInt(publicType.basicType) &&
-                publicType.typeParameters->getDimSize(0) != 8 &&
-                publicType.typeParameters->getDimSize(0) != 32) {
-                error(loc, "expected 8 or 32 bits for first type parameter", identifier.c_str(), "");
+                publicType.typeParameters->arraySizes->getDimSize(0) != 8 &&
+                publicType.typeParameters->arraySizes->getDimSize(0) != 16 &&
+                publicType.typeParameters->arraySizes->getDimSize(0) != 32) {
+                error(loc, "expected 8, 16, or 32 bits for first type parameter", identifier.c_str(), "");
             }
         }
-
     } else {
-        if (publicType.typeParameters && publicType.typeParameters->getNumDims() != 0) {
+        if (publicType.typeParameters && publicType.typeParameters->arraySizes->getNumDims() != 0) {
             error(loc, "unexpected type parameters", identifier.c_str(), "");
         }
     }
@@ -7178,11 +7782,9 @@ TIntermNode* TParseContext::declareVariable(const TSourceLoc& loc, TString& iden
 
     samplerCheck(loc, type, identifier, initializer);
     transparentOpaqueCheck(loc, type, identifier);
-#ifndef GLSLANG_WEB
     atomicUintCheck(loc, type, identifier);
     accStructCheck(loc, type, identifier);
     checkAndResizeMeshViewDim(loc, type, /*isBlockMember*/ false);
-#endif
     if (type.getQualifier().storage == EvqConst && type.containsReference()) {
         error(loc, "variables with reference type can't have qualifier 'const'", "qualifier", "");
     }
@@ -7196,6 +7798,8 @@ TIntermNode* TParseContext::declareVariable(const TSourceLoc& loc, TString& iden
             requireInt8Arithmetic(loc, "qualifier", "(u)int8 types can only be in uniform block or buffer storage");
     }
 
+    if (type.getQualifier().storage == EvqtaskPayloadSharedEXT)
+        intermediate.addTaskPayloadEXTCount();
     if (type.getQualifier().storage == EvqShared && type.containsCoopMat())
         error(loc, "qualifier", "Cooperative matrix types must not be used in shared memory", "");
 
@@ -7219,6 +7823,8 @@ TIntermNode* TParseContext::declareVariable(const TSourceLoc& loc, TString& iden
         error(loc, "can only apply origin_upper_left and pixel_center_origin to gl_FragCoord", "layout qualifier", "");
     if (identifier != "gl_FragDepth" && publicType.shaderQualifiers.getDepth() != EldNone)
         error(loc, "can only apply depth layout to gl_FragDepth", "layout qualifier", "");
+    if (identifier != "gl_FragStencilRefARB" && publicType.shaderQualifiers.getStencil() != ElsNone)
+        error(loc, "can only apply depth layout to gl_FragStencilRefARB", "layout qualifier", "");
 
     // Check for redeclaration of built-ins and/or attempting to declare a reserved name
     TSymbol* symbol = redeclareBuiltinVariable(loc, identifier, type.getQualifier(), publicType.shaderQualifiers);
@@ -7281,14 +7887,12 @@ TIntermNode* TParseContext::declareVariable(const TSourceLoc& loc, TString& iden
 // Pick up global defaults from the provide global defaults into dst.
 void TParseContext::inheritGlobalDefaults(TQualifier& dst) const
 {
-#ifndef GLSLANG_WEB
     if (dst.storage == EvqVaryingOut) {
         if (! dst.hasStream() && language == EShLangGeometry)
             dst.layoutStream = globalOutputDefaults.layoutStream;
         if (! dst.hasXfbBuffer())
             dst.layoutXfbBuffer = globalOutputDefaults.layoutXfbBuffer;
     }
-#endif
 }
 
 //
@@ -7317,9 +7921,7 @@ TVariable* TParseContext::declareNonArray(const TSourceLoc& loc, const TString& 
     // make a new variable
     TVariable* variable = new TVariable(&identifier, type);
 
-#ifndef GLSLANG_WEB
     ioArrayCheck(loc, type, identifier);
-#endif
 
     // add variable to symbol table
     if (symbolTable.insert(*variable)) {
@@ -7396,9 +7998,7 @@ TIntermNode* TParseContext::executeInitializer(const TSourceLoc& loc, TIntermTyp
     TType skeletalType;
     skeletalType.shallowCopy(variable->getType());
     skeletalType.getQualifier().makeTemporary();
-#ifndef GLSLANG_WEB
     initializer = convertInitializerList(loc, skeletalType, initializer);
-#endif
     if (! initializer) {
         // error recovery; don't leave const without constant values
         if (qualifier == EvqConst)
@@ -7426,14 +8026,14 @@ TIntermNode* TParseContext::executeInitializer(const TSourceLoc& loc, TIntermTyp
     // Uniforms require a compile-time constant initializer
     if (qualifier == EvqUniform && ! initializer->getType().getQualifier().isFrontEndConstant()) {
         error(loc, "uniform initializers must be constant", "=", "'%s'",
-              variable->getType().getCompleteString().c_str());
+              variable->getType().getCompleteString(intermediate.getEnhancedMsgs()).c_str());
         variable->getWritableType().getQualifier().makeTemporary();
         return nullptr;
     }
     // Global consts require a constant initializer (specialization constant is okay)
     if (qualifier == EvqConst && symbolTable.atGlobalLevel() && ! initializer->getType().getQualifier().isConstant()) {
         error(loc, "global const initializers must be constant", "=", "'%s'",
-              variable->getType().getCompleteString().c_str());
+              variable->getType().getCompleteString(intermediate.getEnhancedMsgs()).c_str());
         variable->getWritableType().getQualifier().makeTemporary();
         return nullptr;
     }
@@ -7496,7 +8096,7 @@ TIntermNode* TParseContext::executeInitializer(const TSourceLoc& loc, TIntermTyp
         TIntermSymbol* intermSymbol = intermediate.addSymbol(*variable, loc);
         TIntermTyped* initNode = intermediate.addAssign(EOpAssign, intermSymbol, initializer, loc);
         if (! initNode)
-            assignError(loc, "=", intermSymbol->getCompleteString(), initializer->getCompleteString());
+            assignError(loc, "=", intermSymbol->getCompleteString(intermediate.getEnhancedMsgs()), initializer->getCompleteString(intermediate.getEnhancedMsgs()));
 
         return initNode;
     }
@@ -7567,7 +8167,7 @@ TIntermTyped* TParseContext::convertInitializerList(const TSourceLoc& loc, const
         }
     } else if (type.isMatrix()) {
         if (type.getMatrixCols() != (int)initList->getSequence().size()) {
-            error(loc, "wrong number of matrix columns:", "initializer list", type.getCompleteString().c_str());
+            error(loc, "wrong number of matrix columns:", "initializer list", type.getCompleteString(intermediate.getEnhancedMsgs()).c_str());
             return nullptr;
         }
         TType vectorType(type, 0); // dereferenced type
@@ -7578,20 +8178,20 @@ TIntermTyped* TParseContext::convertInitializerList(const TSourceLoc& loc, const
         }
     } else if (type.isVector()) {
         if (type.getVectorSize() != (int)initList->getSequence().size()) {
-            error(loc, "wrong vector size (or rows in a matrix column):", "initializer list", type.getCompleteString().c_str());
+            error(loc, "wrong vector size (or rows in a matrix column):", "initializer list", type.getCompleteString(intermediate.getEnhancedMsgs()).c_str());
             return nullptr;
         }
         TBasicType destType = type.getBasicType();
         for (int i = 0; i < type.getVectorSize(); ++i) {
             TBasicType initType = initList->getSequence()[i]->getAsTyped()->getBasicType();
             if (destType != initType && !intermediate.canImplicitlyPromote(initType, destType)) {
-                error(loc, "type mismatch in initializer list", "initializer list", type.getCompleteString().c_str());
+                error(loc, "type mismatch in initializer list", "initializer list", type.getCompleteString(intermediate.getEnhancedMsgs()).c_str());
                 return nullptr;
             }
 
         }
     } else {
-        error(loc, "unexpected initializer-list type:", "initializer list", type.getCompleteString().c_str());
+        error(loc, "unexpected initializer-list type:", "initializer list", type.getCompleteString(intermediate.getEnhancedMsgs()).c_str());
         return nullptr;
     }
 
@@ -7626,12 +8226,14 @@ TIntermTyped* TParseContext::addConstructor(const TSourceLoc& loc, TIntermNode* 
     // Combined texture-sampler constructors are completely semantic checked
     // in constructorTextureSamplerError()
     if (op == EOpConstructTextureSampler) {
-        if (aggrNode->getSequence()[1]->getAsTyped()->getType().getSampler().shadow) {
-            // Transfer depth into the texture (SPIR-V image) type, as a hint
-            // for tools to know this texture/image is a depth image.
-            aggrNode->getSequence()[0]->getAsTyped()->getWritableType().getSampler().shadow = true;
+        if (aggrNode != nullptr) {
+            if (aggrNode->getSequence()[1]->getAsTyped()->getType().getSampler().shadow) {
+                // Transfer depth into the texture (SPIR-V image) type, as a hint
+                // for tools to know this texture/image is a depth image.
+                aggrNode->getSequence()[0]->getAsTyped()->getWritableType().getSampler().shadow = true;
+            }
+            return intermediate.setAggregateOperator(aggrNode, op, type, loc);
         }
-        return intermediate.setAggregateOperator(aggrNode, op, type, loc);
     }
 
     TTypeList::const_iterator memberTypes;
@@ -7766,6 +8368,16 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
             TIntermTyped* newNode = intermediate.addBuiltInFunctionCall(node->getLoc(), EOpConvPtrToUvec2, true, node,
                 type);
             return newNode;
+        } else if (node->getType().getBasicType() == EbtSampler) {
+            requireExtensions(loc, 1, &E_GL_ARB_bindless_texture, "sampler conversion to uvec2");
+            // force the basic type of the constructor param to uvec2, otherwise spv builder will
+            // report some errors
+            TIntermTyped* newSrcNode = intermediate.createConversion(EbtUint, node);
+            newSrcNode->getAsTyped()->getWritableType().setVectorSize(2);
+
+            TIntermTyped* newNode =
+                intermediate.addBuiltInFunctionCall(node->getLoc(), EOpConstructUVec2, false, newSrcNode, type);
+            return newNode;
         }
     case EOpConstructUVec3:
     case EOpConstructUVec4:
@@ -7779,9 +8391,15 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
     case EOpConstructBool:
         basicOp = EOpConstructBool;
         break;
-
-#ifndef GLSLANG_WEB
-
+    case EOpConstructTextureSampler:
+        if ((node->getType().getBasicType() == EbtUint || node->getType().getBasicType() == EbtInt) &&
+            node->getType().getVectorSize() == 2) {
+            requireExtensions(loc, 1, &E_GL_ARB_bindless_texture, "ivec2/uvec2 convert to texture handle");
+            // No matter ivec2 or uvec2, Set EOpPackUint2x32 just to generate an opBitcast op code
+            TIntermTyped* newNode =
+                intermediate.addBuiltInFunctionCall(node->getLoc(), EOpPackUint2x32, true, node, type);
+            return newNode;
+        }
     case EOpConstructDVec2:
     case EOpConstructDVec3:
     case EOpConstructDVec4:
@@ -7967,14 +8585,18 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
             return nullptr;
         }
 
-    case EOpConstructCooperativeMatrix:
+    case EOpConstructCooperativeMatrixNV:
+    case EOpConstructCooperativeMatrixKHR:
+        if (node->getType() == type) {
+            return node;
+        }
         if (!node->getType().isCoopMat()) {
             if (type.getBasicType() != node->getType().getBasicType()) {
                 node = intermediate.addConversion(type.getBasicType(), node);
                 if (node == nullptr)
                     return nullptr;
             }
-            node = intermediate.setAggregateOperator(node, EOpConstructCooperativeMatrix, type, node->getLoc());
+            node = intermediate.setAggregateOperator(node, op, type, node->getLoc());
         } else {
             TOperator op = EOpNull;
             switch (type.getBasicType()) {
@@ -7987,6 +8609,8 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
                     case EbtFloat16: op = EOpConvFloat16ToInt;  break;
                     case EbtUint8:   op = EOpConvUint8ToInt;    break;
                     case EbtInt8:    op = EOpConvInt8ToInt;     break;
+                    case EbtUint16:  op = EOpConvUint16ToInt;   break;
+                    case EbtInt16:   op = EOpConvInt16ToInt;    break;
                     case EbtUint:    op = EOpConvUintToInt;     break;
                     default: assert(0);
                 }
@@ -7997,8 +8621,33 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
                     case EbtFloat16: op = EOpConvFloat16ToUint;  break;
                     case EbtUint8:   op = EOpConvUint8ToUint;    break;
                     case EbtInt8:    op = EOpConvInt8ToUint;     break;
+                    case EbtUint16:  op = EOpConvUint16ToUint;   break;
+                    case EbtInt16:   op = EOpConvInt16ToUint;    break;
                     case EbtInt:     op = EOpConvIntToUint;      break;
-                    case EbtUint:    op = EOpConvUintToInt8;     break;
+                    default: assert(0);
+                }
+                break;
+            case EbtInt16:
+                switch (node->getType().getBasicType()) {
+                    case EbtFloat:   op = EOpConvFloatToInt16;    break;
+                    case EbtFloat16: op = EOpConvFloat16ToInt16;  break;
+                    case EbtUint8:   op = EOpConvUint8ToInt16;    break;
+                    case EbtInt8:    op = EOpConvInt8ToInt16;     break;
+                    case EbtUint16:  op = EOpConvUint16ToInt16;   break;
+                    case EbtInt:     op = EOpConvIntToInt16;      break;
+                    case EbtUint:    op = EOpConvUintToInt16;     break;
+                    default: assert(0);
+                }
+                break;
+            case EbtUint16:
+                switch (node->getType().getBasicType()) {
+                    case EbtFloat:   op = EOpConvFloatToUint16;   break;
+                    case EbtFloat16: op = EOpConvFloat16ToUint16; break;
+                    case EbtUint8:   op = EOpConvUint8ToUint16;   break;
+                    case EbtInt8:    op = EOpConvInt8ToUint16;    break;
+                    case EbtInt16:   op = EOpConvInt16ToUint16;   break;
+                    case EbtInt:     op = EOpConvIntToUint16;     break;
+                    case EbtUint:    op = EOpConvUintToUint16;    break;
                     default: assert(0);
                 }
                 break;
@@ -8007,6 +8656,8 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
                     case EbtFloat:   op = EOpConvFloatToInt8;    break;
                     case EbtFloat16: op = EOpConvFloat16ToInt8;  break;
                     case EbtUint8:   op = EOpConvUint8ToInt8;    break;
+                    case EbtInt16:   op = EOpConvInt16ToInt8;    break;
+                    case EbtUint16:  op = EOpConvUint16ToInt8;   break;
                     case EbtInt:     op = EOpConvIntToInt8;      break;
                     case EbtUint:    op = EOpConvUintToInt8;     break;
                     default: assert(0);
@@ -8017,6 +8668,8 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
                     case EbtFloat:   op = EOpConvFloatToUint8;   break;
                     case EbtFloat16: op = EOpConvFloat16ToUint8; break;
                     case EbtInt8:    op = EOpConvInt8ToUint8;    break;
+                    case EbtInt16:   op = EOpConvInt16ToUint8;   break;
+                    case EbtUint16:  op = EOpConvUint16ToUint8;  break;
                     case EbtInt:     op = EOpConvIntToUint8;     break;
                     case EbtUint:    op = EOpConvUintToUint8;    break;
                     default: assert(0);
@@ -8027,6 +8680,8 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
                     case EbtFloat16: op = EOpConvFloat16ToFloat;  break;
                     case EbtInt8:    op = EOpConvInt8ToFloat;     break;
                     case EbtUint8:   op = EOpConvUint8ToFloat;    break;
+                    case EbtInt16:   op = EOpConvInt16ToFloat;    break;
+                    case EbtUint16:  op = EOpConvUint16ToFloat;   break;
                     case EbtInt:     op = EOpConvIntToFloat;      break;
                     case EbtUint:    op = EOpConvUintToFloat;     break;
                     default: assert(0);
@@ -8037,6 +8692,8 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
                     case EbtFloat:  op = EOpConvFloatToFloat16;  break;
                     case EbtInt8:   op = EOpConvInt8ToFloat16;   break;
                     case EbtUint8:  op = EOpConvUint8ToFloat16;  break;
+                    case EbtInt16:  op = EOpConvInt16ToFloat16;   break;
+                    case EbtUint16: op = EOpConvUint16ToFloat16;  break;
                     case EbtInt:    op = EOpConvIntToFloat16;    break;
                     case EbtUint:   op = EOpConvUintToFloat16;   break;
                     default: assert(0);
@@ -8055,17 +8712,16 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
     case EOpConstructAccStruct:
         if ((node->getType().isScalar() && node->getType().getBasicType() == EbtUint64)) {
             // construct acceleration structure from uint64
-            requireExtensions(loc, 1, &E_GL_EXT_ray_tracing, "uint64_t conversion to acclerationStructureEXT");
+            requireExtensions(loc, Num_ray_tracing_EXTs, ray_tracing_EXTs, "uint64_t conversion to acclerationStructureEXT");
             return intermediate.addBuiltInFunctionCall(node->getLoc(), EOpConvUint64ToAccStruct, true, node,
                 type);
         } else if (node->getType().isVector() && node->getType().getBasicType() == EbtUint && node->getVectorSize() == 2) {
             // construct acceleration structure from uint64
-            requireExtensions(loc, 1, &E_GL_EXT_ray_tracing, "uvec2 conversion to accelerationStructureEXT");
+            requireExtensions(loc, Num_ray_tracing_EXTs, ray_tracing_EXTs, "uvec2 conversion to accelerationStructureEXT");
             return intermediate.addBuiltInFunctionCall(node->getLoc(), EOpConvUvec2ToAccStruct, true, node,
                 type);
         } else
             return nullptr;
-#endif // GLSLANG_WEB
 
     default:
         error(loc, "unsupported construction", "", "");
@@ -8099,8 +8755,9 @@ TIntermTyped* TParseContext::constructAggregate(TIntermNode* node, const TType& 
 {
     TIntermTyped* converted = intermediate.addConversion(EOpConstructStruct, type, node->getAsTyped());
     if (! converted || converted->getType() != type) {
+        bool enhanced = intermediate.getEnhancedMsgs();
         error(loc, "", "constructor", "cannot convert parameter %d from '%s' to '%s'", paramCount,
-              node->getAsTyped()->getType().getCompleteString().c_str(), type.getCompleteString().c_str());
+              node->getAsTyped()->getType().getCompleteString(enhanced).c_str(), type.getCompleteString(enhanced).c_str());
 
         return nullptr;
     }
@@ -8111,7 +8768,6 @@ TIntermTyped* TParseContext::constructAggregate(TIntermNode* node, const TType& 
 // If a memory qualifier is present in 'to', also make it present in 'from'.
 void TParseContext::inheritMemoryQualifiers(const TQualifier& from, TQualifier& to)
 {
-#ifndef GLSLANG_WEB
     if (from.isReadOnly())
         to.readonly = from.readonly;
     if (from.isWriteOnly())
@@ -8122,7 +8778,30 @@ void TParseContext::inheritMemoryQualifiers(const TQualifier& from, TQualifier& 
         to.volatil = from.volatil;
     if (from.restrict)
         to.restrict = from.restrict;
-#endif
+}
+
+//
+// Update qualifier layoutBindlessImage & layoutBindlessSampler on block member
+//
+void TParseContext::updateBindlessQualifier(TType& memberType)
+{
+    if (memberType.containsSampler()) {
+        if (memberType.isStruct()) {
+            TTypeList* typeList = memberType.getWritableStruct();
+            for (unsigned int member = 0; member < typeList->size(); ++member) {
+                TType* subMemberType = (*typeList)[member].type;
+                updateBindlessQualifier(*subMemberType);
+            }
+        }
+        else if (memberType.getSampler().isImage()) {
+            intermediate.setBindlessImageMode(currentCaller, AstRefTypeLayout);
+            memberType.getQualifier().layoutBindlessImage = true;
+        }
+        else {
+            intermediate.setBindlessTextureMode(currentCaller, AstRefTypeLayout);
+            memberType.getQualifier().layoutBindlessSampler = true;
+        }
+    }
 }
 
 //
@@ -8151,7 +8830,6 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
             error(memberLoc, "member storage qualifier cannot contradict block storage qualifier", memberType.getFieldName().c_str(), "");
         memberQualifier.storage = currentBlockQualifier.storage;
         globalQualifierFixCheck(memberLoc, memberQualifier);
-#ifndef GLSLANG_WEB
         inheritMemoryQualifiers(currentBlockQualifier, memberQualifier);
         if (currentBlockQualifier.perPrimitiveNV)
             memberQualifier.perPrimitiveNV = currentBlockQualifier.perPrimitiveNV;
@@ -8159,11 +8837,12 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
             memberQualifier.perViewNV = currentBlockQualifier.perViewNV;
         if (currentBlockQualifier.perTaskNV)
             memberQualifier.perTaskNV = currentBlockQualifier.perTaskNV;
+        if (currentBlockQualifier.storage == EvqtaskPayloadSharedEXT)
+            memberQualifier.storage = EvqtaskPayloadSharedEXT;
         if (memberQualifier.storage == EvqSpirvStorageClass)
             error(memberLoc, "member cannot have a spirv_storage_class qualifier", memberType.getFieldName().c_str(), "");
-        if (memberQualifier.hasSprivDecorate() && !memberQualifier.getSpirvDecorate().decorateIds.empty())
+        if (memberQualifier.hasSpirvDecorate() && !memberQualifier.getSpirvDecorate().decorateIds.empty())
             error(memberLoc, "member cannot have a spirv_decorate_id qualifier", memberType.getFieldName().c_str(), "");
-#endif
         if ((currentBlockQualifier.storage == EvqUniform || currentBlockQualifier.storage == EvqBuffer) && (memberQualifier.isInterpolation() || memberQualifier.isAuxiliary()))
             error(memberLoc, "member of uniform or buffer block cannot have an auxiliary or interpolation qualifier", memberType.getFieldName().c_str(), "");
         if (memberType.isArray())
@@ -8175,8 +8854,13 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
             }
         }
 
-        if (memberType.containsOpaque())
-            error(memberLoc, "member of block cannot be or contain a sampler, image, or atomic_uint type", typeList[member].type->getFieldName().c_str(), "");
+        // For bindless texture, sampler can be declared as uniform/storage block member,
+        if (memberType.containsOpaque()) {
+            if (memberType.containsSampler() && extensionTurnedOn(E_GL_ARB_bindless_texture))
+                updateBindlessQualifier(memberType);
+            else
+                error(memberLoc, "member of block cannot be or contain a sampler, image, or atomic_uint type", typeList[member].type->getFieldName().c_str(), "");
+            }
 
         if (memberType.containsCoopMat())
             error(memberLoc, "member of block cannot be or contain a cooperative matrix type", typeList[member].type->getFieldName().c_str(), "");
@@ -8238,7 +8922,6 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
     for (unsigned int member = 0; member < typeList.size(); ++member) {
         TQualifier& memberQualifier = typeList[member].type->getQualifier();
         const TSourceLoc& memberLoc = typeList[member].loc;
-#ifndef GLSLANG_WEB
         if (memberQualifier.hasStream()) {
             if (defaultQualification.layoutStream != memberQualifier.layoutStream)
                 error(memberLoc, "member cannot contradict block", "stream", "");
@@ -8252,14 +8935,12 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
             if (defaultQualification.layoutXfbBuffer != memberQualifier.layoutXfbBuffer)
                 error(memberLoc, "member cannot contradict block (or what block inherited from global)", "xfb_buffer", "");
         }
-#endif
 
         if (memberQualifier.hasPacking())
             error(memberLoc, "member of block cannot have a packing layout qualifier", typeList[member].type->getFieldName().c_str(), "");
         if (memberQualifier.hasLocation()) {
             const char* feature = "location on block member";
             switch (currentBlockQualifier.storage) {
-#ifndef GLSLANG_WEB
             case EvqVaryingIn:
             case EvqVaryingOut:
                 requireProfile(memberLoc, ECoreProfile | ECompatibilityProfile | EEsProfile, feature);
@@ -8267,7 +8948,6 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
                 profileRequires(memberLoc, EEsProfile, 320, Num_AEP_shader_io_blocks, AEP_shader_io_blocks, feature);
                 memberWithLocation = true;
                 break;
-#endif
             default:
                 error(memberLoc, "can only use in an in/out block", feature, "");
                 break;
@@ -8295,7 +8975,6 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
 
     layoutMemberLocationArrayCheck(loc, memberWithLocation, arraySizes);
 
-#ifndef GLSLANG_WEB
     // Ensure that the block has an XfbBuffer assigned. This is needed
     // because if the block has a XfbOffset assigned, then it is
     // assumed that it has implicitly assigned the current global
@@ -8305,7 +8984,6 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
        if (!currentBlockQualifier.hasXfbBuffer() && currentBlockQualifier.hasXfbOffset())
           currentBlockQualifier.layoutXfbBuffer = globalOutputDefaults.layoutXfbBuffer;
     }
-#endif
 
     // Process the members
     fixBlockLocations(loc, currentBlockQualifier, typeList, memberWithLocation, memberWithoutLocation);
@@ -8316,13 +8994,11 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
     for (unsigned int member = 0; member < typeList.size(); ++member)
         layoutTypeCheck(typeList[member].loc, *typeList[member].type);
 
-#ifndef GLSLANG_WEB
     if (memberWithPerViewQualifier) {
         for (unsigned int member = 0; member < typeList.size(); ++member) {
             checkAndResizeMeshViewDim(typeList[member].loc, *typeList[member].type, /*isBlockMember*/ true);
         }
     }
-#endif
 
     // reverse merge, so that currentBlockQualifier now has all layout information
     // (can't use defaultQualification directly, it's missing other non-layout-default-class qualifiers)
@@ -8336,7 +9012,6 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
     if (arraySizes != nullptr)
         blockType.transferArraySizes(arraySizes);
 
-#ifndef GLSLANG_WEB
     if (arraySizes == nullptr)
         ioArrayCheck(loc, blockType, instanceName ? *instanceName : *blockName);
     if (currentBlockQualifier.hasBufferReference()) {
@@ -8363,9 +9038,7 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
         if (!instanceName) {
             return;
         }
-    } else
-#endif
-    {
+    } else {
         //
         // Don't make a user-defined type out of block name; that will cause an error
         // if the same block name gets reused in a different interface.
@@ -8413,14 +9086,12 @@ void TParseContext::declareBlock(const TSourceLoc& loc, TTypeList& typeList, con
     // Check for general layout qualifier errors
     layoutObjectCheck(loc, variable);
 
-#ifndef GLSLANG_WEB
     // fix up
     if (isIoResizeArray(blockType)) {
         ioArraySymbolResizeList.push_back(&variable);
         checkIoArraysConsistency(loc, true);
     } else
         fixIoArraySize(loc, variable.getWritableType());
-#endif
 
     // Save it in the AST for linker use.
     trackLinkage(variable);
@@ -8459,23 +9130,23 @@ void TParseContext::blockStageIoCheck(const TSourceLoc& loc, const TQualifier& q
         // It is a compile-time error to have an input block in a vertex shader or an output block in a fragment shader
         // "Compute shaders do not permit user-defined input variables..."
         requireStage(loc, (EShLanguageMask)(EShLangTessControlMask|EShLangTessEvaluationMask|EShLangGeometryMask|
-            EShLangFragmentMask|EShLangMeshNVMask), "input block");
+            EShLangFragmentMask|EShLangMeshMask), "input block");
         if (language == EShLangFragment) {
             profileRequires(loc, EEsProfile, 320, Num_AEP_shader_io_blocks, AEP_shader_io_blocks, "fragment input block");
-        } else if (language == EShLangMeshNV && ! qualifier.isTaskMemory()) {
+        } else if (language == EShLangMesh && ! qualifier.isTaskMemory()) {
             error(loc, "input blocks cannot be used in a mesh shader", "out", "");
         }
         break;
     case EvqVaryingOut:
         profileRequires(loc, ~EEsProfile, 150, E_GL_ARB_separate_shader_objects, "output block");
         requireStage(loc, (EShLanguageMask)(EShLangVertexMask|EShLangTessControlMask|EShLangTessEvaluationMask|
-            EShLangGeometryMask|EShLangMeshNVMask|EShLangTaskNVMask), "output block");
+            EShLangGeometryMask|EShLangMeshMask|EShLangTaskMask), "output block");
         // ES 310 can have a block before shader_io is turned on, so skip this test for built-ins
         if (language == EShLangVertex && ! parsingBuiltins) {
             profileRequires(loc, EEsProfile, 320, Num_AEP_shader_io_blocks, AEP_shader_io_blocks, "vertex output block");
-        } else if (language == EShLangMeshNV && qualifier.isTaskMemory()) {
+        } else if (language == EShLangMesh && qualifier.isTaskMemory()) {
             error(loc, "can only use on input blocks in mesh shader", "taskNV", "");
-        } else if (language == EShLangTaskNV && ! qualifier.isTaskMemory()) {
+        } else if (language == EShLangTask && ! qualifier.isTaskMemory()) {
             error(loc, "output blocks cannot be used in a task shader", "out", "");
         }
         break;
@@ -8485,7 +9156,6 @@ void TParseContext::blockStageIoCheck(const TSourceLoc& loc, const TQualifier& q
         }
         profileRequires(loc, EEsProfile | ECoreProfile | ECompatibilityProfile, 0, E_GL_EXT_shared_memory_block, "shared block");
         break;
-#ifndef GLSLANG_WEB
     case EvqPayload:
         profileRequires(loc, ~EEsProfile, 460, 2, extsrt, "rayPayloadNV block");
         requireStage(loc, (EShLanguageMask)(EShLangRayGenMask | EShLangAnyHitMask | EShLangClosestHitMask | EShLangMissMask),
@@ -8509,7 +9179,10 @@ void TParseContext::blockStageIoCheck(const TSourceLoc& loc, const TQualifier& q
         profileRequires(loc, ~EEsProfile, 460, 2, extsrt, "callableDataInNV block");
         requireStage(loc, (EShLanguageMask)(EShLangCallableMask), "callableDataInNV block");
         break;
-#endif
+    case EvqHitObjectAttrNV:
+        profileRequires(loc, ~EEsProfile, 460, E_GL_NV_shader_invocation_reorder, "hitObjectAttributeNV block");
+        requireStage(loc, (EShLanguageMask)(EShLangRayGenMask | EShLangClosestHitMask | EShLangMissMask), "hitObjectAttributeNV block");
+        break;
     default:
         error(loc, "only uniform, buffer, in, or out blocks are supported", blockName->c_str(), "");
         break;
@@ -8598,7 +9271,6 @@ void TParseContext::fixBlockLocations(const TSourceLoc& loc, TQualifier& qualifi
 
 void TParseContext::fixXfbOffsets(TQualifier& qualifier, TTypeList& typeList)
 {
-#ifndef GLSLANG_WEB
     // "If a block is qualified with xfb_offset, all its
     // members are assigned transform feedback buffer offsets. If a block is not qualified with xfb_offset, any
     // members of that block not qualified with an xfb_offset will not be assigned transform feedback buffer
@@ -8632,7 +9304,6 @@ void TParseContext::fixXfbOffsets(TQualifier& qualifier, TTypeList& typeList)
     // The above gave all block members an offset, so we can take it off the block now,
     // which will avoid double counting the offset usage.
     qualifier.layoutXfbOffset = TQualifier::layoutXfbOffsetEnd;
-#endif
 }
 
 // Calculate and save the offset of each block member, using the recursively
@@ -8665,7 +9336,8 @@ void TParseContext::fixBlockUniformOffsets(TQualifier& qualifier, TTypeList& typ
             // "The specified offset must be a multiple
             // of the base alignment of the type of the block member it qualifies, or a compile-time error results."
             if (! IsMultipleOfPow2(memberQualifier.layoutOffset, memberAlignment))
-                error(memberLoc, "must be a multiple of the member's alignment", "offset", "");
+                error(memberLoc, "must be a multiple of the member's alignment", "offset",
+                    "(layout offset = %d | member alignment = %d)", memberQualifier.layoutOffset, memberAlignment);
 
             // GLSL: "It is a compile-time error to specify an offset that is smaller than the offset of the previous
             // member in the block or that lies within the previous member of the block"
@@ -8808,7 +9480,7 @@ void TParseContext::addQualifierToExisting(const TSourceLoc& loc, TQualifier qua
     // TParseContext::declareBlock.
     if (!symbol && qualifier.hasBufferReference()) {
         TTypeList typeList;
-        TType blockType(&typeList, identifier, qualifier);;
+        TType blockType(&typeList, identifier, qualifier);
         TType blockNameType(EbtReference, blockType, identifier);
         TVariable* blockNameVar = new TVariable(&identifier, blockNameType, true);
         if (! symbolTable.insert(*blockNameVar)) {
@@ -8887,9 +9559,8 @@ void TParseContext::invariantCheck(const TSourceLoc& loc, const TQualifier& qual
 //
 void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, const TPublicType& publicType)
 {
-#ifndef GLSLANG_WEB
     if (publicType.shaderQualifiers.vertices != TQualifier::layoutNotSet) {
-        assert(language == EShLangTessControl || language == EShLangGeometry || language == EShLangMeshNV);
+        assert(language == EShLangTessControl || language == EShLangGeometry || language == EShLangMesh);
         const char* id = (language == EShLangTessControl) ? "vertices" : "max_vertices";
 
         if (publicType.qualifier.storage != EvqVaryingOut)
@@ -8901,7 +9572,7 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
             checkIoArraysConsistency(loc);
     }
     if (publicType.shaderQualifiers.primitives != TQualifier::layoutNotSet) {
-        assert(language == EShLangMeshNV);
+        assert(language == EShLangMesh);
         const char* id = "max_primitives";
 
         if (publicType.qualifier.storage != EvqVaryingOut)
@@ -8925,7 +9596,7 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
             case ElgTrianglesAdjacency:
             case ElgQuads:
             case ElgIsolines:
-                if (language == EShLangMeshNV) {
+                if (language == EShLangMesh) {
                     error(loc, "cannot apply to input", TQualifier::getGeometryString(publicType.shaderQualifiers.geometry), "");
                     break;
                 }
@@ -8942,7 +9613,7 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
             switch (publicType.shaderQualifiers.geometry) {
             case ElgLines:
             case ElgTriangles:
-                if (language != EShLangMeshNV) {
+                if (language != EShLangMesh) {
                     error(loc, "cannot apply to 'out'", TQualifier::getGeometryString(publicType.shaderQualifiers.geometry), "");
                     break;
                 }
@@ -8979,7 +9650,7 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
         else
             error(loc, "can only apply to 'in'", "point_mode", "");
     }
-#endif
+
     for (int i = 0; i < 3; ++i) {
         if (publicType.shaderQualifiers.localSizeNotDefault[i]) {
             if (publicType.qualifier.storage == EvqVaryingIn) {
@@ -8996,29 +9667,57 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
                         }
                         if (intermediate.getLocalSize(i) > (unsigned int)max)
                             error(loc, "too large; see gl_MaxComputeWorkGroupSize", "local_size", "");
-                    }
-#ifndef GLSLANG_WEB
-                    else if (language == EShLangMeshNV) {
+                    } else if (language == EShLangMesh) {
                         switch (i) {
-                        case 0: max = resources.maxMeshWorkGroupSizeX_NV; break;
-                        case 1: max = resources.maxMeshWorkGroupSizeY_NV; break;
-                        case 2: max = resources.maxMeshWorkGroupSizeZ_NV; break;
+                        case 0:
+                            max = extensionTurnedOn(E_GL_EXT_mesh_shader) ?
+                                    resources.maxMeshWorkGroupSizeX_EXT :
+                                    resources.maxMeshWorkGroupSizeX_NV;
+                            break;
+                        case 1:
+                            max = extensionTurnedOn(E_GL_EXT_mesh_shader) ?
+                                    resources.maxMeshWorkGroupSizeY_EXT :
+                                    resources.maxMeshWorkGroupSizeY_NV ;
+                            break;
+                        case 2:
+                            max = extensionTurnedOn(E_GL_EXT_mesh_shader) ?
+                                    resources.maxMeshWorkGroupSizeZ_EXT :
+                                    resources.maxMeshWorkGroupSizeZ_NV ;
+                            break;
                         default: break;
                         }
-                        if (intermediate.getLocalSize(i) > (unsigned int)max)
-                            error(loc, "too large; see gl_MaxMeshWorkGroupSizeNV", "local_size", "");
-                    } else if (language == EShLangTaskNV) {
+                        if (intermediate.getLocalSize(i) > (unsigned int)max) {
+                            TString maxsErrtring = "too large, see ";
+                            maxsErrtring.append(extensionTurnedOn(E_GL_EXT_mesh_shader) ?
+                                                    "gl_MaxMeshWorkGroupSizeEXT" : "gl_MaxMeshWorkGroupSizeNV");
+                            error(loc, maxsErrtring.c_str(), "local_size", "");
+                        }
+                    } else if (language == EShLangTask) {
                         switch (i) {
-                        case 0: max = resources.maxTaskWorkGroupSizeX_NV; break;
-                        case 1: max = resources.maxTaskWorkGroupSizeY_NV; break;
-                        case 2: max = resources.maxTaskWorkGroupSizeZ_NV; break;
+                        case 0:
+                            max = extensionTurnedOn(E_GL_EXT_mesh_shader) ?
+                                    resources.maxTaskWorkGroupSizeX_EXT :
+                                    resources.maxTaskWorkGroupSizeX_NV;
+                            break;
+                        case 1:
+                            max = extensionTurnedOn(E_GL_EXT_mesh_shader) ?
+                                    resources.maxTaskWorkGroupSizeY_EXT:
+                                    resources.maxTaskWorkGroupSizeY_NV;
+                            break;
+                        case 2:
+                            max = extensionTurnedOn(E_GL_EXT_mesh_shader) ?
+                                    resources.maxTaskWorkGroupSizeZ_EXT:
+                                    resources.maxTaskWorkGroupSizeZ_NV;
+                            break;
                         default: break;
                         }
-                        if (intermediate.getLocalSize(i) > (unsigned int)max)
-                            error(loc, "too large; see gl_MaxTaskWorkGroupSizeNV", "local_size", "");
-                    }
-#endif
-                    else {
+                        if (intermediate.getLocalSize(i) > (unsigned int)max) {
+                            TString maxsErrtring = "too large, see ";
+                            maxsErrtring.append(extensionTurnedOn(E_GL_EXT_mesh_shader) ?
+                                                    "gl_MaxTaskWorkGroupSizeEXT" : "gl_MaxTaskWorkGroupSizeNV");
+                            error(loc, maxsErrtring.c_str(), "local_size", "");
+                        }
+                    } else {
                         assert(0);
                     }
 
@@ -9043,18 +9742,41 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
         }
     }
 
-#ifndef GLSLANG_WEB
     if (publicType.shaderQualifiers.earlyFragmentTests) {
         if (publicType.qualifier.storage == EvqVaryingIn)
             intermediate.setEarlyFragmentTests();
         else
             error(loc, "can only apply to 'in'", "early_fragment_tests", "");
     }
+    if (publicType.shaderQualifiers.earlyAndLateFragmentTestsAMD) {
+        if (publicType.qualifier.storage == EvqVaryingIn)
+            intermediate.setEarlyAndLateFragmentTestsAMD();
+        else
+            error(loc, "can only apply to 'in'", "early_and_late_fragment_tests_amd", "");
+    }
     if (publicType.shaderQualifiers.postDepthCoverage) {
         if (publicType.qualifier.storage == EvqVaryingIn)
             intermediate.setPostDepthCoverage();
         else
             error(loc, "can only apply to 'in'", "post_coverage_coverage", "");
+    }
+    if (publicType.shaderQualifiers.nonCoherentColorAttachmentReadEXT) {
+        if (publicType.qualifier.storage == EvqVaryingIn)
+            intermediate.setNonCoherentColorAttachmentReadEXT();
+        else
+            error(loc, "can only apply to 'in'", "non_coherent_color_attachment_readEXT", "");
+    }
+    if (publicType.shaderQualifiers.nonCoherentDepthAttachmentReadEXT) {
+        if (publicType.qualifier.storage == EvqVaryingIn)
+            intermediate.setNonCoherentDepthAttachmentReadEXT();
+        else
+            error(loc, "can only apply to 'in'", "non_coherent_depth_attachment_readEXT", "");
+    }
+    if (publicType.shaderQualifiers.nonCoherentStencilAttachmentReadEXT) {
+        if (publicType.qualifier.storage == EvqVaryingIn)
+            intermediate.setNonCoherentStencilAttachmentReadEXT();
+        else
+            error(loc, "can only apply to 'in'", "non_coherent_stencil_attachment_readEXT", "");
     }
     if (publicType.shaderQualifiers.hasBlendEquation()) {
         if (publicType.qualifier.storage != EvqVaryingOut)
@@ -9098,7 +9820,7 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
             error(loc, "can only apply to 'in'", "derivative_group_linearNV", "");
     }
     // Check mesh out array sizes, once all the necessary out qualifiers are defined.
-    if ((language == EShLangMeshNV) &&
+    if ((language == EShLangMesh) &&
         (intermediate.getVertices() != TQualifier::layoutNotSet) &&
         (intermediate.getPrimitives() != TQualifier::layoutNotSet) &&
         (intermediate.getOutputPrimitive() != ElgNone))
@@ -9115,7 +9837,7 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
         // Exit early as further checks are not valid
         return;
     }
-#endif 
+
     const TQualifier& qualifier = publicType.qualifier;
 
     if (qualifier.isAuxiliary() ||
@@ -9148,7 +9870,6 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
     case EvqVaryingIn:
         break;
     case EvqVaryingOut:
-#ifndef GLSLANG_WEB
         if (qualifier.hasStream())
             globalOutputDefaults.layoutStream = qualifier.layoutStream;
         if (qualifier.hasXfbBuffer())
@@ -9157,7 +9878,6 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
             if (! intermediate.setXfbBufferStride(globalOutputDefaults.layoutXfbBuffer, qualifier.layoutXfbStride))
                 error(loc, "all stride settings must match for xfb buffer", "xfb_stride", "%d", qualifier.layoutXfbBuffer);
         }
-#endif
         break;
     case EvqShared:
         if (qualifier.hasMatrix())
@@ -9312,5 +10032,38 @@ const TTypeList* TParseContext::recordStructCopy(TStructRecord& record, const TT
     return originStruct;
 }
 
-} // end namespace glslang
+TLayoutFormat TParseContext::mapLegacyLayoutFormat(TLayoutFormat legacyLayoutFormat, TBasicType imageType)
+{
+    TLayoutFormat layoutFormat = ElfNone;
+    if (imageType == EbtFloat) {
+        switch (legacyLayoutFormat) {
+        case ElfSize1x16: layoutFormat = ElfR16f; break;
+        case ElfSize1x32: layoutFormat = ElfR32f; break;
+        case ElfSize2x32: layoutFormat = ElfRg32f; break;
+        case ElfSize4x32: layoutFormat = ElfRgba32f; break;
+        default: break;
+        }
+    } else if (imageType == EbtUint) {
+        switch (legacyLayoutFormat) {
+        case ElfSize1x8: layoutFormat = ElfR8ui; break;
+        case ElfSize1x16: layoutFormat = ElfR16ui; break;
+        case ElfSize1x32: layoutFormat = ElfR32ui; break;
+        case ElfSize2x32: layoutFormat = ElfRg32ui; break;
+        case ElfSize4x32: layoutFormat = ElfRgba32ui; break;
+        default: break;
+        }
+    } else if (imageType == EbtInt) {
+        switch (legacyLayoutFormat) {
+        case ElfSize1x8: layoutFormat = ElfR8i; break;
+        case ElfSize1x16: layoutFormat = ElfR16i; break;
+        case ElfSize1x32: layoutFormat = ElfR32i; break;
+        case ElfSize2x32: layoutFormat = ElfRg32i; break;
+        case ElfSize4x32: layoutFormat = ElfRgba32i; break;
+        default: break;
+        }
+    }
 
+    return layoutFormat;
+}
+
+} // end namespace glslang

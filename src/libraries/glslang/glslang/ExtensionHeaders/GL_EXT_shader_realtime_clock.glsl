@@ -1,5 +1,9 @@
 //
 // Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
+// Copyright (C) 2013-2016 LunarG, Inc.
+// Copyright (C) 2016-2020 Google, Inc.
+// Modifications Copyright(C) 2021 Advanced Micro Devices, Inc.All rights reserved.
+//
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,43 +36,3 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include "glslang/OGLCompilersDLL/InitializeDll.h"
-
-#define STRICT
-#define VC_EXTRALEAN 1
-#include <windows.h>
-#include <assert.h>
-
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
-{
-	switch (fdwReason)
-	{
-		case DLL_PROCESS_ATTACH:
-
-            if (! glslang::InitProcess())
-                return FALSE;
-            break;
-		case DLL_THREAD_ATTACH:
-
-            if (! glslang::InitThread())
-                return FALSE;
-            break;
-
-		case DLL_THREAD_DETACH:
-
-			if (! glslang::DetachThread())
-				return FALSE;
-			break;
-
-		case DLL_PROCESS_DETACH:
-
-			glslang::DetachProcess();
-			break;
-
-		default:
-			assert(0 && "DllMain(): Reason for calling DLL Main is unknown");
-			return FALSE;
-	}
-
-	return TRUE;
-}

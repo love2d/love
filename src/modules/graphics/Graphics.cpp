@@ -185,6 +185,8 @@ Graphics::Graphics()
 	, height(0)
 	, pixelWidth(0)
 	, pixelHeight(0)
+	, backbufferHasStencil(false)
+	, backbufferHasDepth(false)
 	, created(false)
 	, active(true)
 	, batchedDrawState()
@@ -196,6 +198,8 @@ Graphics::Graphics()
 	, fanIndexBuffer(nullptr)
 	, capabilities()
 	, defaultTextures()
+	, defaultTexelBuffers()
+	, defaultStorageBuffer(nullptr)
 	, cachedShaderStages()
 {
 	transformStack.reserve(16);
@@ -587,6 +591,55 @@ Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType)
 	return tex;
 }
 
+Buffer *Graphics::getDefaultTexelBuffer(DataBaseType dataType)
+{
+	Buffer *buffer = defaultTexelBuffers[dataType];
+	if (buffer != nullptr)
+		return buffer;
+
+	Buffer::Settings settings(BUFFERUSAGEFLAG_TEXEL, BUFFERDATAUSAGE_STATIC);
+	settings.zeroInitialize = true;
+	settings.debugName = "default_texelbuffer_";
+
+	DataFormat format = DATAFORMAT_FLOAT;
+	switch (dataType)
+	{
+	case DATA_BASETYPE_FLOAT:
+	default:
+		format = DATAFORMAT_FLOAT;
+		settings.debugName += "float";
+		break;
+	case DATA_BASETYPE_INT:
+		format = DATAFORMAT_INT32;
+		settings.debugName += "int";
+		break;
+	case DATA_BASETYPE_UINT:
+		format = DATAFORMAT_UINT32;
+		settings.debugName += "uint";
+		break;
+	}
+
+	buffer = newBuffer(settings, format, nullptr, sizeof(float), 1);
+
+	defaultTexelBuffers[dataType] = buffer;
+
+	return buffer;
+}
+
+Buffer *Graphics::getDefaultStorageBuffer()
+{
+	if (defaultStorageBuffer != nullptr)
+		return defaultStorageBuffer;
+
+	Buffer::Settings settings(BUFFERUSAGEFLAG_SHADER_STORAGE, BUFFERDATAUSAGE_STATIC);
+	settings.zeroInitialize = true;
+	settings.debugName = "default_storagebuffer";
+
+	defaultStorageBuffer = newBuffer(settings, DATAFORMAT_FLOAT, nullptr, Buffer::SHADER_STORAGE_BUFFER_MAX_STRIDE, 0);
+
+	return defaultStorageBuffer;
+}
+
 void Graphics::releaseDefaultResources()
 {
 	for (int type = 0; type < TEXTURE_MAX_ENUM; type++)
@@ -598,6 +651,17 @@ void Graphics::releaseDefaultResources()
 			defaultTextures[type][dataType] = nullptr;
 		}
 	}
+
+	for (int dataType = 0; dataType < DATA_BASETYPE_MAX_ENUM; dataType++)
+	{
+		if (defaultTexelBuffers[dataType])
+			defaultTexelBuffers[dataType]->release();
+		defaultTexelBuffers[dataType] = nullptr;
+	}
+
+	if (defaultStorageBuffer)
+		defaultStorageBuffer->release();
+	defaultStorageBuffer = nullptr;
 }
 
 Texture *Graphics::getTextureOrDefaultForActiveShader(Texture *tex)
@@ -615,6 +679,34 @@ Texture *Graphics::getTextureOrDefaultForActiveShader(Texture *tex)
 	}
 
 	return getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT);
+}
+
+void Graphics::validateStencilState(const StencilState &s) const
+{
+	if (s.action != STENCIL_KEEP)
+	{
+		const auto &rts = states.back().renderTargets;
+		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
+
+		if (!isRenderTargetActive() && !backbufferHasStencil)
+			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
+		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
+			throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
+	}
+}
+
+void Graphics::validateDepthState(bool depthwrite) const
+{
+	if (depthwrite)
+	{
+		const auto &rts = states.back().renderTargets;
+		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
+
+		if (!isRenderTargetActive() && !backbufferHasDepth)
+			throw love::Exception("The window must have depth enabled to draw to the main screen's depth buffer.");
+		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) == 0 && (dstexture == nullptr || !isPixelFormatDepth(dstexture->getPixelFormat())))
+			throw love::Exception("Drawing to the depth buffer with a Canvas active requires either depth=true or a custom depth-type Canvas to be used, in setCanvas.");
+	}
 }
 
 int Graphics::getWidth() const
@@ -671,6 +763,11 @@ void Graphics::reset()
 	origin();
 }
 
+void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight)
+{
+	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferHasStencil, backbufferHasDepth, getRequestedBackbufferMSAA());
+}
+
 /**
  * State functions.
  **/
@@ -700,7 +797,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setShader(s.shader.get());
 	setRenderTargets(s.renderTargets);
 
-	setStencilMode(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
+	setStencilState(s.stencil);
 	setDepthMode(s.depthTest, s.depthWrite);
 
 	setColorMask(s.colorMask);
@@ -776,7 +873,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 		setRenderTargets(s.renderTargets);
 
 	if (!(s.stencil == cur.stencil))
-		setStencilMode(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
+		setStencilState(s.stencil);
 
 	if (s.depthTest != cur.depthTest || s.depthWrite != cur.depthWrite)
 		setDepthMode(s.depthTest, s.depthWrite);
@@ -1309,19 +1406,39 @@ bool Graphics::getScissor(Rect &rect) const
 	return state.scissor;
 }
 
-void Graphics::setStencilMode()
+void Graphics::setStencilMode(StencilMode mode, int value)
 {
-	setStencilMode(STENCIL_KEEP, COMPARE_ALWAYS, 0, LOVE_UINT32_MAX, LOVE_UINT32_MAX);
+	setStencilState(computeStencilState(mode, value));
+	if (mode == STENCIL_MODE_DRAW)
+		setColorMask({ false, false, false, false });
+	else
+		setColorMask({ true, true, true, true });
 }
 
-void Graphics::getStencilMode(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const
+void Graphics::setStencilMode()
+{
+	setStencilState(computeStencilState(STENCIL_MODE_OFF, 0));
+	setColorMask({ true, true, true, true });
+}
+
+StencilMode Graphics::getStencilMode(int &value) const
+{
+	const DisplayState& state = states.back();
+	StencilMode mode = computeStencilMode(state.stencil);
+	value = state.stencil.value;
+	return mode;
+}
+
+void Graphics::setStencilState()
+{
+	StencilState s;
+	setStencilState(s);
+}
+
+const StencilState &Graphics::getStencilState() const
 {
 	const DisplayState &state = states.back();
-	action = state.stencil.action;
-	compare = state.stencil.compare;
-	value = state.stencil.value;
-	readmask = state.stencil.readMask;
-	writemask = state.stencil.writeMask;
+	return state.stencil;
 }
 
 void Graphics::setDepthMode()
@@ -1872,7 +1989,7 @@ void Graphics::flushBatchedDraws()
 {
 	auto &sbstate = batchedDrawState;
 
-	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
+	if ((sbstate.vertexCount == 0 && sbstate.indexCount == 0) || sbstate.flushing)
 		return;
 
 	VertexAttributes attributes;
@@ -1896,6 +2013,8 @@ void Graphics::flushBatchedDraws()
 
 	if (attributes.enableBits == 0)
 		return;
+
+	sbstate.flushing = true;
 
 	Colorf nc = getColor();
 	if (attributes.isEnabled(ATTRIB_COLOR))
@@ -1941,8 +2060,9 @@ void Graphics::flushBatchedDraws()
 	if (attributes.isEnabled(ATTRIB_COLOR))
 		setColor(nc);
 
-	batchedDrawState.vertexCount = 0;
-	batchedDrawState.indexCount = 0;
+	sbstate.vertexCount = 0;
+	sbstate.indexCount = 0;
+	sbstate.flushing = false;
 }
 
 void Graphics::flushBatchedDrawsGlobal()

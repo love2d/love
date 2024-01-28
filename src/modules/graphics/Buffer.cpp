@@ -265,6 +265,20 @@ int Buffer::getDataMemberIndex(const std::string &name) const
 	return -1;
 }
 
+void Buffer::clear(size_t offset, size_t size)
+{
+	if (isImmutable())
+		throw love::Exception("Cannot clear an immutable Buffer.");
+	else if (isMapped())
+		throw love::Exception("Cannot clear a mapped Buffer.");
+	else if (offset + size > getSize())
+		throw love::Exception("The given offset and size parameters to clear() are not within the Buffer's size.");
+	else if (offset % 4 != 0 || size % 4 != 0)
+		throw love::Exception("clear() must be used with offset and size parameters that are multiples of 4 bytes.");
+
+	clearInternal(offset, size);
+}
+
 std::vector<Buffer::DataDeclaration> Buffer::getCommonFormatDeclaration(CommonFormat format)
 {
 	switch (format)
