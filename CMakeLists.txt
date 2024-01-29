@@ -183,7 +183,6 @@ Please see https://github.com/love2d/megasource
 	find_package(Harfbuzz REQUIRED)
 	find_package(ModPlug REQUIRED)
 	find_package(OpenAL REQUIRED)
-	find_package(OpenGL REQUIRED)
 	find_package(SDL2 2.0.9 REQUIRED CONFIG COMPONENTS SDL2main)
 	find_package(Theora REQUIRED)
 	find_package(Vorbis REQUIRED)
@@ -206,7 +205,6 @@ Please see https://github.com/love2d/megasource
 	)
 
 	set(LOVE_LINK_LIBRARIES
-		${OPENGL_gl_LIBRARY}
 		${SDL2_LIBRARIES}
 		${FREETYPE_LIBRARY}
 		${HARFBUZZ_LIBRARY}
