@@ -64,9 +64,17 @@ bool openURL(const std::string &url);
 std::string getExecutablePath();
 
 /**
- * Causes devices with vibration support to vibrate for about 0.5 seconds.
+ * Causes devices with vibration support to vibrate in different mode and intensity.
+ * @param intensity The intensity of the vibration, between 0.0 and 1.0 (iOS 13.0 or later).
+ * @param mode The mode of the vibration, listed below (alphabetical order):
+ *      default: Fixed 500ms vibration
+ *      heavy: UIImpactFeedbackStyleHeavy (iOS 10.0 or later)
+ *      light: UIImpactFeedbackStyleLight (iOS 10.0 or later)
+ *      medium: UIImpactFeedbackStyleMedium (iOS 10.0 or later)
+ *      rigid: UIImpactFeedbackStyleRigid (iOS 13.0 or later)
+ *      soft: UIImpactFeedbackStyleSoft (iOS 13.0 or later)
  **/
-void vibrate();
+void vibrate(const double intensity, const std::string &mode);
 
 /**
  * Enable mix mode (e.g. with background music apps) and playback with a muted device.

@@ -169,14 +169,16 @@ bool System::openURL(const std::string &url) const
 #endif
 }
 
-void System::vibrate(double seconds) const
+void System::vibrate(double seconds, const std::string &mode) const
 {
 #ifdef LOVE_ANDROID
 	love::android::vibrate(seconds);
+	LOVE_UNUSED(mode);
 #elif defined(LOVE_IOS)
-	love::ios::vibrate();
+	love::ios::vibrate(seconds, mode);
 #else
 	LOVE_UNUSED(seconds);
+	LOVE_UNUSED(mode);
 #endif
 }
 

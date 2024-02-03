@@ -102,9 +102,10 @@ public:
 	/**
 	 * Vibrates for the specified amount of seconds.
 	 *
-	 * @param number of seconds to vibrate.
+	 * @param seconds number of seconds to vibrate.
+	 * @param mode vibration mode.
 	 */
-	virtual void vibrate(double seconds) const;
+	virtual void vibrate(double seconds, const std::string &mode) const;
 
 	/**
 	 * Gets if the user is playing music on background.

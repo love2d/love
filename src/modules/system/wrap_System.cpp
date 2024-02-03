@@ -91,7 +91,8 @@ int w_openURL(lua_State *L)
 int w_vibrate(lua_State *L)
 {
 	double seconds = luaL_optnumber(L, 1, 0.5);
-	instance()->vibrate(seconds);
+	const char *mode = luaL_optstring(L, 2, "default");
+	instance()->vibrate(seconds, mode);
 	return 0;
 }
 
