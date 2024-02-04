@@ -84,7 +84,7 @@ double Timer::step()
 void Timer::sleep(double seconds) const
 {
 	if (seconds >= 0)
-		love::sleep((unsigned int)(seconds*1000));
+		love::sleep(seconds*1000);
 }
 
 double Timer::getDelta() const

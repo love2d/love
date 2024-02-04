@@ -21,15 +21,21 @@
 #include "delay.h"
 
 #include <SDL_timer.h>
+#include <SDL_version.h>
 
 namespace love
 {
 
-void sleep(unsigned int ms)
+// TODO: use ns.
+void sleep(double ms)
 {
 	// We don't need to initialize the SDL timer subsystem for SDL_Delay to
 	// function - and doing so causes SDL to create a worker thread.
-	SDL_Delay(ms);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_DelayNS(SDL_MS_TO_NS(ms));
+#else
+	SDL_Delay((Uint32)ms);
+#endif
 }
 
 } // love

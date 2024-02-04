@@ -43,7 +43,7 @@ public:
 	 * Adds a connected Joystick device and opens it for use.
 	 * Returns NULL if the Joystick could not be added.
 	 **/
-	virtual Joystick *addJoystick(int deviceindex) = 0;
+	virtual Joystick *addJoystick(int64 deviceid) = 0;
 
 	/**
 	 * Removes a disconnected Joystick device.

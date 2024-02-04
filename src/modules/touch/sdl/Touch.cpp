@@ -23,6 +23,8 @@
 #include "common/Exception.h"
 #include "Touch.h"
 
+#include <SDL_version.h>
+
 // C++
 #include <algorithm>
 
@@ -63,11 +65,19 @@ void Touch::onEvent(Uint32 eventtype, const TouchInfo &info)
 
 	switch (eventtype)
 	{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	case SDL_EVENT_FINGER_DOWN:
+#else
 	case SDL_FINGERDOWN:
+#endif
 		touches.erase(std::remove_if(touches.begin(), touches.end(), compare), touches.end());
 		touches.push_back(info);
 		break;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	case SDL_EVENT_FINGER_MOTION:
+#else
 	case SDL_FINGERMOTION:
+#endif
 	{
 		for (TouchInfo &touch : touches)
 		{
@@ -76,7 +86,11 @@ void Touch::onEvent(Uint32 eventtype, const TouchInfo &info)
 		}
 		break;
 	}
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	case SDL_EVENT_FINGER_UP:
+#else
 	case SDL_FINGERUP:
+#endif
 		touches.erase(std::remove_if(touches.begin(), touches.end(), compare), touches.end());
 		break;
 	default:

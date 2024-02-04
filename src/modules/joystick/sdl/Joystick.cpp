@@ -31,6 +31,8 @@
 #include <algorithm>
 #include <limits>
 
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+
 #ifndef SDL_TICKS_PASSED
 #define SDL_TICKS_PASSED(A, B)  ((Sint32)((B) - (A)) <= 0)
 #endif
@@ -69,8 +71,10 @@ Joystick::~Joystick()
 	close();
 }
 
-bool Joystick::open(int deviceindex)
+bool Joystick::open(int64 deviceid)
 {
+	int deviceindex = (int) deviceid;
+
 	close();
 
 	joyhandle = SDL_JoystickOpen(deviceindex);
@@ -263,8 +267,10 @@ int Joystick::getPlayerIndex() const
 #endif
 }
 
-bool Joystick::openGamepad(int deviceindex)
+bool Joystick::openGamepad(int64 deviceid)
 {
+	int deviceindex = (int) deviceid;
+
 	if (!SDL_IsGameController(deviceindex))
 		return false;
 
@@ -852,3 +858,5 @@ EnumMap<Joystick::GamepadButton, SDL_GameControllerButton, Joystick::GAMEPAD_BUT
 } // sdl
 } // joystick
 } // love
+
+#endif // !SDL_VERSION_ATLEAST(3, 0, 0)

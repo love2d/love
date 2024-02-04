@@ -51,11 +51,25 @@ const char *Sensor::getName() const
 
 bool Sensor::hasSensor(SensorType type)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	int count = 0;
+	SDL_SensorID *sensorIDs = SDL_GetSensors(&count);
+	for (int i = 0; i < count; i++)
+	{
+		if (convert(SDL_GetSensorInstanceType(sensorIDs[i])) == type)
+		{
+			SDL_free(sensorIDs);
+			return true;
+		}
+	}
+	SDL_free(sensorIDs);
+#else
 	for (int i = 0; i < SDL_NumSensors(); i++)
 	{
 		if (convert(SDL_SensorGetDeviceType(i)) == type)
 			return true;
 	}
+#endif
 
 	return false;
 }
@@ -69,11 +83,38 @@ void Sensor::setEnabled(SensorType type, bool enable)
 {
 	if (sensors[type] && !enable)
 	{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		SDL_CloseSensor(sensors[type]);
+#else
 		SDL_SensorClose(sensors[type]);
+#endif
 		sensors[type] = nullptr;
 	}
 	else if (sensors[type] == nullptr && enable)
 	{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		int count = 0;
+		SDL_SensorID *sensorIDs = SDL_GetSensors(&count);
+		for (int i = 0; i < count; i++)
+		{
+			if (convert(SDL_GetSensorInstanceType(sensorIDs[i])) == type)
+			{
+				SDL_Sensor *sensorHandle = SDL_OpenSensor(sensorIDs[i]);
+
+				if (sensorHandle == nullptr)
+				{
+					SDL_free(sensorIDs);
+
+					const char *name = nullptr;
+					getConstant(type, name);
+					throw love::Exception("Could not open \"%s\" SDL sensor (%s)", name, SDL_GetError());
+				}
+
+				sensors[type] = sensorHandle;
+			}
+		}
+		SDL_free(sensorIDs);
+#else
 		for (int i = 0; i < SDL_NumSensors(); i++)
 		{
 			if (convert(SDL_SensorGetDeviceType(i)) == type)
@@ -84,13 +125,13 @@ void Sensor::setEnabled(SensorType type, bool enable)
 				{
 					const char *name = nullptr;
 					getConstant(type, name);
-
 					throw love::Exception("Could not open \"%s\" SDL sensor (%s)", name, SDL_GetError());
 				}
 
 				sensors[type] = sensorHandle;
 			}
 		}
+#endif
 	}
 }
 
@@ -106,7 +147,11 @@ std::vector<float> Sensor::getData(SensorType type)
 
 	std::vector<float> values(3);
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (SDL_GetSensorData(sensors[type], values.data(), (int) values.size()) != 0)
+#else
 	if (SDL_SensorGetData(sensors[type], values.data(), (int) values.size()) != 0)
+#endif
 	{
 		const char *name = nullptr;
 		getConstant(type, name);
@@ -140,7 +185,11 @@ const char *Sensor::getSensorName(SensorType type)
 		throw love::Exception("\"%s\" sensor is not enabled", name);
 	}
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	return SDL_GetSensorName(sensors[type]);
+#else
 	return SDL_SensorGetName(sensors[type]);
+#endif
 }
 
 Sensor::SensorType Sensor::convert(SDL_SensorType type)

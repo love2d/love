@@ -62,7 +62,7 @@ static void *LOVEGetProcAddress(const char *name)
 		return proc;
 #endif
 
-	return SDL_GL_GetProcAddress(name);
+	return (void *) SDL_GL_GetProcAddress(name);
 }
 
 OpenGL::TempDebugGroup::TempDebugGroup(const char *name)

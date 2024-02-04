@@ -35,6 +35,7 @@
 
 // SDL
 #include <SDL_loadso.h>
+#include <SDL_version.h>
 
 // STL
 #include <vector>
@@ -987,7 +988,12 @@ int extloader(lua_State *L)
 
 	// We look for both loveopen_ and luaopen_, so libraries with specific love support
 	// can tell when they've been loaded by love.
-	void *func = SDL_LoadFunction(handle, ("loveopen_" + tokenized_function).c_str());
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_FunctionPointer func = nullptr;
+#else
+	void *func = nullptr;
+#endif
+	func = SDL_LoadFunction(handle, ("loveopen_" + tokenized_function).c_str());
 	if (!func)
 		func = SDL_LoadFunction(handle, ("luaopen_" + tokenized_function).c_str());
 

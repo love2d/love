@@ -24,6 +24,7 @@
 
 // SDL
 #include <SDL_mouse.h>
+#include <SDL_version.h>
 
 namespace love
 {
@@ -126,8 +127,13 @@ bool Mouse::isCursorSupported() const
 
 void Mouse::getPosition(double &x, double &y) const
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	float mx, my;
+	SDL_GetMouseState(&mx, &my);
+#else
 	int mx, my;
 	SDL_GetMouseState(&mx, &my);
+#endif
 
 	x = (double) mx;
 	y = (double) my;
@@ -161,12 +167,35 @@ void Mouse::setPosition(double x, double y)
 
 void Mouse::getGlobalPosition(double &x, double &y, int &displayindex) const
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	float globalx, globaly;
+#else
 	int globalx, globaly;
+#endif
 	SDL_GetGlobalMouseState(&globalx, &globaly);
 
-	int mx = globalx;
-	int my = globaly;
+	auto mx = globalx;
+	auto my = globaly;
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	int displaycount = 0;
+	SDL_DisplayID *displays = SDL_GetDisplays(&displaycount);
+
+	for (displayindex = 0; displayindex < displaycount; displayindex++)
+	{
+		SDL_Rect r = {};
+		SDL_GetDisplayBounds(displays[displayindex], &r);
+
+		SDL_FRect frect = {(float)r.x, (float)r.y, (float)r.w, (float)r.h};
+
+		mx -= frect.x;
+		my -= frect.y;
+
+		SDL_FPoint p = { globalx, globaly };
+		if (SDL_PointInRectFloat(&p, &frect))
+			break;
+	}
+#else
 	int displaycount = SDL_GetNumVideoDisplays();
 
 	for (displayindex = 0; displayindex < displaycount; displayindex++)
@@ -181,6 +210,7 @@ void Mouse::getGlobalPosition(double &x, double &y, int &displayindex) const
 		if (SDL_PointInRect(&p, &rect))
 			break;
 	}
+#endif
 
 	if (displayindex >= displaycount)
 		displayindex = 0;
@@ -191,7 +221,14 @@ void Mouse::getGlobalPosition(double &x, double &y, int &displayindex) const
 
 void Mouse::setVisible(bool visible)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (visible)
+		SDL_ShowCursor();
+	else
+		SDL_HideCursor();
+#else
 	SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
+#endif
 }
 
 bool Mouse::isDown(const std::vector<int> &buttons) const
@@ -224,7 +261,11 @@ bool Mouse::isDown(const std::vector<int> &buttons) const
 
 bool Mouse::isVisible() const
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	return SDL_CursorVisible();
+#else
 	return SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
+#endif
 }
 
 void Mouse::setGrabbed(bool grab)

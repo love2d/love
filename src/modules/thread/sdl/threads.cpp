@@ -50,22 +50,38 @@ void Mutex::unlock()
 
 Conditional::Conditional()
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	cond = SDL_CreateCondition();
+#else
 	cond = SDL_CreateCond();
+#endif
 }
 
 Conditional::~Conditional()
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_DestroyCondition(cond);
+#else
 	SDL_DestroyCond(cond);
+#endif
 }
 
 void Conditional::signal()
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_SignalCondition(cond);
+#else
 	SDL_CondSignal(cond);
+#endif
 }
 
 void Conditional::broadcast()
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_BroadcastCondition(cond);
+#else
 	SDL_CondBroadcast(cond);
+#endif
 }
 
 bool Conditional::wait(thread::Mutex *_mutex, int timeout)
@@ -74,10 +90,17 @@ bool Conditional::wait(thread::Mutex *_mutex, int timeout)
 	// however, you're asking for it if you're
 	// mixing thread implementations.
 	Mutex *mutex = (Mutex *) _mutex;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (timeout < 0)
+		return !SDL_WaitCondition(cond, mutex->mutex);
+	else
+		return (SDL_WaitConditionTimeout(cond, mutex->mutex, timeout) == 0);
+#else
 	if (timeout < 0)
 		return !SDL_CondWait(cond, mutex->mutex);
 	else
 		return (SDL_CondWaitTimeout(cond, mutex->mutex, timeout) == 0);
+#endif
 }
 
 } // sdl
