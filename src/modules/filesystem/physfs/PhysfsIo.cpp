@@ -134,7 +134,7 @@ int64 StripSuffixIo::seek(uint64 offset)
 		PHYSFS_setErrorCode(PHYSFS_ERR_OS_ERROR);
 		return 0;
 	}
-	bool success = file->seek(offset);
+	bool success = file->seek(offset, Stream::SEEKORIGIN_BEGIN);
 	PHYSFS_setErrorCode(success ? PHYSFS_ERR_OK : PHYSFS_ERR_OS_ERROR);
 	return success ? 1 : 0;
 }
