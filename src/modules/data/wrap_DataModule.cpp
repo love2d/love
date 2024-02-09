@@ -302,25 +302,37 @@ int w_decode(lua_State *L)
 
 int w_hash(lua_State *L)
 {
-	const char *fstr = luaL_checkstring(L, 1);
+	ContainerType ctype = luax_checkcontainertype(L, 1);
+	const char *fstr = luaL_checkstring(L, 2);
 	HashFunction::Function function;
 	if (!HashFunction::getConstant(fstr, function))
 		return luax_enumerror(L, "hash function", HashFunction::getConstants(function), fstr);
 
 	HashFunction::Value hashvalue;
-	if (lua_isstring(L, 2))
+	if (lua_isstring(L, 3))
 	{
 		size_t rawsize = 0;
-		const char *rawbytes = luaL_checklstring(L, 2, &rawsize);
+		const char *rawbytes = luaL_checklstring(L, 3, &rawsize);
 		luax_catchexcept(L, [&](){ love::data::hash(function, rawbytes, rawsize, hashvalue); });
 	}
 	else
 	{
-		Data *rawdata = luax_checktype<Data>(L, 2);
+		Data *rawdata = luax_checktype<Data>(L, 3);
 		luax_catchexcept(L, [&](){ love::data::hash(function, rawdata, hashvalue); });
 	}
 
-	lua_pushlstring(L, hashvalue.data, hashvalue.size);
+	if (ctype == CONTAINER_DATA)
+	{
+		Data* d = nullptr;
+		luax_catchexcept(L, [&]() { d = instance()->newByteData(hashvalue.size); });
+		memcpy(d->getData(), hashvalue.data, hashvalue.size);
+
+		luax_pushtype(L, Data::type, d);
+		d->release();
+	}
+	else
+		lua_pushlstring(L, hashvalue.data, hashvalue.size);
+
 	return 1;
 }
 
