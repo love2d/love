@@ -255,13 +255,6 @@ jobs:
       if: steps.vars.outputs.angle == '1'
       working-directory: angle
       run: 7z x angle-win-${{ steps.vars.outputs.arch }}.zip
-    - name: Delete Strawbery Perl
-      # https://github.com/actions/runner-images/issues/6627
-      # In particular, this is not pretty, but even CMAKE_IGNORE_PREFIX_PATH
-      # cannot help in this case. Delete the whole folder!
-      run: |
-        rmdir /s /q C:\Strawberry
-        exit /b 0
     - name: Configure
       env:
         CFLAGS: /Zi
