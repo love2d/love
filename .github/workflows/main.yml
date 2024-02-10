@@ -2,7 +2,7 @@ name: continuous-integration
 on: [push, pull_request]
 
 jobs:
-  linux-os:
+  Linux:
     runs-on: ubuntu-22.04
     permissions:
       checks: write
@@ -140,7 +140,7 @@ jobs:
         echo "${{ steps.report1.outputs.failed }} opengl tests failed"
         echo "${{ steps.report2.outputs.failed }} opengles tests failed"
         exit 1
-  windows-os:
+  Windows:
     runs-on: windows-latest
     permissions:
       checks: write
@@ -267,7 +267,7 @@ jobs:
         CFLAGS: /Zi
         CXXFLAGS: /Zi
         LDFLAGS: /DEBUG:FULL /OPT:REF /OPT:ICF
-      run: cmake -Bbuild -Smegasource -T v142 -A ${{ matrix.platform }} --install-prefix %CD%\install -DCMAKE_PDB_OUTPUT_DIRECTORY=%CD%\pdb ${{ steps.vars.outputs.moredef }}
+      run: cmake -Bbuild -Smegasource -T v143 -A ${{ matrix.platform }} --install-prefix %CD%\install -DCMAKE_PDB_OUTPUT_DIRECTORY=%CD%\pdb ${{ steps.vars.outputs.moredef }}
     - name: Install
       run: cmake --build build --target PACKAGE --config Release -j2
     - name: Copy LuaJIT lua51.pdb
