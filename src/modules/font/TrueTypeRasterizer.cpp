@@ -46,6 +46,7 @@ StringMap<TrueTypeRasterizer::Hinting, TrueTypeRasterizer::HINTING_MAX_ENUM>::En
 	{"light", HINTING_LIGHT},
 	{"mono", HINTING_MONO},
 	{"none", HINTING_NONE},
+	{"sdf", HINTING_SDF},
 };
 
 StringMap<TrueTypeRasterizer::Hinting, TrueTypeRasterizer::HINTING_MAX_ENUM> TrueTypeRasterizer::hintings(TrueTypeRasterizer::hintingEntries, sizeof(TrueTypeRasterizer::hintingEntries));
