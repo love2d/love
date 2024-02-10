@@ -150,11 +150,11 @@ enum DoneAction
 static void print_usage()
 {
     // when editing this message, change it at boot.lua too
-    printf("LÖVE is an *awesome* framework you can use to make 2D games in Lua\n"
+    printf("LOVE is an *awesome* framework you can use to make 2D games in Lua\n"
         "https://love2d.org\n"
         "\n"
         "usage:\n"
-        "    love --version                  prints LÖVE version and quits\n"
+        "    love --version                  prints LOVE version and quits\n"
         "    love --help                     prints this message and quits\n"
         "    love path/to/gamedir            runs the game from the given directory which contains a main.lua file\n"
         "    love path/to/packagedgame.love  runs the packaged game from the provided .love file\n"
