@@ -11,12 +11,13 @@ If you need further help, feel free to ask on our [forums][forums], our [Discord
 Repository
 ----------
 
-We use the 'main' branch for patch development of the current major release, and therefore it should not be considered stable.
-There may also be a branch for the next major version in development, which is named after that version.
+We use the 'main' branch for development of the next major release, and therefore it should not be considered stable.
+
+There are also branches for currently released major versions, which may have fixes and changes meant for upcoming patch releases within that major version.
 
 We tag all our releases (since we started using mercurial and git), and have binary downloads available for them.
 
-Experimental changes are developed in a separate [love-experiments][love-experiments] repository.
+Experimental changes are sometimes developed in a separate [love-experiments][love-experiments] repository.
 
 Builds
 ------
@@ -32,12 +33,11 @@ There are also unstable/nightly builds:
 Test Suite
 ----------
 
-The test suite in `testing/` covers all the LÖVE APIs, and tests them the same way developers use them. You can view current test coverage from any [12.0-dev action][12devworkflows].  
-You can run the suite locally like you would run a normal LÖVE project, i.e.:  
-`love testing/main.lua`
+The test suite in `testing/` covers all the LÖVE APIs, and tests them the same way developers use them. You can view current test coverage from any [action][workflows].  
+You can run the suite locally like you would run a normal LÖVE project, e.g.:  
+`love testing`
 
 See the [readme][testsuite] in the testing folder for more info.  
-You can contribute to the test suite [here][testsuitemain]
 
 Contributing
 ------------
@@ -70,19 +70,10 @@ Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the
 ### iOS
 Building for iOS requires macOS and Xcode.
 
-#### LÖVE 11.4 and newer
 Download the `love-apple-dependencies` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
 unzip it, and place the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder.
 
 Or, download or clone [this repository][dependencies-apple] and copy, move, or symlink the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder.
-
-Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
-
-See `readme-iOS.rtf` for more information.
-
-#### LÖVE 11.3 and older
-Download the `ios-libraries` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
-unzip it, and place the `include` and `libraries` subfolders into love's `platform/xcode/ios` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
 
@@ -117,6 +108,5 @@ Dependencies
 [codestyle]: https://love2d.org/wiki/Code_Style
 [android-repository]: https://github.com/love2d/love-android
 [releases]: https://github.com/love2d/love/releases
-[testsuite]: https://github.com/love2d/love/tree/12.0-development/testing
-[testsuitemain]: https://github.com/ellraiser/love-test
-[12devworkflows]: https://github.com/love2d/love/actions/workflows/main.yml?query=branch%3A12.0-development
+[testsuite]: https://github.com/love2d/love/tree/main/testing
+[workflows]: https://github.com/love2d/love/actions/workflows/main.yml?query=branch%3Amain
