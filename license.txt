@@ -6,7 +6,7 @@ This distribution contains code from the following projects (full license text b
  - LOVE
 	Website: https://love2d.org/
 	License: zlib
-	Copyright (c) 2006-2023 LOVE Development Team
+	Copyright (c) 2006-2024 LOVE Development Team
 
  - ENet
 	Website: http://enet.bespin.org/index.html
