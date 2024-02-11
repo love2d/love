@@ -6731,7 +6731,7 @@ uint32_t VmaBlockBufferImageGranularity::OffsetToPageIndex(VkDeviceSize offset) 
 
 void VmaBlockBufferImageGranularity::AllocPage(RegionInfo& page, uint8_t allocType)
 {
-    // When current alloc type is free then it can be overriden by new type
+    // When current alloc type is free then it can be overridden by new type
     if (page.allocCount == 0 || (page.allocCount > 0 && page.allocType == VMA_SUBALLOCATION_TYPE_FREE))
         page.allocType = allocType;
 
@@ -18502,7 +18502,7 @@ especially the amount of memory allocated from Vulkan.
 
 If you need to obtain basic statistics about memory usage per heap, together with current budget,
 you can call function vmaGetHeapBudgets() and inspect structure #VmaBudget.
-This is useful to keep track of memory usage and stay withing budget
+This is useful to keep track of memory usage and stay within budget
 (see also \ref staying_within_budget).
 Example:
 
@@ -18645,7 +18645,7 @@ VkResult res = vmaCreateVirtualBlock(&blockCreateInfo, &block);
 #VmaVirtualBlock object contains internal data structure that keeps track of free and occupied regions
 using the same code as the main Vulkan memory allocator.
 Similarly to #VmaAllocation for standard GPU allocations, there is #VmaVirtualAllocation type
-that represents an opaque handle to an allocation withing the virtual block.
+that represents an opaque handle to an allocation within the virtual block.
 
 In order to make such allocation:
 

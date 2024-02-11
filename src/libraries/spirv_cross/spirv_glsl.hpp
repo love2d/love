@@ -599,7 +599,7 @@ protected:
 
 	bool processing_entry_point = false;
 
-	// Can be overriden by subclass backends for trivial things which
+	// Can be overridden by subclass backends for trivial things which
 	// shouldn't need polymorphism.
 	struct BackendVariations
 	{

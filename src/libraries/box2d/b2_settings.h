@@ -27,7 +27,7 @@
 #include "b2_api.h"
 
 /// @file
-/// Settings that can be overriden for your application
+/// Settings that can be overridden for your application
 ///
 
 /// Define this macro in your build if you want to override settings
