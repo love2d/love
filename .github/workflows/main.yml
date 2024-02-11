@@ -255,6 +255,13 @@ jobs:
       if: steps.vars.outputs.angle == '1'
       working-directory: angle
       run: 7z x angle-win-${{ steps.vars.outputs.arch }}.zip
+    - name: Remove Strawbery Perl From Path
+      # https://github.com/actions/runner-images/issues/6627
+      # In particular, this is not pretty, but even CMAKE_IGNORE_PREFIX_PATH
+      # cannot help in this case.
+      run: |
+        move /y C:\Strawberry C:\Strawberry_not_in_PATH
+        exit /b 0
     - name: Configure
       env:
         CFLAGS: /Zi
