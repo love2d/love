@@ -1993,14 +1993,6 @@ if(MSVC OR MINGW)
 	endif()
 endif()
 
-if(ANDROID)
-	# In Android, the LOVE main entrypoint needs to be compiled
-	# as shared library, so change the library name and add love.cpp
-	set(LOVE_LIB_NAME ${LOVE_EXE_NAME})
-	set(LOVE_LIB_SRC ${LOVE_LIB_SRC} src/love.cpp)
-	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} android)
-endif()
-
 add_library(liblove SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
 set_target_properties(liblove PROPERTIES
 	C_VISIBILITY_PRESET hidden
@@ -2021,44 +2013,49 @@ endif()
 #
 # love (executable)
 #
-if(NOT ANDROID)
-	add_executable(love WIN32 src/love.cpp ${LOVE_RC})
-	target_link_libraries(love liblove)
-	set_target_properties(love PROPERTIES
-		C_VISIBILITY_PRESET hidden
-		CXX_VISIBILITY_PRESET hidden
-		VISIBILITY_INLINES_HIDDEN ON
-		OUTPUT_NAME ${LOVE_EXE_NAME})
+if(ANDROID)
+	add_library(love SHARED) # On Android, the LOVE main entrypoint needs to be compiled as shared library
+	target_link_libraries(liblove android)
+else()
+	add_executable(love WIN32)
+endif()
 
-	if(MSVC OR MINGW)
-		add_executable(lovec src/love.cpp ${LOVE_RC})
-		target_link_libraries(lovec liblove)
-		set_target_properties(lovec PROPERTIES
-			OUTPUT_NAME ${LOVE_CONSOLE_EXE_NAME})
+target_sources(love PRIVATE src/love.cpp ${LOVE_RC})
+target_link_libraries(love liblove)
+set_target_properties(love PROPERTIES
+	C_VISIBILITY_PRESET hidden
+	CXX_VISIBILITY_PRESET hidden
+	VISIBILITY_INLINES_HIDDEN ON
+	OUTPUT_NAME ${LOVE_EXE_NAME})
+
+if(MSVC OR MINGW)
+	add_executable(lovec src/love.cpp ${LOVE_RC})
+	target_link_libraries(lovec liblove)
+	set_target_properties(lovec PROPERTIES
+		OUTPUT_NAME ${LOVE_CONSOLE_EXE_NAME})
+endif()
+
+function(post_step_move_dll ARG_POST_TARGET ARG_TARGET_OR_FILE)
+	if(TARGET ${ARG_TARGET_OR_FILE})
+		add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+			$<TARGET_FILE:${ARG_TARGET_OR_FILE}>
+			${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/$<TARGET_FILE_NAME:${ARG_TARGET_OR_FILE}>)
+	else()
+		get_filename_component(TEMP_FILENAME ${ARG_TARGET_OR_FILE} NAME)
+		add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+			${ARG_TARGET_OR_FILE}
+			${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/${TEMP_FILENAME})
 	endif()
+endfunction()
 
-	function(post_step_move_dll ARG_POST_TARGET ARG_TARGET_OR_FILE)
-		if(TARGET ${ARG_TARGET_OR_FILE})
-			add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E copy
-				$<TARGET_FILE:${ARG_TARGET_OR_FILE}>
-				${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/$<TARGET_FILE_NAME:${ARG_TARGET_OR_FILE}>)
-		else()
-			get_filename_component(TEMP_FILENAME ${ARG_TARGET_OR_FILE} NAME)
-			add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E copy
-				${ARG_TARGET_OR_FILE}
-				${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/${TEMP_FILENAME})
-		endif()
-	endfunction()
-
-	# Add post build steps to move the DLLs next to the binary. Otherwise
-	# running/debugging the binary will not work from inside VS.
-	if(LOVE_MOVE_DLLS)
-		foreach(DLL ${LOVE_MOVE_DLLS})
-			post_step_move_dll(love ${DLL})
-		endforeach()
-	endif()
+# Add post build steps to move the DLLs next to the binary. Otherwise
+# running/debugging the binary will not work from inside VS.
+if(LOVE_MOVE_DLLS)
+	foreach(DLL ${LOVE_MOVE_DLLS})
+		post_step_move_dll(love ${DLL})
+	endforeach()
 endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
