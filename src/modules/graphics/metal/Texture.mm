@@ -226,8 +226,6 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 													length:size
 												   options:MTLResourceStorageModeShared];
 
-	memcpy(buffer.contents, data, size);
-
 	id<MTLBlitCommandEncoder> encoder = gfx->useBlitEncoder();
 
 	int z = 0;
