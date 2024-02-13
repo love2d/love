@@ -348,6 +348,7 @@ int w_isOpen(lua_State *L)
 
 int w_close(lua_State *L)
 {
+	luax_markdeprecated(L, 1, "love.window.close", API_FUNCTION, DEPRECATED_NO_REPLACEMENT, nullptr);
 	luax_catchexcept(L, [&]() { instance()->close(); });
 	return 0;
 }
