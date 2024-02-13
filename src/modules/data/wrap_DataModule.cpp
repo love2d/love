@@ -302,22 +302,37 @@ int w_decode(lua_State *L)
 
 int w_hash(lua_State *L)
 {
-	ContainerType ctype = luax_checkcontainertype(L, 1);
-	const char *fstr = luaL_checkstring(L, 2);
+	int narg = 0; // used to change the arg position when using the deprecated function variant
+
+	ContainerType ctype = CONTAINER_STRING;
 	HashFunction::Function function;
+
+	const char *str = luaL_checkstring(L, 1);
+	if (!getConstant(str, ctype))
+	{
+		if (HashFunction::getConstant(str, function))
+		{ // check if the argument at 1 is a hash function; deprecated function variant
+			luax_markdeprecated(L, 1, "love.data.hash", API_FUNCTION_VARIANT, DEPRECATED_REPLACED, "variant with container return type parameter");
+			narg = -1;
+		}
+		else
+			luax_enumerror(L, "container type", getConstants(ctype), str);
+	}
+
+	const char *fstr = luaL_checkstring(L, 2 + narg);
 	if (!HashFunction::getConstant(fstr, function))
 		return luax_enumerror(L, "hash function", HashFunction::getConstants(function), fstr);
 
 	HashFunction::Value hashvalue;
-	if (lua_isstring(L, 3))
+	if (lua_isstring(L, 3 + narg))
 	{
 		size_t rawsize = 0;
-		const char *rawbytes = luaL_checklstring(L, 3, &rawsize);
+		const char *rawbytes = luaL_checklstring(L, 3 + narg, &rawsize);
 		luax_catchexcept(L, [&](){ love::data::hash(function, rawbytes, rawsize, hashvalue); });
 	}
 	else
 	{
-		Data *rawdata = luax_checktype<Data>(L, 3);
+		Data *rawdata = luax_checktype<Data>(L, 3 + narg);
 		luax_catchexcept(L, [&](){ love::data::hash(function, rawdata, hashvalue); });
 	}
 
