@@ -25,12 +25,12 @@ jobs:
                                           libcurl4-openssl-dev libfuse2 wmctrl openbox mesa-vulkan-drivers \
                                           libvulkan1 vulkan-tools vulkan-validationlayers
     - name: Checkout love-appimage-source
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: love2d/love-appimage-source
         ref: 12.x
     - name: Checkout LÖVE
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: love2d-${{ github.sha }}
     - name: Get Dependencies for AppImage
@@ -74,7 +74,7 @@ jobs:
       run: |
         7z a -tzip test-output-linux-opengl.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (opengl)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-output-linux-opengl-${{ steps.report1.outputs.conclusion }}
         path: test-output-linux-opengl.zip
@@ -95,7 +95,7 @@ jobs:
       run: |
         7z a -tzip test-output-linux-opengles.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (opengles)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-output-linux-opengles-${{ steps.report2.outputs.conclusion }}
         path: test-output-linux-opengles.zip
@@ -114,7 +114,7 @@ jobs:
 #      run: |
 #        7z a -tzip test-output-linux-vulkan.zip love2d-${{ github.sha }}/testing/output/
 #    - name: Artifact Test Output (vulkan)
-#      uses: actions/upload-artifact@v3
+#      uses: actions/upload-artifact@v4
 #      with:
 #        name: test-output-linux-vulkan
 #        path: test-output-linux-vulkan.zip
@@ -125,12 +125,12 @@ jobs:
         kill $XVFBPID
         kill $OPENBOXPID
     - name: Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-linux-x86_64.AppImage
         path: love-${{ github.sha }}.AppImage
     - name: Artifact Debug Symbols
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-x86_64-AppImage-debug
         path: love-${{ github.sha }}.AppImage-debug.tar.gz
@@ -216,13 +216,13 @@ jobs:
         type log.txt
         exit /b ${{ steps.windbg.outputs.ERRORLEVEL }}
     - name: Setup Python 3.10
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.10"
     - name: Download source_index.py
       run: curl -Lo source_index.py https://gist.github.com/MikuAuahDark/d9c099f5714e09a765496471c2827a55/raw/df34956052035f3473c5f01861dfb53930d06843/source_index.py
     - name: Clone Megasource
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: megasource
         repository: love2d/megasource
@@ -238,11 +238,11 @@ jobs:
         commit = result.stdout.split()[0]
         with open(os.environ["GITHUB_OUTPUT"], "w", encoding="UTF-8") as f: f.write(f"commit={commit}")
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: megasource/libs/love
     - name: Download ANGLE
-      uses: robinraju/release-downloader@v1.7
+      uses: robinraju/release-downloader@v1.9
       if: steps.vars.outputs.angle == '1'
       with:
         repository: MikuAuahDark/angle-winbuild
@@ -285,7 +285,7 @@ jobs:
         --source %CD%\build\libs\LuaJIT https://raw.githubusercontent.com/love2d/megasource/${{ steps.megasource.outputs.commit }}/libs/LuaJIT ^
         pdb\Release\*.pdb
     - name: Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}
         path: |
@@ -294,12 +294,12 @@ jobs:
         if-no-files-found: ${{ steps.vars.outputs.nofiles }}
     - name: Artifact JIT Modules
       if: steps.vars.outputs.jitmodules == '1'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-windows-jitmodules
         path: build/libs/LuaJIT/src/jit/*.lua
     - name: Artifact PDB
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
         path: pdb/Release/*.pdb
@@ -336,7 +336,7 @@ jobs:
         7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl.zip megasource/libs/love/testing/output/
     - name: Artifact Test Output (opengl)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-output-windows-${{ steps.vars.outputs.arch }}-opengl-${{ steps.report1.outputs.conclusion }}
         path: test-output-windows-${{ steps.vars.outputs.arch }}-opengl.zip
@@ -361,7 +361,7 @@ jobs:
         7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles.zip megasource/libs/love/testing/output/
     - name: Artifact Test Output (opengles)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-output-windows-${{ steps.vars.outputs.arch }}-opengles-${{ steps.report2.outputs.conclusion }}
         path: test-output-windows-${{ steps.vars.outputs.arch }}-opengles.zip
@@ -403,7 +403,7 @@ jobs:
 #        7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan.zip megasource/libs/love/testing/output/
 #    - name: Artifact Test Output (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
-#      uses: actions/upload-artifact@v3
+#      uses: actions/upload-artifact@v4
 #      with:
 #        name: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
 #        path: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan.zip
@@ -414,9 +414,9 @@ jobs:
       pull-requests: write
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Clone Dependencies
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
@@ -434,7 +434,7 @@ jobs:
       run:
         ditto -c -k --sequesterRsrc --keepParent love-macos/love.app love-macos.zip 
     - name: Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-macos
         path: love-macos.zip
@@ -455,7 +455,7 @@ jobs:
       run: |
         7z a -tzip test-output-macos-opengl.zip ./testing/output/
     - name: Artifact Test Output
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-output-macos-opengl-${{ steps.report1.outputs.conclusion }}
         path: test-output-macos-opengl.zip
@@ -468,9 +468,9 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Clone Dependencies
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
