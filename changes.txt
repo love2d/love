@@ -101,6 +101,7 @@ Released: N/A
 * Changed RevoluteJoint:getMotorTorque and WheelJoint:getMotorTorque to take 'dt' as a parameter instead of 'inverse_dt'.
 * Changed love.math.perlinNoise and simplexNoise to use higher precision numbers for its internal calculations.
 * Changed t.accelerometerjoystick startup flag in love.conf to unset by default.
+* Changed love.data.hash to take in a container type.
 
 * Renamed 'display' field to 'displayindex' in love.window.setMode/updateMode/getMode and love.conf.
 * Renamed love.graphics Text objects to TextBatch.
@@ -120,6 +121,7 @@ Released: N/A
 * Deprecated t.accelerometerjoystick in love.conf (replaced by love.sensor module).
 * Deprecated the variants of Mesh:attachAttribute and SpriteBatch:attachAttribute which accept a Mesh (replaced by variants which accept a Buffer).
 * Deprecated Texture:newImageData (replaced by love.graphics.readbackTexture).
+* Deprecated love.data.hash (replaced by function variant, which takes container type).
 
 * Removed the variant of SpriteBatch:setColor() which turns off all previously set colors.
 * Removed the no-argument variant of love.graphics.setColorMask.
