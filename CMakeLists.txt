@@ -23,7 +23,7 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
 	message(FATAL_ERROR "Prevented in-tree build.")
 endif()
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.18)
 
 project(love)
 
@@ -78,14 +78,6 @@ else()
 endif()
 
 message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
-
-if(POLICY CMP0072)
-	cmake_policy(SET CMP0072 NEW)
-endif()
-
-if(POLICY CMP0063)
-	cmake_policy(SET CMP0063 NEW)
-endif()
 
 if(MEGA)
 	# LOVE_MSVC_DLLS contains runtime DLLs that should be bundled with the love
