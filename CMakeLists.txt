@@ -1160,11 +1160,8 @@ source_group("modules\\window\\sdl" FILES ${LOVE_SRC_MODULE_WINDOW_SDL})
 # Box2D
 #
 
-set(LOVE_SRC_3P_BOX2D_ROOT
+add_library(love_3p_box2d
 	src/libraries/box2d/Box2D.h
-)
-
-set(LOVE_SRC_3P_BOX2D_COLLISION
 	src/libraries/box2d/collision/b2_broad_phase.cpp
 	src/libraries/box2d/collision/b2_chain_shape.cpp
 	src/libraries/box2d/collision/b2_circle_shape.cpp
@@ -1177,18 +1174,12 @@ set(LOVE_SRC_3P_BOX2D_COLLISION
 	src/libraries/box2d/collision/b2_edge_shape.cpp
 	src/libraries/box2d/collision/b2_polygon_shape.cpp
 	src/libraries/box2d/collision/b2_time_of_impact.cpp
-)
-
-set(LOVE_SRC_3P_BOX2D_COMMON
 	src/libraries/box2d/common/b2_block_allocator.cpp
 	src/libraries/box2d/common/b2_draw.cpp
 	src/libraries/box2d/common/b2_math.cpp
 	src/libraries/box2d/common/b2_settings.cpp
 	src/libraries/box2d/common/b2_stack_allocator.cpp
 	src/libraries/box2d/common/b2_timer.cpp
-)
-
-set(LOVE_SRC_3P_BOX2D_DYNAMICS
 	src/libraries/box2d/dynamics/b2_body.cpp
 	src/libraries/box2d/dynamics/b2_chain_circle_contact.cpp
 	src/libraries/box2d/dynamics/b2_chain_circle_contact.h
@@ -1224,64 +1215,44 @@ set(LOVE_SRC_3P_BOX2D_DYNAMICS
 	src/libraries/box2d/dynamics/b2_wheel_joint.cpp
 	src/libraries/box2d/dynamics/b2_world.cpp
 	src/libraries/box2d/dynamics/b2_world_callbacks.cpp
-)
-
-set(LOVE_SRC_3P_BOX2D_ROPE
 	src/libraries/box2d/rope/b2_rope.cpp
 )
-
-set(LOVE_SRC_3P_BOX2D
-	${LOVE_SRC_3P_BOX2D_ROOT}
-	${LOVE_SRC_3P_BOX2D_COLLISION}
-	${LOVE_SRC_3P_BOX2D_COMMON}
-	${LOVE_SRC_3P_BOX2D_DYNAMICS}
-	${LOVE_SRC_3P_BOX2D_ROPE}
-)
-
-add_library(love_3p_box2d ${LOVE_SRC_3P_BOX2D})
 
 #
 # ddsparse
 #
 
-set(LOVE_SRC_3P_DDSPARSE
+add_library(love_3p_ddsparse
 	src/libraries/ddsparse/ddsinfo.h
 	src/libraries/ddsparse/ddsparse.cpp
 	src/libraries/ddsparse/ddsparse.h
 )
 
-add_library(love_3p_ddsparse ${LOVE_SRC_3P_DDSPARSE})
-
 #
 # dr_flac
 #
 
-set(LOVE_SRC_3P_DRFLAC
-	src/libraries/dr/dr_flac.h
-)
-
 # dr_flac has no implementation files of its own.
+#add_library(love_3p_drflac
+#	src/libraries/dr/dr_flac.h
+#)
 
 #
 # dr_mp3
 #
 
-set(LOVE_SRC_3P_DRMP3
-	src/libraries/dr/dr_mp3.h
-)
-
 # dr_mp3 has no implementation files of its own.
+#add_library(love_3p_drmp3
+#	src/libraries/dr/dr_mp3.h
+#)
 
 #
 # enet
 #
 
-set(LOVE_SRC_3P_ENET_ROOT
+add_library(love_3p_enet
 	src/libraries/enet/enet.cpp
 	src/libraries/enet/lua-enet.h
-)
-
-set(LOVE_SRC_3P_ENET_LIBENET
 	src/libraries/enet/libenet/callbacks.c
 	src/libraries/enet/libenet/compress.c
 	src/libraries/enet/libenet/host.c
@@ -1291,9 +1262,6 @@ set(LOVE_SRC_3P_ENET_LIBENET
 	src/libraries/enet/libenet/protocol.c
 	src/libraries/enet/libenet/unix.c
 	src/libraries/enet/libenet/win32.c
-)
-
-set(LOVE_SRC_3P_ENET_LIBENET_INCLUDE_ENET
 	src/libraries/enet/libenet/include/enet/enet.h
 	src/libraries/enet/libenet/include/enet/list.h
 	src/libraries/enet/libenet/include/enet/protocol.h
@@ -1303,14 +1271,6 @@ set(LOVE_SRC_3P_ENET_LIBENET_INCLUDE_ENET
 	src/libraries/enet/libenet/include/enet/utility.h
 	src/libraries/enet/libenet/include/enet/win32.h
 )
-
-set(LOVE_SRC_3P_ENET
-	${LOVE_SRC_3P_ENET_ROOT}
-	${LOVE_SRC_3P_ENET_LIBENET}
-	${LOVE_SRC_3P_ENET_LIBENET_INCLUDE_ENET}
-)
-
-add_library(love_3p_enet ${LOVE_SRC_3P_ENET})
 target_link_libraries(love_3p_enet ${LOVE_LUA_LIBRARY})
 target_include_directories(love_3p_enet PUBLIC src/libraries/enet/libenet/include)
 if(MINGW)
@@ -1321,24 +1281,20 @@ endif()
 # GLAD
 #
 
-set(LOVE_SRC_3P_GLAD
+add_library(love_3p_glad
 	src/libraries/glad/glad.cpp
 	src/libraries/glad/glad.hpp
 	src/libraries/glad/gladfuncs.hpp
 )
 
-add_library(love_3p_glad ${LOVE_SRC_3P_GLAD})
-
 #
 # glslang
 #
 
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_GENERICCODEGEN
+add_library(love_3p_glslang
+	src/libraries/glslang/glslang/build_info.h
 	src/libraries/glslang/glslang/GenericCodeGen/CodeGen.cpp
 	src/libraries/glslang/glslang/GenericCodeGen/Link.cpp
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE
 	src/libraries/glslang/glslang/Include/arrays.h
 	src/libraries/glslang/glslang/Include/BaseTypes.h
 	src/libraries/glslang/glslang/Include/Common.h
@@ -1351,9 +1307,6 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE
 	src/libraries/glslang/glslang/Include/ShHandle.h
 	src/libraries/glslang/glslang/Include/SpirvIntrinsics.h
 	src/libraries/glslang/glslang/Include/Types.h
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/Pp.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpAtom.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpContext.cpp
@@ -1361,10 +1314,6 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpTokens.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpTokens.h
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR}
 	src/libraries/glslang/glslang/MachineIndependent/attribute.cpp
 	src/libraries/glslang/glslang/MachineIndependent/attribute.h
 	src/libraries/glslang/glslang/MachineIndependent/Constant.cpp
@@ -1406,44 +1355,10 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
 	src/libraries/glslang/glslang/MachineIndependent/SymbolTable.h
 	src/libraries/glslang/glslang/MachineIndependent/Versions.cpp
 	src/libraries/glslang/glslang/MachineIndependent/Versions.h
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
 	src/libraries/glslang/glslang/OSDependent/osinclude.h
-)
-
-if(MSVC OR MINGW)
-	set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
-		${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
-		src/libraries/glslang/glslang/OSDependent/Windows/ossource.cpp
-	)
-else()
-	set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
-		${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
-		src/libraries/glslang/glslang/OSDependent/Unix/ossource.cpp
-	)
-endif()
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC
 	src/libraries/glslang/glslang/Public/ResourceLimits.h
 	src/libraries/glslang/glslang/Public/ShaderLang.h
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_RESOURCELIMITS
 	src/libraries/glslang/glslang/ResourceLimits/ResourceLimits.cpp
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG
-	src/libraries/glslang/glslang/build_info.h
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_GENERICCODEGEN}
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE}
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT}
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC}
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_RESOURCELIMITS}
-)
-
-set(LOVE_SRC_3P_GLSLANG_SPIRV
 	src/libraries/glslang/SPIRV/bitutils.h
 	src/libraries/glslang/SPIRV/disassemble.cpp
 	src/libraries/glslang/SPIRV/disassemble.h
@@ -1475,34 +1390,38 @@ set(LOVE_SRC_3P_GLSLANG_SPIRV
 	src/libraries/glslang/SPIRV/SpvTools.h
 )
 
-set(LOVE_SRC_3P_GLSLANG
-	${LOVE_SRC_3P_GLSLANG_GLSLANG}
-	${LOVE_SRC_3P_GLSLANG_SPIRV}
-)
-
-add_library(love_3p_glslang ${LOVE_SRC_3P_GLSLANG})
+if(MSVC OR MINGW)
+	target_sources(love_3p_glslang PRIVATE
+		src/libraries/glslang/glslang/OSDependent/Windows/ossource.cpp
+	)
+else()
+	target_sources(love_3p_glslang PRIVATE
+		src/libraries/glslang/glslang/OSDependent/Unix/ossource.cpp
+	)
+endif()
 
 #
 # LodePNG
 #
 
-set(LOVE_SRC_3P_LODEPNG
+add_library(love_3p_lodepng
 	src/libraries/lodepng/lodepng.cpp
 	src/libraries/lodepng/lodepng.h
 )
-
-add_library(love_3p_lodepng ${LOVE_SRC_3P_LODEPNG})
 
 #
 # luasocket
 #
 
-set(LOVE_SRC_3P_LUASOCKET_ROOT
+if(MINGW)
+	set(WIN32_LIB_EXT .a)
+else()
+	set(WIN32_LIB_EXT .lib)
+endif()
+
+add_library(love_3p_luasocket
 	src/libraries/luasocket/luasocket.cpp
 	src/libraries/luasocket/luasocket.h
-)
-
-set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 	src/libraries/luasocket/libluasocket/auxiliar.c
 	src/libraries/luasocket/libluasocket/auxiliar.h
 	src/libraries/luasocket/libluasocket/buffer.c
@@ -1548,73 +1467,47 @@ set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 	src/libraries/luasocket/libluasocket/unixstream.c
 	src/libraries/luasocket/libluasocket/unixstream.h
 )
-
-set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET)
-
-if(MINGW)
-	set(WIN32_LIB_EXT .a)
-else()
-	set(WIN32_LIB_EXT .lib)
-endif()
+target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY})
 
 if(MSVC OR MINGW)
-	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
-		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
+	target_sources(love_3p_luasocket PRIVATE
 		src/libraries/luasocket/libluasocket/wsocket.c
 		src/libraries/luasocket/libluasocket/wsocket.h
 	)
 
-	set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET
-		${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET}
+	target_link_libraries(love_3p_luasocket
 		ws2_32${WIN32_LIB_EXT}
 	)
 else()
-	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
-		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
+	target_sources(love_3p_luasocket PRIVATE
 		src/libraries/luasocket/libluasocket/serial.c
 		src/libraries/luasocket/libluasocket/usocket.c
 		src/libraries/luasocket/libluasocket/usocket.h
 	)
 endif()
 
-set(LOVE_SRC_3P_LUASOCKET
-	${LOVE_SRC_3P_LUASOCKET_ROOT}
-	${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
-)
-
-add_library(love_3p_luasocket ${LOVE_SRC_3P_LUASOCKET})
-target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY} ${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET})
-
 #
 # APIs from Lua 5.3
 #
 
-set(LOVE_SRC_3P_LUA53
+add_library(love_3p_lua53
 	src/libraries/lua53/lprefix.h
 	src/libraries/lua53/lstrlib.c
 	src/libraries/lua53/lstrlib.h
 	src/libraries/lua53/lutf8lib.c
 	src/libraries/lua53/lutf8lib.h
 )
-
-add_library(love_3p_lua53 ${LOVE_SRC_3P_LUA53})
 target_link_libraries(love_3p_lua53 ${LOVE_LUA_LIBRARY})
 
 #
 # Lua HTTPS
 #
 
-set(LOVE_SRC_3P_LUAHTTPS_ANDROID
+add_library(love_3p_luahttps
+	# These are platform-dependent but have ifdef guards to make sure they only
+	# compile on supported platforms.
 	src/libraries/luahttps/src/android/AndroidClient.cpp
 	src/libraries/luahttps/src/android/AndroidClient.h
-)
-
-set(LOVE_SRC_3P_LUAHTTPS_APPLE
-	src/libraries/luahttps/src/apple/NSURLClient.mm
-	src/libraries/luahttps/src/apple/NSURLClient.h
-)
-
-set(LOVE_SRC_3P_LUAHTTPS_COMMON
 	src/libraries/luahttps/src/common/config.h
 	src/libraries/luahttps/src/common/Connection.h
 	src/libraries/luahttps/src/common/ConnectionClient.h
@@ -1626,64 +1519,43 @@ set(LOVE_SRC_3P_LUAHTTPS_COMMON
 	src/libraries/luahttps/src/common/HTTPSClient.h
 	src/libraries/luahttps/src/common/PlaintextConnection.cpp
 	src/libraries/luahttps/src/common/PlaintextConnection.h
-)
-
-set(LOVE_SRC_3P_LUAHTTPS_GENERIC
 	src/libraries/luahttps/src/generic/CurlClient.cpp
 	src/libraries/luahttps/src/generic/CurlClient.h
 	src/libraries/luahttps/src/generic/OpenSSLConnection.cpp
 	src/libraries/luahttps/src/generic/OpenSSLConnection.h
-)
-
-set(LOVE_SRC_3P_LUAHTTPS_LUA
 	src/libraries/luahttps/src/lua/main.cpp
-)
-
-set(LOVE_SRC_3P_LUAHTTPS_WINDOWS
 	src/libraries/luahttps/src/windows/SChannelConnection.cpp
 	src/libraries/luahttps/src/windows/SChannelConnection.h
 	src/libraries/luahttps/src/windows/WinINetClient.cpp
 	src/libraries/luahttps/src/windows/WinINetClient.h
 )
-
-# These are platform-dependent but have ifdef guards to make sure they only
-# compile on supported platforms.
-set(LOVE_SRC_3P_LUAHTTPS
-	${LOVE_SRC_3P_LUAHTTPS_ANDROID}
-	${LOVE_SRC_3P_LUAHTTPS_COMMON}
-	${LOVE_SRC_3P_LUAHTTPS_GENERIC}
-	${LOVE_SRC_3P_LUAHTTPS_LUA}
-	${LOVE_SRC_3P_LUAHTTPS_WINDOWS}
-	)
+target_link_libraries(love_3p_luahttps ${LOVE_LUA_LIBRARY})
 
 if (APPLE)
-	set(LOVE_SRC_3P_LUAHTTPS ${LOVE_SRC_3P_LUAHTTPS} ${LOVE_SRC_3P_LUAHTTPS_APPLE})
+	target_sources(love_3p_luahttps PRIVATE
+		src/libraries/luahttps/src/apple/NSURLClient.mm
+		src/libraries/luahttps/src/apple/NSURLClient.h
+	)
 endif()
 
-set(LOVE_LINK_L3P_LUAHTTPS)
 if(MSVC)
-	set(LOVE_LINK_L3P_LUAHTTPS
-		${LOVE_LINK_L3P_LUAHTTPS}
+	target_link_libraries(love_3p_luahttps
 		ws2_32
 		secur32
 	)
 
 	if(NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-		set(LOVE_LINK_L3P_LUAHTTPS
-			${LOVE_LINK_L3P_LUAHTTPS}
+		target_link_libraries(love_3p_luahttps
 			wininet
 		)
 	endif()
 endif()
 
-add_library(love_3p_luahttps ${LOVE_SRC_3P_LUAHTTPS})
-target_link_libraries(love_3p_luahttps ${LOVE_LUA_LIBRARY} ${LOVE_LINK_L3P_LUAHTTPS})
-
 #
 # lz4
 #
 
-set(LOVE_SRC_3P_LZ4
+add_library(love_3p_lz4
 	src/libraries/lz4/lz4.c
 	src/libraries/lz4/lz4.h
 	src/libraries/lz4/lz4hc.c
@@ -1691,26 +1563,22 @@ set(LOVE_SRC_3P_LZ4
 	src/libraries/lz4/lz4opt.h
 )
 
-add_library(love_3p_lz4 ${LOVE_SRC_3P_LZ4})
-
 #
 # noise1234
 #
 
-set(LOVE_SRC_3P_NOISE1234
+add_library(love_3p_noise1234
 	src/libraries/noise1234/noise1234.cpp
 	src/libraries/noise1234/noise1234.h
 	src/libraries/noise1234/simplexnoise1234.cpp
 	src/libraries/noise1234/simplexnoise1234.h
 )
 
-add_library(love_3p_noise1234 ${LOVE_SRC_3P_NOISE1234})
-
 #
 # physfs
 #
 
-set(LOVE_SRC_3P_PHYSFS
+add_library(love_3p_physfs
 	src/libraries/physfs/physfs_archiver_7z.c
 	src/libraries/physfs/physfs_archiver_dir.c
 	src/libraries/physfs/physfs_archiver_grp.c
@@ -1743,19 +1611,19 @@ set(LOVE_SRC_3P_PHYSFS
 )
 
 if(APPLE)
-	set(LOVE_SRC_3P_PHYSFS ${LOVE_SRC_3P_PHYSFS}
+	target_sources(love_3p_physfs PRIVATE
 		src/libraries/physfs/physfs_platform_apple.m
 	)
-	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework IOKit")
+	target_link_libraries(love_3p_physfs INTERFACE
+		"-framework IOKit"
+	)
 endif()
-
-add_library(love_3p_physfs ${LOVE_SRC_3P_PHYSFS})
 
 #
 # spirv_cross
 #
 
-set(LOVE_SRC_3P_SPIRV_CROSS
+add_library(love_3p_spirv_cross
 	src/libraries/spirv_cross/GLSL.std.450.h
 	src/libraries/spirv_cross/spirv_cfg.cpp
 	src/libraries/spirv_cross/spirv_cfg.hpp
@@ -1783,112 +1651,100 @@ set(LOVE_SRC_3P_SPIRV_CROSS
 	src/libraries/spirv_cross/spirv.hpp
 )
 
-add_library(love_3p_spirv_cross ${LOVE_SRC_3P_SPIRV_CROSS})
-
 #
 # stb_image
 #
 
-set(LOVE_SRC_3P_STB
-	src/libraries/stb/stb_image.h
-)
-
 # stb_image has no implementation files of its own.
+#add_library(love_3p_stb
+#	src/libraries/stb/stb_image.h
+#)
 
 #
 # tiny exr
 #
 
-set(LOVE_SRC_3P_TINYEXR
-	src/libraries/tinyexr/tinyexr.h
-)
-
 # tinyexr has no implementation files of its own.
+#add_library(love_3p_tinyexr
+#	src/libraries/tinyexr/tinyexr.h
+#)
 
 #
 # utf8
 #
 
-set(LOVE_SRC_3P_UTF8_ROOT src/libraries/utf8/utf8.h)
-
-set(LOVE_SRC_3P_UTF8_UTF8
-	src/libraries/utf8/utf8/checked.h
-	src/libraries/utf8/utf8/core.h
-	src/libraries/utf8/utf8/unchecked.h
-)
-
-set(LOVE_SRC_3P_UTF8
-	${LOVE_SRC_3P_UTF8_ROOT}
-	${LOVE_SRC_3P_UTF8_UTF8}
-)
-
 # This library is all headers ... so there is no need to
 # add_library() here.
+#add_library(love_3p_utf8
+#	src/libraries/utf8/utf8.h
+#	src/libraries/utf8/utf8/checked.h
+#	src/libraries/utf8/utf8/core.h
+#	src/libraries/utf8/utf8/unchecked.h
+#)
 
 #
 # vma
 #
 
-set(LOVE_SRC_3P_VMA src/libraries/vma/vk_mem_alloc.h)
-
 # vulkan memory allocatory has no implementation files of its own.
+#add_library(love_3p_vma
+#	src/libraries/vma/vk_mem_alloc.h
+#)
 
 #
 # volk
 #
 
-set(LOVE_SRC_3P_VOLK 
-	src/libraries/volk/volk.h
-	src/libraries/volk/volk.c)
-
 # since we don't want to use the system vulkan header files we need to 
 # compile this library in the löve source code using VOLK_IMPLEMENTATION.
+#add_library(love_3p_volk 
+#	src/libraries/volk/volk.h
+#	src/libraries/volk/volk.c)
 
 #
 # vulkan headers
 #
 
-set(LOVE_SRC_3P_VULKAN_HEADERS
-	src/libraries/vulkanheaders/vk_icd.h
-	src/libraries/vulkanheaders/vk_layer.h
-	src/libraries/vulkanheaders/vk_platform.h
-	src/libraries/vulkanheaders/vk_sdk-platform.h
-	src/libraries/vulkanheaders/vulkan_android.h
-	src/libraries/vulkanheaders/vulkan_beta.h
-	src/libraries/vulkanheaders/vulkan_core.h
-	src/libraries/vulkanheaders/vulkan_directfb.h
-	src/libraries/vulkanheaders/vulkan_enums.hpp
-	src/libraries/vulkanheaders/vulkan_format_traits.hpp
-	src/libraries/vulkanheaders/vulkan_fuchsia.h
-	src/libraries/vulkanheaders/vulkan_funcs.h
-	src/libraries/vulkanheaders/vulkan_ggp.h
-	src/libraries/vulkanheaders/vulkan_handles.h
-	src/libraries/vulkanheaders/vulkan_hash.hpp
-	src/libraries/vulkanheaders/vulkan_ios.h
-	src/libraries/vulkanheaders/vulkan_macos.h
-	src/libraries/vulkanheaders/vulkan_metal.h
-	src/libraries/vulkanheaders/vulkan_raii.hpp
-	src/libraries/vulkanheaders/vulkan_screen.h
-	src/libraries/vulkanheaders/vulkan_static_assertions.h
-	src/libraries/vulkanheaders/vulkan_structs.hpp
-	src/libraries/vulkanheaders/vulkan_to_string.h
-	src/libraries/vulkanheaders/vulkan_vi.h
-	src/libraries/vulkanheaders/vulkan_wayland.h
-	src/libraries/vulkanheaders/vulkan_win32.h
-	src/libraries/vulkanheaders/vulkan_xcb.h
-	src/libraries/vulkanheaders/vulkan_xlib_xrandr.h
-	src/libraries/vulkanheaders/vulkan_xlib.h
-	src/libraries/vulkanheaders/vulkan.h
-	src/libraries/vulkanheaders/vulkan.hpp
-)
-
 # vulkan headers has no implementation files of its own.
+#add_library(love_3p_vulkan_headers
+#	src/libraries/vulkanheaders/vk_icd.h
+#	src/libraries/vulkanheaders/vk_layer.h
+#	src/libraries/vulkanheaders/vk_platform.h
+#	src/libraries/vulkanheaders/vk_sdk-platform.h
+#	src/libraries/vulkanheaders/vulkan_android.h
+#	src/libraries/vulkanheaders/vulkan_beta.h
+#	src/libraries/vulkanheaders/vulkan_core.h
+#	src/libraries/vulkanheaders/vulkan_directfb.h
+#	src/libraries/vulkanheaders/vulkan_enums.hpp
+#	src/libraries/vulkanheaders/vulkan_format_traits.hpp
+#	src/libraries/vulkanheaders/vulkan_fuchsia.h
+#	src/libraries/vulkanheaders/vulkan_funcs.h
+#	src/libraries/vulkanheaders/vulkan_ggp.h
+#	src/libraries/vulkanheaders/vulkan_handles.h
+#	src/libraries/vulkanheaders/vulkan_hash.hpp
+#	src/libraries/vulkanheaders/vulkan_ios.h
+#	src/libraries/vulkanheaders/vulkan_macos.h
+#	src/libraries/vulkanheaders/vulkan_metal.h
+#	src/libraries/vulkanheaders/vulkan_raii.hpp
+#	src/libraries/vulkanheaders/vulkan_screen.h
+#	src/libraries/vulkanheaders/vulkan_static_assertions.h
+#	src/libraries/vulkanheaders/vulkan_structs.hpp
+#	src/libraries/vulkanheaders/vulkan_to_string.h
+#	src/libraries/vulkanheaders/vulkan_vi.h
+#	src/libraries/vulkanheaders/vulkan_wayland.h
+#	src/libraries/vulkanheaders/vulkan_win32.h
+#	src/libraries/vulkanheaders/vulkan_xcb.h
+#	src/libraries/vulkanheaders/vulkan_xlib_xrandr.h
+#	src/libraries/vulkanheaders/vulkan_xlib.h
+#	src/libraries/vulkanheaders/vulkan.h
+#	src/libraries/vulkanheaders/vulkan.hpp
+#)
 
 #
 # Wuff
 #
 
-set(LOVE_SRC_3P_WUFF
+add_library(love_3p_wuff
 	src/libraries/Wuff/wuff.c
 	src/libraries/Wuff/wuff.h
 	src/libraries/Wuff/wuff_config.h
@@ -1899,35 +1755,13 @@ set(LOVE_SRC_3P_WUFF
 	src/libraries/Wuff/wuff_memory.c
 )
 
-add_library(love_3p_wuff ${LOVE_SRC_3P_WUFF})
-
 #
 # xxHash
 #
 
-set(LOVE_SRC_3P_XXHASH
+add_library(love_3p_xxhash
 	src/libraries/xxHash/xxhash.c
 	src/libraries/xxHash/xxhash.h
-)
-
-add_library(love_3p_xxhash ${LOVE_SRC_3P_XXHASH})
-
-set(LOVE_3P
-	love_3p_box2d
-	love_3p_ddsparse
-	love_3p_enet
-	love_3p_glad
-	love_3p_glslang
-	love_3p_lodepng
-	love_3p_luasocket
-	love_3p_lua53
-	love_3p_luahttps
-	love_3p_lz4
-	love_3p_noise1234
-	love_3p_physfs
-	love_3p_spirv_cross
-	love_3p_wuff
-	love_3p_xxhash
 )
 
 love_disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket love_3p_physfs)
@@ -1999,7 +1833,24 @@ set_target_properties(liblove PROPERTIES
 	CXX_VISIBILITY_PRESET hidden
 	VISIBILITY_INLINES_HIDDEN ON
 	LIBRARY_OUTPUT_NAME "${LOVE_LIB_NAME}")
-target_link_libraries(liblove ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
+target_link_libraries(liblove
+	${LOVE_LINK_LIBRARIES}
+	love_3p_box2d
+	love_3p_ddsparse
+	love_3p_enet
+	love_3p_glad
+	love_3p_glslang
+	love_3p_lodepng
+	love_3p_luasocket
+	love_3p_lua53
+	love_3p_luahttps
+	love_3p_lz4
+	love_3p_noise1234
+	love_3p_physfs
+	love_3p_spirv_cross
+	love_3p_wuff
+	love_3p_xxhash
+)
 
 if(LOVE_EXTRA_DEPENDECIES)
 	add_dependencies(liblove ${LOVE_EXTRA_DEPENDECIES})
