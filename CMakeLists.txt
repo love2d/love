@@ -261,12 +261,7 @@ else()
 endif()
 
 function(love_disable_warnings ARG_TARGET)
-	get_target_property(OLD_FLAGS ${ARG_TARGET} COMPILE_FLAGS)
-	set(NEW_FLAGS ${DISABLE_WARNING_FLAG})
-	if(OLD_FLAGS)
-		set(NEW_FLAGS "${OLD_FLAGS} ${NEW_FLAGS}")
-	endif()
-	set_target_properties(${ARG_TARGET} PROPERTIES COMPILE_FLAGS ${NEW_FLAGS})
+	target_compile_options(${ARG_TARGET} PRIVATE ${DISABLE_WARNING_FLAG})
 endfunction()
 
 #
@@ -1217,6 +1212,7 @@ add_library(love_3p_box2d
 	src/libraries/box2d/dynamics/b2_world_callbacks.cpp
 	src/libraries/box2d/rope/b2_rope.cpp
 )
+love_disable_warnings(love_3p_box2d)
 
 #
 # ddsparse
@@ -1271,6 +1267,7 @@ add_library(love_3p_enet
 	src/libraries/enet/libenet/include/enet/utility.h
 	src/libraries/enet/libenet/include/enet/win32.h
 )
+love_disable_warnings(love_3p_enet)
 target_link_libraries(love_3p_enet ${LOVE_LUA_LIBRARY})
 target_include_directories(love_3p_enet PUBLIC src/libraries/enet/libenet/include)
 if(MINGW)
@@ -1468,6 +1465,7 @@ add_library(love_3p_luasocket
 	src/libraries/luasocket/libluasocket/unixstream.h
 )
 target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY})
+love_disable_warnings(love_3p_luasocket)
 
 if(MSVC OR MINGW)
 	target_sources(love_3p_luasocket PRIVATE
@@ -1609,6 +1607,7 @@ add_library(love_3p_physfs
 	src/libraries/physfs/physfs.c
 	src/libraries/physfs/physfs.h
 )
+love_disable_warnings(love_3p_physfs)
 
 if(APPLE)
 	target_sources(love_3p_physfs PRIVATE
@@ -1763,8 +1762,6 @@ add_library(love_3p_xxhash
 	src/libraries/xxHash/xxhash.c
 	src/libraries/xxHash/xxhash.h
 )
-
-love_disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket love_3p_physfs)
 
 #
 # liblove
