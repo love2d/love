@@ -63,7 +63,7 @@ public:
 private:
 	void createTexture();
 
-	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
+	void uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r) override;
 
 	void generateMipmapsInternal() override;
 

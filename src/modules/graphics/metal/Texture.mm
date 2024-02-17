@@ -149,7 +149,7 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 					emptydata.resize(getPixelFormatSliceSize(format, w, h));
 
 				Rect r = {0, 0, getPixelWidth(mip), getPixelHeight(mip)};
-				uploadByteData(format, emptydata.data(), emptydata.size(), mip, slice, r);
+				uploadByteData(emptydata.data(), emptydata.size(), mip, slice, r);
 			}
 			else if (isRenderTarget())
 			{
@@ -219,7 +219,7 @@ Texture::~Texture()
 	sampler = nil;
 }}
 
-void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
+void Texture::uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r)
 { @autoreleasepool {
 	auto gfx = Graphics::getInstance();
 	id<MTLBuffer> buffer = [gfx->device newBufferWithBytes:data
@@ -237,7 +237,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 
 	MTLBlitOption options = MTLBlitOptionNone;
 
-	switch (pixelformat)
+	switch (format)
 	{
 	case PIXELFORMAT_PVR1_RGB2_UNORM:
 	case PIXELFORMAT_PVR1_RGB4_UNORM:

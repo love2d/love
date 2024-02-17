@@ -472,7 +472,7 @@ void Texture::generateMipmapsInternal()
 			1, &barrier);
 }
 
-void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
+void Texture::uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r)
 {
 	VkBuffer stagingBuffer;
 	VmaAllocation vmaAllocation;

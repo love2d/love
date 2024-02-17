@@ -356,7 +356,7 @@ void Texture::createTexture()
 			int slices = texType == TEXTURE_VOLUME ? getDepth(mip) : layers;
 			slices = texType == TEXTURE_CUBE ? 6 : slices;
 			for (int i = 0; i < slices; i++)
-				uploadByteData(format, emptydata.data(), emptydata.size(), mip, i, r);
+				uploadByteData(emptydata.data(), emptydata.size(), mip, i, r);
 		}
 	}
 
@@ -466,19 +466,19 @@ void Texture::unloadVolatile()
 	setGraphicsMemorySize(0);
 }
 
-void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
+void Texture::uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r)
 {
 	OpenGL::TempDebugGroup debuggroup("Texture data upload");
 
 	gl.bindTextureToUnit(this, 0, false);
 
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, false);
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false);
 	GLenum gltarget = OpenGL::getGLTextureType(texType);
 
 	if (texType == TEXTURE_CUBE)
 		gltarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice;
 
-	if (isPixelFormatCompressed(pixelformat))
+	if (isPixelFormatCompressed(format))
 	{
 		if (texType == TEXTURE_2D || texType == TEXTURE_CUBE)
 		{
@@ -566,7 +566,7 @@ void Texture::copyFromBuffer(love::graphics::Buffer *source, size_t sourceoffset
 	// glTexSubImage and friends copy from the active pixel_unpack_buffer by
 	// treating the pointer as a byte offset.
 	const uint8 *byteoffset = (const uint8 *)(ptrdiff_t)sourceoffset;
-	uploadByteData(format, byteoffset, size, mipmap, slice, rect);
+	uploadByteData(byteoffset, size, mipmap, slice, rect);
 
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);

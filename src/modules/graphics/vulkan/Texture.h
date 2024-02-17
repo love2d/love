@@ -59,7 +59,7 @@ public:
 	VkImageView getRenderTargetView(int mip, int layer);
 	VkSampleCountFlagBits getMsaaSamples() const;
 
-	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
+	void uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r) override;
 
 	void generateMipmapsInternal()  override;
 

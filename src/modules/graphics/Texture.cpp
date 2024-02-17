@@ -458,7 +458,7 @@ void Texture::uploadImageData(love::image::ImageDataBase *d, int level, int slic
 		lock.setLock(id->getMutex());
 
 	Rect rect = {x, y, d->getWidth(), d->getHeight()};
-	uploadByteData(format, d->getData(), d->getSize(), level, slice, rect);
+	uploadByteData(d->getData(), d->getSize(), level, slice, rect);
 }
 
 void Texture::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps)
@@ -477,7 +477,9 @@ void Texture::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap
 	if (getHandle() == 0)
 		return;
 
-	if (d->getFormat() != getPixelFormat())
+	// ImageData format might be linear but intended to be used as sRGB, so we
+	// don't error if only the sRGBness is different.
+	if (getLinearPixelFormat(d->getFormat()) != getLinearPixelFormat(getPixelFormat()))
 		throw love::Exception("Pixel formats must match.");
 
 	if (mipmap < 0 || mipmap >= getMipmapCount())
@@ -533,7 +535,7 @@ void Texture::replacePixels(const void *data, size_t size, int slice, int mipmap
 
 	Graphics::flushBatchedDrawsGlobal();
 
-	uploadByteData(format, data, size, mipmap, slice, rect);
+	uploadByteData(data, size, mipmap, slice, rect);
 
 	if (reloadmipmaps && mipmap == 0 && getMipmapCount() > 1)
 		generateMipmaps();
