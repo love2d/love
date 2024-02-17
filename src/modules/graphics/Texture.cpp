@@ -458,7 +458,7 @@ void Texture::uploadImageData(love::image::ImageDataBase *d, int level, int slic
 		lock.setLock(id->getMutex());
 
 	Rect rect = {x, y, d->getWidth(), d->getHeight()};
-	uploadByteData(d->getFormat(), d->getData(), d->getSize(), level, slice, rect);
+	uploadByteData(format, d->getData(), d->getSize(), level, slice, rect);
 }
 
 void Texture::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap, int x, int y, bool reloadmipmaps)
