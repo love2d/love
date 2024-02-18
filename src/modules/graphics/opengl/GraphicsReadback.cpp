@@ -68,8 +68,6 @@ GraphicsReadback::GraphicsReadback(love::graphics::Graphics *gfx, ReadbackMethod
 	{
 		void *dest = prepareReadbackDest(size);
 
-		love::thread::Lock lock(imageData->getMutex());
-
 		// Direct readback without copying avoids the need for a staging buffer,
 		// and lowers the system requirements of immediate RT readback.
 		Texture *t = (Texture *) texture;

@@ -451,12 +451,6 @@ void Texture::drawLayer(Graphics *gfx, int layer, Quad *q, const Matrix4 &m)
 
 void Texture::uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y)
 {
-	love::image::ImageData *id = dynamic_cast<love::image::ImageData *>(d);
-
-	love::thread::EmptyLock lock;
-	if (id != nullptr)
-		lock.setLock(id->getMutex());
-
 	Rect rect = {x, y, d->getWidth(), d->getHeight()};
 	uploadByteData(d->getData(), d->getSize(), level, slice, rect);
 }

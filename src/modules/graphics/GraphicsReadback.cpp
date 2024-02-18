@@ -192,6 +192,7 @@ GraphicsReadback::Status GraphicsReadback::readbackBuffer(Buffer *buffer, size_t
 
 		if (imageData.get())
 		{
+			// Always lock the mutex since the user can't know when to do it.
 			love::thread::Lock lock(imageData->getMutex());
 
 			if (imageData->getWidth() != rect.w)

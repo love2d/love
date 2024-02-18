@@ -1065,13 +1065,7 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	int bytesperpixel = (int) getPixelFormatBlockSize(imgd->getFormat());
 	int pitch = w * bytesperpixel;
 
-	SDL_Surface *sdlicon = nullptr;
-
-	{
-		// We don't want another thread modifying the ImageData mid-copy.
-		love::thread::Lock lock(imgd->getMutex());
-		sdlicon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, bytesperpixel * 8, pitch, rmask, gmask, bmask, amask);
-	}
+	SDL_Surface *sdlicon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, bytesperpixel * 8, pitch, rmask, gmask, bmask, amask);
 
 	if (!sdlicon)
 		return false;

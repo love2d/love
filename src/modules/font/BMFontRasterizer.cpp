@@ -343,6 +343,7 @@ GlyphData *BMFontRasterizer::getGlyphDataForIndex(int index) const
 	uint8 *pixels = (uint8 *) g->getData();
 	const uint8 *ipixels = (const uint8 *) imagedata->getData();
 
+	// Always lock the mutex since the user can't know when to do it.
 	love::thread::Lock lock(imagedata->getMutex());
 
 	// Copy the subsection of the texture from the ImageData to the GlyphData.
