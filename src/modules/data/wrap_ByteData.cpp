@@ -135,16 +135,6 @@ int w_ByteData_setUInt32(lua_State *L)
 	return w_ByteData_setT<uint32>(L);
 }
 
-int w_ByteData_setInt64(lua_State *L)
-{
-	return w_ByteData_setT<int64>(L);
-}
-
-int w_ByteData_setUInt64(lua_State *L)
-{
-	return w_ByteData_setT<uint64>(L);
-}
-
 static const luaL_Reg w_ByteData_functions[] =
 {
 	{ "clone", w_ByteData_clone },
@@ -157,8 +147,6 @@ static const luaL_Reg w_ByteData_functions[] =
 	{ "setUInt16", w_ByteData_setUInt16 },
 	{ "setInt32", w_ByteData_setInt32 },
 	{ "setUInt32", w_ByteData_setUInt32 },
-	{ "setInt64", w_ByteData_setInt64 },
-	{ "setUInt64", w_ByteData_setUInt64 },
 	{ 0, 0 }
 };
 

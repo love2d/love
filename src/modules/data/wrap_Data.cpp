@@ -160,16 +160,6 @@ int w_Data_getUInt32(lua_State* L)
 	return w_Data_getT<uint32>(L);
 }
 
-int w_Data_getInt64(lua_State* L)
-{
-	return w_Data_getT<int64>(L);
-}
-
-int w_Data_getUInt64(lua_State* L)
-{
-	return w_Data_getT<uint64>(L);
-}
-
 // C functions in a struct, necessary for the FFI versions of Data methods.
 struct FFI_Data
 {
@@ -200,8 +190,6 @@ const luaL_Reg w_Data_functions[] =
 	{ "getUInt16", w_Data_getUInt16 },
 	{ "getInt32", w_Data_getInt32 },
 	{ "getUInt32", w_Data_getUInt32 },
-	{ "getInt64", w_Data_getInt64 },
-	{ "getUInt64", w_Data_getUInt64 },
 	{ 0, 0 }
 };
 
