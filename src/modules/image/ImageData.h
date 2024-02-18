@@ -110,8 +110,6 @@ public:
 	 **/
 	love::filesystem::FileData *encode(FormatHandler::EncodedFormat format, const char *filename, bool writefile) const;
 
-	love::thread::Mutex *getMutex() const;
-
 	// Implements ImageDataBase.
 	ImageData *clone() const override;
 	void *getData() const override;
@@ -141,8 +139,6 @@ private:
 
 	// The actual data.
 	unsigned char *data = nullptr;
-
-	love::thread::MutexRef mutex;
 
 	// The format handler that was used to decode the ImageData. We need to know
 	// this so we can properly delete memory allocated by the decoder.

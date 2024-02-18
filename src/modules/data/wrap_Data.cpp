@@ -20,6 +20,7 @@
 
 #include "wrap_Data.h"
 #include "common/int.h"
+#include "thread/threads.h"
 
 // Put the Lua code directly into a raw string literal.
 static const char data_lua[] =
@@ -76,6 +77,26 @@ int w_Data_getSize(lua_State *L)
 	Data *t = luax_checkdata(L, 1);
 	lua_pushnumber(L, (lua_Number) t->getSize());
 	return 1;
+}
+
+int w_Data_performAtomic(lua_State *L)
+{
+	Data *t = luax_checkdata(L, 1);
+	int err = 0;
+
+	{
+		love::thread::Lock lock(t->getMutex());
+		// call the function, passing any user-specified arguments.
+		err = lua_pcall(L, lua_gettop(L) - 2, LUA_MULTRET, 0);
+	}
+
+	// Unfortunately, this eats the stack trace, too bad.
+	if (err != 0)
+		return lua_error(L);
+
+	// The function and everything after it in the stack are eaten by the pcall,
+	// leaving only the Data object. Everything else is a return value.
+	return lua_gettop(L) - 1;
 }
 
 template <typename T>
@@ -170,6 +191,7 @@ const luaL_Reg w_Data_functions[] =
 	{ "getPointer", w_Data_getPointer },
 	{ "getFFIPointer", w_Data_getFFIPointer },
 	{ "getSize", w_Data_getSize },
+	{ "performAtomic", w_Data_performAtomic },
 	{ "getFloat", w_Data_getFloat },
 	{ "getDouble", w_Data_getDouble },
 	{ "getInt8", w_Data_getInt8 },

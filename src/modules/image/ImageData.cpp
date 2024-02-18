@@ -764,11 +764,6 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 	}
 }
 
-love::thread::Mutex *ImageData::getMutex() const
-{
-	return mutex;
-}
-
 size_t ImageData::getPixelSize() const
 {
 	return getPixelFormatBlockSize(format);

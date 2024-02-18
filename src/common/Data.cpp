@@ -20,10 +20,27 @@
 
 // LOVE
 #include "Data.h"
+#include "thread/threads.h"
 
 namespace love
 {
 
 love::Type Data::type("Data", &Object::type);
+
+Data::~Data()
+{
+	delete mutex;
+}
+
+static void createMutex(love::thread::Mutex **mutexAddress)
+{
+	*mutexAddress = love::thread::newMutex();
+}
+
+love::thread::Mutex *Data::getMutex()
+{
+	std::call_once(mutexCreated, createMutex, &mutex);
+	return mutex;
+}
 
 } // love
