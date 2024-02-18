@@ -98,15 +98,21 @@ endif()
 
 message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
 
+add_library(lovedep::SDL2 INTERFACE IMPORTED)
+add_library(lovedep::Freetype INTERFACE IMPORTED)
+add_library(lovedep::Harfbuzz INTERFACE IMPORTED)
+add_library(lovedep::OpenAL INTERFACE IMPORTED)
+add_library(lovedep::Modplug INTERFACE IMPORTED)
+add_library(lovedep::Theora INTERFACE IMPORTED)
+add_library(lovedep::Vorbis INTERFACE IMPORTED)
+add_library(lovedep::Ogg INTERFACE IMPORTED)
+add_library(lovedep::Zlib INTERFACE IMPORTED)
+add_library(lovedep::Lua INTERFACE IMPORTED)
+
 if(MEGA)
 	# LOVE_MSVC_DLLS contains runtime DLLs that should be bundled with the love
 	# binary (in e.g. the installer). Example: msvcp140.dll.
 	set(LOVE_MSVC_DLLS ${MEGA_MSVC_DLLS})
-
-	# LOVE_INCLUDE_DIRS contains the search directories for #include. It's mostly
-	# not needed for MEGA builds, since almost all the libraries (except LuaJIT)
-	# are CMake targets, causing include paths to be added automatically.
-	set(LOVE_INCLUDE_DIRS)
 
 	if(APPLE)
 		# Some files do #include <SDL2/SDL.h>, but building with megasource
@@ -117,20 +123,6 @@ if(MEGA)
 	# SDL2 links with some DirectX libraries, and we apparently also
 	# pull those libraries in for linkage because we link with SDL2.
 	set(LOVE_LINK_DIRS ${SDL_LINK_DIR})
-
-	set(LOVE_LINK_LIBRARIES
-		${MEGA_FREETYPE}
-		${MEGA_HARFBUZZ}
-		${MEGA_LIBOGG}
-		${MEGA_LIBVORBISFILE}
-		${MEGA_LIBVORBIS}
-		${MEGA_LIBTHEORA}
-		${MEGA_MODPLUG}
-		${MEGA_OPENAL}
-		${MEGA_SDL2MAIN}
-		${MEGA_SDL2}
-		${MEGA_ZLIB}
-	)
 
 	# These DLLs are moved next to the love binary in a post-build step to
 	# love runnable from inside Visual Studio.
@@ -151,36 +143,33 @@ if(MEGA)
 		set(LOVE_EXTRA_DLLS)
 	endif()
 
+	target_link_libraries(lovedep::SDL2 INTERFACE ${MEGA_SDL2} ${MEGA_SDL2MAIN})
+	target_link_libraries(lovedep::Freetype INTERFACE ${MEGA_FREETYPE})
+	target_link_libraries(lovedep::Harfbuzz INTERFACE ${MEGA_HARFBUZZ})
+	target_link_libraries(lovedep::OpenAL INTERFACE ${MEGA_OPENAL})
+	target_link_libraries(lovedep::Modplug INTERFACE ${MEGA_MODPLUG})
+	target_link_libraries(lovedep::Theora INTERFACE ${MEGA_LIBTHEORA})
+	target_link_libraries(lovedep::Vorbis INTERFACE ${MEGA_LIBVORBIS} ${MEGA_LIBVORBISFILE})
+	target_link_libraries(lovedep::Ogg INTERFACE ${MEGA_LIBOGG})
+	target_link_libraries(lovedep::Zlib INTERFACE ${MEGA_ZLIB})
+
 	if(LOVE_JIT)
-		set(LOVE_LUA_LIBRARY ${MEGA_LUAJIT_LIB})
+		target_include_directories(lovedep::Lua INTERFACE ${MEGA_LUAJIT_INCLUDE})
+		target_link_libraries(lovedep::Lua INTERFACE ${MEGA_LUAJIT_LIB})
 		set(LOVE_EXTRA_DLLS ${LOVE_EXTRA_DLLS} ${MEGA_LUAJIT_DLL})
 		set(LOVE_EXTRA_DEPENDECIES luajit)
-
-		set(LOVE_INCLUDE_DIRS
-			${LOVE_INCLUDE_DIRS}
-			${MEGA_LUAJIT_INCLUDE}
-		)
-		set(LOVE_LINK_LIBRARIES
-			${LOVE_LINK_LIBRARIES}
-			${LOVE_LUA_LIBRARY}
-		)
 		set(LOVE_MOVE_DLLS
 			${LOVE_MOVE_DLLS}
 			${MEGA_LUAJIT_DLL}
 		)
 	else()
-		set(LOVE_LUA_LIBRARY ${MEGA_LUA51})
-
-		set(LOVE_LINK_LIBRARIES
-			${LOVE_LINK_LIBRARIES}
-			${LOVE_LUA_LIBRARY}
-		)
-		set(LOVE_MOVE_DLLS
-			${LOVE_MOVE_DLLS}
-			${LOVE_LUA_LIBRARY}
-		)
 		# MEGA_LUA51 is a CMake target, so includes are handled
 		# automatically.
+		target_link_libraries(lovedep::Lua INTERFACE ${MEGA_LUA51})
+		set(LOVE_MOVE_DLLS
+			${LOVE_MOVE_DLLS}
+			${MEGA_LUA51}
+		)
 	endif()
 else()
 	if(MSVC OR ANDROID)
@@ -190,64 +179,54 @@ Please see https://github.com/love2d/megasource
 ")
 	endif()
 
-	find_package(Freetype REQUIRED)
-	find_package(Harfbuzz REQUIRED)
-	find_package(ModPlug REQUIRED)
-	find_package(OpenAL REQUIRED)
-	find_package(SDL2 2.0.9 REQUIRED CONFIG COMPONENTS SDL2main)
-	find_package(Theora REQUIRED)
-	find_package(Vorbis REQUIRED)
-	find_package(ZLIB REQUIRED)
-	find_package(Ogg REQUIRED)
-
 	# required for enet
 	add_definitions(-D HAS_SOCKLEN_T)
 
-	set(LOVE_INCLUDE_DIRS
-		${SDL2_INCLUDE_DIRS}
-		${FREETYPE_INCLUDE_DIRS}
-		${HARFBUZZ_INCLUDE_DIR}
-		${VORBIS_INCLUDE_DIR}
-		${OPENAL_INCLUDE_DIR}
-		${ZLIB_INCLUDE_DIRS}
-		${MODPLUG_INCLUDE_DIR}
-		${OGG_INCLUDE_DIR}
-		${THEORA_INCLUDE_DIR}
-	)
+	find_package(SDL2 2.0.9 REQUIRED CONFIG COMPONENTS SDL2main)
+	target_include_directories(lovedep::SDL2 INTERFACE ${SDL2_INCLUDE_DIRS})
+	target_link_libraries(lovedep::SDL2 INTERFACE ${SDL2_LIBRARIES})
 
-	set(LOVE_LINK_LIBRARIES
-		${SDL2_LIBRARIES}
-		${FREETYPE_LIBRARY}
-		${HARFBUZZ_LIBRARY}
-		${OPENAL_LIBRARY}
-		${MODPLUG_LIBRARY}
-		${THEORA_LIBRARY}
-		${THEORADEC_LIBRARY}
-		${VORBISFILE_LIBRARY}
-		${LOVE_LUA_LIBRARY}
-		${OGG_LIBRARY}
-		${ZLIB_LIBRARY}
-	)
+	find_package(Freetype REQUIRED)
+	target_include_directories(lovedep::Freetype INTERFACE ${FREETYPE_INCLUDE_DIRS})
+	target_link_libraries(lovedep::Freetype INTERFACE ${FREETYPE_LIBRARY})
+
+	find_package(Harfbuzz REQUIRED)
+	target_include_directories(lovedep::Harfbuzz INTERFACE ${HARFBUZZ_INCLUDE_DIR})
+	target_link_libraries(lovedep::Harfbuzz INTERFACE ${HARFBUZZ_LIBRARY})
+
+	find_package(OpenAL REQUIRED)
+	target_include_directories(lovedep::OpenAL INTERFACE ${OPENAL_INCLUDE_DIR})
+	target_link_libraries(lovedep::OpenAL INTERFACE ${OPENAL_LIBRARY})
+
+	find_package(ModPlug REQUIRED)
+	target_include_directories(lovedep::Modplug INTERFACE ${MODPLUG_INCLUDE_DIR})
+	target_link_libraries(lovedep::Modplug INTERFACE ${MODPLUG_LIBRARY})
+
+	find_package(Theora REQUIRED)
+	target_include_directories(lovedep::Theora INTERFACE ${THEORA_INCLUDE_DIR})
+	target_link_libraries(lovedep::Theora INTERFACE ${THEORA_LIBRARY} ${THEORADEC_LIBRARY})
+
+	find_package(Vorbis REQUIRED)
+	target_include_directories(lovedep::Vorbis INTERFACE ${VORBIS_INCLUDE_DIR})
+	target_link_libraries(lovedep::Vorbis INTERFACE ${VORBISFILE_LIBRARY})
+
+	find_package(Ogg REQUIRED)
+	target_include_directories(lovedep::Ogg INTERFACE ${OGG_INCLUDE_DIR})
+	target_link_libraries(lovedep::Ogg INTERFACE ${OGG_LIBRARY})
+
+	find_package(ZLIB REQUIRED)
+	target_include_directories(lovedep::Zlib INTERFACE ${ZLIB_INCLUDE_DIRS})
+	target_link_libraries(lovedep::Zlib INTERFACE ${ZLIB_LIBRARY})
 
 	if(LOVE_JIT)
 		find_package(LuaJIT REQUIRED)
-		set(LOVE_LUA_LIBRARY ${LUAJIT_LIBRARY})
-		set(LOVE_LUA_INCLUDE_DIR ${LUAJIT_INCLUDE_DIR})
+		target_include_directories(lovedep::Lua INTERFACE ${LUAJIT_INCLUDE_DIR})
+		target_link_libraries(lovedep::Lua INTERFACE ${LUAJIT_LIBRARY})
 	else()
 		find_package(Lua51 REQUIRED)
-		set(LOVE_LUA_LIBRARY ${LUA_LIBRARY})
-		set(LOVE_LUA_INCLUDE_DIR ${LUA_INCLUDE_DIR})
+		target_include_directories(lovedep::Lua INTERFACE ${LUA_INCLUDE_DIR})
+		target_link_libraries(lovedep::Lua INTERFACE ${LUA_LIBRARY})
 	endif()
-
-	set(LOVE_INCLUDE_DIRS
-		${LOVE_INCLUDE_DIRS}
-		${LOVE_LUA_INCLUDE_DIR}
-	)
-	set(LOVE_LINK_LIBRARIES
-		${LOVE_LINK_LIBRARIES}
-		${LOVE_LUA_LIBRARY}
-	)
-
 endif()
 
 ###
@@ -1268,7 +1247,7 @@ add_library(love_3p_enet
 	src/libraries/enet/libenet/include/enet/win32.h
 )
 love_disable_warnings(love_3p_enet)
-target_link_libraries(love_3p_enet ${LOVE_LUA_LIBRARY})
+target_link_libraries(love_3p_enet lovedep::Lua)
 target_include_directories(love_3p_enet PUBLIC src/libraries/enet/libenet/include)
 if(MINGW)
 	target_link_libraries(love_3p_enet winmm.a)
@@ -1464,7 +1443,7 @@ add_library(love_3p_luasocket
 	src/libraries/luasocket/libluasocket/unixstream.c
 	src/libraries/luasocket/libluasocket/unixstream.h
 )
-target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY})
+target_link_libraries(love_3p_luasocket lovedep::Lua)
 love_disable_warnings(love_3p_luasocket)
 
 if(MSVC OR MINGW)
@@ -1495,7 +1474,7 @@ add_library(love_3p_lua53
 	src/libraries/lua53/lutf8lib.c
 	src/libraries/lua53/lutf8lib.h
 )
-target_link_libraries(love_3p_lua53 ${LOVE_LUA_LIBRARY})
+target_link_libraries(love_3p_lua53 lovedep::Lua)
 
 #
 # Lua HTTPS
@@ -1527,7 +1506,7 @@ add_library(love_3p_luahttps
 	src/libraries/luahttps/src/windows/WinINetClient.cpp
 	src/libraries/luahttps/src/windows/WinINetClient.h
 )
-target_link_libraries(love_3p_luahttps ${LOVE_LUA_LIBRARY})
+target_link_libraries(love_3p_luahttps lovedep::Lua)
 
 if (APPLE)
 	target_sources(love_3p_luahttps PRIVATE
@@ -1798,7 +1777,6 @@ include_directories(
 	src/libraries
 	src/libraries/box2D
 	src/modules
-	${LOVE_INCLUDE_DIRS}
 )
 
 link_directories(${LOVE_LINK_DIRS})
@@ -1831,7 +1809,17 @@ set_target_properties(liblove PROPERTIES
 	VISIBILITY_INLINES_HIDDEN ON
 	LIBRARY_OUTPUT_NAME "${LOVE_LIB_NAME}")
 target_link_libraries(liblove
-	${LOVE_LINK_LIBRARIES}
+	lovedep::SDL2
+	lovedep::Freetype
+	lovedep::Harfbuzz
+	lovedep::OpenAL
+	lovedep::Modplug
+	lovedep::Theora
+	lovedep::Vorbis
+	lovedep::Lua
+	lovedep::Ogg
+	lovedep::Zlib
+	lovedep::Lua
 	love_3p_box2d
 	love_3p_ddsparse
 	love_3p_enet
