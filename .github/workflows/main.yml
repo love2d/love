@@ -226,7 +226,7 @@ jobs:
       with:
         path: megasource
         repository: love2d/megasource
-        ref: 12.x
+        ref: main
     - id: megasource
       name: Get Megasource Commit SHA
       shell: python
