@@ -39,9 +39,6 @@ class Mouse : public love::mouse::Mouse
 {
 public:
 
-	// Implements Module.
-	const char *getName() const override;
-
 	Mouse();
 	virtual ~Mouse();
 

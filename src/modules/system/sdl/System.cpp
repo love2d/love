@@ -39,12 +39,8 @@ namespace sdl
 {
 
 System::System()
+	: love::system::System("love.system.sdl")
 {
-}
-
-const char *System::getName() const
-{
-	return "love.system.sdl";
 }
 
 int System::getProcessorCount() const

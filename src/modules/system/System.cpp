@@ -58,7 +58,8 @@ namespace love
 namespace system
 {
 
-System::System()
+System::System(const char *name)
+	: Module(M_SYSTEM, name)
 {
 }
 

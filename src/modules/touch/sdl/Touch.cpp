@@ -33,6 +33,11 @@ namespace touch
 namespace sdl
 {
 
+Touch::Touch()
+	: love::touch::Touch("love.touch.sdl")
+{
+}
+
 const std::vector<Touch::TouchInfo> &Touch::getTouches() const
 {
 	return touches;
@@ -47,11 +52,6 @@ const Touch::TouchInfo &Touch::getTouch(int64 id) const
 	}
 
 	throw love::Exception("Invalid active touch ID: %d", id);
-}
-
-const char *Touch::getName() const
-{
-	return "love.touch.sdl";
 }
 
 void Touch::onEvent(Uint32 eventtype, const TouchInfo &info)

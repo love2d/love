@@ -48,11 +48,8 @@ public:
 		POWER_MAX_ENUM
 	};
 
-	System();
+	System(const char *name);
 	virtual ~System() {}
-
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_SYSTEM; }
 
 	/**
 	 * Gets the current operating system.

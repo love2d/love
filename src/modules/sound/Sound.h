@@ -46,9 +46,6 @@ public:
 
 	virtual ~Sound();
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_SOUND; }
-
 	/**
 	 * Creates new SoundData from a decoder. Fully expands the
 	 * encoded sound data into raw sound data. Not recommended
@@ -88,6 +85,10 @@ public:
 	 * @return A Decoder object on success, or zero if no decoder could be found.
 	 **/
 	virtual Decoder *newDecoder(Stream *stream, int bufferSize) = 0;
+
+protected:
+
+	Sound(const char *name);
 
 }; // Sound
 

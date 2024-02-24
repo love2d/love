@@ -180,8 +180,9 @@ Graphics::DisplayState::DisplayState()
 	defaultSamplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_LINEAR;
 }
 
-Graphics::Graphics()
-	: width(0)
+Graphics::Graphics(const char *name)
+	: Module(M_GRAPHICS, name)
+	, width(0)
 	, height(0)
 	, pixelWidth(0)
 	, pixelHeight(0)

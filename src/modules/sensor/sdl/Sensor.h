@@ -43,9 +43,6 @@ public:
 	Sensor();
 	~Sensor() override;
 
-	// Implements Module.
-	const char *getName() const override;
-
 	bool hasSensor(SensorType type) override;
 	bool isEnabled(SensorType type) override;
 	void setEnabled(SensorType type, bool enable) override;

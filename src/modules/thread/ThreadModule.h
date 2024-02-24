@@ -43,14 +43,11 @@ class ThreadModule : public love::Module
 {
 public:
 
+	ThreadModule();
 	virtual ~ThreadModule() {}
 	virtual LuaThread *newThread(const std::string &name, love::Data *data);
 	virtual Channel *newChannel();
 	virtual Channel *getChannel(const std::string &name);
-
-	// Implements Module.
-	virtual const char *getName() const;
-	virtual ModuleType getModuleType() const { return M_THREAD; }
 
 private:
 

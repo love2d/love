@@ -117,10 +117,6 @@ public:
 	DataModule();
 	virtual ~DataModule();
 
-	// Implements Module.
-	ModuleType getModuleType() const override { return M_DATA; }
-	const char *getName() const override { return "love.data"; }
-
 	DataView *newDataView(Data *data, size_t offset, size_t size);
 	ByteData *newByteData(size_t size);
 	ByteData *newByteData(const void *d, size_t size);

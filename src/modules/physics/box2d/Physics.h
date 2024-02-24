@@ -65,10 +65,6 @@ public:
 	Physics();
 	virtual ~Physics();
 
-	// Implements Module.
-	const char *getName() const;
-	virtual ModuleType getModuleType() const { return M_PHYSICS; }
-
 	/**
 	 * Creates a new World.
 	 * @param gx Gravity along x-axis.

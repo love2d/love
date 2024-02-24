@@ -35,15 +35,20 @@ namespace video
 class Video : public Module
 {
 public:
-	virtual ~Video() {}
 
-	// Implements Module
-	virtual ModuleType getModuleType() const { return M_VIDEO; }
+	virtual ~Video() {}
 
 	/**
 	 * Create a VideoStream representing video frames
 	 **/
 	virtual VideoStream *newVideoStream(love::filesystem::File *file) = 0;
+
+protected:
+
+	Video(const char *name)
+		: Module(M_VIDEO, name)
+	{}
+
 }; // Video
 
 } // video

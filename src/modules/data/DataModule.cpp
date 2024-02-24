@@ -214,6 +214,7 @@ void hash(HashFunction::Function function, const char *input, uint64_t size, Has
 }
 
 DataModule::DataModule()
+	: Module(M_DATA, "love.data")
 {
 }
 

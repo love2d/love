@@ -38,6 +38,11 @@ Message::~Message()
 {
 }
 
+Event::Event(const char *name)
+	: Module(M_EVENT, name)
+{
+}
+
 Event::~Event()
 {
 }

@@ -45,7 +45,8 @@ namespace filesystem
 
 love::Type Filesystem::type("filesystem", &Module::type);
 
-Filesystem::Filesystem()
+Filesystem::Filesystem(const char *name)
+	: Module(M_FILESYSTEM, name)
 {
 }
 

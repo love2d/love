@@ -68,6 +68,10 @@ void showRecordingPermissionMissingDialog()
 #endif
 }
 
+Audio::Audio(const char *name)
+	: Module(M_AUDIO, name)
+{}
+
 bool Audio::setMixWithSystem(bool mix)
 {
 #ifdef LOVE_IOS

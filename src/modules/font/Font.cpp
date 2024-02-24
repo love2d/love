@@ -34,7 +34,8 @@ namespace font
 // Default TrueType font, gzip-compressed.
 #include "NotoSans-Regular.ttf.gzip.h"
 
-Font::Font()
+Font::Font(const char *name)
+	: Module(M_FONT, name)
 {
 	auto compressedbytes = (const char *) NotoSans_Regular_ttf_gzip;
 	size_t compressedsize = NotoSans_Regular_ttf_gzip_len;

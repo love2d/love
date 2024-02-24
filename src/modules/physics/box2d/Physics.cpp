@@ -35,18 +35,14 @@ namespace box2d
 float Physics::meter = Physics::DEFAULT_METER;
 
 Physics::Physics()
-	: blockAllocator()
+	: Module(M_PHYSICS, "love.physics.box2d")
+	, blockAllocator()
 {
 	meter = DEFAULT_METER;
 }
 
 Physics::~Physics()
 {
-}
-
-const char *Physics::getName() const
-{
-	return "love.physics.box2d";
 }
 
 World *Physics::newWorld(float gx, float gy, bool sleep)

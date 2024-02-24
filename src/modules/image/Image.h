@@ -52,10 +52,6 @@ public:
 	Image();
 	virtual ~Image();
 
-	// Implements Module.
-	ModuleType getModuleType() const override { return M_IMAGE; }
-	const char *getName() const override;
-
 	/**
 	 * Creates new ImageData from FileData.
 	 * @param data The FileData containing the encoded image data.

@@ -59,16 +59,12 @@ namespace lullaby
 {
 
 Sound::Sound()
+	: love::sound::Sound("love.sound.lullaby")
 {
 }
 
 Sound::~Sound()
 {
-}
-
-const char *Sound::getName() const
-{
-	return "love.sound.lullaby";
 }
 
 sound::Decoder *Sound::newDecoder(Stream *stream, int bufferSize)

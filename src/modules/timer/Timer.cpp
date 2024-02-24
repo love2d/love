@@ -43,7 +43,8 @@ namespace timer
 {
 
 Timer::Timer()
-	: currTime(0)
+	: Module(M_TIMER, "love.timer")
+	, currTime(0)
 	, prevFpsUpdate(0)
 	, fps(0)
 	, averageDelta(0)

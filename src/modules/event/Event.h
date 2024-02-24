@@ -54,10 +54,8 @@ public:
 class Event : public Module
 {
 public:
-	virtual ~Event();
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_EVENT; }
+	virtual ~Event();
 
 	void push(Message *msg);
 	bool poll(Message *&msg);
@@ -67,6 +65,9 @@ public:
 	virtual Message *wait() = 0;
 
 protected:
+
+	Event(const char *name);
+
 	love::thread::MutexRef mutex;
 	std::queue<Message *> queue;
 

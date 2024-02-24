@@ -107,7 +107,8 @@ static bool isAppCommonPath(Filesystem::CommonPath path)
 }
 
 Filesystem::Filesystem()
-	: appendIdentityToPath(false)
+	: love::filesystem::Filesystem("love.filesystem.physfs")
+	, appendIdentityToPath(false)
 	, fused(false)
 	, fusedSet(false)
 	, fullPaths()
@@ -126,11 +127,6 @@ Filesystem::~Filesystem()
 
 	if (PHYSFS_isInit())
 		PHYSFS_deinit();
-}
-
-const char *Filesystem::getName() const
-{
-	return "love.filesystem.physfs";
 }
 
 void Filesystem::init(const char *arg0)

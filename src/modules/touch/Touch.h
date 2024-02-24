@@ -51,9 +51,6 @@ public:
 
 	virtual ~Touch() {}
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_TOUCH; }
-
 	/**
 	 * Gets all currently active touches.
 	 **/
@@ -63,6 +60,12 @@ public:
 	 * Gets a specific touch, using its ID.
 	 **/
 	virtual const TouchInfo &getTouch(int64 id) const = 0;
+
+protected:
+
+	Touch(const char *name)
+		: Module(M_TOUCH, name)
+	{}
 
 }; // Touch
 

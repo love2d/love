@@ -64,6 +64,12 @@ public:
 	virtual bool setRelativeMode(bool relative) = 0;
 	virtual bool getRelativeMode() const = 0;
 
+protected:
+
+	Mouse(const char *name)
+		: Module(M_MOUSE, name)
+	{}
+
 }; // Mouse
 
 } // mouse

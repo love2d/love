@@ -533,9 +533,6 @@ public:
 
 	virtual ~Keyboard() {}
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_KEYBOARD; }
-
 	/**
 	 * Sets whether repeat keypress events should be sent if a key is held down.
 	 * Does not affect text input events.
@@ -613,6 +610,10 @@ public:
 
 	static bool getConstant(const char *in, ModifierKey &out);
 	static bool getConstant(ModifierKey in, const char *&out);
+
+protected:
+
+	Keyboard(const char *name);
 
 private:
 

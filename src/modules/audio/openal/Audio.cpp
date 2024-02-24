@@ -106,7 +106,8 @@ static const char *getDeviceSpecifier(ALCdevice *device)
 }
 
 Audio::Audio()
-	: device(nullptr)
+	: love::audio::Audio("love.audio.openal")
+	, device(nullptr)
 	, context(nullptr)
 	, pool(nullptr)
 	, poolThread(nullptr)
@@ -254,11 +255,6 @@ Audio::~Audio()
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
 	alcCloseDevice(device);
-}
-
-const char *Audio::getName() const
-{
-	return "love.audio.openal";
 }
 
 love::audio::Source *Audio::newSource(love::sound::Decoder *decoder)

@@ -56,13 +56,9 @@ static void clampToWindow(double *x, double *y)
 		window->clampPositionInWindow(x, y);
 }
 
-const char *Mouse::getName() const
-{
-	return "love.mouse.sdl";
-}
-
 Mouse::Mouse()
-	: curCursor(nullptr)
+	: love::mouse::Mouse("love.mouse.sdl")
+	, curCursor(nullptr)
 {
 	// SDL may need the video subsystem in order to clean up the cursor when
 	// quitting. Subsystems are reference-counted.

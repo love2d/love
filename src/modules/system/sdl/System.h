@@ -42,9 +42,6 @@ public:
 	System();
 	virtual ~System() {}
 
-	// Implements Module.
-	const char *getName() const override;
-
 	int getProcessorCount() const override;
 
 	void setClipboardText(const std::string &text) const override;

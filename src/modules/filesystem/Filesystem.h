@@ -108,11 +108,7 @@ public:
 
 	static love::Type type;
 
-	Filesystem();
 	virtual ~Filesystem();
-
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_FILESYSTEM; }
 
 	virtual void init(const char *arg0) = 0;
 
@@ -316,6 +312,10 @@ public:
 	STRINGMAP_CLASS_DECLARE(CommonPath);
 	STRINGMAP_CLASS_DECLARE(MountPermissions);
 	STRINGMAP_CLASS_DECLARE(LoadMode);
+
+protected:
+
+	Filesystem(const char *name);
 
 private:
 

@@ -44,9 +44,6 @@ public:
 	JoystickModule();
 	virtual ~JoystickModule();
 
-	// Implements Module.
-	const char *getName() const override;
-
 	// Implements JoystickModule.
 	love::joystick::Joystick *addJoystick(int deviceindex) override;
 	void removeJoystick(love::joystick::Joystick *joystick) override;

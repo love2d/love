@@ -88,7 +88,8 @@ namespace sdl
 {
 
 Window::Window()
-	: open(false)
+	: love::window::Window("love.window.sdl")
+	, open(false)
 	, mouseGrabbed(false)
 	, window(nullptr)
 	, glcontext(nullptr)
@@ -1501,11 +1502,6 @@ void Window::requestAttention(bool continuous)
 #endif
 	
 	// TODO: Linux?
-}
-
-const char *Window::getName() const
-{
-	return "love.window.sdl";
 }
 
 } // sdl

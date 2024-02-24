@@ -56,9 +56,6 @@ public:
 	Graphics();
 	virtual ~Graphics();
 
-	// Implements Module.
-	const char *getName() const override;
-
 	love::graphics::Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) override;
 	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) override;
 

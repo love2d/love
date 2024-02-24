@@ -263,7 +263,8 @@ struct DefaultVertexAttributes
 Graphics *Graphics::graphicsInstance = nullptr;
 
 Graphics::Graphics()
-	: device(nil)
+	: love::graphics::Graphics("love.graphics.metal")
+	, device(nil)
 	, commandQueue(nil)
 	, commandBuffer(nil)
 	, renderEncoder(nil)

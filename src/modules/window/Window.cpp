@@ -43,6 +43,11 @@ bool isHighDPIAllowed()
 	return highDPIAllowed;
 }
 
+Window::Window(const char *name)
+	: Module(M_WINDOW, name)
+{
+}
+
 Window::~Window()
 {
 }

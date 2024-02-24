@@ -451,11 +451,8 @@ public:
 		}
 	};
 
-	Graphics();
+	Graphics(const char *name);
 	virtual ~Graphics();
-
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_GRAPHICS; }
 
 	virtual Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) = 0;
 

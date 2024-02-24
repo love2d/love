@@ -41,9 +41,6 @@ public:
 
 	Keyboard();
 
-	// Implements Module.
-	const char *getName() const;
-
 	void setKeyRepeat(bool enable);
 	bool hasKeyRepeat() const;
 	bool isDown(const std::vector<Key> &keylist) const;

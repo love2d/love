@@ -47,9 +47,6 @@ public:
 	Rasterizer *newRasterizer(love::filesystem::FileData *data) override;
 	Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, const font::TrueTypeRasterizer::Settings &settings) override;
 
-	// Implement Module
-	const char *getName() const override;
-
 private:
 
 	// FreeType library

@@ -48,9 +48,6 @@ public:
 	Sound();
 	virtual ~Sound();
 
-	/// @copydoc love::Module::getName
-	const char *getName() const override;
-
 	/// @copydoc love::sound::Sound::newDecoder
 	sound::Decoder *newDecoder(Stream *stream, int bufferSize) override;
 

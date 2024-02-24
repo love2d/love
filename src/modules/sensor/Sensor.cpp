@@ -26,6 +26,11 @@ namespace love
 namespace sensor
 {
 
+Sensor::Sensor(const char *name)
+	: Module(M_SENSOR, name)
+{
+}
+
 STRINGMAP_CLASS_BEGIN(Sensor, Sensor::SensorType, Sensor::SENSOR_MAX_ENUM, sensorType)
 {
 	{ "accelerometer", Sensor::SENSOR_ACCELEROMETER },

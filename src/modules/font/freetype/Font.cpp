@@ -36,6 +36,7 @@ namespace freetype
 {
 
 Font::Font()
+	: love::font::Font("love.font.freetype")
 {
 	if (FT_Init_FreeType(&library))
 		throw love::Exception("TrueTypeFont Loading error: FT_Init_FreeType failed");
@@ -64,11 +65,6 @@ Rasterizer *Font::newTrueTypeRasterizer(love::Data *data, int size, const font::
 		defaultdpiscale = window->getDPIScale();
 
 	return new TrueTypeRasterizer(library, data, size, settings, defaultdpiscale);
-}
-
-const char *Font::getName() const
-{
-	return "love.font.freetype";
 }
 
 } // freetype

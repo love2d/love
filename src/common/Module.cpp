@@ -62,9 +62,12 @@ namespace love
 love::Type Module::type("Module", &Object::type);
 Module *Module::instances[] = {};
 
-Module::Module()
+Module::Module(Module::ModuleType moduleType, const char *name)
+	: moduleType(moduleType)
+	, name(name)
 {
 	initDeprecation();
+	registerInstance(this);
 }
 
 Module::~Module()

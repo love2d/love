@@ -46,9 +46,6 @@ public:
 	Video();
 	virtual ~Video();
 
-	// Implements Module
-	virtual const char *getName() const;
-
 	VideoStream *newVideoStream(love::filesystem::File* file);
 
 private:

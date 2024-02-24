@@ -131,9 +131,6 @@ public:
 
 	virtual ~Window();
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_WINDOW; }
-
 	virtual void setGraphics(graphics::Graphics *graphics) = 0;
 
 	virtual bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) = 0;
@@ -238,6 +235,10 @@ public:
 	static bool getConstant(const char *in, DisplayOrientation &out);
 	static bool getConstant(DisplayOrientation in, const char *&out);
 	static std::vector<std::string> getConstants(DisplayOrientation);
+
+protected:
+
+	Window(const char *name);
 
 private:
 

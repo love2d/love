@@ -36,10 +36,6 @@ public:
 	Timer();
 	virtual ~Timer() {}
 
-	// Implements Module.
-	ModuleType getModuleType() const override { return M_TIMER; }
-	const char *getName() const override { return "love.timer"; }
-
 	/**
 	 * Measures the time between this call and the previous call,
 	 * and updates internal values accordingly.

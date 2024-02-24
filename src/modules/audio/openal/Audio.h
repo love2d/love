@@ -78,9 +78,6 @@ public:
 	 **/
 	static ALenum getFormat(int bitDepth, int channels);
 
-	// Implements Module.
-	const char *getName() const;
-
 	// Implements Audio.
 	love::audio::Source *newSource(love::sound::Decoder *decoder);
 	love::audio::Source *newSource(love::sound::SoundData *soundData);

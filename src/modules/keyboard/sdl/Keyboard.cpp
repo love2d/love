@@ -36,13 +36,9 @@ namespace sdl
 {
 
 Keyboard::Keyboard()
-	: key_repeat(false)
+	: love::keyboard::Keyboard("love.keyboard.sdl")
+	, key_repeat(false)
 {
-}
-
-const char *Keyboard::getName() const
-{
-	return "love.keyboard.sdl";
 }
 
 void Keyboard::setKeyRepeat(bool enable)

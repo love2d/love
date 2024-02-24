@@ -38,13 +38,11 @@ class Touch : public love::touch::Touch
 {
 public:
 
+	Touch();
 	virtual ~Touch() {}
 
 	const std::vector<TouchInfo> &getTouches() const override;
 	const TouchInfo &getTouch(int64 id) const override;
-
-	// Implements Module.
-	const char *getName() const override;
 
 	// SDL has functions to query the state of touch presses, but unfortunately
 	// they are updated on a different thread in some backends, which causes

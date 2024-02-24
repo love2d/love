@@ -43,7 +43,6 @@ class Font : public Module
 
 public:
 
-	Font();
 	virtual ~Font() {}
 
 	virtual Rasterizer *newRasterizer(love::filesystem::FileData *data) = 0;
@@ -58,9 +57,9 @@ public:
 	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph);
 	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph);
 
-	// Implement Module.
-	virtual ModuleType getModuleType() const { return M_FONT; }
-	virtual const char *getName() const = 0;
+protected:
+
+	Font(const char *name);
 
 private:
 

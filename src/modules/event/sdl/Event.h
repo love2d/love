@@ -42,9 +42,6 @@ class Event : public love::event::Event
 {
 public:
 
-	// Implements Module.
-	const char *getName() const;
-
 	Event();
 	virtual ~Event();
 

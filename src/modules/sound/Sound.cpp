@@ -27,6 +27,11 @@ namespace sound
 
 love::Type Sound::type("Sound", &Module::type);
 
+Sound::Sound(const char *name)
+	: Module(M_SOUND, name)
+{
+}
+
 Sound::~Sound()
 {
 }

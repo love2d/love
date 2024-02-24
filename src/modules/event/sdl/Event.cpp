@@ -105,12 +105,8 @@ static int SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
 	return 1;
 }
 
-const char *Event::getName() const
-{
-	return "love.event.sdl";
-}
-
 Event::Event()
+	: love::event::Event("love.event.sdl")
 {
 	if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
 		throw love::Exception("Could not initialize SDL events subsystem (%s)", SDL_GetError());

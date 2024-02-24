@@ -106,7 +106,8 @@ love::graphics::Graphics *createInstance()
 }
 
 Graphics::Graphics()
-	: windowHasStencil(false)
+	: love::graphics::Graphics("love.graphics.opengl")
+	, windowHasStencil(false)
 	, mainVAO(0)
 	, internalBackbufferFBO(0)
 	, requestedBackbufferMSAA(0)
@@ -145,11 +146,6 @@ Graphics::Graphics()
 Graphics::~Graphics()
 {
 	delete[] bufferMapMemory;
-}
-
-const char *Graphics::getName() const
-{
-	return "love.graphics.opengl";
 }
 
 love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)

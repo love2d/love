@@ -36,9 +36,6 @@ public:
 
 	virtual ~JoystickModule() {}
 
-	// Implements Module.
-	ModuleType getModuleType() const override { return M_JOYSTICK; }
-
 	/**
 	 * Adds a connected Joystick device and opens it for use.
 	 * Returns NULL if the Joystick could not be added.
@@ -100,6 +97,12 @@ public:
 	 * Gets the gamepad mapping string for the given GUID.
 	 **/
 	virtual std::string getGamepadMappingString(const std::string &guid) const = 0;
+
+protected:
+
+	JoystickModule(const char *name)
+		: Module(M_JOYSTICK, name)
+	{}
 
 }; // JoystickModule
 

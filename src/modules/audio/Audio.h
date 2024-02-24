@@ -101,9 +101,6 @@ public:
 
 	virtual ~Audio() {}
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_AUDIO; }
-
 	virtual Source *newSource(love::sound::Decoder *decoder) = 0;
 	virtual Source *newSource(love::sound::SoundData *soundData) = 0;
 	virtual Source *newSource(int sampleRate, int bitDepth, int channels, int buffers) = 0;
@@ -311,6 +308,10 @@ public:
 	 * Set the current playback device to specified device name.
 	 */
 	virtual void setPlaybackDevice(const char *name);
+
+protected:
+
+	Audio(const char *name);
 
 private:
 

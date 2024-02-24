@@ -27,6 +27,11 @@ namespace love
 namespace keyboard
 {
 
+Keyboard::Keyboard(const char *name)
+	: Module(M_KEYBOARD, name)
+{
+}
+
 bool Keyboard::getConstant(const char *in, Key &out)
 {
 	return keys.find(in, out);

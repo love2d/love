@@ -43,9 +43,6 @@ public:
 	Filesystem();
 	virtual ~Filesystem();
 
-	// Implements Module.
-	const char *getName() const override;
-
 	void init(const char *arg0) override;
 
 	void setFused(bool fused) override;

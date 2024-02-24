@@ -60,11 +60,6 @@ static const std::vector<const char*> deviceExtensions = {
 
 constexpr uint32_t USAGES_POLL_INTERVAL = 5000;
 
-const char *Graphics::getName() const
-{
-	return "love.graphics.vulkan";
-}
-
 VkDevice Graphics::getDevice() const
 {
 	return device;
@@ -95,6 +90,7 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext)
 }
 
 Graphics::Graphics()
+	: love::graphics::Graphics("love.graphics.vulkan")
 {
 	if (SDL_Vulkan_LoadLibrary(nullptr))
 		throw love::Exception("could not find vulkan");
