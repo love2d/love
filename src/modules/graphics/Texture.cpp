@@ -166,6 +166,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	, format(settings.format)
 	, renderTarget(settings.renderTarget)
 	, computeWrite(settings.computeWrite)
+	, viewFormats(settings.viewFormats)
 	, readable(true)
 	, mipmapsMode(settings.mipmaps)
 	, width(settings.width)
@@ -179,6 +180,8 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	, samplerState()
 	, graphicsMemorySize(0)
 	, debugName(settings.debugName)
+	, rootView({this, 0, 0})
+	, parentView({this, 0, 0})
 {
 	const auto &caps = gfx->getCapabilities();
 	int requestedMipmapCount = settings.mipmapCount;
@@ -284,31 +287,7 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	if (isCompressed() && renderTarget)
 		throw love::Exception("Compressed textures cannot be render targets.");
 
-	uint32 usage = PIXELFORMATUSAGEFLAGS_NONE;
-	if (renderTarget)
-		usage |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
-	if (readable)
-		usage |= PIXELFORMATUSAGEFLAGS_SAMPLE;
-	if (computeWrite)
-		usage |= PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
-
-	if (!gfx->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage))
-	{
-		const char *fstr = "unknown";
-		love::getConstant(format, fstr);
-
-		const char *readablestr = "";
-		if (readable != !isPixelFormatDepthStencil(format))
-			readablestr = readable ? " readable" : " non-readable";
-
-		const char *rtstr = "";
-		if (computeWrite)
-			rtstr = " as a compute shader-writable texture";
-		else if (renderTarget)
-			rtstr = " as a render target";
-
-		throw love::Exception("The %s%s pixel format is not supported%s on this system.", fstr, readablestr, rtstr);
-	}
+	validatePixelFormat(gfx);
 
 	if (!caps.textureTypes[texType])
 	{
@@ -330,10 +309,149 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	++textureCount;
 }
 
+Texture::Texture(Graphics *gfx, Texture *base, const ViewSettings &viewsettings)
+	: texType(viewsettings.type.get(base->getTextureType()))
+	, format(viewsettings.format.get(base->getPixelFormat()))
+	, renderTarget(base->renderTarget)
+	, computeWrite(base->computeWrite)
+	, viewFormats(base->viewFormats)
+	, readable(base->readable)
+	, mipmapsMode(base->mipmapsMode)
+	, width(1)
+	, height(1)
+	, depth(1)
+	, layers(1)
+	, mipmapCount(1)
+	, pixelWidth(1)
+	, pixelHeight(1)
+	, requestedMSAA(base->requestedMSAA)
+	, samplerState(base->samplerState)
+	, quad(base->quad)
+	, graphicsMemorySize(0)
+	, debugName(viewsettings.debugName)
+	, rootView({base->rootView.texture, 0, 0})
+	, parentView({base, viewsettings.mipmapStart.get(0), viewsettings.layerStart.get(0)})
+{
+	width = base->getHeight(parentView.startMipmap);
+	height = base->getHeight(parentView.startMipmap);
+
+	if (texType == TEXTURE_VOLUME)
+		depth = base->getDepth(parentView.startMipmap);
+
+	if (texType == TEXTURE_2D_ARRAY)
+	{
+		int baselayers = base->getTextureType() == TEXTURE_CUBE ? 6 : base->getLayerCount();
+		layers = viewsettings.layerCount.get(baselayers - parentView.startLayer);
+	}
+
+	mipmapCount = viewsettings.mipmapCount.get(base->getMipmapCount() - parentView.startMipmap);
+
+	pixelWidth = base->getPixelWidth(parentView.startMipmap);
+	pixelHeight = base->getPixelHeight(parentView.startMipmap);
+
+	if (parentView.startMipmap < 0)
+		throw love::Exception("Invalid mipmap start value for texture view (out of range).");
+
+	if (mipmapCount < 0 || parentView.startMipmap + mipmapCount > base->getMipmapCount())
+		throw love::Exception("Invalid mipmap start or count value for texture view (out of range).");
+
+	if (parentView.startLayer < 0)
+		throw love::Exception("Invalid layer start value for texture view (out of range).");
+
+	int baseLayerCount = base->getTextureType() == TEXTURE_CUBE ? 6 : base->getLayerCount();
+	if (layers < 0 || parentView.startLayer + layers > baseLayerCount)
+		throw love::Exception("Invalid layer start or count value for texture view (out of range).");
+
+	if (texType == TEXTURE_CUBE && parentView.startLayer + 6 > baseLayerCount)
+		throw love::Exception("Cube texture view cannot fit in the base texture's layers with the given start layer.");
+
+	ViewInfo nextView = { this, 0, 0 };
+	while (nextView.texture != rootView.texture)
+	{
+		nextView = nextView.texture->parentView;
+		rootView.startMipmap += nextView.startMipmap;
+		rootView.startLayer += nextView.startLayer;
+	}
+
+	const auto &caps = gfx->getCapabilities();
+	if (!caps.features[Graphics::FEATURE_GLSL4])
+		throw love::Exception("Texture views are not supported on this system (GLSL 4 support is necessary.)");
+
+	validatePixelFormat(gfx);
+
+	if (!caps.textureTypes[texType])
+	{
+		const char *textypestr = "unknown";
+		Texture::getConstant(texType, textypestr);
+		throw love::Exception("%s textures are not supported on this system.", textypestr);
+	}
+
+	if (!readable)
+		throw love::Exception("Texture views are not supported for non-readable textures.");
+
+	if (base->getTextureType() == TEXTURE_2D)
+	{
+		if (texType != TEXTURE_2D && texType != TEXTURE_2D_ARRAY)
+			throw love::Exception("Texture views created from a 2D texture must use the 2d or array texture type.");
+	}
+	else if (base->getTextureType() == TEXTURE_2D_ARRAY || base->getTextureType() == TEXTURE_CUBE)
+	{
+		if (texType != TEXTURE_2D && texType != TEXTURE_2D_ARRAY && texType != TEXTURE_CUBE)
+			throw love::Exception("Texture views created from an array or cube texture must use the 2d, array, or cube texture type.");
+	}
+	else if (base->getTextureType() == TEXTURE_VOLUME)
+	{
+		if (texType != TEXTURE_VOLUME)
+			throw love::Exception("Texture views created from a volume texture must use the volume texture type.");
+	}
+	else
+	{
+		throw love::Exception("Unknown texture type.");
+	}
+
+	auto baseformat = base->getPixelFormat();
+
+	if (format != baseformat)
+	{
+		if (isPixelFormatCompressed(baseformat) || isPixelFormatCompressed(format))
+			throw love::Exception("Compressed textures cannot use a different pixel format in a texture view.");
+
+		if (isPixelFormatColor(baseformat) != isPixelFormatColor(format))
+			throw love::Exception("Color-format textures cannot use a depth/stencil pixel format and vice versa, in a texture view.");
+
+		// TODO: depth[24|32f]_stencil8 -> stencil8 can work.
+		if (isPixelFormatDepthStencil(baseformat))
+			throw love::Exception("Using a different pixel format in a texture view is not currently supported for depth or stencil formats.");
+
+		if (!viewFormats)
+			throw love::Exception("Using a different pixel format in a texture view requires the original texture to be created with the 'viewformats' setting set to true.");
+
+		size_t bytes = getPixelFormatBlockSize(format);
+		size_t basebytes = getPixelFormatBlockSize(baseformat);
+
+		if (bytes != basebytes)
+			throw love::Exception("Texture views must have the same bits per pixel as the original texture.");
+	}
+
+	const char *miperr = nullptr;
+	if (mipmapsMode == MIPMAPS_AUTO && !supportsGenerateMipmaps(miperr))
+		mipmapsMode = MIPMAPS_MANUAL;
+
+	rootView.texture->retain();
+	parentView.texture->retain();
+}
+
 Texture::~Texture()
 {
-	--textureCount;
 	setGraphicsMemorySize(0);
+
+	if (this == rootView.texture)
+		--textureCount;
+
+	if (rootView.texture != this && rootView.texture != nullptr)
+		rootView.texture->release();
+	if (parentView.texture != this && parentView.texture != nullptr)
+		parentView.texture->release();
 }
 
 void Texture::setGraphicsMemorySize(int64 bytes)
@@ -352,17 +470,17 @@ void Texture::draw(Graphics *gfx, const Matrix4 &m)
 
 void Texture::draw(Graphics *gfx, Quad *q, const Matrix4 &localTransform)
 {
-	if (!readable)
-		throw love::Exception("Textures with non-readable formats cannot be drawn.");
-
-	if (renderTarget && gfx->isRenderTargetActive(this))
-		throw love::Exception("Cannot render a Texture to itself.");
-
 	if (texType == TEXTURE_2D_ARRAY)
 	{
 		drawLayer(gfx, q->getLayer(), q, localTransform);
 		return;
 	}
+
+	if (!readable)
+		throw love::Exception("Textures with non-readable formats cannot be drawn.");
+
+	if (renderTarget && gfx->isRenderTargetActive(this))
+		throw love::Exception("Cannot render a Texture to itself.");
 
 	const Matrix4 &tm = gfx->getTransform();
 	bool is2D = tm.isAffine2DTransform();
@@ -582,36 +700,6 @@ void Texture::generateMipmaps()
 	generateMipmapsInternal();
 }
 
-TextureType Texture::getTextureType() const
-{
-	return texType;
-}
-
-PixelFormat Texture::getPixelFormat() const
-{
-	return format;
-}
-
-Texture::MipmapsMode Texture::getMipmapsMode() const
-{
-	return mipmapsMode;
-}
-
-bool Texture::isRenderTarget() const
-{
-	return renderTarget;
-}
-
-bool Texture::isComputeWritable() const
-{
-	return computeWrite;
-}
-
-bool Texture::isReadable() const
-{
-	return readable;
-}
-
 bool Texture::isCompressed() const
 {
 	return isPixelFormatCompressed(format);
@@ -685,28 +773,39 @@ int Texture::getRequestedMSAA() const
 	return requestedMSAA;
 }
 
-void Texture::setSamplerState(const SamplerState &s)
+const SamplerState &Texture::getSamplerState() const
+{
+	return samplerState;
+}
+
+SamplerState Texture::validateSamplerState(SamplerState s) const
 {
 	if (!readable)
-		return;
+		return s;
 
 	if (s.depthSampleMode.hasValue && !isPixelFormatDepth(format))
 		throw love::Exception("Only depth textures can have a depth sample compare mode.");
 
-	Graphics::flushBatchedDrawsGlobal();
-
-	samplerState = s;
-
-	if (samplerState.mipmapFilter != SamplerState::MIPMAP_FILTER_NONE && getMipmapCount() == 1)
-		samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
+	if (s.mipmapFilter != SamplerState::MIPMAP_FILTER_NONE && getMipmapCount() == 1)
+		s.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
 
 	if (texType == TEXTURE_CUBE)
-		samplerState.wrapU = samplerState.wrapV = samplerState.wrapW = SamplerState::WRAP_CLAMP;
-}
+		s.wrapU = s.wrapV = s.wrapW = SamplerState::WRAP_CLAMP;
 
-const SamplerState &Texture::getSamplerState() const
-{
-	return samplerState;
+	if (s.minFilter == SamplerState::FILTER_LINEAR || s.magFilter == SamplerState::FILTER_LINEAR || s.mipmapFilter == SamplerState::MIPMAP_FILTER_LINEAR)
+	{
+		auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+		if (!gfx->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_LINEAR))
+		{
+			s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
+			if (s.mipmapFilter == SamplerState::MIPMAP_FILTER_LINEAR)
+				s.mipmapFilter = SamplerState::MIPMAP_FILTER_NEAREST;
+		}
+	}
+
+	Graphics::flushBatchedDrawsGlobal();
+
+	return s;
 }
 
 Quad *Texture::getQuad() const
@@ -779,6 +878,35 @@ bool Texture::validateDimensions(bool throwException) const
 		throw love::Exception("Cannot create texture: %s of %d is too large for this system.", largestname, largestdim);
 
 	return success;
+}
+
+void Texture::validatePixelFormat(Graphics *gfx) const
+{
+	uint32 usage = PIXELFORMATUSAGEFLAGS_NONE;
+	if (renderTarget)
+		usage |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+	if (readable)
+		usage |= PIXELFORMATUSAGEFLAGS_SAMPLE;
+	if (computeWrite)
+		usage |= PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
+
+	if (!gfx->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage))
+	{
+		const char *fstr = "unknown";
+		love::getConstant(format, fstr);
+
+		const char *readablestr = "";
+		if (readable != !isPixelFormatDepthStencil(format))
+			readablestr = readable ? " readable" : " non-readable";
+
+		const char *rtstr = "";
+		if (computeWrite)
+			rtstr = " as a compute shader-writable texture";
+		else if (renderTarget)
+			rtstr = " as a render target";
+
+		throw love::Exception("The %s%s pixel format is not supported%s on this system.", fstr, readablestr, rtstr);
+	}
 }
 
 Texture::Slices::Slices(TextureType textype)
@@ -971,6 +1099,7 @@ static StringMap<Texture::SettingType, Texture::SETTING_MAX_ENUM>::Entry setting
 	{ "msaa",         Texture::SETTING_MSAA          },
 	{ "canvas",       Texture::SETTING_RENDER_TARGET },
 	{ "computewrite", Texture::SETTING_COMPUTE_WRITE },
+	{ "viewformats",  Texture::SETTING_VIEW_FORMATS  },
 	{ "readable",     Texture::SETTING_READABLE      },
 	{ "debugname",    Texture::SETTING_DEBUGNAME     },
 };

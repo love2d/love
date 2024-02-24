@@ -244,6 +244,25 @@ Texture::Texture(love::graphics::Graphics *gfx, const Settings &settings, const 
 	slices.clear();
 }
 
+Texture::Texture(love::graphics::Graphics *gfx, love::graphics::Texture *base, const Texture::ViewSettings &viewsettings)
+	: love::graphics::Texture(gfx, base, viewsettings)
+	, slices(viewsettings.type.get(base->getTextureType()))
+	, fbo(0)
+	, texture(0)
+	, renderbuffer(0)
+	, framebufferStatus(GL_FRAMEBUFFER_COMPLETE)
+	, textureGLError(GL_NO_ERROR)
+	, actualSamples(1)
+{
+	if (!loadVolatile())
+	{
+		if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE)
+			throw love::Exception("Cannot create texture view (OpenGL framebuffer error: %s)", OpenGL::framebufferStatusString(framebufferStatus));
+		if (textureGLError != GL_NO_ERROR)
+			throw love::Exception("Cannot create texture view (OpenGL error: %s)", OpenGL::errorString(textureGLError));
+	}
+}
+
 Texture::~Texture()
 {
 	unloadVolatile();
@@ -254,11 +273,26 @@ void Texture::createTexture()
 	// The base class handles some validation. For example, if ImageData is
 	// given then it must exist for all mip levels, a render target can't use
 	// a compressed format, etc.
-
 	glGenTextures(1, &texture);
+	GLenum gltype = OpenGL::getGLTextureType(texType);
+
+	if (parentView.texture != this)
+	{
+		OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false);
+		Texture *basetex = (Texture *) parentView.texture;
+		int layers = texType == TEXTURE_CUBE ? 6 : getLayerCount();
+
+		glTextureView(texture, gltype, basetex->texture, fmt.internalformat,
+		              parentView.startMipmap, getMipmapCount(),
+		              parentView.startLayer, layers);
+
+		gl.bindTextureToUnit(this, 0, false);
+		setSamplerState(samplerState);
+		return;
+	}
+
 	gl.bindTextureToUnit(this, 0, false);
 
-	GLenum gltype = OpenGL::getGLTextureType(texType);
 	if (renderTarget && GLAD_ANGLE_texture_usage)
 		glTexParameteri(gltype, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
 
@@ -370,6 +404,12 @@ bool Texture::loadVolatile()
 {
 	if (texture != 0 || renderbuffer != 0)
 		return true;
+
+	if (parentView.texture != this)
+	{
+		Texture *basetex = (Texture *) parentView.texture;
+		basetex->loadVolatile();
+	}
 
 	OpenGL::TempDebugGroup debuggroup("Texture load");
 
@@ -593,18 +633,7 @@ void Texture::setSamplerState(const SamplerState &s)
 	if (s.depthSampleMode.hasValue && !gl.isDepthCompareSampleSupported())
 		throw love::Exception("Depth comparison sampling in shaders is not supported on this system.");
 
-	// Base class does common validation and assigns samplerState.
-	love::graphics::Texture::setSamplerState(s);
-
-	auto supportedflags = OpenGL::getPixelFormatUsageFlags(getPixelFormat());
-
-	if ((supportedflags & PIXELFORMATUSAGEFLAGS_LINEAR) == 0)
-	{
-		samplerState.magFilter = samplerState.minFilter = SamplerState::FILTER_NEAREST;
-
-		if (samplerState.mipmapFilter == SamplerState::MIPMAP_FILTER_LINEAR)
-			samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NEAREST;
-	}
+	samplerState = validateSamplerState(s);
 
 	// If we only have limited NPOT support then the wrap mode must be CLAMP.
 	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))

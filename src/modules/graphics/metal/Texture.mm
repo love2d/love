@@ -43,10 +43,6 @@ static MTLTextureType getMTLTextureType(TextureType type, int msaa)
 
 Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const Settings &settings, const Slices *data)
 	: love::graphics::Texture(gfxbase, settings, data)
-	, texture(nil)
-	, msaaTexture(nil)
-	, sampler(nil)
-	, actualMSAASamples(1)
 { @autoreleasepool {
 	auto gfx = (Graphics *) gfxbase;
 
@@ -80,6 +76,8 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 		desc.usage |= MTLTextureUsageRenderTarget;
 	if (computeWrite)
 		desc.usage |= MTLTextureUsageShaderWrite;
+	if (viewFormats)
+		desc.usage |= MTLTextureUsagePixelFormatView;
 
 	texture = [device newTextureWithDescriptor:desc];
 
@@ -212,6 +210,41 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 	setSamplerState(samplerState);
 }}
 
+Texture::Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, love::graphics::Texture *base, const Texture::ViewSettings &viewsettings)
+	: love::graphics::Texture(gfx, base, viewsettings)
+{
+	id<MTLTexture> basetex = ((Texture *) base)->texture;
+	auto formatdesc = Metal::convertPixelFormat(device, format);
+	int slices = texType == TEXTURE_CUBE ? 6 : getLayerCount();
+
+	if (formatdesc.swizzled)
+	{
+		if (@available(macOS 10.15, iOS 13, *))
+		{
+			texture = [basetex newTextureViewWithPixelFormat:formatdesc.format
+												 textureType:getMTLTextureType(texType, 1)
+													  levels:NSMakeRange(parentView.startMipmap, mipmapCount)
+													  slices:NSMakeRange(parentView.startLayer, slices)
+													 swizzle:formatdesc.swizzle];
+		}
+	}
+	else
+	{
+		texture = [basetex newTextureViewWithPixelFormat:formatdesc.format
+											 textureType:getMTLTextureType(texType, 1)
+												  levels:NSMakeRange(parentView.startMipmap, mipmapCount)
+												  slices:NSMakeRange(parentView.startLayer, slices)];
+	}
+
+	if (texture == nil)
+		throw love::Exception("Could not create Metal texture view.");
+
+	if (!debugName.empty())
+		texture.label = @(debugName.c_str());
+
+	setSamplerState(samplerState);
+}
+
 Texture::~Texture()
 { @autoreleasepool {
 	texture = nil;
@@ -340,10 +373,8 @@ void Texture::setSamplerState(const SamplerState &s)
 	if (s.depthSampleMode.hasValue && !Graphics::getInstance()->isDepthCompareSamplerSupported())
 		throw love::Exception("Depth comparison sampling in shaders is not supported on this system.");
 
-	// Base class does common validation and assigns samplerState.
-	love::graphics::Texture::setSamplerState(s);
-
-	sampler = Graphics::getInstance()->getCachedSampler(s);
+	samplerState = validateSamplerState(s);
+	sampler = Graphics::getInstance()->getCachedSampler(samplerState);
 }}
 
 } // metal

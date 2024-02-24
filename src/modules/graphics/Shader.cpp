@@ -1141,7 +1141,7 @@ bool Shader::validateTexture(const UniformInfo *info, Texture *tex, bool interna
 		else
 			throw love::Exception("Texture must be created with the computewrite flag set to true in order to be used with a storage texture (image2D etc) shader uniform variable.");
 	}
-	else if (isstoragetex && info->storageTextureFormat != getLinearPixelFormat(tex->getPixelFormat()))
+	else if (isstoragetex && info->storageTextureFormat != tex->getPixelFormat())
 	{
 		if (internalUpdate)
 			return false;

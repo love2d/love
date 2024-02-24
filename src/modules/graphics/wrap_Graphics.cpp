@@ -799,6 +799,13 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 		if (s.type == TEXTURE_2D_ARRAY || s.type == TEXTURE_VOLUME)
 			s.layers = luax_checkintflag(L, idx, Texture::getConstant(Texture::SETTING_LAYERS));
 	}
+	else
+	{
+		s.width = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_WIDTH), s.width);
+		s.height = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_HEIGHT), s.height);
+		if (s.type == TEXTURE_2D_ARRAY || s.type == TEXTURE_VOLUME)
+			s.layers = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_LAYERS), s.layers);
+	}
 
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_MIPMAPS));
 	if (!lua_isnoneornil(L, -1))
@@ -823,6 +830,7 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 	s.msaa = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_MSAA), s.msaa);
 
 	s.computeWrite = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), s.computeWrite);
+	s.viewFormats = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_VIEW_FORMATS), s.viewFormats);
 
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_READABLE));
 	if (!lua_isnoneornil(L, -1))
@@ -1238,6 +1246,66 @@ int w_newVolumeImage(lua_State *L)
 {
 	//luax_markdeprecated(L, 1, "love.graphics.newVolumeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newVolumeTexture");
 	return w_newVolumeTexture(L);
+}
+
+int w_newTextureView(lua_State *L)
+{
+	Texture *base = luax_checktexture(L, 1);
+	luaL_checktype(L, 2, LUA_TTABLE);
+
+	Texture::ViewSettings settings;
+
+	lua_getfield(L, 2, "format");
+	if (!lua_isnoneornil(L, -1))
+	{
+		const char *str = luaL_checkstring(L, -1);
+		if (!getConstant(str, settings.format.value))
+			luax_enumerror(L, "pixel format", str);
+		settings.format.hasValue = true;
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "type");
+	if (!lua_isnoneornil(L, -1))
+	{
+		const char *str = luaL_checkstring(L, -1);
+		if (!Texture::getConstant(str, settings.type.value))
+			luax_enumerror(L, "texture type", Texture::getConstants(settings.type.value), str);
+		settings.type.hasValue = true;
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "mipmapstart");
+	if (!lua_isnoneornil(L, -1))
+		settings.mipmapStart.set(luaL_checkint(L, -1) - 1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "mipmapcount");
+	if (!lua_isnoneornil(L, -1))
+		settings.mipmapCount.set(luaL_checkint(L, -1));
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "layerstart");
+	if (!lua_isnoneornil(L, -1))
+		settings.layerStart.set(luaL_checkint(L, -1) - 1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "layers");
+	if (!lua_isnoneornil(L, -1))
+		settings.layerCount.set(luaL_checkint(L, -1));
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "debugname");
+	if (!lua_isnoneornil(L, -1))
+		settings.debugName = luaL_checkstring(L, -1);
+	lua_pop(L, 1);
+
+	Texture *t = nullptr;
+	luax_catchexcept(L, [&]() { t = instance()->newTextureView(base, settings); });
+
+	luax_pushtype(L, t);
+	t->release();
+	return 1;
 }
 
 int w_newQuad(lua_State *L)
@@ -3857,6 +3925,7 @@ static const luaL_Reg functions[] =
 	{ "newCubeTexture", w_newCubeTexture },
 	{ "newArrayTexture", w_newArrayTexture },
 	{ "newVolumeTexture", w_newVolumeTexture },
+	{ "newTextureView", w_newTextureView },
 	{ "newQuad", w_newQuad },
 	{ "newFont", w_newFont },
 	{ "newImageFont", w_newImageFont },

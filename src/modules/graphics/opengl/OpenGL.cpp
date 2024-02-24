@@ -2506,6 +2506,8 @@ const char *OpenGL::debugSeverityString(GLenum severity)
 		return "medium";
 	case GL_DEBUG_SEVERITY_LOW:
 		return "low";
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		return "notification";
 	default:
 		return "unknown";
 	}

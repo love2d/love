@@ -57,6 +57,7 @@ public:
 	virtual ~Graphics();
 
 	love::graphics::Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) override;
+	love::graphics::Texture *newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings) override;
 	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) override;
 
 	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;

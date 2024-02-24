@@ -168,6 +168,11 @@ love::graphics::Texture *Graphics::newTexture(const love::graphics::Texture::Set
 	return new Texture(this, settings, data);
 }
 
+love::graphics::Texture *Graphics::newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings)
+{
+	return new Texture(this, base, viewsettings);
+}
+
 love::graphics::Buffer *Graphics::newBuffer(const love::graphics::Buffer::Settings &settings, const std::vector<love::graphics::Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
 {
 	return new Buffer(this, settings, format, data, size, arraylength);

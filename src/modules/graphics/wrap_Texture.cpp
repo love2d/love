@@ -300,6 +300,13 @@ int w_Texture_isReadable(lua_State *L)
 	return 1;
 }
 
+int w_Texture_hasViewFormats(lua_State *L)
+{
+	Texture *t = luax_checktexture(L, 1);
+	luax_pushboolean(L, t->hasViewFormats());
+	return 1;
+}
+
 int w_Texture_setDepthSampleMode(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
@@ -511,6 +518,7 @@ const luaL_Reg w_Texture_functions[] =
 	{ "isCanvas", w_Texture_isCanvas },
 	{ "isComputeWritable", w_Texture_isComputeWritable },
 	{ "isReadable", w_Texture_isReadable },
+	{ "hasViewFormats", w_Texture_hasViewFormats },
 	{ "getMipmapMode", w_Texture_getMipmapMode },
 	{ "getDepthSampleMode", w_Texture_getDepthSampleMode },
 	{ "setDepthSampleMode", w_Texture_setDepthSampleMode },

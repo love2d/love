@@ -158,6 +158,11 @@ love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings,
 	return new Texture(this, settings, data);
 }
 
+love::graphics::Texture *Graphics::newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings)
+{
+	return new Texture(this, base, viewsettings);
+}
+
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles)
 {
 	return new ShaderStage(this, stage, source, gles, cachekey);

@@ -40,11 +40,13 @@ class Texture final
 	, public Volatile
 {
 public:
-	Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data);
-	~Texture();
 
-	virtual bool loadVolatile() override;
-	virtual void unloadVolatile() override;
+	Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data);
+	Texture(love::graphics::Graphics *gfx, love::graphics::Texture *base, const Texture::ViewSettings &viewsettings);
+	virtual ~Texture();
+
+	bool loadVolatile() override;
+	void unloadVolatile() override;
 	 
 	void setSamplerState(const SamplerState &s) override;
 
@@ -61,7 +63,7 @@ public:
 
 	void uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r) override;
 
-	void generateMipmapsInternal()  override;
+	void generateMipmapsInternal() override;
 
 	int getMSAA() const override;
 	ptrdiff_t getHandle() const override;

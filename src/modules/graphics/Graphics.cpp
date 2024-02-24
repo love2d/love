@@ -1203,15 +1203,16 @@ bool Graphics::isRenderTargetActive() const
 
 bool Graphics::isRenderTargetActive(Texture *texture) const
 {
+	Texture *roottexture = texture->getRootViewInfo().texture;
 	const auto &rts = states.back().renderTargets;
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.texture.get() == texture)
+		if (rt.texture.get() && rt.texture->getRootViewInfo().texture == roottexture)
 			return true;
 	}
 
-	if (rts.depthStencil.texture.get() == texture)
+	if (rts.depthStencil.texture.get() && rts.depthStencil.texture->getRootViewInfo().texture == roottexture)
 		return true;
 
 	return false;
@@ -1219,16 +1220,27 @@ bool Graphics::isRenderTargetActive(Texture *texture) const
 
 bool Graphics::isRenderTargetActive(Texture *texture, int slice) const
 {
+	const auto &rootinfo = texture->getRootViewInfo();
+	slice += rootinfo.startLayer;
+
 	const auto &rts = states.back().renderTargets;
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.texture.get() == texture && rt.slice == slice)
-			return true;
+		if (rt.texture.get())
+		{
+			const auto &info = rt.texture->getRootViewInfo();
+			if (rootinfo.texture == info.texture && rt.slice + info.startLayer == slice)
+				return true;
+		}
 	}
 
-	if (rts.depthStencil.texture.get() == texture && rts.depthStencil.slice == slice)
-		return true;
+	if (rts.depthStencil.texture.get())
+	{
+		const auto &info = rts.depthStencil.texture->getRootViewInfo();
+		if (rootinfo.texture == info.texture && rts.depthStencil.slice + info.startLayer == slice)
+			return true;
+	}
 
 	return false;
 }
