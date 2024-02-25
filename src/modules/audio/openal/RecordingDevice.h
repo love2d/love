@@ -32,8 +32,8 @@
 #include <OpenAL-Soft/al.h>
 #endif
 #else
-#include <AL/alc.h>
-#include <AL/al.h>
+#include <alc.h>
+#include <al.h>
 #endif
 
 #include "audio/RecordingDevice.h"
