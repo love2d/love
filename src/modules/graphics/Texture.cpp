@@ -287,6 +287,28 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	if (isCompressed() && renderTarget)
 		throw love::Exception("Compressed textures cannot be render targets.");
 
+	for (PixelFormat viewformat : viewFormats)
+	{
+		if (getLinearPixelFormat(viewformat) == getLinearPixelFormat(format))
+			continue;
+
+		if (isPixelFormatCompressed(format) || isPixelFormatCompressed(viewformat))
+			throw love::Exception("Compressed textures cannot use different pixel formats for texture views, aside from sRGB versus linear variants of the same pixel format.");
+
+		if (isPixelFormatColor(viewformat) != isPixelFormatColor(format))
+			throw love::Exception("Color-format textures cannot use depth/stencil pixel formats and vice versa, in texture views.");
+
+		// TODO: depth[24|32f]_stencil8 -> stencil8 can work.
+		if (isPixelFormatDepthStencil(viewformat))
+			throw love::Exception("Using different pixel formats for texture views is not currently supported for depth or stencil formats.");
+
+		size_t viewbytes = getPixelFormatBlockSize(viewformat);
+		size_t basebytes = getPixelFormatBlockSize(format);
+
+		if (viewbytes != basebytes)
+			throw love::Exception("Texture view pixel formats must have the same bits per pixel as the base texture's pixel format.");
+	}
+
 	validatePixelFormat(gfx);
 
 	if (!caps.textureTypes[texType])
@@ -409,28 +431,10 @@ Texture::Texture(Graphics *gfx, Texture *base, const ViewSettings &viewsettings)
 		throw love::Exception("Unknown texture type.");
 	}
 
-	auto baseformat = base->getPixelFormat();
-
-	if (format != baseformat)
+	if (format != base->getPixelFormat())
 	{
-		if (isPixelFormatCompressed(baseformat) || isPixelFormatCompressed(format))
-			throw love::Exception("Compressed textures cannot use a different pixel format in a texture view.");
-
-		if (isPixelFormatColor(baseformat) != isPixelFormatColor(format))
-			throw love::Exception("Color-format textures cannot use a depth/stencil pixel format and vice versa, in a texture view.");
-
-		// TODO: depth[24|32f]_stencil8 -> stencil8 can work.
-		if (isPixelFormatDepthStencil(baseformat))
-			throw love::Exception("Using a different pixel format in a texture view is not currently supported for depth or stencil formats.");
-
-		if (!viewFormats)
-			throw love::Exception("Using a different pixel format in a texture view requires the original texture to be created with the 'viewformats' setting set to true.");
-
-		size_t bytes = getPixelFormatBlockSize(format);
-		size_t basebytes = getPixelFormatBlockSize(baseformat);
-
-		if (bytes != basebytes)
-			throw love::Exception("Texture views must have the same bits per pixel as the original texture.");
+		if (std::find(viewFormats.begin(), viewFormats.end(), format) == viewFormats.end())
+			throw love::Exception("Using a different pixel format in a texture view requires the original texture to be created with a 'viewformats' setting that includes the given format in its list.");
 	}
 
 	const char *miperr = nullptr;

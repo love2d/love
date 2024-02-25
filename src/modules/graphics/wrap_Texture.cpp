@@ -300,10 +300,21 @@ int w_Texture_isReadable(lua_State *L)
 	return 1;
 }
 
-int w_Texture_hasViewFormats(lua_State *L)
+int w_Texture_getViewFormats(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	luax_pushboolean(L, t->hasViewFormats());
+	const std::vector<PixelFormat> &viewformats = t->getViewFormats();
+
+	lua_createtable(L, (int) viewformats.size(), 0);
+	for (int i = 0; i < (int) viewformats.size(); i++)
+	{
+		const char *str = nullptr;
+		if (!getConstant(viewformats[i], str))
+			return luaL_error(L, "Unknown pixel format.");
+		lua_pushstring(L, str);
+		lua_rawseti(L, -2, i + 1);
+	}
+
 	return 1;
 }
 
@@ -518,7 +529,7 @@ const luaL_Reg w_Texture_functions[] =
 	{ "isCanvas", w_Texture_isCanvas },
 	{ "isComputeWritable", w_Texture_isComputeWritable },
 	{ "isReadable", w_Texture_isReadable },
-	{ "hasViewFormats", w_Texture_hasViewFormats },
+	{ "getViewFormats", w_Texture_getViewFormats },
 	{ "getMipmapMode", w_Texture_getMipmapMode },
 	{ "getDepthSampleMode", w_Texture_getDepthSampleMode },
 	{ "setDepthSampleMode", w_Texture_setDepthSampleMode },

@@ -76,8 +76,15 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 		desc.usage |= MTLTextureUsageRenderTarget;
 	if (computeWrite)
 		desc.usage |= MTLTextureUsageShaderWrite;
-	if (viewFormats)
-		desc.usage |= MTLTextureUsagePixelFormatView;
+
+	for (PixelFormat viewformat : viewFormats)
+	{
+		if (getLinearPixelFormat(viewformat) != getLinearPixelFormat(format))
+		{
+			desc.usage |= MTLTextureUsagePixelFormatView;
+			break;
+		}
+	}
 
 	texture = [device newTextureWithDescriptor:desc];
 

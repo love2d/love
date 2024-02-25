@@ -830,7 +830,25 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 	s.msaa = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_MSAA), s.msaa);
 
 	s.computeWrite = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), s.computeWrite);
-	s.viewFormats = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_VIEW_FORMATS), s.viewFormats);
+
+	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_VIEW_FORMATS));
+	if (!lua_isnoneornil(L, -1))
+	{
+		if (lua_type(L, -1) != LUA_TTABLE)
+			luaL_argerror(L, idx, "expected field 'viewformats' to be a table type");
+
+		for (int i = 1; i <= luax_objlen(L, -1); i++)
+		{
+			lua_rawgeti(L, -1, i);
+			const char *str = luaL_checkstring(L, -1);
+			PixelFormat viewformat = PIXELFORMAT_UNKNOWN;
+			if (!getConstant(str, viewformat))
+				luax_enumerror(L, "pixel format", str);
+			s.viewFormats.push_back(viewformat);
+			lua_pop(L, 1);
+		}
+	}
+	lua_pop(L, 1);
 
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_READABLE));
 	if (!lua_isnoneornil(L, -1))

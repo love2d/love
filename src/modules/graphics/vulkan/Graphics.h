@@ -326,6 +326,8 @@ public:
 	void setVsync(int vsync);
 	int getVsync() const;
 
+	uint32 getDeviceApiVersion() const { return deviceApiVersion; }
+
 protected:
 	graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	graphics::Shader *newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const Shader::CompileOptions &options) override;

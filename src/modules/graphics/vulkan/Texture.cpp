@@ -100,9 +100,17 @@ bool Texture::loadVolatile()
 	if (root)
 	{
 		VkImageCreateFlags createFlags = 0;
+		std::vector<VkFormat> vkviewformats;
 
-		if (viewFormats)
-			createFlags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+		for (PixelFormat viewformat : viewFormats)
+		{
+			if (viewformat != format)
+			{
+				createFlags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+				TextureFormat f = Vulkan::getTextureFormat(viewformat);
+				vkviewformats.push_back(f.internalFormat);
+			}
+		}
 
 		if (texType == TEXTURE_CUBE || texType == TEXTURE_2D_ARRAY)
 			createFlags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
@@ -124,6 +132,17 @@ bool Texture::loadVolatile()
 		imageInfo.usage = usageFlags;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageInfo.samples = msaaSamples;
+
+		VkImageFormatListCreateInfo viewFormatsInfo{};
+		viewFormatsInfo.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO;
+
+		if (!vkviewformats.empty() && vgfx->getDeviceApiVersion() >= VK_API_VERSION_1_2)
+		{
+			viewFormatsInfo.viewFormatCount = (uint32)vkviewformats.size();
+			viewFormatsInfo.pViewFormats = vkviewformats.data();
+
+			imageInfo.pNext = &viewFormatsInfo;
+		}
 
 		VmaAllocationCreateInfo imageAllocationCreateInfo{};
 

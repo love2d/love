@@ -39,6 +39,7 @@
 
 // C
 #include <stddef.h>
+#include <vector>
 
 namespace love
 {
@@ -195,7 +196,7 @@ public:
 		int msaa = 1;
 		bool renderTarget = false;
 		bool computeWrite = false;
-		bool viewFormats = false;
+		std::vector<PixelFormat> viewFormats;
 		OptionalBool readable;
 		std::string debugName;
 	};
@@ -279,7 +280,8 @@ public:
 	bool isRenderTarget() const { return renderTarget; }
 	bool isComputeWritable() const { return computeWrite; }
 	bool isReadable() const { return readable; }
-	bool hasViewFormats() const { return viewFormats; }
+
+	const std::vector<PixelFormat> &getViewFormats() const { return viewFormats; }
 
 	bool isCompressed() const;
 	bool isFormatLinear() const;
@@ -353,8 +355,9 @@ protected:
 	PixelFormat format;
 	bool renderTarget;
 	bool computeWrite;
-	bool viewFormats;
 	bool readable;
+
+	std::vector<PixelFormat> viewFormats;
 
 	MipmapsMode mipmapsMode;
 
