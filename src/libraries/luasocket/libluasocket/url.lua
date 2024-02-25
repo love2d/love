@@ -152,7 +152,7 @@ function _M.parse(url, default)
     url = string.gsub(url, "^([%w][%w%+%-%.]*)%:",
         function(s) parsed.scheme = s; return "" end)
     -- get authority
-    url = string.gsub(url, "^//([^/]*)", function(n)
+    url = string.gsub(url, "^//([^/%?#]*)", function(n)
         parsed.authority = n
         return ""
     end)
