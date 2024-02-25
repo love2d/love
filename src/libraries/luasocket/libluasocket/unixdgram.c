@@ -12,7 +12,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include <afunix.h>
+#else
 #include <sys/un.h>
+#endif
 
 #define UNIXDGRAM_DATAGRAMSIZE 8192
 
