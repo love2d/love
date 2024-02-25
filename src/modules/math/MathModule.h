@@ -102,7 +102,7 @@ public:
 
 	RandomGenerator *getRandomGenerator()
 	{
-		return &rng;
+		return rng.get();
 	}
 
 	/**
@@ -120,7 +120,9 @@ public:
 
 private:
 
-	RandomGenerator rng;
+	// All love objects accessible in Lua should be heap-allocated,
+	// to guarantee a minimum pointer alignment.
+	StrongRef<RandomGenerator> rng;
 
 }; // Math
 

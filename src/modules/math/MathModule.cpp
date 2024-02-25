@@ -201,11 +201,12 @@ float linearToGamma(float c)
 
 Math::Math()
 	: Module(M_MATH, "love.math")
-	, rng()
 {
 	RandomGenerator::Seed seed;
 	seed.b64 = (uint64) time(nullptr);
-	rng.setSeed(seed);
+
+	rng.set(new RandomGenerator(), Acquire::NORETAIN);
+	rng->setSeed(seed);
 }
 
 Math::~Math()
