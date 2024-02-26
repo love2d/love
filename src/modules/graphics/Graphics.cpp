@@ -2589,21 +2589,42 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool 
 
 		BatchedDrawCommand cmd;
 		cmd.formats[0] = getSinglePositionFormat(is2D);
-		cmd.formats[1] = CommonFormat::RGBAub;
+		cmd.formats[1] = CommonFormat::STf_RGBAub;
 		cmd.indexMode = TRIANGLEINDEX_FAN;
 		cmd.vertexCount = (int)count - (skipLastFilledVertex ? 1 : 0);
 
 		BatchedVertexData data = requestBatchedDraw(cmd);
 
-		if (is2D)
-			t.transformXY((Vector2 *) data.stream[0], coords, cmd.vertexCount);
-		else
-			t.transformXY0((Vector3 *) data.stream[0], coords, cmd.vertexCount);
+		// Compute texture coordinates.
+		constexpr float inf = std::numeric_limits<float>::infinity();
+		Vector2 mincoord(inf, inf);
+		Vector2 maxcoord(-inf, -inf);
+
+		for (int i = 0; i < cmd.vertexCount; i++)
+		{
+			Vector2 v = coords[i];
+			mincoord.x = std::min(mincoord.x, v.x);
+			mincoord.y = std::min(mincoord.y, v.y);
+			maxcoord.x = std::max(maxcoord.x, v.x);
+			maxcoord.y = std::max(maxcoord.y, v.y);
+		}
+
+		Vector2 invsize(1.0f / (maxcoord.x - mincoord.x), 1.0f / (maxcoord.y - mincoord.y));
+		Vector2 start(mincoord.x * invsize.x, mincoord.y * invsize.y);
 
 		Color32 c = toColor32(getColor());
-		Color32 *colordata = (Color32 *) data.stream[1];
+		STf_RGBAub *attributes = (STf_RGBAub *) data.stream[1];
 		for (int i = 0; i < cmd.vertexCount; i++)
-			colordata[i] = c;
+		{
+			attributes[i].s = coords[i].x * invsize.x - start.x;
+			attributes[i].t = coords[i].y * invsize.y - start.y;
+			attributes[i].color = c;
+		}
+
+		if (is2D)
+			t.transformXY((Vector2*)data.stream[0], coords, cmd.vertexCount);
+		else
+			t.transformXY0((Vector3*)data.stream[0], coords, cmd.vertexCount);
 	}
 }
 
