@@ -54,7 +54,7 @@ Compilation
 Follow the instructions at the [megasource][megasource] repository page.
 
 ### *nix
-Pick a directory to store generated files to, say `build/`:
+First pick a directory to store generated files to, say `build/` and then:
 
 	$ cmake -B build -S. --install-prefix $PWD/prefix # this will create the directory `build/`
 	$ cmake --build build --target install # this will put the files in `prefix/`.
