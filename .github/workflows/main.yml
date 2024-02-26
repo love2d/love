@@ -211,9 +211,9 @@ jobs:
         mkdir debugtools
         cd debugtools
         if errorlevel 1 exit /b 1
-        7z e srctool.nupkg content/amd64/srctool.exe
+        7z e ..\srctool.nupkg content/amd64/srctool.exe
         if errorlevel 1 exit /b 1
-        7z e pdbstr.nupkg content/amd64/pdbstr.exe
+        7z e ..\pdbstr.nupkg content/amd64/pdbstr.exe
         if errorlevel 1 exit /b 1
         echo %CD%>>%GITHUB_PATH%
     - name: Setup Python 3.10
