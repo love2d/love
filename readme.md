@@ -56,9 +56,8 @@ Follow the instructions at the [megasource][megasource] repository page.
 ### *nix
 Pick a directory to store generated files to, say `build/`:
 
-	$ cmake -B build  # this will create the directory `build/`
-	$ cd build/
-	$ make
+	$ cmake -B build -S. --install-prefix $PWD/prefix # this will create the directory `build/`
+	$ cmake --build build --target install # this will put the files in `prefix/`.
 
 ### macOS
 Download or clone [this repository][dependencies-apple] and copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder.
