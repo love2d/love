@@ -2162,8 +2162,6 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0
 			|| ((GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB) && (GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB)))
 			flags |= commonrender;
-		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
-			flags |= computewrite;
 		break;
 	case PIXELFORMAT_BGRA8_UNORM:
 	case PIXELFORMAT_BGRA8_sRGB:
