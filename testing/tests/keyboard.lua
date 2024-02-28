@@ -64,6 +64,19 @@ love.test.keyboard.setKeyRepeat = function(test)
 end
 
 
+-- love.keyboard.isModifierActive
+love.test.keyboard.isModifierActive = function(test)
+  local active1 = love.keyboard.isModifierActive('numlock')
+  local active2 = love.keyboard.isModifierActive('capslock')
+  local active3 = love.keyboard.isModifierActive('scrolllock')
+  local active4 = love.keyboard.isModifierActive('mode')
+  test:assertNotNil(active1)
+  test:assertNotNil(active2)
+  test:assertNotNil(active3)
+  test:assertNotNil(active4)
+end
+
+
 -- love.keyboard.setTextInput
 love.test.keyboard.setTextInput = function(test)
   love.keyboard.setTextInput(false)

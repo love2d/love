@@ -299,6 +299,20 @@ love.test.audio.getOrientation = function(test)
 end
 
 
+-- love.audio.getPlaybackDevice
+love.test.audio.getPlaybackDevice = function(test)
+  test:assertNotNil(love.audio.getPlaybackDevice)
+  test:assertNotNil(love.audio.getPlaybackDevice())
+end
+
+
+-- love.audio.getPlaybackDevices
+love.test.audio.getPlaybackDevices = function(test)
+  test:assertNotNil(love.audio.getPlaybackDevices)
+  test:assertGreaterEqual(0, #love.audio.getPlaybackDevices(), 'check table')
+end
+
+
 -- love.audio.getPosition
 -- @NOTE is there an expected default listener pos?
 love.test.audio.getPosition = function(test)
@@ -439,6 +453,52 @@ love.test.audio.setOrientation = function(test)
   test:assertEquals(4, ux, 'check ux orientation')
   test:assertEquals(5, uy, 'check uy orientation')
   test:assertEquals(6, uz, 'check uz orientation')
+end
+
+
+-- love.audio.setPlaybackDevice
+love.test.audio.setPlaybackDevice = function(test)
+  -- check method
+  test:assertNotNil(love.audio.setPlaybackDevice)
+  -- check blank string name
+  local success1, msg1 = love.audio.setPlaybackDevice('')
+  -- check invalid name
+  local success2, msg2 = love.audio.setPlaybackDevice('loveFM')
+  -- check setting already set
+  local success3, msg3 = love.audio.setPlaybackDevice(love.audio.getPlaybackDevice()) -- current name
+  -- rn on macos all 3 return false
+  -- whereas linux/windows return true for blank/current, which is expected
+  -- as openalsoft treats blank as current
+  if love.system.getOS() == 'OS X' then
+    test:assertFalse(success1, 'check blank device fails')
+    test:assertFalse(success2, 'check invalid device fails')
+    test:assertFalse(success3, 'check existing device fails')
+  else
+    test:assertTrue(success1, 'check blank device is fine')
+    test:assertFalse(success2, 'check invalid device fails')
+    test:assertTrue(success3, 'check existing device is fine')
+  end
+  -- if other devices to play with lets set a different one
+  local devices = love.audio.getPlaybackDevices()
+  if #devices > 1 then
+    local another = ''
+    local current = love.audio.getPlaybackDevice()
+    for a=1,#devices do
+      if devices[a] ~= current then
+        another = devices[a]
+        break
+      end
+    end
+    if another ~= '' then
+      -- check setting new device
+      local success4, msg4 = love.audio.setPlaybackDevice(another)
+      test:assertTrue(success4, 'check setting different device')
+      -- check resetting to default
+      local success5, msg5 = love.audio.setPlaybackDevice()
+      test:assertTrue(success5, 'check resetting')
+      test:assertEquals(current, love.audio.getPlaybackDevice())
+    end
+  end
 end
 
 
