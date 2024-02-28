@@ -144,7 +144,6 @@ You can specify the test suite is being run on a runner by adding the `--isRunne
 `& 'c:\Program Files\LOVE\love.exe' PATH_TO_TESTING_FOLDER/main.lua --console --runAllTests --isRunner`
 | Test                       |    OS     |      Exception      | Reason |
 | -------------------------- | --------- | ------------------- | ------ |
-| love.graphics.points       |   MacOS   |    1px tolerance    | Points are offset by 1,1 when drawn |
 | love.graphics.setWireframe |   MacOS   |    1px tolerance    | Wireframes are offset by 1,1 when drawn |
 | love.graphica.arc          |   MacOS   |       Skipped       | Arc curves are drawn slightly off at really low scale  |
 | love.graphics.setLineStyle |   Linux   |   1rgba tolerance   | 'Rough' lines blend differently with the background rgba |
