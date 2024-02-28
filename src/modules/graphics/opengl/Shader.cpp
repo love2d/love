@@ -600,7 +600,7 @@ std::string Shader::getWarnings() const
 
 		const std::string &stagewarnings = stage->getWarnings();
 
-		if (ShaderStage::getConstant(stage->getStageType(), stagestr))
+		if (!stagewarnings.empty() && ShaderStage::getConstant(stage->getStageType(), stagestr))
 			warnings += std::string(stagestr) + std::string(" shader:\n") + stagewarnings;
 	}
 
