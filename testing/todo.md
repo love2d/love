@@ -8,14 +8,6 @@ These are all the outstanding methods that require test coverage, along with a f
   try uncommenting love.filesystem.unmountCommonPath and you'll see the issues
 - revisit love.audio.setPlaybackDevice when we update openal soft for MacOS
 
-## Physics
-- love.physics.World:rayCastAny
-- love.physics.World:rayCastClosest
-- love.physics.World:getShapesInArea
-- love.physics.Body:getShapes
-- love.physics.Body:getShape
-- love.physics.Body:hasCustomMassData
-
 ## Graphics
 - love.graphics.copyBuffer
 - love.graphics.copyBufferToTexture
@@ -36,5 +28,5 @@ These are all the outstanding methods that require test coverage, along with a f
 - love.graphics.setOrthoProjection
 - love.graphics.setPerspectiveProjection
 - love.graphics.resetProjection
-- Mesh:getAttachedAttributes
-- Shader:hasStage
+- love.graphics.Mesh:getAttachedAttributes
+- love.graphics.Shader:hasStage
