@@ -2188,7 +2188,7 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		if (GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_half_float && GLAD_EXT_texture_rg))
 			flags |= commonsample;
-		if (GLAD_EXT_color_buffer_half_float && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg))
+		if ((GLAD_EXT_color_buffer_half_float || GLAD_EXT_color_buffer_float) && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg))
 			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
@@ -2200,7 +2200,7 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		if (GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float)
 			flags |= commonsample;
-		if (GLAD_EXT_color_buffer_half_float)
+		if (GLAD_EXT_color_buffer_half_float || GLAD_EXT_color_buffer_float)
 			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
@@ -2216,6 +2216,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		if (GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_float && GLAD_EXT_texture_rg))
 			flags |= commonsample;
+		if (GLAD_EXT_color_buffer_float)
+			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
 		if (GLAD_VERSION_4_3)
@@ -2226,6 +2228,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		if (GLAD_ES_VERSION_3_0 || GLAD_OES_texture_float)
 			flags |= commonsample;
+		if (GLAD_EXT_color_buffer_float)
+			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_OES_texture_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
 		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
@@ -2293,9 +2297,11 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RG11B10_FLOAT:
-		if (GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_texture_packed_float)
+		if (GLAD_ES_VERSION_3_1 || GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_texture_packed_float)
 			flags |= commonsample;
 		if (GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float)
+			flags |= commonrender;
+		if (GLAD_EXT_color_buffer_float)
 			flags |= commonrender;
 		if (GLAD_VERSION_4_3)
 			flags |= computewrite;
