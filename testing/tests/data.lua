@@ -33,6 +33,10 @@ love.test.data.ByteData = function(test)
     test:assertEquals('o', byte5)
   end
 
+  -- check overwriting the byte data string
+  data:setString('love!', 5)
+  test:assertEquals('hellolove!', data:getString(), 'check change string')
+
 end
 
 

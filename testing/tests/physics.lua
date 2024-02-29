@@ -19,6 +19,12 @@ love.test.physics.Body = function(test)
   love.physics.newRectangleShape(body2, 5, 5, 10, 10)
   test:assertObject(body1)
 
+  -- check shapes
+  test:assertEquals(1, #body1:getShapes(), 'check shapes total 1')
+  test:assertEquals(1, #body2:getShapes(), 'check shapes total 2')
+  test:assertNotEquals(nil, body1:getShape(), 'check shape 1')
+  test:assertNotEquals(nil, body2:getShape(), 'check shape 2')
+
   -- check body active
   test:assertTrue(body1:isActive(), 'check active by def')
 
@@ -135,6 +141,7 @@ love.test.physics.Body = function(test)
   test:assertRange(y5, 5, 6, 'check mass data reset y')
   test:assertRange(mass5, 0.1, 0.2, 'check mass data reset mass')
   test:assertRange(inertia5, 5, 6, 'check mass data reset inertia')
+  test:assertFalse(body1:hasCustomMassData())
 
   -- check position
   local x6, y6 = body1:getPosition()
@@ -515,6 +522,10 @@ love.test.physics.World = function(test)
   test:assertRange(world:getBodies()[1]:getY(), 9, 11, 'check body prop change y')
   test:assertEquals(1, world:getBodyCount(), 'check 1 body count')
 
+  -- check shapes in world
+  test:assertEquals(1, #world:getShapesInArea(0, 0, 10, 10), 'check shapes in area #1')
+  test:assertEquals(0, #world:getShapesInArea(20, 20, 30, 30), 'check shapes in area #1')
+
   -- check world status
   test:assertFalse(world:isLocked(), 'check not updating')
   test:assertFalse(world:isSleepingAllowed(), 'check no sleep (till brooklyn)')
@@ -571,6 +582,8 @@ love.test.physics.World = function(test)
     return 1
   end)
   test:assertEquals(3, shapes, 'check shapes in raycast')
+  test:assertEquals(world:rayCastClosest(0, 0, 200, 200), rectangle1, 'check closest raycast')
+  test:assertNotEquals(nil, world:rayCastAny(0, 0, 200, 200), 'check any raycast')
 
   -- change collision logic
   test:assertEquals(nil, world:getContactFilter(), 'check def filter')

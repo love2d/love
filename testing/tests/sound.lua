@@ -80,6 +80,18 @@ love.test.sound.SoundData = function(test)
   sdata:setSample(0.002, 1)
   test:assertEquals(1, sdata:getSample(0.002), 'check setting sample manually')
 
+  -- check copying from another sound
+  local copy1 = love.sound.newSoundData('resources/tone.ogg')
+  local copy2 = love.sound.newSoundData('resources/pop.ogg')
+  local before = copy2:getSample(0.02)
+  copy2:copyFrom(copy1, 0.01, 1, 0.02)
+  test:assertNotEquals(before, copy2:getSample(0.02), 'check changed')
+
+  -- check slicing
+  local count = math.floor(copy1:getSampleCount()/2)
+  local slice = copy1:slice(0, count)
+  test:assertEquals(count, slice:getSampleCount(), 'check slice length')
+
 end
 
 

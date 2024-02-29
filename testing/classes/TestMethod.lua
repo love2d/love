@@ -367,11 +367,19 @@ TestMethod = {
   end,
 
 
+  -- @method - TestMethod:waitFrames()
+  -- @desc - yields the method for x amount of frames
+  -- @param {number} frames - no. frames to wait
+  -- @return {nil}
   waitFrames = function(self, frames)
-    for i=1,frames do coroutine.yield() end
+    for _=1,frames do coroutine.yield() end
   end,
 
 
+  -- @method - TestMethod:waitSeconds()
+  -- @desc - yields the method for x amount of seconds
+  -- @param {number} seconds - no. seconds to wait
+  -- @return {nil}
   waitSeconds = function(self, seconds)
     local start = love.timer.getTime()
     while love.timer.getTime() < start + seconds do

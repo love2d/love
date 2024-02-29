@@ -113,6 +113,8 @@ love.test.graphics.Canvas = function(test)
     debugname = 'testcanvas'
   })
   test:assertObject(canvas)
+  test:assertTrue(canvas:isCanvas(), 'check is canvas')
+  test:assertFalse(canvas:isComputeWritable(), 'check not compute writable')
 
   -- check dpi
   test:assertEquals(love.graphics.getDPIScale(), canvas:getDPIScale(), 'check dpi scale')
@@ -216,6 +218,16 @@ love.test.graphics.Canvas = function(test)
   dcanvas:setDepthSampleMode('equal')
   test:assertEquals('equal', dcanvas:getDepthSampleMode(), 'check depth sample mode set')
 
+  -- check compute writeable (wont work on opengl mac)
+  if love.graphics.getSupported().glsl4 then
+    local ccanvas = love.graphics.newCanvas(100, 100, {
+      type = '2d',
+      format = 'rgba8',
+      computewrite = true
+    })
+    test:assertTrue(ccanvas:isComputeWritable())
+  end
+
 end
 
 
@@ -303,6 +315,8 @@ love.test.graphics.Image = function(test)
     mipmaps = true
   })
   test:assertObject(image)
+  test:assertFalse(image:isCanvas(), 'check not canvas')
+  test:assertFalse(image:isComputeWritable(), 'check not compute writable')
 
   -- check dpi
   test:assertEquals(love.graphics.getDPIScale(), image:getDPIScale(), 'check dpi scale')
@@ -1536,6 +1550,11 @@ love.test.graphics.captureScreenshot = function(test)
   -- need to wait until end of the frame for the screenshot
   test:assertNotNil(love.filesystem.openFile('example-screenshot.png', 'r'))
   love.filesystem.remove('example-screenshot.png')
+  -- test callback version
+  love.graphics.captureScreenshot(function (idata)
+    test:assertNotEquals(nil, idata, 'check we have image data')
+  end)
+  test:waitFrames(10)
 end
 
 

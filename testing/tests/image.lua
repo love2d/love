@@ -32,6 +32,11 @@ love.test.image.CompressedImageData = function(test)
   -- check mipmap count
   test:assertEquals(7, idata:getMipmapCount(), 'check mipmap count')
 
+  -- check linear
+  test:assertFalse(idata:isLinear(), 'check not linear')
+  idata:setLinear(true)
+  test:assertTrue(idata:isLinear(), 'check now linear')
+
 end
 
 
@@ -78,11 +83,23 @@ love.test.image.ImageData = function(test)
   local r2, g2, b2 = idata:getPixel(25, 25)
   test:assertEquals(1, r2+g2+b2, 'check set to red')
 
-  -- check encoding to an image
+  -- check encoding to an image (png)
   idata:encode('png', 'test-encode.png')
-  local read = love.filesystem.openFile('test-encode.png', 'r')
-  test:assertNotNil(read)
+  local read1 = love.filesystem.openFile('test-encode.png', 'r')
+  test:assertNotNil(read1)
   love.filesystem.remove('test-encode.png')
+
+  -- check encoding to an image (exr)
+  local edata = love.image.newImageData(100, 100, 'r16f')
+  edata:encode('exr', 'test-encode.exr')
+  local read2 = love.filesystem.openFile('test-encode.exr', 'r')
+  test:assertNotNil(read2)
+  love.filesystem.remove('test-encode.exr')
+
+  -- check linear
+  test:assertFalse(idata:isLinear(), 'check not linear')
+  idata:setLinear(true)
+  test:assertTrue(idata:isLinear(), 'check now linear')
 
 end
 
