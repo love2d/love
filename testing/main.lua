@@ -1,5 +1,3 @@
-print('main.lua')
-
 -- load test objs
 require('classes.TestSuite')
 require('classes.TestModule')

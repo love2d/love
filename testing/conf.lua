@@ -1,5 +1,3 @@
-print("conf.lua")
-
 function love.conf(t)
   print("love.conf")
   t.console = true
@@ -20,5 +18,5 @@ end
 function love.errorhandler(msg)
 	msg = tostring(msg)
 	error_printer(msg, 2)
-  os.exit(1)
+  return nil
 end
