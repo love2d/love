@@ -1550,6 +1550,11 @@ love.test.graphics.captureScreenshot = function(test)
   -- need to wait until end of the frame for the screenshot
   test:assertNotNil(love.filesystem.openFile('example-screenshot.png', 'r'))
   love.filesystem.remove('example-screenshot.png')
+  -- test callback version
+  love.graphics.captureScreenshot(function (idata)
+    test:assertNotEquals(nil, idata, 'check we have image data')
+  end)
+  test:waitFrames(10)
 end
 
 
