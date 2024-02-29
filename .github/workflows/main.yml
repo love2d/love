@@ -344,8 +344,9 @@ jobs:
     # windows opengles tests
     - name: Run Tests (opengles)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      env:
+        LOVE_GRAPHICS_USE_OPENGLES: 1
       run: |
-        $ENV:LOVE_GRAPHICS_USE_OPENGLES=1
         powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner
     - name: Love Test Report (opengles)
       id: report2
