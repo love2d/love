@@ -47,6 +47,24 @@ if(MINGW)
 	message(WARNING "Please see https://github.com/love2d/megasource")
 endif()
 
+# Extract version.h contents.
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h LOVE_VERSION_FILE_CONTENTS)
+
+# Extract one of LOVE_VERSION_MAJOR/MINOR/REV.
+function(match_version ARG_STRING OUT_VAR)
+	string(REGEX MATCH "VERSION_${ARG_STRING} = ([0-9]+);" TMP_VER "${LOVE_VERSION_FILE_CONTENTS}")
+	string(REGEX MATCH "[0-9]+" TMP_VER "${TMP_VER}")
+	set(${OUT_VAR} ${TMP_VER} PARENT_SCOPE)
+endfunction()
+
+match_version("MAJOR" LOVE_VERSION_MAJOR)
+match_version("MINOR" LOVE_VERSION_MINOR)
+match_version("REV" LOVE_VERSION_REV)
+
+set(LOVE_VERSION_STR "${LOVE_VERSION_MAJOR}.${LOVE_VERSION_MINOR}")
+
+message(STATUS "Version: ${LOVE_VERSION_STR}")
+
 if(MSVC OR MINGW)
 	set(LOVE_CONSOLE_EXE_NAME lovec)
 endif()
@@ -249,28 +267,6 @@ function(love_disable_warnings ARG_TARGET)
 	endif()
 	set_target_properties(${ARG_TARGET} PROPERTIES COMPILE_FLAGS ${NEW_FLAGS})
 endfunction()
-
-###################################
-# Version
-###################################
-
-# Extract version.h contents.
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h LOVE_VERSION_FILE_CONTENTS)
-
-# Extract one of LOVE_VERSION_MAJOR/MINOR/REV.
-function(match_version ARG_STRING OUT_VAR)
-	string(REGEX MATCH "VERSION_${ARG_STRING} = ([0-9]+);" TMP_VER "${LOVE_VERSION_FILE_CONTENTS}")
-	string(REGEX MATCH "[0-9]+" TMP_VER "${TMP_VER}")
-	set(${OUT_VAR} ${TMP_VER} PARENT_SCOPE)
-endfunction()
-
-match_version("MAJOR" LOVE_VERSION_MAJOR)
-match_version("MINOR" LOVE_VERSION_MINOR)
-match_version("REV" LOVE_VERSION_REV)
-
-set(LOVE_VERSION_STR "${LOVE_VERSION_MAJOR}.${LOVE_VERSION_MINOR}")
-
-message(STATUS "Version: ${LOVE_VERSION_STR}")
 
 #
 # common
