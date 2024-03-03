@@ -27,14 +27,9 @@ cmake_minimum_required(VERSION 3.18)
 
 project(love)
 
-set(LOVE_EXE_NAME love)
-set(LOVE_LIB_NAME liblove)
-
 set(CMAKE_MODULE_PATH "${love_SOURCE_DIR}/extra/cmake" ${CMAKE_MODULE_PATH})
-# Needed for shared libs on Linux. (-fPIC).
-set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-
-set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE) # Needed for shared libs on Linux. (-fPIC).
+set(CMAKE_CXX_STANDARD 17)
 
 if(APPLE)
 	message(WARNING "CMake is not an officially supported build system for love on Apple platforms.")
@@ -65,9 +60,15 @@ set(LOVE_VERSION_STR "${LOVE_VERSION_MAJOR}.${LOVE_VERSION_MINOR}")
 
 message(STATUS "Version: ${LOVE_VERSION_STR}")
 
-if(MSVC OR MINGW)
-	set(LOVE_CONSOLE_EXE_NAME lovec)
+set(LOVE_EXE_NAME love CACHE STRING "The name of the executable, usually 'love'")
+
+set(LOVE_DEFAULT_LIB_NAME liblove)
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+	set(LOVE_DEFAULT_LIB_NAME "${LOVE_EXE_NAME}-${LOVE_VERSION_STR}")
 endif()
+
+set(LOVE_LIB_NAME ${LOVE_DEFAULT_LIB_NAME} CACHE STRING "The name of the lua library, usually 'liblove' or 'love'")
+set(LOVE_CONSOLE_EXE_NAME "${LOVE_EXE_NAME}c" CACHE STRING "The name of the console version of the executable, usually 'lovec'")
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(LOVE_X64 TRUE)
@@ -2000,34 +2001,40 @@ if(ANDROID)
 	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} android)
 endif()
 
-add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
-set_target_properties(${LOVE_LIB_NAME} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
-target_link_libraries(${LOVE_LIB_NAME} ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
-
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-	set_target_properties(${LOVE_LIB_NAME} PROPERTIES LIBRARY_OUTPUT_NAME "${LOVE_EXE_NAME}-${LOVE_VERSION_STR}")
-endif()
+add_library(liblove SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
+set_target_properties(liblove PROPERTIES
+	C_VISIBILITY_PRESET hidden
+	CXX_VISIBILITY_PRESET hidden
+	VISIBILITY_INLINES_HIDDEN ON
+	LIBRARY_OUTPUT_NAME "${LOVE_LIB_NAME}")
+target_link_libraries(liblove ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
 
 if(LOVE_EXTRA_DEPENDECIES)
-	add_dependencies(${LOVE_LIB_NAME} ${LOVE_EXTRA_DEPENDECIES})
+	add_dependencies(liblove ${LOVE_EXTRA_DEPENDECIES})
 endif()
 
 if(MSVC)
-	set_target_properties(${LOVE_LIB_NAME} PROPERTIES RELEASE_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
-	set_target_properties(${LOVE_LIB_NAME} PROPERTIES DEBUG_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
+	set_target_properties(liblove PROPERTIES RELEASE_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
+	set_target_properties(liblove PROPERTIES DEBUG_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
 endif()
 
 #
 # love (executable)
 #
 if(NOT ANDROID)
-	add_executable(${LOVE_EXE_NAME} WIN32 src/love.cpp ${LOVE_RC})
-	target_link_libraries(${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
-	set_target_properties(${LOVE_EXE_NAME} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
+	add_executable(love WIN32 src/love.cpp ${LOVE_RC})
+	target_link_libraries(love liblove)
+	set_target_properties(love PROPERTIES
+		C_VISIBILITY_PRESET hidden
+		CXX_VISIBILITY_PRESET hidden
+		VISIBILITY_INLINES_HIDDEN ON
+		OUTPUT_NAME ${LOVE_EXE_NAME})
 
 	if(MSVC OR MINGW)
-		add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})
-		target_link_libraries(${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME})
+		add_executable(lovec src/love.cpp ${LOVE_RC})
+		target_link_libraries(lovec liblove)
+		set_target_properties(lovec PROPERTIES
+			OUTPUT_NAME ${LOVE_CONSOLE_EXE_NAME})
 	endif()
 
 	function(post_step_move_dll ARG_POST_TARGET ARG_TARGET_OR_FILE)
@@ -2058,7 +2065,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 	###################################
 	# CPack
 	###################################
-	install(TARGETS ${LOVE_EXE_NAME} ${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME} RUNTIME DESTINATION .)
+	install(TARGETS love lovec liblove RUNTIME DESTINATION .)
 
 	# Our install script (and NSIS) doesn't fully support Windows ARM64 yet.
 	if(MEGA_ARM64)
@@ -2180,7 +2187,7 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 
 	configure_file(platform/unix/love.desktop.in love.desktop @ONLY)
 
-	install(TARGETS ${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
+	install(TARGETS love liblove)
 	install(FILES platform/unix/love.6
 			DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
 			RENAME love.1)
