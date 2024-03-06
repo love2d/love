@@ -166,8 +166,8 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	, format(settings.format)
 	, renderTarget(settings.renderTarget)
 	, computeWrite(settings.computeWrite)
-	, viewFormats(settings.viewFormats)
 	, readable(true)
+	, viewFormats(settings.viewFormats)
 	, mipmapsMode(settings.mipmaps)
 	, width(settings.width)
 	, height(settings.height)
@@ -336,8 +336,8 @@ Texture::Texture(Graphics *gfx, Texture *base, const ViewSettings &viewsettings)
 	, format(viewsettings.format.get(base->getPixelFormat()))
 	, renderTarget(base->renderTarget)
 	, computeWrite(base->computeWrite)
-	, viewFormats(base->viewFormats)
 	, readable(base->readable)
+	, viewFormats(base->viewFormats)
 	, mipmapsMode(base->mipmapsMode)
 	, width(1)
 	, height(1)
@@ -354,7 +354,7 @@ Texture::Texture(Graphics *gfx, Texture *base, const ViewSettings &viewsettings)
 	, rootView({base->rootView.texture, 0, 0})
 	, parentView({base, viewsettings.mipmapStart.get(0), viewsettings.layerStart.get(0)})
 {
-	width = base->getHeight(parentView.startMipmap);
+	width = base->getWidth(parentView.startMipmap);
 	height = base->getHeight(parentView.startMipmap);
 
 	if (texType == TEXTURE_VOLUME)
