@@ -449,7 +449,7 @@ private:
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 	std::vector<std::vector<std::function<void()>>> readbackCallbacks;
 	std::vector<ScreenshotReadbackBuffer> screenshotReadbackBuffers;
-	std::set<Shader*> usedShadersInFrame;
+	std::set<StrongRef<Shader>> usedShadersInFrame;
 	RenderpassState renderPassState;
 };
 
