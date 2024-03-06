@@ -804,7 +804,7 @@ love.test.graphics.Shader = function(test)
 
   -- check valid shader
   local pixelcode1 = [[
-    extern Image tex2;
+    uniform Image tex2;
     vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { 
       vec4 texturecolor = Texel(tex2, texture_coords); 
       return texturecolor * color;
@@ -824,7 +824,7 @@ love.test.graphics.Shader = function(test)
 
   -- check invalid shader
   local pixelcode2 = [[
-    extern float ww;
+    uniform float ww;
     vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { 
       vec4 texturecolor = Texel(tex, texture_coords);
       float unused = ww * 3 * color;
@@ -837,8 +837,8 @@ love.test.graphics.Shader = function(test)
   -- check using a shader to draw + sending uniforms
   -- shader will return a given color if overwrite set to 1, otherwise def. draw
   local pixelcode3 = [[
-    extern vec4 col;
-    extern float overwrite;
+    uniform vec4 col;
+    uniform float overwrite;
     vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords) { 
       vec4 texcol = Texel(tex, texture_coords); 
       if (overwrite == 1.0) {
@@ -850,7 +850,8 @@ love.test.graphics.Shader = function(test)
   ]]
   local shader3 = love.graphics.newShader(pixelcode3, vertexcode1)
   local canvas = love.graphics.newCanvas(16, 16)
-  love.graphics.setCanvas(canvas)
+  love.graphics.push("all")
+    love.graphics.setCanvas(canvas)
     -- set color to yellow
     love.graphics.setColor(1, 1, 0, 1)
     -- turn shader 'on' and use red to draw
@@ -863,15 +864,55 @@ love.test.graphics.Shader = function(test)
     shader3:send('overwrite', 0)
     love.graphics.setShader(shader3)
       love.graphics.rectangle('fill', 8, 8, 8, 8)
-    love.graphics.setShader()
-    love.graphics.setColor(1, 1, 1, 1)
-  love.graphics.setCanvas()
+  love.graphics.pop()
+
   local imgdata = love.graphics.readbackTexture(canvas)
   test:assertPixels(imgdata, {
     red = {{1,1},{1,7},{7,7},{7,1}},
     yellow = {{8,8},{8,15},{15,15},{15,8}}
   }, 'shader draw check')
   test:compareImg(imgdata)
+
+  -- test some uncommon paths for shader uniforms
+  local shader4 = love.graphics.newShader[[
+    uniform bool booleans[5];
+    vec4 effect(vec4 vcolor, Image tex, vec2 tc, vec2 pc) {
+      return booleans[3] ? vec4(0, 1, 0, 0) : vec4(1, 0, 0, 0);
+    }
+  ]]
+
+  shader4:send("booleans", false, true, true)
+
+  local shader5 = love.graphics.newShader[[
+    uniform sampler2D textures[5];
+    vec4 effect(vec4 vcolor, Image tex, vec2 tc, vec2 pc) {
+      return Texel(textures[2], tc) + Texel(textures[3], tc);
+    }
+  ]]
+
+  local canvas2 = love.graphics.newCanvas(1, 1)
+  love.graphics.setCanvas(canvas2)
+  love.graphics.clear(0, 0.5, 0, 1)
+  love.graphics.setCanvas()
+
+  shader5:send("textures", canvas2, canvas2, canvas2, canvas2, canvas2)
+
+  local shader6 = love.graphics.newShader[[
+    struct Data {
+      bool boolValue;
+      float floatValue;
+      sampler2D tex;
+    };
+
+    uniform Data data[3];
+
+    vec4 effect(vec4 vcolor, Image tex, vec2 tc, vec2 pc) {
+      return data[1].boolValue ? Texel(data[0].tex, tc) : vec4(0.0, 0.0, 0.0, 0.0);
+    }
+  ]]
+
+  shader6:send("data[1].boolValue", true)
+  shader6:send("data[0].tex", canvas2)
 
 end
 
