@@ -83,6 +83,10 @@ love.test.data.compress = function(test)
     { love.data.compress('string', 'gzip', 'helloworld', -1), 'string'},
     { love.data.compress('string', 'gzip', 'helloworld', 0), 'string'},
     { love.data.compress('string', 'gzip', 'helloworld', 9), 'string'},
+    { love.data.compress('string', 'deflate', 'aaaaaa', 1), 'string'},
+    { love.data.compress('string', 'deflate', 'heloworld', -1), 'string'},
+    { love.data.compress('string', 'deflate', 'heloworld', 0), 'string'},
+    { love.data.compress('string', 'deflate', 'heloworld', 9), 'string'},
     { love.data.compress('data', 'lz4', 'helloworld', -1), 'userdata'},
     { love.data.compress('data', 'lz4', 'helloworld', 0), 'userdata'},
     { love.data.compress('data', 'lz4', 'helloworld', 9), 'userdata'},
@@ -91,7 +95,10 @@ love.test.data.compress = function(test)
     { love.data.compress('data', 'zlib', 'helloworld', 9), 'userdata'},
     { love.data.compress('data', 'gzip', 'helloworld', -1), 'userdata'},
     { love.data.compress('data', 'gzip', 'helloworld', 0), 'userdata'},
-    { love.data.compress('data', 'gzip', 'helloworld', 9), 'userdata'}
+    { love.data.compress('data', 'gzip', 'helloworld', 9), 'userdata'},
+    { love.data.compress('data', 'deflate', 'heloworld', -1), 'userdata'},
+    { love.data.compress('data', 'deflate', 'heloworld', 0), 'userdata'},
+    { love.data.compress('data', 'deflate', 'heloworld', 9), 'userdata'},
   }
   for c=1,#compressions do
     test:assertNotNil(compressions[c][1])

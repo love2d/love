@@ -123,38 +123,6 @@ TestMethod = {
   end,
 
 
-  -- @method - TestMethod:assertPixels()
-  -- @desc - checks a list of coloured pixels agaisnt given imgdata
-  -- @param {ImageData} imgdata - image data to check
-  -- @param {table} pixelchecks - map of colors to list of pixel coords, i.e.
-  --                              { blue = { {1, 1}, {2, 2}, {3, 4} } }
-  -- @return {nil}
-  assertPixels = function(self, imgdata, pixelchecks, label)
-    for i, v in pairs(pixelchecks) do
-      local col = self.colors[i]
-      local pixels = v
-      for p=1,#pixels do
-        local coord = pixels[p]
-        local tr, tg, tb, ta = imgdata:getPixel(coord[1], coord[2])
-        local compare_id = tostring(coord[1]) .. ',' .. tostring(coord[2])
-        -- prevent us getting stuff like 0.501960785 for 0.5 red 
-        tr = math.floor((tr*10)+0.5)/10
-        tg = math.floor((tg*10)+0.5)/10
-        tb = math.floor((tb*10)+0.5)/10
-        ta = math.floor((ta*10)+0.5)/10
-        col[1] = math.floor((col[1]*10)+0.5)/10
-        col[2] = math.floor((col[2]*10)+0.5)/10
-        col[3] = math.floor((col[3]*10)+0.5)/10
-        col[4] = math.floor((col[4]*10)+0.5)/10
-        self:assertEquals(col[1], tr, 'check pixel r for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
-        self:assertEquals(col[2], tg, 'check pixel g for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
-        self:assertEquals(col[3], tb, 'check pixel b for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
-        self:assertEquals(col[4], ta, 'check pixel a for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
-      end
-    end
-  end,
-
-
   -- @method - TestMethod:assertRange()
   -- @desc - used to check a value is within an expected range
   -- @param {number} actual - actual value of the test
@@ -302,10 +270,11 @@ TestMethod = {
   -- @param {table} imgdata - imgdata to save as a png
   -- @return {nil}
   compareImg = function(self, imgdata)
-    local expected = love.image.newImageData(
-      'tempoutput/expected/love.test.graphics.' .. self.method .. '-' .. 
-      tostring(self.imgs) .. '.png'
-    )
+    local expected_path = 'tempoutput/expected/love.test.graphics.' ..
+      self.method .. '-' .. tostring(self.imgs) .. '.png'
+    local ok, chunk, _ = pcall(love.image.newImageData, expected_path)
+    if ok == false then return self:assertEquals(true, false, chunk) end
+    local expected = chunk
     local iw = imgdata:getWidth()-2
     local ih = imgdata:getHeight()-2
     local rgba_tolerance = self.rgba_tolerance * (1/255)
@@ -350,10 +319,27 @@ TestMethod = {
         )
       end
     end
-    local path = 'tempoutput/actual/love.test.graphics.' .. 
+    local path = 'tempoutput/actual/love.test.graphics.' ..
       self.method .. '-' .. tostring(self.imgs) .. '.png'
     imgdata:encode('png', path)
     self.imgs = self.imgs + 1
+  end,
+
+
+  -- @method - TestMethod:exportImg()
+  -- @desc - exports the given imgdata to the 'output/expected/' folder, to use when
+  --         writing new graphics tests to set the expected image output 
+  -- @NOTE - you should not leave this method in when you are finished this is 
+  --         for test writing only
+  -- @param {table} imgdata - imgdata to save as a png
+  -- @param {integer} imgdata - index of the png, graphic tests are run sequentially
+  --                            and each test image is numbered in order that its 
+  --                            compared to, so set the number here to match
+  -- @return {nil}
+  exportImg = function(self, imgdata, index)
+    local path = 'tempoutput/expected/love.test.graphics.' ..
+      self.method .. '-' .. tostring(index) .. '.png'
+    imgdata:encode('png', path)
   end,
 
 
