@@ -82,7 +82,6 @@ Each module has a TestModule object created, and each test method has a TestMeth
 - **assertGreaterEqual**(expected, actual, label)
 - **assertLessEqual**(expected, actual, label)
 - **assertObject**(table)
-- **assertPixels**(imgdata, pixeltable, label)
 - **assertCoords**(expected, actual, label)
 
 Example test method:
