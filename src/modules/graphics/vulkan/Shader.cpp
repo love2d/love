@@ -59,7 +59,7 @@ public:
 
 				uint32_t binaryBindingOffset;
 				if (!comp.get_binary_offset_for_decoration(id, spv::DecorationBinding, binaryBindingOffset))
-					throw love::Exception("could not get binary offset for binding");
+					throw love::Exception("could not get binary offset for uniform %s binding", name.c_str());
 
 				spirv[binaryBindingOffset] = freeBinding;
 
@@ -826,7 +826,7 @@ void Shader::compileShaders()
 
 				uint32_t locationOffset;
 				if (!comp.get_binary_offset_for_decoration(r.id, spv::DecorationLocation, locationOffset))
-					throw love::Exception("could not get binary offset for location");
+					throw love::Exception("could not get binary offset for vertex attribute %s location", r.name.c_str());
 
 				spirv[locationOffset] = (uint32_t)index;
 
