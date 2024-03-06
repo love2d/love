@@ -270,10 +270,11 @@ TestMethod = {
   -- @param {table} imgdata - imgdata to save as a png
   -- @return {nil}
   compareImg = function(self, imgdata)
-    local expected = love.image.newImageData(
-      'tempoutput/expected/love.test.graphics.' .. self.method .. '-' .. 
-      tostring(self.imgs) .. '.png'
-    )
+    local expected_path = 'tempoutput/expected/love.test.graphics.' ..
+      self.method .. '-' .. tostring(self.imgs) .. '.png'
+    local ok, chunk, _ = pcall(love.image.newImageData, expected_path)
+    if ok == false then return self:assertEquals(true, false, chunk) end
+    local expected = chunk
     local iw = imgdata:getWidth()-2
     local ih = imgdata:getHeight()-2
     local rgba_tolerance = self.rgba_tolerance * (1/255)
