@@ -76,15 +76,12 @@ public:
 
 	int getVertexAttributeIndex(const std::string &name) override;
 
-	const UniformInfo *getUniformInfo(const std::string &name) const override;
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 
 	void updateUniform(const UniformInfo *info, int count) override;
 
 	void sendTextures(const UniformInfo *info, graphics::Texture **textures, int count) override;
 	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
-
-	bool hasUniform(const std::string &name) const override;
 
 	void setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cbtexture, graphics::Texture *crtexture) override;
 
@@ -126,7 +123,6 @@ private:
 
 	bool isCompute = false;
 
-	std::unordered_map<std::string, graphics::Shader::UniformInfo> uniformInfos;
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
 
 	std::unique_ptr<StreamBuffer> uniformBufferObjectBuffer;

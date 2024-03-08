@@ -129,6 +129,10 @@ public:
 
 	struct UniformInfo
 	{
+		UniformType baseType;
+		uint32 stageMask;
+		bool active;
+
 		int location;
 		int count;
 
@@ -138,7 +142,6 @@ public:
 			MatrixSize matrix;
 		};
 
-		UniformType baseType;
 		DataBaseType dataBaseType;
 		TextureType textureType;
 		Access access;
@@ -147,6 +150,8 @@ public:
 		size_t bufferStride;
 		size_t bufferMemberCount;
 		std::string name;
+
+		int resourceIndex;
 
 		union
 		{
@@ -157,12 +162,6 @@ public:
 		};
 
 		size_t dataSize;
-
-		union
-		{
-			Texture **textures;
-			Buffer **buffers;
-		};
 	};
 
 	union LocalUniformValue
@@ -222,7 +221,7 @@ public:
 
 	virtual int getVertexAttributeIndex(const std::string &name) = 0;
 
-	virtual const UniformInfo *getUniformInfo(const std::string &name) const = 0;
+	const UniformInfo *getUniformInfo(const std::string &name) const;
 	virtual const UniformInfo *getUniformInfo(BuiltinUniform builtin) const = 0;
 
 	virtual void updateUniform(const UniformInfo *info, int count) = 0;
@@ -234,7 +233,7 @@ public:
 	 * Gets whether a uniform with the specified name exists and is actively
 	 * used in the shader.
 	 **/
-	virtual bool hasUniform(const std::string &name) const = 0;
+	bool hasUniform(const std::string &name) const;
 
 	/**
 	 * Sets the textures used when rendering a video. For internal use only.
@@ -264,39 +263,31 @@ public:
 
 protected:
 
-	struct BufferReflection
+	struct Reflection
 	{
-		size_t stride;
-		size_t memberCount;
-		Access access;
-	};
+		std::map<std::string, UniformInfo> texelBuffers;
+		std::map<std::string, UniformInfo> storageBuffers;
+		std::map<std::string, UniformInfo> sampledTextures;
+		std::map<std::string, UniformInfo> storageTextures;
+		std::map<std::string, UniformInfo> localUniforms;
 
-	struct StorageTextureReflection
-	{
-		PixelFormat format;
-		Access access;
-	};
+		std::map<std::string, UniformInfo *> allUniforms;
 
-	struct LocalUniform
-	{
-		DataBaseType dataType;
-		std::vector<LocalUniformValue> initializerValues;
-	};
+		std::map<std::string, std::vector<LocalUniformValue>> localUniformInitializerValues;
 
-	struct ValidationReflection
-	{
-		std::map<std::string, BufferReflection> storageBuffers;
-		std::map<std::string, StorageTextureReflection> storageTextures;
-		std::map<std::string, LocalUniform> localUniforms;
+		int textureCount;
+		int bufferCount;
+
 		int localThreadgroupSize[3];
 		bool usesPointSize;
 	};
 
-	bool fillUniformReflectionData(UniformInfo &u);
-
 	std::string getShaderStageDebugName(ShaderStageType stage) const;
 
-	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, ValidationReflection &reflection);
+	void handleUnknownUniformName(const char *name);
+
+	static std::string canonicaliizeUniformName(const std::string &name);
+	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, Reflection &reflection);
 	static DataBaseType getDataBaseType(PixelFormat format);
 	static bool isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b);
 
@@ -305,7 +296,10 @@ protected:
 
 	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
 
-	ValidationReflection validationReflection;
+	Reflection reflection;
+
+	std::vector<Texture *> activeTextures;
+	std::vector<Buffer *> activeBuffers;
 
 	std::string debugName;
 

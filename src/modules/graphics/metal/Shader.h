@@ -107,12 +107,10 @@ public:
 	void attach() override;
 	std::string getWarnings() const override { return ""; }
 	int getVertexAttributeIndex(const std::string &name) override;
-	const UniformInfo *getUniformInfo(const std::string &name) const override;
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override;
 	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override;
 	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
-	bool hasUniform(const std::string &name) const override;
 	ptrdiff_t getHandle() const override { return 0; }
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
@@ -140,13 +138,12 @@ private:
 	};
 
 	void buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv_cross::SPIRType &type, size_t baseoffset, const std::string &basename);
-	void addImage(const spirv_cross::CompilerMSL &msl, const spirv_cross::Resource &resource, UniformType baseType);
+	void addImage(const spirv_cross::Resource &resource);
 	void compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program);
 
 	id<MTLFunction> functions[SHADERSTAGE_MAX_ENUM];
 
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
-	std::map<std::string, UniformInfo> uniforms;
 
 	uint8 *localUniformStagingData;
 	uint8 *localUniformBufferData;

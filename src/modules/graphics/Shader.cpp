@@ -691,8 +691,47 @@ Shader::Shader(StrongRef<ShaderStage> _stages[], const CompileOptions &options)
 	, debugName(options.debugName)
 {
 	std::string err;
-	if (!validateInternal(_stages, err, validationReflection))
+	if (!validateInternal(_stages, err, reflection))
 		throw love::Exception("%s", err.c_str());
+
+	activeTextures.resize(reflection.textureCount);
+	activeBuffers.resize(reflection.bufferCount);
+
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+
+	// Default bindings for read-only resources.
+	for (const auto &kvp : reflection.allUniforms)
+	{
+		const auto &u = *kvp.second;
+
+		if (u.resourceIndex < 0)
+			continue;
+
+		if ((u.access & ACCESS_WRITE) != 0)
+			continue;
+
+		if (u.baseType == UNIFORM_SAMPLER || u.baseType == UNIFORM_STORAGETEXTURE)
+		{
+			auto tex = gfx->getDefaultTexture(u.textureType, u.dataBaseType);
+			for (int i = 0; i < u.count; i++)
+			{
+				tex->retain();
+				activeTextures[u.resourceIndex + i] = tex;
+			}
+		}
+		else if (u.baseType == UNIFORM_TEXELBUFFER || u.baseType == UNIFORM_STORAGEBUFFER)
+		{
+			auto buffer = u.baseType == UNIFORM_TEXELBUFFER
+				? gfx->getDefaultTexelBuffer(u.dataBaseType)
+				: gfx->getDefaultStorageBuffer();
+
+			for (int i = 0; i < u.count; i++)
+			{
+				buffer->retain();
+				activeBuffers[u.resourceIndex + i] = buffer;
+			}
+		}
+	}
 
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 		stages[i] = _stages[i];
@@ -708,6 +747,18 @@ Shader::~Shader()
 
 	if (current == this)
 		attachDefault(STANDARD_DEFAULT);
+
+	for (Texture *tex : activeTextures)
+	{
+		if (tex)
+			tex->release();
+	}
+
+	for (Buffer *buffer : activeBuffers)
+	{
+		if (buffer)
+			buffer->release();
+	}
 }
 
 bool Shader::hasStage(ShaderStageType stage)
@@ -738,6 +789,18 @@ bool Shader::isDefaultActive()
 	}
 
 	return false;
+}
+
+const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
+{
+	const auto it = reflection.allUniforms.find(name);
+	return it != reflection.allUniforms.end() ? it->second : nullptr;
+}
+
+bool Shader::hasUniform(const std::string &name) const
+{
+	const auto it = reflection.allUniforms.find(name);
+	return it != reflection.allUniforms.end() && it->second->active;
 }
 
 const Shader::UniformInfo *Shader::getMainTextureInfo() const
@@ -781,9 +844,9 @@ bool Shader::isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b)
 
 void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 {
-	if ((primtype == PRIMITIVE_POINTS) != validationReflection.usesPointSize)
+	if ((primtype == PRIMITIVE_POINTS) != reflection.usesPointSize)
 	{
-		if (validationReflection.usesPointSize)
+		if (reflection.usesPointSize)
 			throw love::Exception("The active shader can only be used to draw points.");
 		else
 			throw love::Exception("The gl_PointSize variable must be set in a vertex shader when drawing points.");
@@ -825,15 +888,27 @@ void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 
 void Shader::getLocalThreadgroupSize(int *x, int *y, int *z)
 {
-	*x = validationReflection.localThreadgroupSize[0];
-	*y = validationReflection.localThreadgroupSize[1];
-	*z = validationReflection.localThreadgroupSize[2];
+	*x = reflection.localThreadgroupSize[0];
+	*y = reflection.localThreadgroupSize[1];
+	*z = reflection.localThreadgroupSize[2];
 }
 
 bool Shader::validate(StrongRef<ShaderStage> stages[], std::string& err)
 {
-	ValidationReflection reflection;
+	Reflection reflection;
 	return validateInternal(stages, err, reflection);
+}
+
+static DataBaseType getBaseType(glslang::TBasicType basictype)
+{
+	switch (basictype)
+	{
+		case glslang::EbtInt: return DATA_BASETYPE_INT;
+		case glslang::EbtUint: return DATA_BASETYPE_UINT;
+		case glslang::EbtFloat: return DATA_BASETYPE_FLOAT;
+		case glslang::EbtBool: return DATA_BASETYPE_BOOL;
+		default: return DATA_BASETYPE_FLOAT;
+	}
 }
 
 static PixelFormat getPixelFormat(glslang::TLayoutFormat format)
@@ -885,6 +960,30 @@ static PixelFormat getPixelFormat(glslang::TLayoutFormat format)
 	}
 }
 
+static TextureType getTextureType(const glslang::TSampler &sampler)
+{
+	if (sampler.is2D())
+		return sampler.isArrayed() ? TEXTURE_2D_ARRAY : TEXTURE_2D;
+	else if (sampler.dim == glslang::EsdCube)
+		return sampler.isArrayed() ? TEXTURE_MAX_ENUM : TEXTURE_CUBE;
+	else if (sampler.dim == glslang::Esd3D)
+		return TEXTURE_VOLUME;
+	else
+		return TEXTURE_MAX_ENUM;
+}
+
+static uint32 getStageMask(EShLanguageMask mask)
+{
+	uint32 m = 0;
+	if (mask & EShLangVertexMask)
+		m |= SHADERSTAGEMASK_VERTEX;
+	if (mask & EShLangFragmentMask)
+		m |= SHADERSTAGEMASK_PIXEL;
+	if (mask & EShLangComputeMask)
+		m |= SHADERSTAGEMASK_COMPUTE;
+	return m;
+}
+
 template <typename T>
 static T convertData(const glslang::TConstUnion &data)
 {
@@ -903,7 +1002,7 @@ static T convertData(const glslang::TConstUnion &data)
 	}
 }
 
-bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, ValidationReflection &reflection)
+bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, Reflection &reflection)
 {
 	glslang::TProgram program;
 
@@ -946,6 +1045,9 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		}
 	}
 
+	reflection.textureCount = 0;
+	reflection.bufferCount = 0;
+
 	for (int i = 0; i < program.getNumUniformVariables(); i++)
 	{
 		const glslang::TObjectReflection &info = program.getUniform(i);
@@ -955,9 +1057,40 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 
 		const glslang::TQualifier &qualifiers = type->getQualifier();
 
-		if (type->isImage())
+		UniformInfo u = {};
+
+		u.name = canonicaliizeUniformName(info.name);
+		u.location = -1;
+		u.access = ACCESS_READ;
+		u.stageMask = getStageMask(info.stages);
+		u.components = 1;
+		u.resourceIndex = -1;
+
+		if (type->isSizedArray())
+			u.count = type->getArraySizes()->getCumulativeSize();
+		else
+			u.count = 1;
+
+		const auto &sampler = type->getSampler();
+
+		if (type->isTexture() && type->getSampler().isCombined())
 		{
-			if ((info.stages & EShLangComputeMask) == 0)
+			u.baseType = UNIFORM_SAMPLER;
+			u.dataBaseType = getBaseType(sampler.getBasicType());
+			u.isDepthSampler = sampler.isShadow();
+			u.textureType = getTextureType(sampler);
+
+			if (u.textureType == TEXTURE_MAX_ENUM)
+				continue;
+
+			u.resourceIndex = reflection.textureCount;
+			reflection.textureCount += u.count;
+
+			reflection.sampledTextures[u.name] = u;
+		}
+		else if (type->isImage())
+		{
+			if ((info.stages & (~EShLangComputeMask)) != 0)
 			{
 				err = "Shader validation error:\nStorage Texture uniform variables (image2D, etc) are only allowed in compute shaders.";
 				return false;
@@ -965,28 +1098,54 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 
 			if (!qualifiers.hasFormat())
 			{
-				err = "Shader validation error:\nStorage Texture '" + info.name + "' must have an explicit format set in its layout declaration.";
+				err = "Shader validation error:\nStorage Texture '" + u.name + "' must have an explicit format set in its layout declaration.";
 				return false;
 			}
 
-			StorageTextureReflection texreflection = {};
+			u.baseType = UNIFORM_STORAGETEXTURE;
+			u.storageTextureFormat = getPixelFormat(qualifiers.getFormat());
+			u.dataBaseType = getDataBaseType(u.storageTextureFormat);
+			u.textureType = getTextureType(sampler);
 
-			texreflection.format = getPixelFormat(qualifiers.getFormat());
+			if (u.textureType == TEXTURE_MAX_ENUM)
+				continue;
+
+			u.resourceIndex = reflection.textureCount;
+			reflection.textureCount += u.count;
 
 			if (qualifiers.isReadOnly())
-				texreflection.access = ACCESS_READ;
+				u.access = ACCESS_READ;
 			else if (qualifiers.isWriteOnly())
-				texreflection.access = ACCESS_WRITE;
+				u.access = ACCESS_WRITE;
 			else
-				texreflection.access = (Access)(ACCESS_READ | ACCESS_WRITE);
+				u.access = (Access)(ACCESS_READ | ACCESS_WRITE);
 
-			reflection.storageTextures[info.name] = texreflection;
+			reflection.storageTextures[u.name] = u;
+		}
+		else if (type->getBasicType() == glslang::EbtSampler && type->getSampler().isBuffer())
+		{
+			u.baseType = UNIFORM_TEXELBUFFER;
+			u.dataBaseType = getBaseType(sampler.getBasicType());
+
+			u.resourceIndex = reflection.bufferCount;
+			reflection.bufferCount += u.count;
+
+			reflection.texelBuffers[u.name] = u;
 		}
 		else if (!type->isOpaque())
 		{
-			LocalUniform u = {};
-			auto &values = u.initializerValues;
+			std::vector<LocalUniformValue> values;
 			const glslang::TConstUnionArray *constarray = info.getConstArray();
+
+			if (type->isMatrix())
+			{
+				u.matrix.rows = type->getMatrixRows();
+				u.matrix.columns = type->getMatrixCols();
+			}
+			else
+			{
+				u.components = type->getVectorSize();
+			}
 
 			// Store initializer values for local uniforms. Some love graphics
 			// backends strip these out of the shader so we need to be able to
@@ -994,7 +1153,8 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 			switch (type->getBasicType())
 			{
 			case glslang::EbtFloat:
-				u.dataType = DATA_BASETYPE_FLOAT;
+				u.baseType = type->isMatrix() ? UNIFORM_MATRIX : UNIFORM_FLOAT;
+				u.dataBaseType = DATA_BASETYPE_FLOAT;
 				if (constarray != nullptr)
 				{
 					values.resize(constarray->size());
@@ -1003,7 +1163,8 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				}
 				break;
 			case glslang::EbtUint:
-				u.dataType = DATA_BASETYPE_UINT;
+				u.baseType = UNIFORM_UINT;
+				u.dataBaseType = DATA_BASETYPE_UINT;
 				if (constarray != nullptr)
 				{
 					values.resize(constarray->size());
@@ -1012,7 +1173,8 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				}
 				break;
 			case glslang::EbtBool:
-				u.dataType = DATA_BASETYPE_BOOL;
+				u.baseType = UNIFORM_BOOL;
+				u.dataBaseType = DATA_BASETYPE_BOOL;
 				if (constarray != nullptr)
 				{
 					values.resize(constarray->size());
@@ -1022,7 +1184,8 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				break;
 			case glslang::EbtInt:
 			default:
-				u.dataType = DATA_BASETYPE_INT;
+				u.baseType = UNIFORM_INT;
+				u.dataBaseType = DATA_BASETYPE_INT;
 				if (constarray != nullptr)
 				{
 					values.resize(constarray->size());
@@ -1032,7 +1195,8 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				break;
 			}
 
-			reflection.localUniforms[info.name] = u;
+			reflection.localUniforms[u.name] = u;
+			reflection.localUniformInitializerValues[u.name] = values;
 		}
 	}
 
@@ -1070,18 +1234,29 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				return false;
 			}
 
-			BufferReflection bufferReflection = {};
-			bufferReflection.stride = (size_t) info.size;
-			bufferReflection.memberCount = (size_t) info.numMembers;
+			UniformInfo u = {};
+			u.name = canonicaliizeUniformName(info.name);
+			u.location = -1;
+
+			if (type->isSizedArray())
+				u.count = type->getArraySizes()->getCumulativeSize();
+			else
+				u.count = 1;
+
+			u.bufferStride = (size_t) info.size;
+			u.bufferMemberCount = (size_t) info.numMembers;
+
+			u.resourceIndex = reflection.bufferCount;
+			reflection.bufferCount += u.count;
 
 			if (qualifiers.isReadOnly())
-				bufferReflection.access = ACCESS_READ;
+				u.access = ACCESS_READ;
 			else if (qualifiers.isWriteOnly())
-				bufferReflection.access = ACCESS_WRITE;
+				u.access = ACCESS_WRITE;
 			else
-				bufferReflection.access = (Access)(ACCESS_READ | ACCESS_WRITE);
+				u.access = (Access)(ACCESS_READ | ACCESS_WRITE);
 
-			reflection.storageBuffers[info.name] = bufferReflection;
+			reflection.storageBuffers[u.name] = u;
 		}
 		else
 		{
@@ -1089,6 +1264,21 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 			return false;
 		}
 	}
+
+	for (auto &kvp : reflection.texelBuffers)
+		reflection.allUniforms[kvp.first] = &kvp.second;
+
+	for (auto &kvp : reflection.storageBuffers)
+		reflection.allUniforms[kvp.first] = &kvp.second;
+
+	for (auto &kvp : reflection.sampledTextures)
+		reflection.allUniforms[kvp.first] = &kvp.second;
+
+	for (auto &kvp : reflection.storageTextures)
+		reflection.allUniforms[kvp.first] = &kvp.second;
+
+	for (auto &kvp : reflection.localUniforms)
+		reflection.allUniforms[kvp.first] = &kvp.second;
 
 	return true;
 }
@@ -1216,41 +1406,6 @@ bool Shader::validateBuffer(const UniformInfo *info, Buffer *buffer, bool intern
 	return true;
 }
 
-bool Shader::fillUniformReflectionData(UniformInfo &u)
-{
-	const auto &r = validationReflection;
-
-	if (u.baseType == UNIFORM_STORAGETEXTURE)
-	{
-		const auto reflectionit = r.storageTextures.find(u.name);
-		if (reflectionit != r.storageTextures.end())
-		{
-			u.storageTextureFormat = reflectionit->second.format;
-			u.access = reflectionit->second.access;
-			return true;
-		}
-
-		// No reflection info - maybe glslang was better at detecting dead code
-		// than the driver's compiler?
-		return false;
-	}
-	else if (u.baseType == UNIFORM_STORAGEBUFFER)
-	{
-		const auto reflectionit = r.storageBuffers.find(u.name);
-		if (reflectionit != r.storageBuffers.end())
-		{
-			u.bufferStride = reflectionit->second.stride;
-			u.bufferMemberCount = reflectionit->second.memberCount;
-			u.access = reflectionit->second.access;
-			return true;
-		}
-
-		return false;
-	}
-
-	return true;
-}
-
 std::string Shader::getShaderStageDebugName(ShaderStageType stage) const
 {
 	std::string name = debugName;
@@ -1263,6 +1418,26 @@ std::string Shader::getShaderStageDebugName(ShaderStageType stage) const
 	}
 
 	return name;
+}
+
+std::string Shader::canonicaliizeUniformName(const std::string &n)
+{
+	std::string name(n);
+
+	// Some drivers/compilers append "[0]" to the end of array uniform names.
+	if (name.length() > 3)
+	{
+		size_t findpos = name.rfind("[0]");
+		if (findpos != std::string::npos && findpos == name.length() - 3)
+			name.erase(name.length() - 3);
+	}
+
+	return name;
+}
+
+void Shader::handleUnknownUniformName(const char */*name*/)
+{
+	// TODO: do something here?
 }
 
 bool Shader::initialize()

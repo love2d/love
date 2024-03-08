@@ -63,12 +63,10 @@ public:
 	void attach() override;
 	std::string getWarnings() const override;
 	int getVertexAttributeIndex(const std::string &name) override;
-	const UniformInfo *getUniformInfo(const std::string &name) const override;
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override;
 	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override;
 	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
-	bool hasUniform(const std::string &name) const override;
 	ptrdiff_t getHandle() const override;
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
@@ -100,10 +98,6 @@ private:
 	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count, bool internalupdate);
 	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count, bool internalupdate);
 
-	int getUniformTypeComponents(GLenum type) const;
-	void computeUniformTypeInfo(GLenum type, UniformInfo &u);
-	MatrixSize getMatrixSize(GLenum type) const;
-
 	void flushBatchedDraws() const;
 
 	// Get any warnings or errors generated only by the shader program object.
@@ -119,9 +113,6 @@ private:
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
 
 	std::map<std::string, GLint> attributes;
-
-	// Uniform location buffer map
-	std::map<std::string, UniformInfo> uniforms;
 
 	// Texture unit pool for setting textures
 	std::vector<TextureUnit> textureUnits;

@@ -173,31 +173,6 @@ void Shader::unloadVolatile()
 	if (shaderModules.empty())
 		return;
 
-	for (const auto &uniform : uniformInfos)
-	{
-		switch (uniform.second.baseType)
-		{
-		case UNIFORM_SAMPLER:
-		case UNIFORM_STORAGETEXTURE:
-			for (int i = 0; i < uniform.second.count; i++)
-			{
-				if (uniform.second.textures[i] != nullptr)
-					uniform.second.textures[i]->release();
-			}
-			delete[] uniform.second.textures;
-			break;
-		case UNIFORM_TEXELBUFFER:
-		case UNIFORM_STORAGEBUFFER:
-			for (int i = 0; i < uniform.second.count; i++)
-			{
-				if (uniform.second.buffers[i] != nullptr)
-					uniform.second.buffers[i]->release();
-			}
-			delete[] uniform.second.buffers;
-			break;
-		}
-	}
-
 	vgfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout, descriptorPools = descriptorPools, computePipeline = computePipeline](){
 		for (const auto &pools : descriptorPools)
 		{
@@ -320,9 +295,9 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 		currentUsedUniformStreamBuffersCount++;
 	}
 
-	for (const auto &u : uniformInfos)
+	for (const auto &u : reflection.allUniforms)
 	{
-		auto &info = u.second;
+		auto &info = *(u.second);
 
 		if (usesLocalUniformData(&info))
 			continue;
@@ -333,7 +308,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 
 			for (int i = 0; i < info.count; i++)
 			{
-				auto vkTexture = dynamic_cast<Texture*>(info.textures[i]);
+				auto vkTexture = dynamic_cast<Texture*>(activeTextures[info.resourceIndex + i]);
 
 				if (vkTexture == nullptr)
 					throw love::Exception("uniform variable %s is not set.", info.name.c_str());
@@ -374,13 +349,14 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 
 			for (int i = 0; i < info.count; i++)
 			{
-				if (info.buffers[i] == nullptr)
+				auto b = activeBuffers[info.resourceIndex + i];
+				if (b == nullptr)
 					throw love::Exception("uniform variable %s is not set.", info.name.c_str());
 
 				VkDescriptorBufferInfo bufferInfo{};
-				bufferInfo.buffer = (VkBuffer)info.buffers[i]->getHandle();;
+				bufferInfo.buffer = (VkBuffer)b->getHandle();
 				bufferInfo.offset = 0;
-				bufferInfo.range = info.buffers[i]->getSize();
+				bufferInfo.range = b->getSize();
 
 				bufferInfos.push_back(bufferInfo);
 			}
@@ -396,15 +372,16 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 			write.dstSet = currentDescriptorSet;
 			write.dstBinding = info.location;
 			write.dstArrayElement = 0;
-			write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
 			write.descriptorCount = info.count;
 
 			for (int i = 0; i < info.count; i++)
 			{
-				if (info.buffers[i] == nullptr)
+				auto b = activeBuffers[info.resourceIndex + i];
+				if (b == nullptr)
 					throw love::Exception("uniform variable %s is not set.", info.name.c_str());
 
-				bufferViews.push_back((VkBufferView)info.buffers[i]->getTexelBufferHandle());
+				bufferViews.push_back((VkBufferView)b->getTexelBufferHandle());
 			}
 
 			write.pTexelBufferView = &bufferViews[bufferViews.size() - info.count];
@@ -444,12 +421,6 @@ int Shader::getVertexAttributeIndex(const std::string &name)
 	return it == attributes.end() ? -1 : it->second;
 }
 
-const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
-{
-	const auto it = uniformInfos.find(name);
-	return it != uniformInfos.end() ? &(it->second) : nullptr;
-}
-
 const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
 {
 	return builtinUniformInfo[builtin];
@@ -468,9 +439,10 @@ void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures,
 {
 	for (int i = 0; i < count; i++)
 	{
-		auto oldTexture = info->textures[i];
-		info->textures[i] = textures[i];
-		info->textures[i]->retain();
+		int resourceindex = info->resourceIndex + i;
+		auto oldTexture = activeTextures[resourceindex];
+		activeTextures[resourceindex] = textures[i];
+		activeTextures[resourceindex]->retain();
 		if (oldTexture)
 			oldTexture->release();
 	}
@@ -480,9 +452,10 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 {
 	for (int i = 0; i < count; i++)
 	{
-		auto oldBuffer = info->buffers[i];
-		info->buffers[i] = buffers[i];
-		info->buffers[i]->retain();
+		int resourceindex = info->resourceIndex + i;
+		auto oldBuffer = activeBuffers[resourceindex];
+		activeBuffers[resourceindex] = buffers[i];
+		activeBuffers[resourceindex]->retain();
 		if (oldBuffer)
 			oldBuffer->release();
 	}
@@ -524,38 +497,25 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::
 			continue;
 		}
 
-		UniformInfo u{};
-		u.name = name;
+		name = canonicaliizeUniformName(name);
+
+		auto uniformit = reflection.allUniforms.find(name);
+		if (uniformit == reflection.allUniforms.end())
+		{
+			handleUnknownUniformName(name.c_str());
+			continue;
+		}
+
+		UniformInfo &u = *(uniformit->second);
+
+		u.active = true;
 		u.dataSize = memberSize;
-		u.count = memberType.array.empty() ? 1 : memberType.array[0];
-		u.components = 1;
 		u.data = localUniformStagingData.data() + offset;
 
-		if (memberType.columns == 1)
+		const auto &valuesit = reflection.localUniformInitializerValues.find(name);
+		if (valuesit != reflection.localUniformInitializerValues.end())
 		{
-			if (memberType.basetype == SPIRType::Int)
-				u.baseType = UNIFORM_INT;
-			else if (memberType.basetype == SPIRType::UInt)
-				u.baseType = UNIFORM_UINT;
-			else
-				u.baseType = UNIFORM_FLOAT;
-			u.components = memberType.vecsize;
-		}
-		else
-		{
-			u.baseType = UNIFORM_MATRIX;
-			u.matrix.rows = memberType.vecsize;
-			u.matrix.columns = memberType.columns;
-		}
-
-		const auto &reflectionIt = validationReflection.localUniforms.find(u.name);
-		if (reflectionIt != validationReflection.localUniforms.end())
-		{
-			const auto &localUniform = reflectionIt->second;
-			if (localUniform.dataType == DATA_BASETYPE_BOOL)
-				u.baseType = UNIFORM_BOOL;
-
-			const auto &values = localUniform.initializerValues;
+			const auto &values = valuesit->second;
 			if (!values.empty())
 				memcpy(
 					u.data,
@@ -563,14 +523,12 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::
 					std::min(u.dataSize, values.size() * sizeof(LocalUniformValue)));
 		}
 
-		uniformInfos[u.name] = u;
-
 		BuiltinUniform builtin = BUILTIN_MAX_ENUM;
 		if (getConstant(u.name.c_str(), builtin))
 		{
 			if (builtin == BUILTIN_UNIFORMS_PER_DRAW)
 				builtinUniformDataOffset = offset;
-			builtinUniformInfo[builtin] = &uniformInfos[u.name];
+			builtinUniformInfo[builtin] = &u;
 		}
 	}
 }
@@ -643,8 +601,6 @@ void Shader::compileShaders()
 	if (!program->mapIO())
 		throw love::Exception("mapIO failed");
 
-	uniformInfos.clear();
-
 	BindingMapper bindingMapper;
 
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
@@ -695,119 +651,51 @@ void Shader::compileShaders()
 
 		for (const auto &r : shaderResources.sampled_images)
 		{
-			const SPIRType &basetype = comp.get_type(r.base_type_id);
-			const SPIRType &type = comp.get_type(r.type_id);
-			const SPIRType &imagetype = comp.get_type(basetype.image.type);
-
-			graphics::Shader::UniformInfo info;
-			info.location = bindingMapper(comp, spirv, r.name, r.id);
-			info.baseType = UNIFORM_SAMPLER;
-			info.name = r.name;
-			info.count = type.array.empty() ? 1 : type.array[0];
-			info.isDepthSampler = type.image.depth;
-			info.components = 1;
-
-			switch (imagetype.basetype)
+			std::string name = canonicaliizeUniformName(r.name);
+			auto uniformit = reflection.allUniforms.find(name);
+			if (uniformit == reflection.allUniforms.end())
 			{
-			case SPIRType::Float:
-				info.dataBaseType = DATA_BASETYPE_FLOAT;
-				break;
-			case SPIRType::Int:
-				info.dataBaseType = DATA_BASETYPE_INT;
-				break;
-			case SPIRType::UInt:
-				info.dataBaseType = DATA_BASETYPE_UINT;
-				break;
-			default:
-				break;
+				handleUnknownUniformName(name.c_str());
+				continue;
 			}
 
-			switch (basetype.image.dim)
-			{
-			case spv::Dim2D:
-				info.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
-				info.textures = new love::graphics::Texture *[info.count];
-				break;
-			case spv::Dim3D:
-				info.textureType = TEXTURE_VOLUME;
-				info.textures = new love::graphics::Texture *[info.count];
-				break;
-			case spv::DimCube:
-				if (basetype.image.arrayed) {
-					throw love::Exception("cubemap arrays are not currently supported");
-				}
-				info.textureType = TEXTURE_CUBE;
-				info.textures = new love::graphics::Texture *[info.count];
-				break;
-			case spv::DimBuffer:
-				info.baseType = UNIFORM_TEXELBUFFER;
-				info.buffers = new love::graphics::Buffer *[info.count];
-				break;
-			default:
-				throw love::Exception("unknown dim");
-			}
+			UniformInfo &u = *(uniformit->second);
+			u.active = true;
+			u.location = bindingMapper(comp, spirv, name, r.id);
 
-			if (info.baseType == UNIFORM_TEXELBUFFER)
-			{
-				for (int i = 0; i < info.count; i++)
-					info.buffers[i] = nullptr;
-			}
-			else
-			{
-				for (int i = 0; i < info.count; i++)
-				{
-					info.textures[i] = nullptr;
-				}
-			}
-
-			uniformInfos[r.name] = info;
 			BuiltinUniform builtin;
-			if (getConstant(r.name.c_str(), builtin))
-				builtinUniformInfo[builtin] = &uniformInfos[info.name];
+			if (getConstant(name.c_str(), builtin))
+				builtinUniformInfo[builtin] = &u;
 		}
 
 		for (const auto &r : shaderResources.storage_buffers)
 		{
-			const auto &type = comp.get_type(r.type_id);
-
-			UniformInfo u{};
-			u.baseType = UNIFORM_STORAGEBUFFER;
-			u.components = 1;
-			u.name = r.name;
-			u.count = type.array.empty() ? 1 : type.array[0];
-
-			if (!fillUniformReflectionData(u))
+			std::string name = canonicaliizeUniformName(r.name);
+			auto &uniformit = reflection.storageBuffers.find(name);
+			if (uniformit == reflection.storageBuffers.end())
+			{
+				handleUnknownUniformName(name.c_str());
 				continue;
+			}
 
-			u.location = bindingMapper(comp, spirv, r.name, r.id);
-			u.buffers = new love::graphics::Buffer *[u.count];
-
-			for (int i = 0; i < u.count; i++)
-				u.buffers[i] = nullptr;
-
-			uniformInfos[u.name] = u;
+			UniformInfo &u = uniformit->second;
+			u.active = true;
+			u.location = bindingMapper(comp, spirv, name, r.id);
 		}
 
 		for (const auto &r : shaderResources.storage_images)
 		{
-			const auto &type = comp.get_type(r.type_id);
-
-			UniformInfo u{};
-			u.baseType = UNIFORM_STORAGETEXTURE;
-			u.components = 1;
-			u.name = r.name;
-			u.count = type.array.empty() ? 1 : type.array[0];
-
-			if (!fillUniformReflectionData(u))
+			std::string name = canonicaliizeUniformName(r.name);
+			auto &uniformit = reflection.storageBuffers.find(name);
+			if (uniformit == reflection.storageBuffers.end())
+			{
+				handleUnknownUniformName(name.c_str());
 				continue;
+			}
 
-			u.textures = new love::graphics::Texture *[u.count];
-			u.location = bindingMapper(comp, spirv, r.name, r.id);
-
-			for (int i = 0; i < u.count; i++)
-				u.textures[i] = nullptr;
-
-			uniformInfos[u.name] = u;
+			UniformInfo &u = uniformit->second;
+			u.active = true;
+			u.location = bindingMapper(comp, spirv, name, r.id);
 		}
 
 		if (shaderStage == SHADERSTAGE_VERTEX)
@@ -875,9 +763,12 @@ void Shader::compileShaders()
 	if (localUniformData.size() > 0)
 		numBuffers++;
 
-	for (const auto &u : uniformInfos)
+	for (const auto kvp : reflection.allUniforms)
 	{
-		switch (u.second.baseType)
+		if (kvp.second->location < 0)
+			continue;
+
+		switch (kvp.second->baseType)
 		{
 		case UNIFORM_SAMPLER:
 		case UNIFORM_STORAGETEXTURE:
@@ -905,16 +796,16 @@ void Shader::createDescriptorSetLayout()
 	else
 		stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	for (auto const &entry : uniformInfos)
+	for (auto const &entry : reflection.allUniforms)
 	{
-		auto type = Vulkan::getDescriptorType(entry.second.baseType);
+		auto type = Vulkan::getDescriptorType(entry.second->baseType);
 		if (type != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 		{
 			VkDescriptorSetLayoutBinding layoutBinding{};
 
-			layoutBinding.binding = entry.second.location;
+			layoutBinding.binding = entry.second->location;
 			layoutBinding.descriptorType = type;
-			layoutBinding.descriptorCount = entry.second.count;
+			layoutBinding.descriptorCount = entry.second->count;
 			layoutBinding.stageFlags = stageFlags;
 
 			bindings.push_back(layoutBinding);
@@ -976,10 +867,13 @@ void Shader::createDescriptorPoolSizes()
 		descriptorPoolSizes.push_back(size);
 	}
 
-	for (const auto &entry : uniformInfos)
+	for (const auto &entry : reflection.allUniforms)
 	{
+		if (entry.second->location < 0)
+			continue;
+
 		VkDescriptorPoolSize size{};
-		auto type = Vulkan::getDescriptorType(entry.second.baseType);
+		auto type = Vulkan::getDescriptorType(entry.second->baseType);
 		if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 			continue;
 
@@ -1012,29 +906,26 @@ void Shader::setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cb
 
 	for (size_t i = 0; i < textures.size(); i++)
 	{
-		if (builtinUniformInfo[builtIns[i]] != nullptr)
+		const UniformInfo *u = builtinUniformInfo[builtIns[i]];
+		if (u != nullptr)
 		{
 			textures[i]->retain();
-			if (builtinUniformInfo[builtIns[i]]->textures[0])
-				builtinUniformInfo[builtIns[i]]->textures[0]->release();
-			builtinUniformInfo[builtIns[i]]->textures[0] = textures[i];
+			if (activeTextures[u->resourceIndex])
+				activeTextures[u->resourceIndex]->release();
+			activeTextures[u->resourceIndex] = textures[i];
 		}
 	}
 }
 
-bool Shader::hasUniform(const std::string &name) const
-{
-	return uniformInfos.find(name) != uniformInfos.end();
-}
-
 void Shader::setMainTex(graphics::Texture *texture)
 {
-	if (builtinUniformInfo[BUILTIN_TEXTURE_MAIN] != nullptr)
+	const UniformInfo *u = builtinUniformInfo[BUILTIN_TEXTURE_MAIN];
+	if (u != nullptr)
 	{
 		texture->retain();
-		if (builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0]) 
-			builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0]->release();
-		builtinUniformInfo[BUILTIN_TEXTURE_MAIN]->textures[0] = texture;
+		if (activeTextures[u->resourceIndex])
+			activeTextures[u->resourceIndex]->release();
+		activeTextures[u->resourceIndex] = texture;
 	}
 }
 

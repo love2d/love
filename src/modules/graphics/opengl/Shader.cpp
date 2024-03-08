@@ -38,11 +38,6 @@ namespace graphics
 namespace opengl
 {
 
-static bool isBuffer(Shader::UniformType utype)
-{
-	return utype == Shader::UNIFORM_TEXELBUFFER || utype == Shader::UNIFORM_STORAGEBUFFER;
-}
-
 Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const CompileOptions &options)
 	: love::graphics::Shader(stages, options)
 	, program(0)
@@ -58,32 +53,11 @@ Shader::~Shader()
 {
 	unloadVolatile();
 
-	for (const auto &p : uniforms)
+	for (const auto &p : reflection.allUniforms)
 	{
 		// Allocated with malloc().
-		if (p.second.data != nullptr)
-			free(p.second.data);
-
-		if (p.second.baseType == UNIFORM_SAMPLER || p.second.baseType == UNIFORM_STORAGETEXTURE)
-		{
-			for (int i = 0; i < p.second.count; i++)
-			{
-				if (p.second.textures[i] != nullptr)
-					p.second.textures[i]->release();
-			}
-
-			delete[] p.second.textures;
-		}
-		else if (isBuffer(p.second.baseType))
-		{
-			for (int i = 0; i < p.second.count; i++)
-			{
-				if (p.second.buffers[i] != nullptr)
-					p.second.buffers[i]->release();
-			}
-
-			delete[] p.second.buffers;
-		}
+		if (p.second->data != nullptr)
+			free(p.second->data);
 	}
 }
 
@@ -94,6 +68,26 @@ void Shader::mapActiveUniforms()
 	{
 		builtinUniforms[i] = -1;
 		builtinUniformInfo[i] = nullptr;
+	}
+
+	// Make sure all stored resources have their Volatiles loaded before
+	// the sendTextures/sendBuffers calls below, since they call getHandle().
+	for (love::graphics::Texture *tex : activeTextures)
+	{
+		if (tex == nullptr)
+			continue;
+		Volatile *v = dynamic_cast<Volatile *>(tex);
+		if (v != nullptr)
+			v->loadVolatile();
+	}
+
+	for (love::graphics::Buffer *buffer : activeBuffers)
+	{
+		if (buffer == nullptr)
+			continue;
+		Volatile *v = dynamic_cast<Volatile *>(buffer);
+		if (v != nullptr)
+			v->loadVolatile();
 	}
 
 	GLint activeprogram = 0;
@@ -107,42 +101,38 @@ void Shader::mapActiveUniforms()
 	GLchar cname[256];
 	const GLint bufsize = (GLint) (sizeof(cname) / sizeof(GLchar));
 
-	std::map<std::string, UniformInfo> olduniforms = uniforms;
-	uniforms.clear();
-
-	auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
-
 	for (int uindex = 0; uindex < numuniforms; uindex++)
 	{
 		GLsizei namelen = 0;
 		GLenum gltype = 0;
-		UniformInfo u = {};
+		int count = 0;
 
-		glGetActiveUniform(program, (GLuint) uindex, bufsize, &namelen, &u.count, &gltype, cname);
+		glGetActiveUniform(program, (GLuint) uindex, bufsize, &namelen, &count, &gltype, cname);
 
-		u.name = std::string(cname, (size_t) namelen);
-		u.location = glGetUniformLocation(program, u.name.c_str());
-		u.access = ACCESS_READ;
-		computeUniformTypeInfo(gltype, u);
+		std::string name(cname, (size_t) namelen);
+		int location = glGetUniformLocation(program, name.c_str());
 
-		// glGetActiveUniform appends "[0]" to the end of array uniform names...
-		if (u.name.length() > 3)
+		if (location == -1)
+			continue;
+
+		name = canonicaliizeUniformName(name);
+
+		const auto &uniformit = reflection.allUniforms.find(name);
+		if (uniformit == reflection.allUniforms.end())
 		{
-			size_t findpos = u.name.find("[0]");
-			if (findpos != std::string::npos && findpos == u.name.length() - 3)
-				u.name.erase(u.name.length() - 3);
+			handleUnknownUniformName(name.c_str());
+			continue;
 		}
+
+		UniformInfo &u = *uniformit->second;
+
+		u.active = true;
+		u.location = location;
 
 		// If this is a built-in (LOVE-created) uniform, store the location.
 		BuiltinUniform builtin = BUILTIN_MAX_ENUM;
 		if (getConstant(u.name.c_str(), builtin))
 			builtinUniforms[int(builtin)] = u.location;
-
-		if (u.location == -1)
-			continue;
-
-		if (!fillUniformReflectionData(u))
-			continue;
 
 		if ((u.baseType == UNIFORM_SAMPLER && builtin != BUILTIN_TEXTURE_MAIN) || u.baseType == UNIFORM_TEXELBUFFER)
 		{
@@ -175,183 +165,51 @@ void Shader::mapActiveUniforms()
 				storageTextureBindings.push_back(binding);
 		}
 
-		// Make sure previously set uniform data is preserved, and shader-
-		// initialized values are retrieved.
-		auto oldu = olduniforms.find(u.name);
-		if (oldu != olduniforms.end())
+		if (u.dataSize == 0)
 		{
-			u.data = oldu->second.data;
-			u.dataSize = oldu->second.dataSize;
-			u.textures = oldu->second.textures;
+			if (u.baseType == UNIFORM_MATRIX)
+				u.dataSize = sizeof(uint32) * u.matrix.rows * u.matrix.columns * u.count;
+			else
+				u.dataSize = sizeof(uint32) * u.components * u.count;
 
-			updateUniform(&u, u.count, true);
+			u.data = malloc(u.dataSize);
+			memset(u.data, 0, u.dataSize);
+
+			const auto &valuesit = reflection.localUniformInitializerValues.find(u.name);
+			if (valuesit != reflection.localUniformInitializerValues.end())
+			{
+				const auto &values = valuesit->second;
+				if (!values.empty())
+					memcpy(u.data, values.data(), std::min(u.dataSize, sizeof(LocalUniformValue) * values.size()));
+			}
 		}
-		else
+
+		if (u.baseType == UNIFORM_SAMPLER || u.baseType == UNIFORM_TEXELBUFFER)
 		{
-			u.dataSize = 0;
+			int startunit = (int) textureUnits.size() - u.count;
 
-			switch (u.baseType)
-			{
-			case UNIFORM_FLOAT:
-				u.dataSize = sizeof(float) * u.components * u.count;
-				u.data = malloc(u.dataSize);
-				break;
-			case UNIFORM_INT:
-			case UNIFORM_BOOL:
-			case UNIFORM_SAMPLER:
-			case UNIFORM_STORAGETEXTURE:
-			case UNIFORM_TEXELBUFFER:
-				u.dataSize = sizeof(int) * u.components * u.count;
-				u.data = malloc(u.dataSize);
-				break;
-			case UNIFORM_UINT:
-				u.dataSize = sizeof(unsigned int) * u.components * u.count;
-				u.data = malloc(u.dataSize);
-				break;
-			case UNIFORM_MATRIX:
-				u.dataSize = sizeof(float) * ((size_t)u.matrix.rows * u.matrix.columns) * u.count;
-				u.data = malloc(u.dataSize);
-				break;
-			default:
-				break;
-			}
+			if (builtin == BUILTIN_TEXTURE_MAIN)
+				startunit = 0;
 
-			if (u.dataSize > 0)
-			{
-				memset(u.data, 0, u.dataSize);
-
-				if (u.baseType == UNIFORM_SAMPLER || u.baseType == UNIFORM_TEXELBUFFER)
-				{
-					int startunit = (int) textureUnits.size() - u.count;
-
-					if (builtin == BUILTIN_TEXTURE_MAIN)
-						startunit = 0;
-
-					for (int i = 0; i < u.count; i++)
-						u.ints[i] = startunit + i;
-
-					glUniform1iv(u.location, u.count, u.ints);
-
-					if (u.baseType == UNIFORM_TEXELBUFFER)
-					{
-						u.buffers = new love::graphics::Buffer*[u.count];
-						memset(u.buffers, 0, sizeof(Buffer *) * u.count);
-					}
-					else
-					{
-						u.textures = new love::graphics::Texture*[u.count];
-
-						auto *tex = gfx->getDefaultTexture(u.textureType, u.dataBaseType);
-						for (int i = 0; i < u.count; i++)
-						{
-							tex->retain();
-							u.textures[i] = tex;
-						}
-					}
-				}
-				else if (u.baseType == UNIFORM_STORAGETEXTURE)
-				{
-					int startbinding = (int) storageTextureBindings.size() - u.count;
-					for (int i = 0; i < u.count; i++)
-						u.ints[i] = startbinding + i;
-
-					glUniform1iv(u.location, u.count, u.ints);
-
-					u.textures = new love::graphics::Texture*[u.count];
-
-					if ((u.access & ACCESS_WRITE) != 0)
-					{
-						memset(u.textures, 0, sizeof(Texture *) * u.count);
-					}
-					else
-					{
-						auto *tex = gfx->getDefaultTexture(u.textureType, u.dataBaseType);
-						for (int i = 0; i < u.count; i++)
-						{
-							tex->retain();
-							u.textures[i] = tex;
-						}
-					}
-				}
-			}
-
-			size_t offset = 0;
-
-			// Store any shader-initialized values in our own memory.
 			for (int i = 0; i < u.count; i++)
-			{
-				GLint location = u.location;
-
-				if (u.count > 1)
-				{
-					std::ostringstream ss;
-					ss << i;
-
-					std::string indexname = u.name + "[" + ss.str() + "]";
-					location = glGetUniformLocation(program, indexname.c_str());
-				}
-
-				if (location == -1)
-					continue;
-
-				switch (u.baseType)
-				{
-				case UNIFORM_FLOAT:
-					glGetUniformfv(program, location, &u.floats[offset]);
-					offset += u.components;
-					break;
-				case UNIFORM_INT:
-				case UNIFORM_BOOL:
-					glGetUniformiv(program, location, &u.ints[offset]);
-					offset += u.components;
-					break;
-				case UNIFORM_UINT:
-					glGetUniformuiv(program, location, &u.uints[offset]);
-					offset += u.components;
-					break;
-				case UNIFORM_MATRIX:
-					glGetUniformfv(program, location, &u.floats[offset]);
-					offset += (size_t)u.matrix.rows * u.matrix.columns;
-					break;
-				default:
-					break;
-				}
-			}
+				u.ints[i] = startunit + i;
+		}
+		else if (u.baseType == UNIFORM_STORAGETEXTURE)
+		{
+			int startbinding = (int) storageTextureBindings.size() - u.count;
+			for (int i = 0; i < u.count; i++)
+				u.ints[i] = startbinding + i;
 		}
 
-		uniforms[u.name] = u;
+		updateUniform(&u, u.count, true);
 
 		if (builtin != BUILTIN_MAX_ENUM)
-			builtinUniformInfo[(int)builtin] = &uniforms[u.name];
+			builtinUniformInfo[(int)builtin] = &u;
 
 		if (u.baseType == UNIFORM_SAMPLER || u.baseType == UNIFORM_STORAGETEXTURE)
-		{
-			// Make sure all stored textures have their Volatiles loaded before
-			// the sendTextures call, since it calls getHandle().
-			for (int i = 0; i < u.count; i++)
-			{
-				if (u.textures[i] == nullptr)
-					continue;
-				Volatile *v = dynamic_cast<Volatile *>(u.textures[i]);
-				if (v != nullptr)
-					v->loadVolatile();
-			}
-
-			sendTextures(&u, u.textures, u.count, true);
-		}
+			sendTextures(&u, &activeTextures[u.resourceIndex], u.count, true);
 		else if (u.baseType == UNIFORM_TEXELBUFFER)
-		{
-			for (int i = 0; i < u.count; i++)
-			{
-				if (u.buffers[i] == nullptr)
-					continue;
-				Volatile *v = dynamic_cast<Volatile *>(u.buffers[i]);
-				if (v != nullptr)
-					v->loadVolatile();
-			}
-
-			sendBuffers(&u, u.buffers, u.count, true);
-		}
+			sendBuffers(&u, &activeBuffers[u.resourceIndex], u.count, true);
 	}
 
 	if (gl.isBufferUsageSupported(BUFFERUSAGE_SHADER_STORAGE))
@@ -364,37 +222,28 @@ void Shader::mapActiveUniforms()
 
 		for (int sindex = 0; sindex < numstoragebuffers; sindex++)
 		{
-			UniformInfo u = {};
-			u.baseType = UNIFORM_STORAGEBUFFER;
-			u.access = ACCESS_READ;
-
 			GLsizei namelength = 0;
 			glGetProgramResourceName(program, GL_SHADER_STORAGE_BLOCK, sindex, 2048, &namelength, namebuffer);
 
-			u.name = std::string(namebuffer, namelength);
-			u.count = 1;
+			std::string name = canonicaliizeUniformName(std::string(namebuffer, namelength));
 
-			if (!fillUniformReflectionData(u))
+			const auto &uniformit = reflection.storageBuffers.find(name);
+			if (uniformit == reflection.storageBuffers.end())
+			{
+				handleUnknownUniformName(name.c_str());
 				continue;
-
-			// Make sure previously set uniform data is preserved, and shader-
-			// initialized values are retrieved.
-			auto oldu = olduniforms.find(u.name);
-			if (oldu != olduniforms.end())
-			{
-				u.data = oldu->second.data;
-				u.dataSize = oldu->second.dataSize;
-				u.buffers = oldu->second.buffers;
 			}
-			else
+
+			UniformInfo &u = uniformit->second;
+
+			u.active = true;
+
+			if (u.dataSize == 0)
 			{
-				u.dataSize = sizeof(int) * 1;
+				u.dataSize = sizeof(int) * u.count;
 				u.data = malloc(u.dataSize);
-
-				u.ints[0] = -1;
-
-				u.buffers = new love::graphics::Buffer * [u.count];
-				memset(u.buffers, 0, sizeof(Buffer*)* u.count);
+				for (int i = 0; i < u.count; i++)
+					u.ints[i] = -1;
 			}
 
 			// Unlike local uniforms and attributes, OpenGL doesn't auto-assign storage
@@ -417,56 +266,13 @@ void Shader::mapActiveUniforms()
 				if (u.access & ACCESS_WRITE)
 				{
 					p.second = (int)activeWritableStorageBuffers.size();
-					activeWritableStorageBuffers.push_back(u.buffers[0]);
+					activeWritableStorageBuffers.push_back(activeBuffers[u.resourceIndex]);
 				}
 
 				storageBufferBindingIndexToActiveBinding[binding.bindingindex] = p;
 			}
 
-			uniforms[u.name] = u;
-
-			for (int i = 0; i < u.count; i++)
-			{
-				if (u.buffers[i] == nullptr)
-					continue;
-				Volatile* v = dynamic_cast<Volatile*>(u.buffers[i]);
-				if (v != nullptr)
-					v->loadVolatile();
-			}
-
-			sendBuffers(&u, u.buffers, u.count, true);
-		}
-	}
-
-	// Make sure uniforms that existed before but don't exist anymore are
-	// cleaned up. This theoretically shouldn't happen, but...
-	for (const auto &p : olduniforms)
-	{
-		if (uniforms.find(p.first) == uniforms.end())
-		{
-			if (p.second.data != nullptr)
-				free(p.second.data);
-
-			if (p.second.baseType == UNIFORM_SAMPLER || p.second.baseType == UNIFORM_STORAGETEXTURE)
-			{
-				for (int i = 0; i < p.second.count; i++)
-				{
-					if (p.second.textures[i] != nullptr)
-						p.second.textures[i]->release();
-				}
-
-				delete[] p.second.textures;
-			}
-			else if (isBuffer(p.second.baseType))
-			{
-				for (int i = 0; i < p.second.count; i++)
-				{
-					if (p.second.buffers[i] != nullptr)
-						p.second.buffers[i]->release();
-				}
-
-				delete[] p.second.buffers;
-			}
+			sendBuffers(&u, &activeBuffers[u.resourceIndex], u.count, true);
 		}
 	}
 
@@ -649,16 +455,6 @@ void Shader::attach()
 	}
 }
 
-const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
-{
-	const auto it = uniforms.find(name);
-
-	if (it == uniforms.end())
-		return nullptr;
-
-	return &(it->second);
-}
-
 const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
 {
 	return builtinUniformInfo[(int)builtin];
@@ -802,10 +598,12 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 
 		tex->retain();
 
-		if (info->textures[i] != nullptr)
-			info->textures[i]->release();
+		int resourceindex = info->resourceIndex + i;
 
-		info->textures[i] = tex;
+		if (activeTextures[resourceindex] != nullptr)
+			activeTextures[resourceindex]->release();
+
+		activeTextures[resourceindex] = tex;
 
 		if (isstoragetex)
 		{
@@ -885,10 +683,12 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 
 		buffer->retain();
 
-		if (info->buffers[i] != nullptr)
-			info->buffers[i]->release();
+		int resourceindex = info->resourceIndex + i;
 
-		info->buffers[i] = buffer;
+		if (activeBuffers[resourceindex] != nullptr)
+			activeBuffers[resourceindex]->release();
+
+		activeBuffers[resourceindex] = buffer;
 
 		if (texelbinding)
 		{
@@ -924,11 +724,6 @@ void Shader::flushBatchedDraws() const
 {
 	if (current == this)
 		Graphics::flushBatchedDrawsGlobal();
-}
-
-bool Shader::hasUniform(const std::string &name) const
-{
-	return uniforms.find(name) != uniforms.end();
 }
 
 ptrdiff_t Shader::getHandle() const
@@ -1040,293 +835,6 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 		GLint location = builtinUniforms[BUILTIN_UNIFORMS_PER_DRAW];
 		if (location >= 0)
 			glUniform4fv(location, 13, (const GLfloat *) &data);
-	}
-}
-
-int Shader::getUniformTypeComponents(GLenum type) const
-{
-	switch (type)
-	{
-	case GL_INT:
-	case GL_UNSIGNED_INT:
-	case GL_FLOAT:
-	case GL_BOOL:
-		return 1;
-	case GL_INT_VEC2:
-	case GL_UNSIGNED_INT_VEC2:
-	case GL_FLOAT_VEC2:
-	case GL_FLOAT_MAT2:
-	case GL_BOOL_VEC2:
-		return 2;
-	case GL_INT_VEC3:
-	case GL_UNSIGNED_INT_VEC3:
-	case GL_FLOAT_VEC3:
-	case GL_FLOAT_MAT3:
-	case GL_BOOL_VEC3:
-		return 3;
-	case GL_INT_VEC4:
-	case GL_UNSIGNED_INT_VEC4:
-	case GL_FLOAT_VEC4:
-	case GL_FLOAT_MAT4:
-	case GL_BOOL_VEC4:
-		return 4;
-	default:
-		return 1;
-	}
-}
-
-Shader::MatrixSize Shader::getMatrixSize(GLenum type) const
-{
-	MatrixSize m;
-
-	switch (type)
-	{
-	case GL_FLOAT_MAT2:
-		m.columns = m.rows = 2;
-		break;
-	case GL_FLOAT_MAT3:
-		m.columns = m.rows = 3;
-		break;
-	case GL_FLOAT_MAT4:
-		m.columns = m.rows = 4;
-		break;
-	case GL_FLOAT_MAT2x3:
-		m.columns = 2;
-		m.rows = 3;
-		break;
-	case GL_FLOAT_MAT2x4:
-		m.columns = 2;
-		m.rows = 4;
-		break;
-	case GL_FLOAT_MAT3x2:
-		m.columns = 3;
-		m.rows = 2;
-		break;
-	case GL_FLOAT_MAT3x4:
-		m.columns = 3;
-		m.rows = 4;
-		break;
-	case GL_FLOAT_MAT4x2:
-		m.columns = 4;
-		m.rows = 2;
-		break;
-	case GL_FLOAT_MAT4x3:
-		m.columns = 4;
-		m.rows = 3;
-		break;
-	default:
-		m.columns = m.rows = 0;
-		break;
-	}
-
-	return m;
-}
-
-void Shader::computeUniformTypeInfo(GLenum type, UniformInfo &u)
-{
-	u.isDepthSampler = false;
-	u.components = getUniformTypeComponents(type);
-	u.baseType = UNIFORM_UNKNOWN;
-
-	switch (type)
-	{
-	case GL_INT:
-	case GL_INT_VEC2:
-	case GL_INT_VEC3:
-	case GL_INT_VEC4:
-		u.baseType = UNIFORM_INT;
-		u.dataBaseType = DATA_BASETYPE_INT;
-		break;
-	case GL_UNSIGNED_INT:
-	case GL_UNSIGNED_INT_VEC2:
-	case GL_UNSIGNED_INT_VEC3:
-	case GL_UNSIGNED_INT_VEC4:
-		u.baseType = UNIFORM_UINT;
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		break;
-	case GL_FLOAT:
-	case GL_FLOAT_VEC2:
-	case GL_FLOAT_VEC3:
-	case GL_FLOAT_VEC4:
-		u.baseType = UNIFORM_FLOAT;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		break;
-	case GL_FLOAT_MAT2:
-	case GL_FLOAT_MAT3:
-	case GL_FLOAT_MAT4:
-	case GL_FLOAT_MAT2x3:
-	case GL_FLOAT_MAT2x4:
-	case GL_FLOAT_MAT3x2:
-	case GL_FLOAT_MAT3x4:
-	case GL_FLOAT_MAT4x2:
-	case GL_FLOAT_MAT4x3:
-		u.baseType = UNIFORM_MATRIX;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.matrix = getMatrixSize(type);
-		break;
-	case GL_BOOL:
-	case GL_BOOL_VEC2:
-	case GL_BOOL_VEC3:
-	case GL_BOOL_VEC4:
-		u.baseType = UNIFORM_BOOL;
-		u.dataBaseType = DATA_BASETYPE_BOOL;
-		break;
-
-	case GL_SAMPLER_2D:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_2D;
-		break;
-	case GL_SAMPLER_2D_SHADOW:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_2D;
-		u.isDepthSampler = true;
-		break;
-	case GL_INT_SAMPLER_2D:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_INT;
-		u.textureType = TEXTURE_2D;
-		break;
-	case GL_UNSIGNED_INT_SAMPLER_2D:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		u.textureType = TEXTURE_2D;
-		break;
-	case GL_SAMPLER_2D_ARRAY:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_2D_ARRAY;
-		break;
-	case GL_SAMPLER_2D_ARRAY_SHADOW:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_2D_ARRAY;
-		u.isDepthSampler = true;
-		break;
-	case GL_INT_SAMPLER_2D_ARRAY:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_INT;
-		u.textureType = TEXTURE_2D_ARRAY;
-		break;
-	case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		u.textureType = TEXTURE_2D_ARRAY;
-		break;
-	case GL_SAMPLER_3D:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_VOLUME;
-		break;
-	case GL_INT_SAMPLER_3D:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_INT;
-		u.textureType = TEXTURE_VOLUME;
-		break;
-	case GL_UNSIGNED_INT_SAMPLER_3D:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		u.textureType = TEXTURE_VOLUME;
-		break;
-	case GL_SAMPLER_CUBE:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_CUBE;
-		break;
-	case GL_SAMPLER_CUBE_SHADOW:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_CUBE;
-		u.isDepthSampler = true;
-		break;
-	case GL_INT_SAMPLER_CUBE:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_INT;
-		u.textureType = TEXTURE_CUBE;
-		break;
-	case GL_UNSIGNED_INT_SAMPLER_CUBE:
-		u.baseType = UNIFORM_SAMPLER;
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		u.textureType = TEXTURE_CUBE;
-		break;
-
-	case GL_SAMPLER_BUFFER:
-		u.baseType = UNIFORM_TEXELBUFFER;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		break;
-	case GL_INT_SAMPLER_BUFFER:
-		u.baseType = UNIFORM_TEXELBUFFER;
-		u.dataBaseType = DATA_BASETYPE_INT;
-		break;
-	case GL_UNSIGNED_INT_SAMPLER_BUFFER:
-		u.baseType = UNIFORM_TEXELBUFFER;
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		break;
-
-	case GL_IMAGE_2D:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_2D;
-		break;
-	case GL_INT_IMAGE_2D:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_INT;
-		u.textureType = TEXTURE_2D;
-		break;
-	case GL_UNSIGNED_INT_IMAGE_2D:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		u.textureType = TEXTURE_2D;
-		break;
-	case GL_IMAGE_2D_ARRAY:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_2D_ARRAY;
-		break;
-	case GL_INT_IMAGE_2D_ARRAY:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_INT;
-		u.textureType = TEXTURE_2D_ARRAY;
-		break;
-	case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		u.textureType = TEXTURE_2D_ARRAY;
-		break;
-	case GL_IMAGE_3D:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_VOLUME;
-		break;
-	case GL_INT_IMAGE_3D:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_INT;
-		u.textureType = TEXTURE_VOLUME;
-		break;
-	case GL_UNSIGNED_INT_IMAGE_3D:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		u.textureType = TEXTURE_VOLUME;
-		break;
-	case GL_IMAGE_CUBE:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		u.textureType = TEXTURE_CUBE;
-		break;
-	case GL_INT_IMAGE_CUBE:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_INT;
-		u.textureType = TEXTURE_CUBE;
-		break;
-	case GL_UNSIGNED_INT_IMAGE_CUBE:
-		u.baseType = UNIFORM_STORAGETEXTURE;
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		u.textureType = TEXTURE_CUBE;
-		break;
-
-	default:
-		break;
 	}
 }
 
