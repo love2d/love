@@ -229,7 +229,7 @@ void Shader::newFrame()
 		streamBuffers.clear();
 		streamBuffers.push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, newSize));
 	}
-	else
+	else if (streamBuffers.size() == 1)
 		streamBuffers.at(0)->nextFrame();
 
 	for (VkDescriptorPool pool : descriptorPools[currentFrame])
