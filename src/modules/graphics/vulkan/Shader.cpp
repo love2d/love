@@ -437,6 +437,9 @@ void Shader::updateUniform(const UniformInfo *info, int count)
 
 void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures, int count)
 {
+	if (current == this)
+		Graphics::flushBatchedDrawsGlobal();
+
 	for (int i = 0; i < count; i++)
 	{
 		int resourceindex = info->resourceIndex + i;
@@ -450,6 +453,9 @@ void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures,
 
 void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
 {
+	if (current == this)
+		Graphics::flushBatchedDrawsGlobal();
+
 	for (int i = 0; i < count; i++)
 	{
 		int resourceindex = info->resourceIndex + i;
