@@ -138,7 +138,6 @@ private:
 	};
 
 	void buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv_cross::SPIRType &type, size_t baseoffset, const std::string &basename);
-	void addImage(const spirv_cross::Resource &resource);
 	void compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program);
 
 	id<MTLFunction> functions[SHADERSTAGE_MAX_ENUM];
