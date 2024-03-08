@@ -299,7 +299,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 	{
 		auto &info = *(u.second);
 
-		if (usesLocalUniformData(&info))
+		if (!info.active || usesLocalUniformData(&info))
 			continue;
 
 		if (info.baseType == UNIFORM_SAMPLER || info.baseType == UNIFORM_STORAGETEXTURE)
