@@ -1237,6 +1237,9 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 			UniformInfo u = {};
 			u.name = canonicaliizeUniformName(info.name);
 			u.location = -1;
+			u.stageMask = getStageMask(info.stages);
+			u.components = 1;
+			u.baseType = UNIFORM_STORAGEBUFFER;
 
 			if (type->isSizedArray())
 				u.count = type->getArraySizes()->getCumulativeSize();
