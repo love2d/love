@@ -671,7 +671,7 @@ void Shader::compileShaders()
 		for (const auto &r : shaderResources.storage_buffers)
 		{
 			std::string name = canonicaliizeUniformName(r.name);
-			auto &uniformit = reflection.storageBuffers.find(name);
+			const auto &uniformit = reflection.storageBuffers.find(name);
 			if (uniformit == reflection.storageBuffers.end())
 			{
 				handleUnknownUniformName(name.c_str());
@@ -686,7 +686,7 @@ void Shader::compileShaders()
 		for (const auto &r : shaderResources.storage_images)
 		{
 			std::string name = canonicaliizeUniformName(r.name);
-			auto &uniformit = reflection.storageBuffers.find(name);
+			const auto &uniformit = reflection.storageBuffers.find(name);
 			if (uniformit == reflection.storageBuffers.end())
 			{
 				handleUnknownUniformName(name.c_str());
