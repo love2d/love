@@ -2354,28 +2354,39 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		configuration.dynamicState.cullmode = cullmode;
 	}
 
-	std::vector<VkBuffer> bufferVector;
-	std::vector<VkDeviceSize> offsets;
+	VkBuffer vkbuffers[VertexAttributes::MAX + 2];
+	VkDeviceSize vkoffsets[VertexAttributes::MAX + 2];
+	int buffercount = 0;
 
-	for (uint32_t i = 0; i < VertexAttributes::MAX; i++)
+	uint32 allbits = buffers.useBits;
+	uint32 i = 0;
+	while (allbits)
 	{
-		if (buffers.useBits & (1u << i))
+		uint32 bit = 1u << i;
+
+		if (buffers.useBits & bit)
 		{
-			bufferVector.push_back((VkBuffer)buffers.info[i].buffer->getHandle());
-			offsets.push_back((VkDeviceSize)buffers.info[i].offset);
+			vkbuffers[buffercount] = (VkBuffer)buffers.info[i].buffer->getHandle();
+			vkoffsets[buffercount] = (VkDeviceSize)buffers.info[i].offset;
+			buffercount++;
 		}
+
+		i++;
+		allbits >>= 1;
 	}
 
 	if (!(attributes.enableBits & (1u << ATTRIB_TEXCOORD)))
 	{
-		bufferVector.push_back((VkBuffer)defaultConstantTexCoord->getHandle());
-		offsets.push_back((VkDeviceSize)0);
+		vkbuffers[buffercount] = (VkBuffer)defaultConstantTexCoord->getHandle();
+		vkoffsets[buffercount] = (VkDeviceSize)0;
+		buffercount++;
 	}
 
 	if (!(attributes.enableBits & (1u << ATTRIB_COLOR)))
 	{
-		bufferVector.push_back((VkBuffer)defaultConstantColor->getHandle());
-		offsets.push_back((VkDeviceSize)0);
+		vkbuffers[buffercount] = (VkBuffer)defaultConstantColor->getHandle();
+		vkoffsets[buffercount] = (VkDeviceSize)0;
+		buffercount++;
 	}
 
 	configuration.shader->setMainTex(texture);
@@ -2383,7 +2394,9 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	ensureGraphicsPipelineConfiguration(configuration);
 
 	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS);
-	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
+
+	if (buffercount > 0)
+		vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(buffercount), vkbuffers, vkoffsets);
 }
 
 void Graphics::setDefaultRenderPass()
