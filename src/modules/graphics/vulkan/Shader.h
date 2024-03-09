@@ -102,10 +102,6 @@ private:
 
 	VkPipeline computePipeline;
 
-	uint32_t numTextures;
-	uint32_t numBuffers;
-	uint32_t numBufferViews;
-
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 	std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
@@ -114,6 +110,11 @@ private:
 	// we keep a vector of stream buffers that gets dynamically increased if more memory is needed
 	std::vector<StreamBuffer*> streamBuffers;
 	std::vector<std::vector<VkDescriptorPool>> descriptorPools;
+
+	std::vector<VkDescriptorBufferInfo> descriptorBuffers;
+	std::vector<VkDescriptorImageInfo> descriptorImages;
+	std::vector<VkBufferView> descriptorBufferViews;
+	std::vector<VkWriteDescriptorSet> descriptorWrites;
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::vector<VkShaderModule> shaderModules;
