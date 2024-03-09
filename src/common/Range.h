@@ -61,7 +61,7 @@ struct Range
 		return first <= other.first && last >= other.last;
 	}
 
-	bool intersects(const Range &other)
+	bool intersects(const Range &other) const
 	{
 		return !(first > other.last || last < other.first);
 	}

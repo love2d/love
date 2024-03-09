@@ -21,6 +21,7 @@
 #include "graphics/vertex.h"
 #include "Shader.h"
 #include "Graphics.h"
+#include "common/Range.h"
 
 #include "libraries/glslang/glslang/Public/ShaderLang.h"
 #include "libraries/glslang/glslang/Public/ResourceLimits.h"
@@ -41,21 +42,21 @@ static const uint32_t DESCRIPTOR_POOL_SIZE = 1000;
 class BindingMapper
 {
 public:
-	uint32_t operator()(spirv_cross::CompilerGLSL &comp, std::vector<uint32_t> &spirv, const std::string &name, const spirv_cross::ID &id)
+	uint32_t operator()(spirv_cross::CompilerGLSL &comp, std::vector<uint32_t> &spirv, const std::string &name, int count, const spirv_cross::ID &id)
 	{
 		auto it = bindingMappings.find(name);
 		if (it == bindingMappings.end())
 		{
 			auto binding = comp.get_decoration(id, spv::DecorationBinding);
 
-			if (isFreeBinding(binding))
+			if (isFreeBinding(binding, count))
 			{
-				bindingMappings[name] = binding;
+				bindingMappings[name] = Range(binding, count);
 				return binding;
 			}
 			else
 			{
-				uint32_t freeBinding = getFreeBinding();
+				uint32_t freeBinding = getFreeBinding(count);
 
 				uint32_t binaryBindingOffset;
 				if (!comp.get_binary_offset_for_decoration(id, spv::DecorationBinding, binaryBindingOffset))
@@ -63,37 +64,38 @@ public:
 
 				spirv[binaryBindingOffset] = freeBinding;
 
-				bindingMappings[name] = freeBinding;
+				bindingMappings[name] = Range(freeBinding, count);
 
 				return freeBinding;
 			}
 		}
 		else
-			return it->second;
+			return (uint32_t)it->second.getOffset();
 	};
 
 
 private:
-	uint32_t getFreeBinding()
+	uint32_t getFreeBinding(int count)
 	{
 		for (uint32_t i = 0;; i++)
 		{
-			if (isFreeBinding(i))
+			if (isFreeBinding(i, count))
 				return i;
 		}
 	}
 
-	bool isFreeBinding(uint32_t binding)
+	bool isFreeBinding(uint32_t binding, int count)
 	{
+		Range r(binding, count);
 		for (const auto &entry : bindingMappings)
 		{
-			if (entry.second == binding)
+			if (entry.second.intersects(r))
 				return false;
 		}
 		return true;
 	}
 
-	std::map<std::string, uint32_t> bindingMappings;
+	std::map<std::string, Range> bindingMappings;
 
 };
 
@@ -641,7 +643,7 @@ void Shader::compileShaders()
 
 				localUniformStagingData.resize(defaultUniformBlockSize);
 				localUniformData.resize(defaultUniformBlockSize);
-				localUniformLocation = bindingMapper(comp, spirv, resource.name, resource.id);
+				localUniformLocation = bindingMapper(comp, spirv, resource.name, 1, resource.id);
 
 				memset(localUniformStagingData.data(), 0, defaultUniformBlockSize);
 				memset(localUniformData.data(), 0, defaultUniformBlockSize);
@@ -667,7 +669,7 @@ void Shader::compileShaders()
 
 			UniformInfo &u = *(uniformit->second);
 			u.active = true;
-			u.location = bindingMapper(comp, spirv, name, r.id);
+			u.location = bindingMapper(comp, spirv, name, u.count, r.id);
 
 			BuiltinUniform builtin;
 			if (getConstant(name.c_str(), builtin))
@@ -686,7 +688,7 @@ void Shader::compileShaders()
 
 			UniformInfo &u = uniformit->second;
 			u.active = true;
-			u.location = bindingMapper(comp, spirv, name, r.id);
+			u.location = bindingMapper(comp, spirv, name, u.count, r.id);
 		}
 
 		for (const auto &r : shaderResources.storage_images)
@@ -701,7 +703,7 @@ void Shader::compileShaders()
 
 			UniformInfo &u = uniformit->second;
 			u.active = true;
-			u.location = bindingMapper(comp, spirv, name, r.id);
+			u.location = bindingMapper(comp, spirv, name, u.count, r.id);
 		}
 
 		if (shaderStage == SHADERSTAGE_VERTEX)
@@ -771,7 +773,7 @@ void Shader::compileShaders()
 
 	for (const auto kvp : reflection.allUniforms)
 	{
-		if (kvp.second->location < 0)
+		if (!kvp.second->active)
 			continue;
 
 		switch (kvp.second->baseType)
