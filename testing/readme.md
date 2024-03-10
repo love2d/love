@@ -52,9 +52,9 @@ LINUX: `./love.AppImage PATH_TO_TESTING_FOLDER/main.lua`
 
 By default all tests will be run for all modules.  
 If you want to specify a module/s you can use:  
-`--runSpecificModules filesystem,audio`  
+`--modules filesystem,audio`  
 If you want to specify only 1 specific method only you can use:  
-`--runSpecificMethod filesystem write`
+`--method filesystem write`
 
 All results will be printed in the console per method as PASS, FAIL, or SKIP with total assertions met on a module level and overall level.  
 

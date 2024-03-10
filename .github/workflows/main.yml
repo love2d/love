@@ -61,7 +61,7 @@ jobs:
     - name: Run Test Suite (opengl)
       run: |
         chmod a+x love-${{ github.sha }}.AppImage
-        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner
+        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner
     - name: Love Test Report (opengl)
       id: report1
       uses: ellraiser/love-test-report@main
@@ -82,7 +82,7 @@ jobs:
     - name: Run Test Suite (opengles)
       run: |
         export LOVE_GRAPHICS_USE_OPENGLES=1
-        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner
+        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner
     - name: Love Test Report (opengles)
       uses: ellraiser/love-test-report@main
       id: report2
@@ -103,7 +103,7 @@ jobs:
 #    - name: Run Test Suite (vulkan)
 #      run: |
 #        export LOVE_GRAPHICS_DEBUG=1
-#        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner --renderers vulkan
+#        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner --renderers vulkan
 #    - name: Love Test Report (vulkan)
 #      uses: ellraiser/love-test-report@main
 #      with:
@@ -321,7 +321,7 @@ jobs:
       run: |
         echo 'check dir'
         ls
-        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner
+        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner
     - name: Love Test Report (opengl)
       id: report1
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
@@ -347,7 +347,7 @@ jobs:
       env:
         LOVE_GRAPHICS_USE_OPENGLES: 1
       run: |
-        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner
+        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner
     - name: Love Test Report (opengles)
       id: report2
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
@@ -391,7 +391,7 @@ jobs:
 #      if: steps.vars.outputs.arch != 'ARM64'
 #      run: |
 #        $ENV:LOVE_GRAPHICS_DEBUG=1
-#        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner --renderers vulkan
+#        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner --renderers vulkan
 #    - name: Love Test Report (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
 #      uses: ellraiser/love-test-report@main
@@ -444,7 +444,7 @@ jobs:
     - name: Run Test Suite
       run: |
         ls
-        love-macos/love.app/Contents/MacOS/love ./testing/main.lua --runAllTests --isRunner
+        love-macos/love.app/Contents/MacOS/love ./testing/main.lua --all --isRunner
     - name: Love Test Report
       id: report1
       uses: ellraiser/love-test-report@main
