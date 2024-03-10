@@ -96,7 +96,7 @@ ptrdiff_t StreamBuffer::getHandle() const
 	return (ptrdiff_t) buffer;
 }
 
-size_t getGPUReadOffset() const override
+size_t StreamBuffer::getGPUReadOffset() const
 {
 	return (frameIndex * bufferSize) + frameGPUReadOffset;
 }

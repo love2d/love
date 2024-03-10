@@ -47,6 +47,7 @@ public:
 
 	virtual void unloadVolatile() override;
 
+	size_t getGPUReadOffset() const override;
 	MapInfo map(size_t minsize) override;
 	size_t unmap(size_t usedSize) override;
 	void markUsed(size_t usedSize) override;
