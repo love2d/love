@@ -341,6 +341,7 @@ Graphics::Graphics()
 		};
 
 		Buffer::Settings attribsettings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
+		attribsettings.debugName = "Default Vertex Attributes";
 
 		defaultAttributesBuffer = newBuffer(attribsettings, dataformat, &defaults, sizeof(DefaultVertexAttributes), 0);
 	}

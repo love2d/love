@@ -48,6 +48,8 @@ public:
 		if (buffer == nil)
 			throw love::Exception("Out of graphics memory.");
 
+		buffer.label = [NSString stringWithFormat:@"StreamBuffer (usage: %d, size: %ld)", usage, size];
+
 		data = (uint8 *) buffer.contents;
 
 		for (int i = 0; i < BUFFER_FRAMES; i++)
