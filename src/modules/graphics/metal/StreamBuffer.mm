@@ -67,6 +67,11 @@ public:
 		}
 	}}
 
+	size_t getGPUReadOffset() const override
+	{
+		return (frameIndex * bufferSize) + frameGPUReadOffset;
+	}
+
 	MapInfo map(size_t /*minsize*/) override
 	{
 		// Make sure this frame's section of the buffer is done being used.

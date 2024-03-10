@@ -242,6 +242,7 @@ private:
 	StreamBuffer *uniformBuffer;
 	StreamBuffer::MapInfo uniformBufferData;
 	size_t uniformBufferOffset;
+	size_t uniformBufferGPUStart;
 
 	Buffer *defaultAttributesBuffer;
 

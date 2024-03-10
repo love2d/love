@@ -63,6 +63,11 @@ public:
 		delete[] data;
 	}
 
+	size_t getGPUReadOffset() const override
+	{
+		return (size_t) data;
+	}
+
 	MapInfo map(size_t /*minsize*/) override
 	{
 		return MapInfo(data, bufferSize);
@@ -109,6 +114,11 @@ public:
 	{
 		unloadVolatile();
 		delete[] data;
+	}
+
+	size_t getGPUReadOffset() const override
+	{
+		return frameGPUReadOffset;
 	}
 
 	MapInfo map(size_t /*minsize*/) override
@@ -191,6 +201,11 @@ public:
 	{}
 
 	virtual ~StreamBufferSync() {}
+
+	size_t getGPUReadOffset() const override
+	{
+		return (frameIndex * bufferSize) + frameGPUReadOffset;
+	}
 
 	void nextFrame() override
 	{

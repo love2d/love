@@ -280,6 +280,7 @@ Graphics::Graphics()
 	, attachmentStoreActions()
 	, renderBindings()
 	, uniformBufferOffset(0)
+	, uniformBufferGPUStart(0)
 	, defaultAttributesBuffer(nullptr)
 	, families()
 { @autoreleasepool {
@@ -1035,14 +1036,19 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 	if (uniformBuffer->getSize() < uniformBufferOffset + size)
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
+		if (uniformBufferOffset > 0)
+			uniformBuffer->nextFrame();
 		uniformBuffer->release();
-		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, newsize);
+		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, newsize);
 		uniformBufferData = {};
 		uniformBufferOffset = 0;
 	}
 
 	if (uniformBufferData.data == nullptr)
+	{
 		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+		uniformBufferGPUStart = uniformBuffer->getGPUReadOffset();
+	}
 
 	memcpy(uniformBufferData.data + uniformBufferOffset, bufferdata, size);
 
@@ -1050,7 +1056,7 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 	int uniformindex = Shader::getUniformBufferBinding();
 
 	auto &bindings = renderBindings;
-	setBuffer(encoder, bindings, uniformindex, buffer, uniformBufferOffset);
+	setBuffer(encoder, bindings, uniformindex, buffer, uniformBufferGPUStart + uniformBufferOffset);
 
 	uniformBufferOffset += alignUp(size, alignment);
 
@@ -1141,14 +1147,19 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	if (uniformBuffer->getSize() < uniformBufferOffset + size)
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
+		if (uniformBufferOffset > 0)
+			uniformBuffer->nextFrame();
 		uniformBuffer->release();
-		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, newsize);
+		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, newsize);
 		uniformBufferData = {};
 		uniformBufferOffset = 0;
 	}
 
 	if (uniformBufferData.data == nullptr)
+	{
 		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+		uniformBufferGPUStart = uniformBuffer->getGPUReadOffset();
+	}
 
 	memcpy(uniformBufferData.data + uniformBufferOffset, bufferdata, size);
 
@@ -1156,8 +1167,8 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	int uniformindex = Shader::getUniformBufferBinding();
 
 	auto &bindings = renderBindings;
-	setBuffer(renderEncoder, bindings, SHADERSTAGE_VERTEX, uniformindex, buffer, uniformBufferOffset);
-	setBuffer(renderEncoder, bindings, SHADERSTAGE_PIXEL, uniformindex, buffer, uniformBufferOffset);
+	setBuffer(renderEncoder, bindings, SHADERSTAGE_VERTEX, uniformindex, buffer, uniformBufferGPUStart + uniformBufferOffset);
+	setBuffer(renderEncoder, bindings, SHADERSTAGE_PIXEL, uniformindex, buffer, uniformBufferGPUStart + uniformBufferOffset);
 
 	uniformBufferOffset += alignUp(size, alignment);
 

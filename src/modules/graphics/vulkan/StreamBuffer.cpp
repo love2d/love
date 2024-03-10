@@ -96,6 +96,11 @@ ptrdiff_t StreamBuffer::getHandle() const
 	return (ptrdiff_t) buffer;
 }
 
+size_t getGPUReadOffset() const override
+{
+	return (frameIndex * bufferSize) + frameGPUReadOffset;
+}
+
 love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t /*minsize*/)
 {
 	// TODO: do we also need to wait until a fence is complete, here?
