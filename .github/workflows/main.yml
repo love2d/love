@@ -68,7 +68,7 @@ jobs:
       with:
         name: Love Testsuite Linux
         title: test-report-linux-opengl
-        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+        path: love2d-${{ github.sha }}/testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengl)
       run: |
@@ -89,7 +89,7 @@ jobs:
       with:
         name: Love Testsuite Linux
         title: test-report-linux-opengles
-        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+        path: love2d-${{ github.sha }}/testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengles)
       run: |
@@ -109,7 +109,7 @@ jobs:
 #      with:
 #        name: Love Testsuite Linux
 #        title: test-report-linux-vulkan
-#        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+#        path: love2d-${{ github.sha }}/testing/output/lovetest_all.md
 #    - name: Zip Test Output (vulkan)
 #      run: |
 #        7z a -tzip test-output-linux-vulkan.zip love2d-${{ github.sha }}/testing/output/
@@ -329,7 +329,7 @@ jobs:
       with:
         name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (opengl)
         title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl
-        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+        path: megasource/libs/love/testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengl)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
@@ -355,7 +355,7 @@ jobs:
       with:
         name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (opengles)
         title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles
-        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+        path: megasource/libs/love/testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengles)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
@@ -398,7 +398,7 @@ jobs:
 #      with:
 #        name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (vulkan)
 #        title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
-#        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+#        path: megasource/libs/love/testing/output/lovetest_all.md
 #    - name: Zip Test Output (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
 #      run: |
@@ -451,7 +451,7 @@ jobs:
       with:
         name: Love Testsuite MacOS
         title: test-report-macos
-        path: testing/output/lovetest_runAllTests.md
+        path: testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output
       run: |
