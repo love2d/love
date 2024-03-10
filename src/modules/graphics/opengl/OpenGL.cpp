@@ -870,7 +870,7 @@ void OpenGL::setVertexAttributes(const VertexAttributes &attributes, const Buffe
 			int components = 0;
 			GLboolean normalized = GL_FALSE;
 			bool intformat = false;
-			GLenum gltype = getGLVertexDataType(attrib.format, components, normalized, intformat);
+			GLenum gltype = getGLVertexDataType(attrib.getFormat(), components, normalized, intformat);
 
 			const void *offsetpointer = reinterpret_cast<void*>(bufferinfo.offset + attrib.offsetFromVertex);
 

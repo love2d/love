@@ -26,6 +26,8 @@ namespace love
 namespace graphics
 {
 
+static_assert(sizeof(VertexAttributeInfo) == 4, "Unexpected sizeof(VertexAttributeInfo)");
+
 static_assert(sizeof(Color32) == 4, "sizeof(Color32) incorrect!");
 static_assert(sizeof(STf_RGBAub) == sizeof(float)*2 + sizeof(Color32), "sizeof(STf_RGBAub) incorrect!");
 static_assert(sizeof(STPf_RGBAub) == sizeof(float)*3 + sizeof(Color32), "sizeof(STPf_RGBAub) incorrect!");
@@ -336,7 +338,7 @@ bool VertexAttributes::operator == (const VertexAttributes &other) const
 		{
 			const auto &a = attribs[i];
 			const auto &b = other.attribs[i];
-			if (a.bufferIndex != b.bufferIndex || a.format != b.format || a.offsetFromVertex != b.offsetFromVertex)
+			if (a.bufferIndex != b.bufferIndex || a.packedFormat != b.packedFormat || a.offsetFromVertex != b.offsetFromVertex)
 				return false;
 
 			if (bufferLayouts[a.bufferIndex].stride != other.bufferLayouts[a.bufferIndex].stride)

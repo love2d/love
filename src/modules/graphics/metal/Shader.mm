@@ -948,7 +948,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 			const auto &attrib = attributes.attribs[i];
 			int metalBufferIndex = firstVertexBufferBinding + attrib.bufferIndex;
 
-			vertdesc.attributes[i].format = getMTLVertexFormat(attrib.format);
+			vertdesc.attributes[i].format = getMTLVertexFormat(attrib.getFormat());
 			vertdesc.attributes[i].offset = attrib.offsetFromVertex;
 			vertdesc.attributes[i].bufferIndex = metalBufferIndex;
 

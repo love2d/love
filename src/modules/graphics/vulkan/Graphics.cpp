@@ -2273,7 +2273,7 @@ void Graphics::createVulkanVertexFormat(
 			attributeDescription.location = i;
 			attributeDescription.binding = bufferBinding;
 			attributeDescription.offset = attrib.offsetFromVertex;
-			attributeDescription.format = Vulkan::getVulkanVertexFormat(attrib.format);
+			attributeDescription.format = Vulkan::getVulkanVertexFormat(attrib.getFormat());
 
 			attributeDescriptions.push_back(attributeDescription);
 		}
