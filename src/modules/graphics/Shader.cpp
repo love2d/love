@@ -1073,7 +1073,7 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 
 		const auto &sampler = type->getSampler();
 
-		if (type->isTexture() && type->getSampler().isCombined())
+		if (type->isTexture() && type->getSampler().isCombined() && !sampler.isBuffer())
 		{
 			u.baseType = UNIFORM_SAMPLER;
 			u.dataBaseType = getBaseType(sampler.getBasicType());
@@ -1122,7 +1122,7 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 
 			reflection.storageTextures[u.name] = u;
 		}
-		else if (type->getBasicType() == glslang::EbtSampler && type->getSampler().isBuffer())
+		else if (type->getBasicType() == glslang::EbtSampler && sampler.isBuffer())
 		{
 			u.baseType = UNIFORM_TEXELBUFFER;
 			u.dataBaseType = getBaseType(sampler.getBasicType());
