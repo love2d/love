@@ -36,7 +36,6 @@ namespace graphics
 namespace vulkan
 {
 
-static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
 static const uint32_t DESCRIPTOR_POOL_SIZE = 1000;
 
 class BindingMapper

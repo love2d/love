@@ -2877,12 +2877,14 @@ void Graphics::mapLocalUniformData(void *data, size_t size, VkDescriptorBufferIn
 	if (localUniformBuffer->getUsableSize() < alignedSize)
 		localUniformBuffer.set(new StreamBuffer(this, BUFFERUSAGE_UNIFORM, localUniformBuffer->getSize() * 2), Acquire::NORETAIN);
 
-	auto mapInfo = localUniformBuffer->map(alignedSize);
+	auto mapInfo = localUniformBuffer->map(size);
 	memcpy(mapInfo.data, data, size);
 
 	bufferInfo.buffer = (VkBuffer)localUniformBuffer->getHandle();
-	bufferInfo.offset = localUniformBuffer->unmap(alignedSize);
+	bufferInfo.offset = localUniformBuffer->unmap(size);
 	bufferInfo.range = size;
+
+	localUniformBuffer->markUsed(alignedSize);
 }
 
 void Graphics::createColorResources()
