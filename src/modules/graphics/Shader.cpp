@@ -26,6 +26,7 @@
 
 // glslang
 #include "libraries/glslang/glslang/Public/ShaderLang.h"
+#include "libraries/glslang/glslang/Public/ResourceLimits.h"
 
 // Needed for reflection information.
 #include "libraries/glslang/glslang/Include/Types.h"
@@ -1445,7 +1446,18 @@ void Shader::handleUnknownUniformName(const char */*name*/)
 
 bool Shader::initialize()
 {
-	return glslang::InitializeProcess();
+	bool success = glslang::InitializeProcess();
+	if (!success)
+		return false;
+
+	TBuiltInResource *resources = GetResources();
+	*resources = *GetDefaultResources();
+
+	// This is 32 in the default resource struct, which is too high for Metal.
+	// TODO: Set this based on what the system actually supports?
+	resources->maxDrawBuffers = 8;
+
+	return true;
 }
 
 void Shader::deinitialize()

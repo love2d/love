@@ -554,7 +554,7 @@ void Shader::compileShaders()
 		bool forceDefault = false;
 		bool forwardCompat = true;
 
-		if (!tshader->parse(GetDefaultResources(), defaultVersion, defaultProfile, forceDefault, forwardCompat, EShMsgSuppressWarnings))
+		if (!tshader->parse(GetResources(), defaultVersion, defaultProfile, forceDefault, forwardCompat, EShMsgSuppressWarnings))
 		{
 			const char *stageName = "unknown";
 			ShaderStage::getConstant(stage, stageName);

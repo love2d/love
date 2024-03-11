@@ -62,7 +62,7 @@ ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string
 
 	bool forwardcompat = supportsGLSL3 && !forcedefault;
 
-	if (!glslangShader->parse(GetDefaultResources(), defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
+	if (!glslangShader->parse(GetResources(), defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
 	{
 		const char *stagename = "unknown";
 		getConstant(stage, stagename);

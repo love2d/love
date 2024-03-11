@@ -208,7 +208,7 @@ Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stag
 		forcedefault = true;
 #endif
 
-		if (!tshader->parse(GetDefaultResources(), defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
+		if (!tshader->parse(GetResources(), defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
 		{
 			const char *stagename = "unknown";
 			ShaderStage::getConstant(stage, stagename);
