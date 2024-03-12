@@ -708,13 +708,16 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)
 {
+	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+		return;
+
 	// Human-readable strings for the debug info.
 	const char *sourceStr = OpenGL::debugSourceString(source);
 	const char *typeStr = OpenGL::debugTypeString(type);
 	const char *severityStr = OpenGL::debugSeverityString(severity);
 
-	const char *fmt = "OpenGL: %s [source=%s, type=%s, severity=%s, id=%d]\n";
-	printf(fmt, msg, sourceStr, typeStr, severityStr, id);
+	const char *fmt = "OpenGL: [source=%s, type=%s, severity=%s, id=%d]: %s\n";
+	printf(fmt, sourceStr, typeStr, severityStr, id, msg);
 }
 
 void Graphics::setDebug(bool enable)
