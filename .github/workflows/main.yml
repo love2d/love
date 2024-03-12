@@ -80,6 +80,8 @@ jobs:
         path: test-output-linux-opengl.zip
     # linux opengles tests
     - name: Run Test Suite (opengles)
+      env:
+        LOVE_GRAPHICS_DEBUG: 1
       run: |
         export LOVE_GRAPHICS_USE_OPENGLES=1
         ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner
@@ -101,8 +103,9 @@ jobs:
         path: test-output-linux-opengles.zip
 #    # linux vulkan tests
 #    - name: Run Test Suite (vulkan)
+#      env:
+#        LOVE_GRAPHICS_DEBUG: 1
 #      run: |
-#        export LOVE_GRAPHICS_DEBUG=1
 #        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner --renderers vulkan
 #    - name: Love Test Report (vulkan)
 #      uses: ellraiser/love-test-report@main
@@ -318,6 +321,8 @@ jobs:
     # windows opengl tests
     - name: Run Tests (opengl)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      env:
+        LOVE_GRAPHICS_DEBUG: 1
       run: |
         echo 'check dir'
         ls
@@ -345,6 +350,7 @@ jobs:
     - name: Run Tests (opengles)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
       env:
+        LOVE_GRAPHICS_DEBUG: 1
         LOVE_GRAPHICS_USE_OPENGLES: 1
       run: |
         powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner
@@ -389,8 +395,9 @@ jobs:
 #    # windows vulkan tests
 #    - name: Run Tests (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
+#      env:
+#        LOVE_GRAPHICS_DEBUG: 1
 #      run: |
-#        $ENV:LOVE_GRAPHICS_DEBUG=1
 #        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner --renderers vulkan
 #    - name: Love Test Report (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
@@ -442,6 +449,8 @@ jobs:
         path: love-macos.zip
     # macos opengl tests (metal not supported on runners)
     - name: Run Test Suite
+      env:
+        LOVE_GRAPHICS_DEBUG: 1
       run: |
         ls
         love-macos/love.app/Contents/MacOS/love ./testing/main.lua --all --isRunner
