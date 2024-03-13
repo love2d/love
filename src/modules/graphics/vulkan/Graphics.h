@@ -316,7 +316,6 @@ public:
 	void queueCleanUp(std::function<void()> cleanUp);
 	void addReadbackCallback(std::function<void()> callback);
 	void submitGpuCommands(SubmitMode, void *screenshotCallbackData = nullptr);
-	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	VkSampler getCachedSampler(const SamplerState &sampler);
 	void setComputeShader(Shader *computeShader);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
@@ -325,6 +324,7 @@ public:
 	VkSampleCountFlagBits getMsaaCount(int requestedMsaa) const;
 	void setVsync(int vsync);
 	int getVsync() const;
+	void mapLocalUniformData(void *data, size_t size, VkDescriptorBufferInfo &bufferInfo);
 
 	uint32 getDeviceApiVersion() const { return deviceApiVersion; }
 
@@ -444,6 +444,7 @@ private:
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;
 	StrongRef<love::graphics::Buffer> defaultConstantColor;
 	StrongRef<love::graphics::Buffer> defaultConstantTexCoord;
+	StrongRef<StreamBuffer> localUniformBuffer;
 	// functions that need to be called to cleanup objects that were needed for rendering a frame.
 	// We need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;

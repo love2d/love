@@ -36,7 +36,6 @@ namespace graphics
 namespace vulkan
 {
 
-static const uint32_t STREAMBUFFER_DEFAULT_SIZE = 16;
 static const uint32_t DESCRIPTOR_POOL_SIZE = 1000;
 
 class BindingMapper
@@ -157,14 +156,11 @@ bool Shader::loadVolatile()
 		builtinUniformInfo[i] = nullptr;
 
 	compileShaders();
-	calculateUniformBufferSizeAligned();
 	createDescriptorSetLayout();
 	createPipelineLayout();
 	createDescriptorPoolSizes();
-	createStreamBuffers();
 	descriptorPools.resize(MAX_FRAMES_IN_FLIGHT);
 	currentFrame = 0;
-	currentUsedUniformStreamBuffersCount = 0;
 	newFrame();
 
 	return true;
@@ -189,12 +185,8 @@ void Shader::unloadVolatile()
 			vkDestroyPipeline(device, computePipeline, nullptr);
 	});
 
-	for (const auto streamBuffer : streamBuffers)
-		streamBuffer->release();
-
 	shaderModules.clear();
 	shaderStages.clear();
-	streamBuffers.clear();
 	descriptorPools.clear();
 }
 
@@ -217,22 +209,7 @@ void Shader::newFrame()
 {
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
-	currentUsedUniformStreamBuffersCount = 0;
 	currentDescriptorPool = 0;
-
-	if (streamBuffers.size() > 1)
-	{
-		size_t newSize = 0;
-		for (auto streamBuffer : streamBuffers)
-		{
-			newSize += streamBuffer->getSize();
-			streamBuffer->release();
-		}
-		streamBuffers.clear();
-		streamBuffers.push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, newSize));
-	}
-	else if (streamBuffers.size() == 1)
-		streamBuffers.at(0)->nextFrame();
 
 	for (VkDescriptorPool pool : descriptorPools[currentFrame])
 		vkResetDescriptorPool(device, pool, 0);
@@ -246,13 +223,6 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 
 	if (!localUniformData.empty())
 	{
-		auto usedStreamBufferMemory = currentUsedUniformStreamBuffersCount * uniformBufferSizeAligned;
-		if (usedStreamBufferMemory >= streamBuffers.back()->getSize())
-		{
-			streamBuffers.push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned));
-			currentUsedUniformStreamBuffersCount = 0;
-		}
-
 		if (builtinUniformDataOffset.hasValue)
 		{
 			auto builtinData = vgfx->getCurrentBuiltinUniformData();
@@ -260,19 +230,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 			memcpy(dst, &builtinData, sizeof(builtinData));
 		}
 
-		auto currentStreamBuffer = streamBuffers.back();
-
-		auto mapInfo = currentStreamBuffer->map(uniformBufferSizeAligned);
-		memcpy(mapInfo.data, localUniformData.data(), localUniformData.size());
-		auto offset = currentStreamBuffer->unmap(uniformBufferSizeAligned);
-		currentStreamBuffer->markUsed(uniformBufferSizeAligned);
-
-		VkDescriptorBufferInfo &bufferInfo = descriptorBuffers[bufferIndex++];
-		bufferInfo.buffer = (VkBuffer)currentStreamBuffer->getHandle();
-		bufferInfo.offset = offset;
-		bufferInfo.range = localUniformData.size();
-
-		currentUsedUniformStreamBuffersCount++;
+		vgfx->mapLocalUniformData(localUniformData.data(), localUniformData.size(), descriptorBuffers[bufferIndex++]);
 	}
 
 	// TODO: iteration order must match the order at the end of compileShaders right now.
@@ -434,14 +392,6 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 		if (oldBuffer)
 			oldBuffer->release();
 	}
-}
-
-void Shader::calculateUniformBufferSizeAligned()
-{
-	auto minAlignment = vgfx->getMinUniformBufferOffsetAlignment();
-	size_t size = localUniformStagingData.size();
-	auto factor = static_cast<VkDeviceSize>(std::ceil(static_cast<float>(size) / static_cast<float>(minAlignment)));
-	uniformBufferSizeAligned = factor * minAlignment;
 }
 
 void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::SPIRType &type, size_t baseoff, const std::string &basename)
@@ -976,13 +926,6 @@ void Shader::createDescriptorPoolSizes()
 		size.descriptorCount = 1;
 		descriptorPoolSizes.push_back(size);
 	}
-}
-
-void Shader::createStreamBuffers()
-{
-	size_t size = STREAMBUFFER_DEFAULT_SIZE * uniformBufferSizeAligned;
-	if (size > 0)
-		streamBuffers.push_back(new StreamBuffer(vgfx, BUFFERUSAGE_UNIFORM, size));
 }
 
 void Shader::setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cbtexture, graphics::Texture *crtexture)
