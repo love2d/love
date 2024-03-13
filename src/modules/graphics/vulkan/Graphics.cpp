@@ -21,6 +21,7 @@
 #include "common/Exception.h"
 #include "common/pixelformat.h"
 #include "common/version.h"
+#include "common/memory.h"
 #include "window/Window.h"
 #include "Buffer.h"
 #include "Graphics.h"
@@ -2872,7 +2873,7 @@ int Graphics::getVsync() const
 
 void Graphics::mapLocalUniformData(void *data, size_t size, VkDescriptorBufferInfo &bufferInfo)
 {
-	size_t alignedSize = static_cast<size_t>(std::ceil(static_cast<float>(size) / static_cast<float>(minUniformBufferOffsetAlignment))) * minUniformBufferOffsetAlignment;
+	size_t alignedSize = alignUp(size, minUniformBufferOffsetAlignment);
 
 	if (localUniformBuffer->getUsableSize() < alignedSize)
 		localUniformBuffer.set(new StreamBuffer(this, BUFFERUSAGE_UNIFORM, localUniformBuffer->getSize() * 2), Acquire::NORETAIN);
