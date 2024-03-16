@@ -273,12 +273,12 @@ TestMethod = {
     local filename = 'love.test.graphics.' .. self.method .. '-' .. tostring(self.imgs) .. '.png'
     local expected_path = 'resources/expected_output/' .. filename
     local ok, chunk = pcall(love.filesystem.read, 'data', expected_path)
-	if ok == false then return self:assertEquals(true, false, chunk) end
-	local image_contents = chunk
+    if ok == false then return self:assertEquals(true, false, chunk) end
+    local image_contents = chunk
     ok, chunk = pcall(love.image.newImageData, chunk)
     if ok == false then return self:assertEquals(true, false, chunk) end
     -- Copy the expected file output to tempoutput/expected to keep HTML output working.
-	love.filesystem.write('tempoutput/expected/' .. filename, image_contents)
+    love.filesystem.write('tempoutput/expected/' .. filename, image_contents)
     local expected = chunk
     local iw = imgdata:getWidth()-2
     local ih = imgdata:getHeight()-2

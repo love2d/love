@@ -94,8 +94,10 @@ end
 -- @NOTE could prob add more checks on the flags here based on conf.lua
 love.test.window.getMode = function(test)
   local w, h, flags = love.window.getMode()
-  test:assertEquals(360, w, 'check w')
-  test:assertEquals(240, h, 'check h')
+  if love._os ~= 'iOS' and love._os ~= 'Android' then
+    test:assertEquals(360, w, 'check w')
+    test:assertEquals(240, h, 'check h')
+  end
   test:assertFalse(flags["fullscreen"], 'check fullscreen')
 end
 
@@ -164,6 +166,11 @@ end
 
 -- love.window.isMaximized
 love.test.window.isMaximized = function(test)
+  if love._os == 'iOS' or love._os == 'Android' then
+    test:skipTest('maximize is not available in mobile')
+    return
+  end
+
   test:assertFalse(love.window.isMaximized(), 'check window not maximized')
   love.window.maximize()
   test:waitFrames(10)
@@ -175,6 +182,11 @@ end
 
 -- love.window.isMinimized
 love.test.window.isMinimized = function(test)
+  if love._os == 'iOS' or love._os == 'Android' then
+    test:skipTest('minimize pauses execution in mobile')
+    return
+  end
+
   -- check not minimized to start
   test:assertFalse(love.window.isMinimized(), 'check window not minimized')
   -- try to minimize
@@ -204,6 +216,11 @@ end
 
 -- love.window.maximize
 love.test.window.maximize = function(test)
+  if love._os == 'iOS' or love._os == 'Android' then
+    test:skipTest('maximize is not available in mobile')
+    return
+  end
+
   test:assertFalse(love.window.isMaximized(), 'check window not maximized')
   -- check maximizing is set
   love.window.maximize()
@@ -216,6 +233,11 @@ end
 
 -- love.window.minimize
 love.test.window.minimize = function(test)
+  if love._os == 'iOS' or love._os == 'Android' then
+    test:skipTest('minimize pauses execution in mobile')
+    return
+  end
+
   test:assertFalse(love.window.isMinimized(), 'check window not minimized')
   -- check minimizing is set
   love.window.minimize()
