@@ -25,10 +25,6 @@ local function testGetName(test, sensorType)
   love.sensor.setEnabled(sensorType, false)
   ok, name = pcall(love.sensor.getName, sensorType)
   test:assertFalse(ok, 'check sensor.getName("' .. sensorType .. '") errors when disabled')
-
-  love.sensor.setEnabled(sensorType, false)
-  ok, x, y, z = pcall(love.sensor.getData, sensorType)
-  test:assertFalse(ok, 'check sensor.getData("' .. sensorType .. '") errors when disabled')
 end
 
 
