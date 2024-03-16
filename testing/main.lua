@@ -60,6 +60,8 @@ love.load = function(args)
   if love.filesystem.mountFullPath then
     love.filesystem.mountFullPath(love.filesystem.getSource() .. "/output", "tempoutput", "readwrite")
   end
+  love.filesystem.createDirectory("tempoutput/actual")
+  love.filesystem.createDirectory("tempoutput/expected")
 
   -- get all args with any comma lists split out as seperate
   local arglist = {}
