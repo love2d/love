@@ -362,6 +362,11 @@ end
 
 -- love.filesystem.mountFullPath
 love.test.filesystem.mountFullPath = function(test)
+  if love._os == 'Android' then
+    test:skipTest('getSource() mounting is not supported for .love files')
+	return
+  end
+
   -- mount something in the working directory
   local mount = love.filesystem.mountFullPath(love.filesystem.getSource() .. '/tests', 'tests', 'read')
   test:assertTrue(mount, 'check can mount')
@@ -375,6 +380,11 @@ end
 
 -- love.filesystem.unmountFullPath
 love.test.filesystem.unmountFullPath = function(test)
+  if love._os == 'Android' then
+    test:skipTest('getSource() mounting is not supported for .love files')
+	return
+  end
+
   -- try unmounting something we never mounted
   local unmount1 = love.filesystem.unmountFullPath(love.filesystem.getSource() .. '/faker')
   test:assertFalse(unmount1, 'check not mounted to start with')
@@ -393,7 +403,7 @@ love.test.filesystem.mountCommonPath = function(test)
   local mount3 = love.filesystem.mountCommonPath('userhome', 'userhome', 'readwrite')
   local mount4 = love.filesystem.mountCommonPath('userappdata', 'userappdata', 'readwrite')
   -- userdesktop isnt valid on linux
-  if love.system.getOS() ~= 'Linux' then
+  if love._os ~= 'Linux' and love._os ~= 'Android' then
     local mount5 = love.filesystem.mountCommonPath('userdesktop', 'userdesktop', 'readwrite')
     test:assertTrue(mount5, 'check mount userdesktop')
   end
