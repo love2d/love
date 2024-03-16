@@ -178,7 +178,7 @@ TestSuite = {
     self.module:log('grey', '\nFINISHED - ' .. finaltime .. 's\n')
     local failedcol = '\27[31m'
     if self.totals[2] == 0 then failedcol = '\27[37m' end
-    self.module:log('green', tostring(self.totals[1]) .. ' PASSED' .. ' || ' .. failedcol .. tostring(self.totals[2]) .. ' FAILED || \27[37m' .. tostring(self.totals[3]) .. ' SKIPPED')
+    self.module:log('green', tostring(self.totals[1]) .. ' PASSED' .. ' || ' .. failedcol .. tostring(self.totals[2]) .. ' FAILED || \27[37m' .. tostring(self.totals[3]) .. ' SKIPPED\27[0m')
 
   end
 
