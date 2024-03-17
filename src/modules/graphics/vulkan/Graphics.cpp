@@ -386,6 +386,10 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 	if (renderPassState.active)
 		endRenderPass();
 
+	VkBuffer screenshotBuffer = VK_NULL_HANDLE;
+	VmaAllocation screenshotAllocation = VK_NULL_HANDLE;
+	VmaAllocationInfo screenshotAllocationInfo = {};
+
 	if (submitMode == SUBMIT_PRESENT)
 	{
 		if (pendingScreenshotCallbacks.empty())
@@ -396,51 +400,32 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 		else
 		{
+			VkBufferCreateInfo bufferInfo{};
+			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			bufferInfo.size = 4ll * swapChainExtent.width * swapChainExtent.height;
+			bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+			VmaAllocationCreateInfo allocCreateInfo{};
+			allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+			allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+			auto result = vmaCreateBuffer(
+				vmaAllocator,
+				&bufferInfo,
+				&allocCreateInfo,
+				&screenshotBuffer,
+				&screenshotAllocation,
+				&screenshotAllocationInfo);
+
+			if (result != VK_SUCCESS)
+				throw love::Exception("failed to create screenshot readback buffer");
+
+			// TODO: swap chain images aren't guaranteed to support TRANSFER_SRC_BIT usage flags.
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				swapChainImages.at(imageIndex),
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				screenshotReadbackBuffers.at(currentFrame).image,
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-			VkImageBlit blit{};
-			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			blit.srcSubresource.layerCount = 1;
-			blit.srcOffsets[1] = {
-				static_cast<int>(swapChainExtent.width),
-				static_cast<int>(swapChainExtent.height),
-				1
-			};
-			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			blit.dstSubresource.layerCount = 1;
-			blit.dstOffsets[1] = {
-				static_cast<int>(swapChainExtent.width),
-				static_cast<int>(swapChainExtent.height),
-				1
-			};
-
-			vkCmdBlitImage(
-				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				screenshotReadbackBuffers.at(currentFrame).image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-				1, &blit,
-				VK_FILTER_NEAREST);
-
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex),
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				screenshotReadbackBuffers.at(currentFrame).image,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 			VkBufferImageCopy region{};
@@ -454,32 +439,16 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 
 			vkCmdCopyImageToBuffer(
 				commandBuffers.at(currentFrame),
-				screenshotReadbackBuffers.at(currentFrame).image,
+				swapChainImages.at(imageIndex),
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				screenshotReadbackBuffers.at(currentFrame).buffer,
+				screenshotBuffer,
 				1, &region);
 
-			addReadbackCallback([
-				w = swapChainExtent.width,
-				h = swapChainExtent.height,
-				pendingScreenshotCallbacks = pendingScreenshotCallbacks,
-				screenShotReadbackBuffer = screenshotReadbackBuffers.at(currentFrame),
-				screenshotCallbackData = screenshotCallbackData]() {
-				auto imageModule = Module::getInstance<love::image::Image>(M_IMAGE);
-
-				for (const auto &info : pendingScreenshotCallbacks)
-				{
-					image::ImageData *img = imageModule->newImageData(
-						w,
-						h,
-						PIXELFORMAT_RGBA8_UNORM,
-						screenShotReadbackBuffer.allocationInfo.pMappedData);
-					info.callback(&info, img, screenshotCallbackData);
-					img->release();
-				}
-			});
-
-			pendingScreenshotCallbacks.clear();
+			Vulkan::cmdTransitionImageLayout(
+				commandBuffers.at(currentFrame),
+				swapChainImages.at(imageIndex),
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 		}
 	}
 
@@ -524,7 +493,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
 		throw love::Exception("failed to submit draw command buffer");
 	
-	if (submitMode == SUBMIT_NOPRESENT || submitMode == SUBMIT_RESTART)
+	if (submitMode == SUBMIT_NOPRESENT || submitMode == SUBMIT_RESTART || screenshotBuffer != VK_NULL_HANDLE)
 	{
 		vkQueueWaitIdle(graphicsQueue);
 
@@ -533,6 +502,64 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 			for (const auto &callback : callbacks)
 				callback();
 			callbacks.clear();
+		}
+
+		if (screenshotBuffer != VK_NULL_HANDLE)
+		{
+			auto imageModule = Module::getInstance<love::image::Image>(M_IMAGE);
+
+			for (int i = 0; i < (int)pendingScreenshotCallbacks.size(); i++)
+			{
+				const auto &info = pendingScreenshotCallbacks[i];
+				image::ImageData *img = nullptr;
+
+				try
+				{
+					img = imageModule->newImageData(
+						swapChainExtent.width,
+						swapChainExtent.height,
+						PIXELFORMAT_RGBA8_UNORM,
+						screenshotAllocationInfo.pMappedData);
+				}
+				catch (love::Exception &)
+				{
+					info.callback(&info, nullptr, nullptr);
+					for (int j = i + 1; j < (int)pendingScreenshotCallbacks.size(); j++)
+					{
+						const auto& ninfo = pendingScreenshotCallbacks[j];
+						ninfo.callback(&ninfo, nullptr, nullptr);
+					}
+					vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
+					pendingScreenshotCallbacks.clear();
+					throw;
+				}
+
+				uint8 *screenshot = (uint8*)img->getData();
+
+				if (swapChainImageFormat == VK_FORMAT_B8G8R8A8_UNORM || swapChainImageFormat == VK_FORMAT_B8G8R8A8_SRGB)
+				{
+					// Convert from BGRA to RGBA and replace alpha with full opacity.
+					for (size_t i = 0; i < img->getSize(); i += 4)
+					{
+						uint8 r = screenshot[i + 2];
+						screenshot[i + 2] = screenshot[i + 0];
+						screenshot[i + 0] = r;
+						screenshot[i + 3] = 255;
+					}
+				}
+				else
+				{
+					// Replace alpha with full opacity.
+					for (size_t i = 0; i < img->getSize(); i += 4)
+						screenshot[i + 3] = 255;
+				}
+
+				info.callback(&info, img, screenshotCallbackData);
+				img->release();
+			}
+
+			vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
+			pendingScreenshotCallbacks.clear();
 		}
 
 		if (submitMode == SUBMIT_RESTART)
@@ -640,7 +667,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 
 	createSwapChain();
 	createImageViews();
-	createScreenshotCallbackBuffers();
 	createColorResources();
 	createDepthResources();
 	transitionColorDepthLayouts = true;
@@ -1986,65 +2012,6 @@ void Graphics::createImageViews()
 	}
 }
 
-void Graphics::createScreenshotCallbackBuffers()
-{
-	screenshotReadbackBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-
-	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = 4ll * swapChainExtent.width * swapChainExtent.height;
-		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		VmaAllocationCreateInfo allocCreateInfo{};
-		allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
-		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-		auto result = vmaCreateBuffer(
-			vmaAllocator,
-			&bufferInfo,
-			&allocCreateInfo,
-			&screenshotReadbackBuffers.at(i).buffer,
-			&screenshotReadbackBuffers.at(i).allocation,
-			&screenshotReadbackBuffers.at(i).allocationInfo);
-
-		if (result != VK_SUCCESS)
-			throw love::Exception("failed to create screenshot readback buffer");
-
-		VkImageCreateInfo imageInfo{};
-		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-		imageInfo.extent = {
-			swapChainExtent.width,
-			swapChainExtent.height,
-			1
-		};
-		imageInfo.mipLevels = 1;
-		imageInfo.arrayLayers = 1;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-		imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-		VmaAllocationCreateInfo imageAllocCreateInfo{};
-
-		result = vmaCreateImage(
-			vmaAllocator, 
-			&imageInfo, 
-			&imageAllocCreateInfo, 
-			&screenshotReadbackBuffers.at(i).image, 
-			&screenshotReadbackBuffers.at(i).imageAllocation, 
-			nullptr);
-
-		if (result != VK_SUCCESS)
-			throw love::Exception("failed to create screenshot readback image");
-	}
-}
-
 VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration &configuration)
 {
 	std::vector<VkImageView> attachments;
@@ -3106,11 +3073,6 @@ void Graphics::cleanup()
 
 void Graphics::cleanupSwapChain()
 {
-	for (const auto &readbackBuffer : screenshotReadbackBuffers)
-	{
-		vmaDestroyBuffer(vmaAllocator, readbackBuffer.buffer, readbackBuffer.allocation);
-		vmaDestroyImage(vmaAllocator, readbackBuffer.image, readbackBuffer.imageAllocation);
-	}
 	if (colorImage)
 	{
 		vkDestroyImageView(device, colorImageView, nullptr);
@@ -3137,7 +3099,6 @@ void Graphics::recreateSwapChain()
 
 	createSwapChain();
 	createImageViews();
-	createScreenshotCallbackBuffers();
 	createColorResources();
 	createDepthResources();
 

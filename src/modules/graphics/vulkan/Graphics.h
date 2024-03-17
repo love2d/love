@@ -355,7 +355,6 @@ private:
 	VkCompositeAlphaFlagBitsKHR chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR &capabilities);
 	void createSwapChain();
 	void createImageViews();
-	void createScreenshotCallbackBuffers();
 	VkFramebuffer createFramebuffer(FramebufferConfiguration &configuration);
 	VkFramebuffer getFramebuffer(FramebufferConfiguration &configuration);
 	void createDefaultShaders();
@@ -449,7 +448,6 @@ private:
 	// We need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 	std::vector<std::vector<std::function<void()>>> readbackCallbacks;
-	std::vector<ScreenshotReadbackBuffer> screenshotReadbackBuffers;
 	std::set<StrongRef<Shader>> usedShadersInFrame;
 	RenderpassState renderPassState;
 };
