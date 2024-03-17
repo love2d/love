@@ -324,14 +324,6 @@ void OpenGL::setupContext()
 	setColorWriteMask(state.colorWriteMask);
 
 	contextInitialized = true;
-
-#ifdef LOVE_ANDROID
-	// This can't be done in initContext with the rest of the bug checks because
-	// isPixelFormatSupported relies on state initialized here / after init.
-	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (GLAD_ES_VERSION_3_0 && gfx != nullptr && !gfx->isPixelFormatSupported(PIXELFORMAT_R8_UNORM, PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET))
-		bugs.brokenR8PixelFormat = true;
-#endif
 }
 
 void OpenGL::deInitContext()
@@ -1344,7 +1336,17 @@ bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelform
 		glTexParameteri(gltarget, GL_TEXTURE_SWIZZLE_A, fmt.swizzle[3]);
 	}
 
-	if (isTexStorageSupported())
+	bool usetexstorage = isTexStorageSupported();
+
+	// The fallback for bugs.brokenR8PixelFormat is GL_LUMINANCE, which doesn't have a sized
+	// version in ES3 so it can't be used with glTexStorage.
+	if (pixelformat == PIXELFORMAT_R8_UNORM && bugs.brokenR8PixelFormat && GLAD_ES_VERSION_3_0)
+	{
+		usetexstorage = false;
+		fmt.internalformat = fmt.externalformat;
+	}
+
+	if (usetexstorage)
 	{
 		if (target == TEXTURE_2D || target == TEXTURE_CUBE)
 			glTexStorage2D(gltarget, levels, fmt.internalformat, width, height);

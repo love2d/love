@@ -1693,6 +1693,17 @@ void Graphics::initCapabilities()
 		pixelFormatUsage[i][0] = computePixelFormatUsage(format, false);
 		pixelFormatUsage[i][1] = computePixelFormatUsage(format, true);
 	}
+
+#ifdef LOVE_ANDROID
+	// This can't be done in initContext with the rest of the bug checks because
+	// isPixelFormatSupported relies on state initialized here / after init.
+	if (GLAD_ES_VERSION_3_0 && !isPixelFormatSupported(PIXELFORMAT_R8_UNORM, PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+	{
+		gl.bugs.brokenR8PixelFormat = true;
+		pixelFormatUsage[PIXELFORMAT_R8_UNORM][0] = computePixelFormatUsage(PIXELFORMAT_R8_UNORM, false);
+		pixelFormatUsage[PIXELFORMAT_R8_UNORM][1] = computePixelFormatUsage(PIXELFORMAT_R8_UNORM, true);
+	}
+#endif
 }
 
 uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
