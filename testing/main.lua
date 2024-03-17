@@ -57,7 +57,7 @@ love.load = function(args)
   end
 
   -- mount for output later
-  if love.filesystem.mountFullPath and love._os ~= "Android" then
+  if love.filesystem.mountFullPath and love.system.getOS() ~= "Android" then
     love.filesystem.mountFullPath(love.filesystem.getSource() .. "/output", "tempoutput", "readwrite")
   end
   love.filesystem.createDirectory("tempoutput/actual")
