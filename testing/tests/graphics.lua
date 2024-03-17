@@ -1452,15 +1452,29 @@ end
 -- love.graphics.captureScreenshot
 love.test.graphics.captureScreenshot = function(test)
   love.graphics.captureScreenshot('example-screenshot.png')
-  test:waitFrames(10)
+  test:waitFrames(1)
   -- need to wait until end of the frame for the screenshot
-  test:assertNotNil(love.filesystem.openFile('example-screenshot.png', 'r'))
+  test:assertTrue(love.filesystem.exists('example-screenshot.png'))
   love.filesystem.remove('example-screenshot.png')
   -- test callback version
+  local cbdata = nil
+  local prevtextcommand = TextCommand
+  TextCommand = "Capturing screenshot"
   love.graphics.captureScreenshot(function (idata)
     test:assertNotEquals(nil, idata, 'check we have image data')
+    cbdata = idata
   end)
-  test:waitFrames(10)
+  test:waitFrames(1)
+  TextCommand = prevtextcommand
+  test:assertNotNil(cbdata)
+
+  if love.system.getOS() == "iOS" or love.system.getOS() == "Android" then
+    -- Mobile operating systems don't let us control the window resolution,
+    -- so we can't compare the reference image properly.
+    test:assertTrue(true, 'skip test')
+  else
+    test:compareImg(cbdata)
+  end
 end
 
 
