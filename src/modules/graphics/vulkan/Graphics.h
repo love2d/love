@@ -249,16 +249,6 @@ struct RenderpassState
 	OptionalInt mainWindowClearStencilValue;
 };
 
-struct ScreenshotReadbackBuffer
-{
-	VkBuffer buffer;
-	VmaAllocation allocation;
-	VmaAllocationInfo allocationInfo;
-
-	VkImage image;
-	VmaAllocation imageAllocation;
-};
-
 enum SubmitMode
 {
 	SUBMIT_PRESENT,
