@@ -94,8 +94,10 @@ end
 -- @NOTE could prob add more checks on the flags here based on conf.lua
 love.test.window.getMode = function(test)
   local w, h, flags = love.window.getMode()
-  test:assertEquals(360, w, 'check w')
-  test:assertEquals(240, h, 'check h')
+  if love._os ~= 'iOS' and love._os ~= 'Android' then
+    test:assertEquals(360, w, 'check w')
+    test:assertEquals(240, h, 'check h')
+  end
   test:assertFalse(flags["fullscreen"], 'check fullscreen')
 end
 
@@ -164,6 +166,11 @@ end
 
 -- love.window.isMaximized
 love.test.window.isMaximized = function(test)
+  if love.system.getOS() == 'Android' or love.system.getOS() == 'iOS' then
+    test:skipTest('undefined/unavailable in mobile')
+    return
+  end
+
   test:assertFalse(love.window.isMaximized(), 'check window not maximized')
   love.window.maximize()
   test:waitFrames(10)
@@ -175,6 +182,11 @@ end
 
 -- love.window.isMinimized
 love.test.window.isMinimized = function(test)
+  if love.system.getOS() == 'Android' or love.system.getOS() == 'iOS' then
+    test:skipTest('undefined/unavailable in mobile')
+    return
+  end
+
   -- check not minimized to start
   test:assertFalse(love.window.isMinimized(), 'check window not minimized')
   -- try to minimize
@@ -204,6 +216,11 @@ end
 
 -- love.window.maximize
 love.test.window.maximize = function(test)
+  if love.system.getOS() == 'Android' or love.system.getOS() == 'iOS' then
+    test:skipTest('undefined/unavailable in mobile')
+    return
+  end
+
   test:assertFalse(love.window.isMaximized(), 'check window not maximized')
   -- check maximizing is set
   love.window.maximize()
@@ -216,6 +233,11 @@ end
 
 -- love.window.minimize
 love.test.window.minimize = function(test)
+  if love.system.getOS() == 'Android' or love.system.getOS() == 'iOS' then
+    test:skipTest('undefined/unavailable in mobile')
+    return
+  end
+
   test:assertFalse(love.window.isMinimized(), 'check window not minimized')
   -- check minimizing is set
   love.window.minimize()
@@ -234,6 +256,11 @@ end
 
 -- love.window.restore
 love.test.window.restore = function(test)
+  if love.system.getOS() == 'Android' or love.system.getOS() == 'iOS' then
+    test:skipTest('undefined/unavailable in mobile')
+    return
+  end
+
   -- check minimized to start
   love.window.minimize()
   test:waitFrames(10)
@@ -286,8 +313,10 @@ love.test.window.setMode = function(test)
   })
   -- check what we set is returned
   local width, height, flags = love.window.getMode()
-  test:assertEquals(512, width, 'check window w match')
-  test:assertEquals(512, height, 'check window h match')
+  if love.system.getOS() ~= 'iOS' and love.system.getOS() ~= 'Android' then
+    test:assertEquals(512, width, 'check window w match')
+    test:assertEquals(512, height, 'check window h match')
+  end
   test:assertFalse(flags["fullscreen"], 'check window not fullscreen')
   test:assertFalse(flags["resizable"], 'check window not resizeable')
   love.window.setMode(360, 240, {
@@ -298,6 +327,11 @@ end
 
 -- love.window.setPosition
 love.test.window.setPosition = function(test)
+  if love.system.getOS() == 'Android' or love.system.getOS() == 'iOS' then
+    test:skipTest('undefined/unavailable in mobile')
+    return
+  end
+
   -- check position is returned
   love.window.setPosition(100, 100, 1)
   test:waitFrames(10)

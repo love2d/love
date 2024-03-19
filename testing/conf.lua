@@ -1,5 +1,6 @@
 function love.conf(t)
   print("love.conf")
+  t.identity = 'love-test'
   t.console = true
   t.window.name = 'love.test'
   t.window.width = 360
@@ -7,6 +8,7 @@ function love.conf(t)
   t.window.resizable = true
   t.window.depth = true
   t.window.stencil = true
+  t.window.usedpiscale = false -- needed for Android
   t.renderers = {"opengl"}
 end
 

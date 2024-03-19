@@ -57,9 +57,11 @@ love.load = function(args)
   end
 
   -- mount for output later
-  if love.filesystem.mountFullPath then
+  if love.filesystem.mountFullPath and love.system.getOS() ~= "Android" then
     love.filesystem.mountFullPath(love.filesystem.getSource() .. "/output", "tempoutput", "readwrite")
   end
+  love.filesystem.createDirectory("tempoutput/actual")
+  love.filesystem.createDirectory("tempoutput/expected")
 
   -- get all args with any comma lists split out as seperate
   local arglist = {}

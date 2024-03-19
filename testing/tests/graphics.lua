@@ -374,9 +374,18 @@ love.test.graphics.Image = function(test)
   -- check image properties
   test:assertFalse(image:isCompressed(), 'check not compressed')
   test:assertFalse(image:isFormatLinear(), 'check not linear')
-  local cimage = love.graphics.newImage('resources/love.dxt1')
-  test:assertObject(cimage)
-  test:assertTrue(cimage:isCompressed(), 'check is compressed')
+
+  -- check compressed
+  local supportedimgs = love.graphics.getTextureFormats({canvas = false})
+  if supportedimgs['DXT1'] then
+    local cimage = love.graphics.newImage('resources/love.dxt1')
+    test:assertObject(cimage)
+    test:assertTrue(cimage:isCompressed(), 'check is compressed')
+  elseif supportedimgs['ETC1'] then
+    local cimage = love.graphics.newImage('resources/love.etc.ktx')
+    test:assertObject(cimage)
+    test:assertTrue(cimage:isCompressed(), 'check is compressed')
+  end
 
   -- check pixel replacement
   local rimage = love.image.newImageData('resources/loveinv.png')
