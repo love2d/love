@@ -23,6 +23,7 @@ TestSuite = {
       delayed = nil,
       fakequit = false,
       windowmode = true,
+      current_os = love.system.getOS(),
 
       -- love modules to test
       audio = {},
@@ -76,7 +77,10 @@ TestSuite = {
               TextRun = 'love.' .. self.module.module .. '.' .. method
 
               self.test.co = coroutine.create(function()
-                local ok, chunk, err = pcall(love.test[love.test.module.module][method], love.test.test)
+                local ok, chunk, err = pcall(
+                  love.test[love.test.module.module][method],
+                  love.test.test
+                )
                 if ok == false then
                   love.test.test['passed'] = false
                   love.test.test['fatal'] = tostring(chunk) .. tostring(err)
@@ -140,7 +144,14 @@ TestSuite = {
   printResult = function(self)
     local finaltime = UtilTimeFormat(self.time)
 
-    local name, version, vendor, device = love.graphics.getRendererInfo()
+    -- in case we dont have love.graphics loaded, for future module specific disabling
+    local name = 'NONE'
+    local version = 'NONE'
+    local vendor = 'NONE'
+    local device = 'NONE'
+    if love.graphics then
+      name, version, vendor, device = love.graphics.getRendererInfo()
+    end
     
     local md = '<!-- PASSED ' .. tostring(self.totals[1]) ..
       ' || FAILED ' .. tostring(self.totals[2]) ..

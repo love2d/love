@@ -469,7 +469,7 @@ love.test.audio.setPlaybackDevice = function(test)
   -- rn on macos all 3 return false
   -- whereas linux/windows return true for blank/current, which is expected
   -- as openalsoft treats blank as current
-  if love.system.getOS() == 'OS X' then
+  if test:isOS('OS X') then
     test:assertFalse(success1, 'check blank device fails')
     test:assertFalse(success2, 'check invalid device fails')
     test:assertFalse(success3, 'check existing device fails')
