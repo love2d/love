@@ -245,8 +245,14 @@ bool Filesystem::setSource(const char *source)
 	if (hasFusedGame)
 	{
 		if (gameLoveIO)
-			// Actually we should just be able to mount gameLoveIO, but that's experimental.
+		{
+			if (PHYSFS_mountIo(gameLoveIO, ".zip", nullptr, 0)) {
+				gameSource = new_search_path;
+				return true;
+			}
+
 			gameLoveIO->destroy(gameLoveIO);
+		}
 		else
 		{
 			if (!love::android::initializeVirtualArchive())
@@ -274,6 +280,8 @@ bool Filesystem::setSource(const char *source)
 				gameSource = new_search_path;
 				return true;
 			}
+
+			io->destroy(io);
 		}
 	}
 #endif
