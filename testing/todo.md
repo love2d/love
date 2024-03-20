@@ -3,7 +3,6 @@ These are all the outstanding methods that require test coverage, along with a f
 
 ## General 
 - ability to test loading different combinations of modules if needed?
-- performance tests? need to discuss what + how, might be better as a seperate thing
 - check expected behaviour of mount + unmount with common path
   try uncommenting love.filesystem.unmountCommonPath and you'll see the issues
 - revisit love.audio.setPlaybackDevice when we update openal soft for MacOS
@@ -19,7 +18,6 @@ These are all the outstanding methods that require test coverage, along with a f
 - love.graphics.newComputeShader()
 - love.graphics.dispatchThreadgroups()
 - love.graphics.dispatchIndirect()
-- love.graphics.newTexture()
 - love.graphics.drawFromShader()
 - love.graphics.drawFromShaderIndirect()
 - love.graphics.drawIndirect()

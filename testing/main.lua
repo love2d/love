@@ -41,6 +41,8 @@ love.load = function(args)
       resizable = true,
       centered = true
     })
+
+    -- set up some graphics to draw if enabled
     if love.graphics ~= nil then
       love.graphics.setDefaultFilter("nearest", "nearest")
       love.graphics.setLineStyle('rough')
@@ -54,6 +56,7 @@ love.load = function(args)
       TextCommand = 'Loading...'
       TextRun = ''
     end
+
   end
 
   -- mount for output later

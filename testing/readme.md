@@ -25,15 +25,15 @@ This is the status of all module tests.
 See the **Todo** section for outstanding tasks if you want to contribute!
 | Module            | Done | Skip | Modules          | Done | Skip |
 | ----------------- | ---- | ---- | ---------------- | ---- | ---- |
-| 🟢 audio          |   28 |   0  | 🟢 mouse          |   18 |   0  |
+| 🟢 audio          |   31 |   0  | 🟢 mouse          |   18 |   0  |
 | 🟢 data           |   12 |   0  | 🟢 physics        |   26 |   0  |
 | 🟢 event          |    4 |   2  | 🟢 sensor         |    1 |   0  |
-| 🟢 filesystem     |   29 |   2  | 🟢 sound          |    4 |   0  |
-| 🟢 font           |    7 |   0  | 🟢 system         |    6 |   2  |
-| 🟢 graphics       |  104 |   1  | 🟢 thread         |    5 |   0  |
+| 🟢 filesystem     |   33 |   2  | 🟢 sound          |    4 |   0  |
+| 🟢 font           |    7 |   0  | 🟢 system         |    7 |   2  |
+| 🟢 graphics       |  105 |   1  | 🟢 thread         |    5 |   0  |
 | 🟢 image          |    5 |   0  | 🟢 timer          |    6 |   0  |
 | 🟢 joystick       |    6 |   0  | 🟢 touch          |    3 |   0  |
-| 🟢 keyboard       |    9 |   0  | 🟢 video          |    2 |   0  |
+| 🟢 keyboard       |   10 |   0  | 🟢 video          |    2 |   0  |
 | 🟢 love           |    6 |   0  | 🟢 window         |   34 |   2  |
 | 🟢 math           |   20 |   0  | 
 
@@ -102,7 +102,7 @@ love.test.filesystem.read = function(test)
 end
 ```
 
-Each test is run inside it's own coroutine - you can use `test:waitFrames(frames)` to pause the test for a small period if you need to check things that won't happen for a few seconds.
+Each test is run inside it's own coroutine - you can use `test:waitFrames(frames)` or `test:waitSeconds(seconds)` to pause the test for a small period if you need to check things that won't happen for a few frames/seconds.
 
 After each test method is ran, the assertions are totalled up, printed, and we move onto the next method! Once all methods in the suite are run a total pass/fail/skip is given for that module and we move onto the next module (if any)
 
@@ -133,7 +133,7 @@ The automated tests through Github work for the most part however there are a fe
 
 These exceptions are either skipped, or handled by using a 1px or 1/255rgba tolerance - when run locally on real hardware, these tests pass fine at the default 0 tolerance.  
 You can specify the test suite is being run on a runner by adding the `--isRunner` flag in your workflow file, i.e.:  
-`& 'c:\Program Files\LOVE\love.exe' PATH_TO_TESTING_FOLDER/main.lua --console --runAllTests --isRunner`
+`& 'c:\Program Files\LOVE\love.exe' PATH_TO_TESTING_FOLDER/main.lua --console --all --isRunner`
 | Test                       |    OS     |      Exception      | Reason |
 | -------------------------- | --------- | ------------------- | ------ |
 | love.graphics.setWireframe |   MacOS   |    1px tolerance    | Wireframes are offset by 1,1 when drawn |

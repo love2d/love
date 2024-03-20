@@ -393,7 +393,7 @@ love.test.filesystem.mountCommonPath = function(test)
   local mount3 = love.filesystem.mountCommonPath('userhome', 'userhome', 'readwrite')
   local mount4 = love.filesystem.mountCommonPath('userappdata', 'userappdata', 'readwrite')
   -- userdesktop isnt valid on linux
-  if love.system.getOS() ~= 'Linux' then
+  if not test:isOS('Linux') then
     local mount5 = love.filesystem.mountCommonPath('userdesktop', 'userdesktop', 'readwrite')
     test:assertTrue(mount5, 'check mount userdesktop')
   end

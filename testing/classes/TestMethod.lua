@@ -374,23 +374,39 @@ TestMethod = {
   end,
 
 
+  -- @method - TestMethod:isOS()
+  -- @desc - checks for a specific OS (or list of OSs)
+  -- @param {string/s} - each arg passed will be checked as a valid OS, as long
+  --                     as one passed the function will return true
+  -- @return {boolean} - returns true if one of the OSs given matches actual OS
+  isOS = function(self, ...)
+    for os=1,select("#", ...) do
+      if select(os, ...) == love.test.current_os then return true end
+    end
+    return false
+  end,
+
   -- @method - TestMethod:evaluateTest()
   -- @desc - evaluates the results of all assertions for a final restult
   -- @return {nil}
   evaluateTest = function(self)
     local failure = ''
     local failures = 0
+
+    -- check all asserts for failures, additional failures are also printed
+    local assert_failures = {}
     for a=1,#self.asserts do
-      -- @TODO show all failed assertion methods?
-      -- currently just shows the first assert that failed
       if not self.asserts[a].passed and not self.skipped then
         if failure == '' then failure = self.asserts[a] end
+        table.insert(assert_failures, self.asserts[a])
         failures = failures + 1
       end
     end
     if self.fatal ~= '' then failure = self.fatal end
     local passed = tostring(#self.asserts - failures)
     local total = '(' .. passed .. '/' .. tostring(#self.asserts) .. ')'
+
+    -- skipped tests have a special log
     if self.skipped then
       self.testmodule.skipped = self.testmodule.skipped + 1
       love.test.totals[3] = love.test.totals[3] + 1
@@ -398,9 +414,12 @@ TestMethod = {
         total = '', 
         result = "SKIP", 
         passed = false, 
-        message = '(0/0) - method skipped [' .. self.skipreason .. ']'
+        message = '(0/0) - method skipped [' .. self.skipreason .. ']',
+        failures = {}
       }
     else
+
+      -- if no failure but has asserts, then passed
       if failure == '' and #self.asserts > 0 then
         self.passed = true
         self.testmodule.passed = self.testmodule.passed + 1
@@ -409,38 +428,48 @@ TestMethod = {
           total = total, 
           result = 'PASS', 
           passed = true, 
-          message = nil
+          message = nil,
+          failures = {}
         }
+
+      -- otherwise it failed
       else
         self.passed = false
         self.testmodule.failed = self.testmodule.failed + 1
         love.test.totals[2] = love.test.totals[2] + 1
+
+        -- no asserts means invalid test
         if #self.asserts == 0 then
           local msg = 'no asserts defined'
           if self.fatal ~= '' then msg = self.fatal end
-          self.result = { 
-            total = total, 
-            result = 'FAIL', 
-            passed = false, 
-            key = 'test', 
-            message = msg 
+          self.result = {
+            total = total,
+            result = 'FAIL',
+            passed = false,
+            key = 'test',
+            message = msg,
+            failures = {}
           }
+
+        -- otherwise we had failures, log the first and supply the list of
+        -- additional failures if any for printResult()
         else
           local key = failure['key']
           if failure['test'] ~= nil then
             key = key .. ' [' .. failure['test'] .. ']'
           end
           local msg = failure['message']
-          if self.fatal ~= '' then 
+          if self.fatal ~= '' then
             key = 'code'
             msg = self.fatal
           end
-          self.result = { 
-            total = total, 
-            result = 'FAIL', 
-            passed = false, 
+          self.result = {
+            total = total,
+            result = 'FAIL',
+            passed = false,
             key = key,
-            message = msg
+            message = msg,
+            failures = assert_failures
           }
         end
       end
@@ -535,6 +564,21 @@ TestMethod = {
       ' ==> ' .. self.result.result .. ' - ' .. endtime .. 's ' ..
       self.result.total .. msg
     )
+
+    -- if we failed on multiple asserts, list them here - makes it easier for 
+    -- debugging new methods added that are failing multiple asserts
+    if #self.result.failures > 1 then
+      for f=2,#self.result.failures do
+        local addf = self.result.failures[f]
+        self.testmodule:log(
+          self.testmodule.colors[self.result.result],
+          '  ' .. tested .. matching,
+          ' ==> ' ..
+          addf['key'] .. ' [' .. addf['test'] .. '] failed - ' .. addf['message']
+        )
+      end
+    end
+
   end
 
 
