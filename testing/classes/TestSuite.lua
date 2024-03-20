@@ -23,7 +23,7 @@ TestSuite = {
       delayed = nil,
       fakequit = false,
       windowmode = true,
-      current_os = love.system.getOS(),
+      current_os = love._os,
 
       -- love modules to test
       audio = {},

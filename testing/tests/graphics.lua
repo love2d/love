@@ -1467,7 +1467,7 @@ love.test.graphics.captureScreenshot = function(test)
   TextCommand = prevtextcommand
   test:assertNotNil(cbdata)
 
-  if test:isOS({'iOS', 'Android'}) then
+  if test:isOS('iOS', 'Android') then
     -- Mobile operating systems don't let us control the window resolution,
     -- so we can't compare the reference image properly.
     test:assertTrue(true, 'skip test')
