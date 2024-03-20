@@ -3138,13 +3138,12 @@ int w_draw(lua_State *L)
 {
 	Drawable *drawable = nullptr;
 	Texture *texture = nullptr;
-	Quad *quad = nullptr;
+	Quad *quad = luax_totype<Quad>(L, 2);
 	int startidx = 2;
 
-	if (luax_istype(L, 2, Quad::type))
+	if (quad != nullptr)
 	{
 		texture = luax_checktexture(L, 1);
-		quad = luax_totype<Quad>(L, 2);
 		startidx = 3;
 	}
 	else if (lua_isnil(L, 2) && !lua_isnoneornil(L, 3))
@@ -3174,14 +3173,14 @@ int w_draw(lua_State *L)
 int w_drawLayer(lua_State *L)
 {
 	Texture *texture = luax_checktexture(L, 1);
-	Quad *quad = nullptr;
 	int layer = (int) luaL_checkinteger(L, 2) - 1;
-	int startidx = 3;
 
-	if (luax_istype(L, startidx, Quad::type))
+	int startidx = 3;
+	Quad *quad = luax_totype<Quad>(L, startidx);
+
+	if (quad != nullptr)
 	{
 		texture = luax_checktexture(L, 1);
-		quad = luax_totype<Quad>(L, startidx);
 		startidx++;
 	}
 	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))

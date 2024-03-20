@@ -629,22 +629,29 @@ T *luax_optmodule(lua_State *L)
 }
 
 /**
- * Converts the value at idx to the specified type without checking that
- * this conversion is valid. If the type has been previously verified with
- * luax_istype, then this can be safely used. Otherwise, use luax_checktype.
+ * Converts the value at idx to the specified type. Returns null if the type
+ * doesn't match.
  * @param L The Lua state.
  * @param idx The index on the stack.
  * @param type The type of the object.
  **/
 template <typename T>
-T *luax_totype(lua_State *L, int idx, const love::Type& /*type*/)
+T *luax_totype(lua_State *L, int idx, const love::Type &type)
 {
-	T *o = (T *)(((Proxy *)lua_touserdata(L, idx))->object);
+	if (lua_type(L, idx) != LUA_TUSERDATA)
+		return nullptr;
 
-	if (o == nullptr)
-		luaL_error(L, "Cannot use object after it has been released.");
+	Proxy *p = (Proxy *) lua_touserdata(L, idx);
 
-	return o;
+	if (p->type != nullptr && p->type->isa(type))
+	{
+		if (p->object == nullptr)
+			luaL_error(L, "Cannot use object after it has been released.");
+
+		return (T *) p->object;
+	}
+
+	return nullptr;
 }
 
 template <typename T>

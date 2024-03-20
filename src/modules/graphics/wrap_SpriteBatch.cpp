@@ -35,13 +35,10 @@ SpriteBatch *luax_checkspritebatch(lua_State *L, int idx)
 
 static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int startidx, int index)
 {
-	Quad *quad = nullptr;
+	Quad *quad = luax_totype<Quad>(L, startidx);
 
-	if (luax_istype(L, startidx, Quad::type))
-	{
-		quad = luax_totype<Quad>(L, startidx);
+	if (quad != nullptr)
 		startidx++;
-	}
 	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
 		return luax_typerror(L, startidx, "Quad");
 
@@ -61,15 +58,13 @@ static inline int w_SpriteBatch_add_or_set(lua_State *L, SpriteBatch *t, int sta
 
 static int w_SpriteBatch_addLayer_or_setLayer(lua_State *L, SpriteBatch *t, int startidx, int index)
 {
-	Quad *quad = nullptr;
 	int layer = (int) luaL_checkinteger(L, startidx) - 1;
 	startidx++;
 
-	if (luax_istype(L, startidx, Quad::type))
-	{
-		quad = luax_totype<Quad>(L, startidx);
+	Quad *quad = luax_totype<Quad>(L, startidx);
+
+	if (quad != nullptr)
 		startidx++;
-	}
 	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
 		return luax_typerror(L, startidx, "Quad");
 
