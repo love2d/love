@@ -2123,6 +2123,23 @@ love.test.graphics.setFrontFaceWinding = function(test)
   test:assertEquals('ccw', love.graphics.getFrontFaceWinding(), 'check ffw ccw set')
   love.graphics.setFrontFaceWinding(original)
   -- @TODO better graphics drawing specific test
+
+  local shader = love.graphics.newShader[[
+vec4 effect(vec4 c, Image tex, vec2 tc, vec2 pc) {
+  return gl_FrontFacing ? vec4(0.0, 1.0, 0.0, 1.0) : vec4(1.0, 0.0, 0.0, 1.0); 
+}
+  ]]
+  local dummyimg = love.graphics.newImage(love.image.newImageData(1, 1))
+
+  local canvas = love.graphics.newCanvas(16, 16)
+  love.graphics.push("all")
+    love.graphics.setCanvas(canvas)
+    love.graphics.setShader(shader)
+    love.graphics.draw(dummyimg, 0, 0, 0, 16, 16)
+  love.graphics.pop()
+
+  local imgdata = love.graphics.readbackTexture(canvas)
+  test:compareImg(imgdata)
 end
 
 
