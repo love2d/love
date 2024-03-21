@@ -451,7 +451,7 @@ public:
 		}
 	};
 
-	Graphics(const char *name);
+	explicit Graphics(const char *name);
 	virtual ~Graphics();
 
 	virtual Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) = 0;
