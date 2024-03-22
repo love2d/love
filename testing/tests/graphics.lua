@@ -209,7 +209,11 @@ love.test.graphics.Canvas = function(test)
   ]]
   local shader2 = love.graphics.newShader[[
     vec4 effect(vec4 c, Image tex, vec2 tc, vec2 pc) {
-      return vec4(pc / love_ScreenSize.xy, 0.0, 1.0);
+      // rounding during quantization from float to unorm8 doesn't seem to be
+      // totally consistent across devices, lets do it ourselves.
+      vec2 value = pc / love_ScreenSize.xy;
+      vec2 quantized = (floor(255.0 * value + 0.5) + 0.1) / 255.0;
+      return vec4(quantized, 0.0, 1.0);
     }
   ]]
   local img = love.graphics.newImage(love.image.newImageData(1, 1))
