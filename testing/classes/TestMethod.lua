@@ -576,10 +576,10 @@ TestMethod = {
     end
 
     -- append HTML for the test class result
-    local status = '🔴'
+    local status = ''
     local cls = 'red'
-    if self.passed then status = '🟢'; cls = '' end
-    if self.skipped then status = '🟡'; cls = '' end
+    if self.passed then status = '<div class="icon pass"></div>'; cls = 'green' end
+    if self.skipped then status = ''; cls = 'yellow' end
     self.testmodule.html = self.testmodule.html ..
       '<tr class=" ' .. cls .. '">' ..
         '<td>' .. status .. '</td>' ..
