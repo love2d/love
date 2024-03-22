@@ -204,7 +204,7 @@ love.test.graphics.Canvas = function(test)
   -- check y-down
   local shader1 = love.graphics.newShader[[
     vec4 effect(vec4 c, Image tex, vec2 tc, vec2 pc) {
-      return vec4(tc, 0.0, 1.0);
+      return tc.y > 0.5 ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.0, 1.0, 0.0, 1.0);
     }
   ]]
   local shader2 = love.graphics.newShader[[
