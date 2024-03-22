@@ -1092,6 +1092,22 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 {
 	format = getSizedFormat(format);
 
+	switch (format)
+	{
+	case PIXELFORMAT_PVR1_RGB2_UNORM:
+	case PIXELFORMAT_PVR1_RGB2_sRGB:
+	case PIXELFORMAT_PVR1_RGB4_UNORM:
+	case PIXELFORMAT_PVR1_RGB4_sRGB:
+	case PIXELFORMAT_PVR1_RGBA2_UNORM:
+	case PIXELFORMAT_PVR1_RGBA2_sRGB:
+	case PIXELFORMAT_PVR1_RGBA4_UNORM:
+	case PIXELFORMAT_PVR1_RGBA4_sRGB:
+		// Lets not support these in Vulkan - they're deprecated.
+		return false;
+	default:
+		break;
+	}
+
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkFormatProperties formatProperties;
