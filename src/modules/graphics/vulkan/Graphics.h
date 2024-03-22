@@ -37,7 +37,7 @@
 #include <memory>
 #include <functional>
 #include <set>
-
+#include <tuple>
 
 namespace love
 {
@@ -236,7 +236,7 @@ struct RenderpassState
 	RenderPassConfiguration renderPassConfiguration{};
 	FramebufferConfiguration framebufferConfiguration{};
 	VkPipeline pipeline = VK_NULL_HANDLE;
-	std::vector<VkImage> transitionImages;
+	std::vector<std::tuple<VkImage, PixelFormat>> transitionImages;
 	uint32_t numColorAttachments = 0;
 	float width = 0.0f;
 	float height = 0.0f;
@@ -397,7 +397,9 @@ private:
 	Matrix4 displayRotation;
 	std::vector<VkImage> swapChainImages;
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
+	PixelFormat swapChainPixelFormat = PIXELFORMAT_UNKNOWN;
 	VkFormat depthStencilFormat = VK_FORMAT_UNDEFINED;
+	PixelFormat depthStencilPixelFormat = PIXELFORMAT_UNKNOWN;
 	VkExtent2D swapChainExtent = VkExtent2D();
 	std::vector<VkImageView> swapChainImageViews;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;

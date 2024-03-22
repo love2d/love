@@ -291,6 +291,9 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format)
 		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
 		break;
 	case PIXELFORMAT_DEPTH24_UNORM:
+		textureFormat.internalFormat = VK_FORMAT_X8_D24_UNORM_PACK32;
+		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
+		break;
 	case PIXELFORMAT_DEPTH24_UNORM_STENCIL8:
 		textureFormat.internalFormat = VK_FORMAT_D24_UNORM_S8_UINT;
 		textureFormat.internalFormatRepresentation = FORMATREPRESENTATION_UINT;
@@ -816,7 +819,7 @@ VkIndexType Vulkan::getVulkanIndexBufferType(IndexDataType type)
 	}
 }
 
-static void setImageLayoutTransitionOptions(bool previous, VkImageLayout layout, VkAccessFlags &accessMask, VkPipelineStageFlags &stageFlags, bool &depthStencil)
+static void setImageLayoutTransitionOptions(bool previous, VkImageLayout layout, VkAccessFlags &accessMask, VkPipelineStageFlags &stageFlags)
 {
 	switch (layout)
 	{
@@ -838,7 +841,6 @@ static void setImageLayoutTransitionOptions(bool previous, VkImageLayout layout,
 		stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-		depthStencil = true;
 		accessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 		stageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 		break;
@@ -863,7 +865,7 @@ static void setImageLayoutTransitionOptions(bool previous, VkImageLayout layout,
 	}
 }
 
-void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount)
+void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, PixelFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount)
 {
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -877,17 +879,19 @@ void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage ima
 	barrier.subresourceRange.baseArrayLayer = baseLayer;
 	barrier.subresourceRange.layerCount = layerCount;
 
-	bool depthStencil = false;
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
 
-	setImageLayoutTransitionOptions(true, oldLayout, barrier.srcAccessMask, sourceStage, depthStencil);
-	setImageLayoutTransitionOptions(false, newLayout, barrier.dstAccessMask, destinationStage, depthStencil);
+	setImageLayoutTransitionOptions(true, oldLayout, barrier.srcAccessMask, sourceStage);
+	setImageLayoutTransitionOptions(false, newLayout, barrier.dstAccessMask, destinationStage);
 
-	if (depthStencil)
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-	else
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	const PixelFormatInfo &info = getPixelFormatInfo(format);
+	if (info.color)
+		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
+	if (info.depth)
+		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+	if (info.stencil)
+		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
 	vkCmdPipelineBarrier(
 		commandBuffer,

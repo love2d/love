@@ -396,6 +396,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				swapChainImages.at(imageIndex),
+				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 		else
@@ -425,6 +426,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				swapChainImages.at(imageIndex),
+				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
@@ -447,6 +449,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				swapChainImages.at(imageIndex),
+				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 		}
@@ -1309,6 +1312,7 @@ void Graphics::beginFrame()
 	Vulkan::cmdTransitionImageLayout(
 		commandBuffers.at(currentFrame),
 		swapChainImages[imageIndex],
+		swapChainPixelFormat,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -1318,6 +1322,7 @@ void Graphics::beginFrame()
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				depthImage,
+				depthStencilPixelFormat,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
@@ -1325,6 +1330,7 @@ void Graphics::beginFrame()
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				colorImage,
+				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -1488,6 +1494,18 @@ void Graphics::pickPhysicalDevice()
 	deviceApiVersion = properties.apiVersion;
 
 	depthStencilFormat = findDepthFormat();
+	switch (depthStencilFormat)
+	{
+	case VK_FORMAT_D32_SFLOAT_S8_UINT:
+		depthStencilPixelFormat = PIXELFORMAT_DEPTH32_FLOAT_STENCIL8;
+		break;
+	case VK_FORMAT_D24_UNORM_S8_UINT:
+		depthStencilPixelFormat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+		break;
+	default:
+		throw love::Exception("Failed to convert vulkan depth/stencil swapchain pixel format %d to love PixelFormat.", depthStencilFormat);
+		break;
+	}
 }
 
 bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device)
@@ -1877,6 +1895,25 @@ void Graphics::createSwapChain()
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
 	preTransform = swapChainSupport.capabilities.currentTransform;
+
+	switch (swapChainImageFormat)
+	{
+	case VK_FORMAT_B8G8R8A8_SRGB:
+		swapChainPixelFormat = PIXELFORMAT_BGRA8_sRGB;
+		break;
+	case VK_FORMAT_B8G8R8A8_UNORM:
+		swapChainPixelFormat = PIXELFORMAT_BGRA8_UNORM;
+		break;
+	case VK_FORMAT_R8G8B8A8_SRGB:
+		swapChainPixelFormat = PIXELFORMAT_RGBA8_sRGB;
+		break;
+	case VK_FORMAT_R8G8B8A8_UNORM:
+		swapChainPixelFormat = PIXELFORMAT_RGBA8_UNORM;
+		break;
+	default:
+		throw love::Exception("Failed to convert vulkan depth/stencil swapchain image format %d to love PixelFormat.", swapChainImageFormat);
+		break;
+	}
 }
 
 VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
@@ -2438,12 +2475,12 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 
 	FramebufferConfiguration configuration{};
 
-	std::vector<VkImage> transitionImages;
+	std::vector<std::tuple<VkImage, PixelFormat>> transitionImages;
 
 	for (const auto &color : rts.colors)
 	{
 		configuration.colorViews.push_back(dynamic_cast<Texture*>(color.texture)->getRenderTargetView(color.mipmap, color.slice));
-		transitionImages.push_back((VkImage) color.texture->getHandle());
+		transitionImages.push_back({ (VkImage)color.texture->getHandle(), color.texture->getPixelFormat() });
 	}
 	if (rts.depthStencil.texture != nullptr)
 		configuration.staticData.depthView = dynamic_cast<Texture*>(rts.depthStencil.texture)->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
@@ -2496,8 +2533,8 @@ void Graphics::startRenderPass()
 	renderPassState.framebufferConfiguration.staticData.renderPass = renderPassState.beginInfo.renderPass;
 	renderPassState.beginInfo.framebuffer = getFramebuffer(renderPassState.framebufferConfiguration);
 
-	for (const auto &image : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	for (const auto &[image, format] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
@@ -2508,8 +2545,8 @@ void Graphics::endRenderPass()
 
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 
-	for (const auto &image : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	for (const auto &[image, format] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	for (auto &colorAttachment : renderPassState.renderPassConfiguration.colorAttachments)
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;

@@ -158,7 +158,7 @@ bool Texture::loadVolatile()
 		else
 			imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_UNDEFINED, imageLayout,
 			0, VK_REMAINING_MIP_LEVELS,
 			0, VK_REMAINING_ARRAY_LAYERS);
@@ -379,7 +379,7 @@ void Texture::clear()
 
 	if (imageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 
@@ -387,7 +387,7 @@ void Texture::clear()
 
 		vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &range);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
@@ -399,7 +399,7 @@ void Texture::clear()
 	}
 	else
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 
@@ -409,7 +409,7 @@ void Texture::clear()
 
 		vkCmdClearDepthStencilImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &depthStencilColor, 1, &range);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
@@ -449,7 +449,7 @@ void Texture::generateMipmapsInternal()
 	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			0, static_cast<uint32_t>(getMipmapCount()), 0, static_cast<uint32_t>(layerCount));
 
@@ -575,7 +575,7 @@ void Texture::uploadByteData(const void *data, size_t size, int level, int slice
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			level, 1, baseLayer, 1);
 
@@ -588,7 +588,7 @@ void Texture::uploadByteData(const void *data, size_t size, int level, int slice
 			&region
 		);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout,
 			level, 1, baseLayer, 1);
 	}
@@ -627,11 +627,11 @@ void Texture::copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int 
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 	else
 		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_GENERAL, 1, &region);
@@ -658,11 +658,11 @@ void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const 
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, imageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, imageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageLayout);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageLayout);
 	}
 	else
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, (VkBuffer)dest->getHandle(), 1, &region);

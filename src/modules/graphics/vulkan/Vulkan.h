@@ -81,7 +81,7 @@ public:
 	static VkIndexType getVulkanIndexBufferType(IndexDataType type);
 
 	static void cmdTransitionImageLayout(
-		VkCommandBuffer, VkImage, VkImageLayout oldLayout, VkImageLayout newLayout,
+		VkCommandBuffer, VkImage, PixelFormat format, VkImageLayout oldLayout, VkImageLayout newLayout,
 		uint32_t baseLevel = 0, uint32_t levelCount = VK_REMAINING_MIP_LEVELS, uint32_t baseLayer = 0, uint32_t layerCount = VK_REMAINING_ARRAY_LAYERS);
 };
 
