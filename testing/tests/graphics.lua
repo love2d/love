@@ -201,6 +201,36 @@ love.test.graphics.Canvas = function(test)
   local imgdata2 = love.graphics.readbackTexture(canvas)
   test:compareImg(imgdata2)
 
+  -- check y-down
+  local shader1 = love.graphics.newShader[[
+    vec4 effect(vec4 c, Image tex, vec2 tc, vec2 pc) {
+      return vec4(tc, 0.0, 1.0);
+    }
+  ]]
+  local shader2 = love.graphics.newShader[[
+    vec4 effect(vec4 c, Image tex, vec2 tc, vec2 pc) {
+      return vec4(pc / love_ScreenSize.xy, 0.0, 1.0);
+    }
+  ]]
+  local img = love.graphics.newImage(love.image.newImageData(1, 1))
+
+  love.graphics.push("all")
+    love.graphics.setCanvas(canvas)
+    love.graphics.setShader(shader1)
+    love.graphics.draw(img, 0, 0, 0, canvas:getDimensions())
+  love.graphics.pop()
+  local imgdata3 = love.graphics.readbackTexture(canvas)
+  test:compareImg(imgdata3)
+
+  love.graphics.push("all")
+    love.graphics.setCanvas(canvas)
+    love.graphics.setShader(shader2)
+    love.graphics.draw(img, 0, 0, 0, canvas:getDimensions())
+  love.graphics.pop()
+  local imgdata4 = love.graphics.readbackTexture(canvas)
+  test:compareImg(imgdata4)
+
+
   -- check depth samples
   local dcanvas = love.graphics.newCanvas(100, 100, {
     type = '2d',
