@@ -137,7 +137,7 @@ end
 
 -- love.filesystem.createDirectory
 love.test.filesystem.createDirectory = function(test)
-  -- try creating a dir + subdir and check both exist 
+  -- try creating a dir + subdir and check both exist
   local success = love.filesystem.createDirectory('foo/bar')
   test:assertNotEquals(false, success, 'check success')
   test:assertNotEquals(nil, love.filesystem.getInfo('foo', 'directory'), 'check directory created')
@@ -225,7 +225,7 @@ love.test.filesystem.getRealDirectory = function(test)
   love.filesystem.createDirectory('foo')
   love.filesystem.write('foo/test.txt', 'test')
   -- check save dir matches the real dir we just wrote to
-  test:assertEquals(love.filesystem.getSaveDirectory(), 
+  test:assertEquals(love.filesystem.getSaveDirectory(),
     love.filesystem.getRealDirectory('foo/test.txt'), 'check directory matches')
   -- cleanup
   love.filesystem.remove('foo/test.txt')
@@ -321,17 +321,28 @@ love.test.filesystem.load = function(test)
   -- setup some fake lua files
   love.filesystem.write('test1.lua', 'function test()\nreturn 1\nend\nreturn test()')
   love.filesystem.write('test2.lua', 'function test()\nreturn 1')
-  -- check file that doesn't exist
-  local chunk1, errormsg1 = love.filesystem.load('faker.lua', 'b')
-  test:assertEquals(nil, chunk1, 'check file doesnt exist')
-  -- check valid lua file (text load)
-  local chunk2, errormsg2 = love.filesystem.load('test1.lua', 't')
-  test:assertEquals(nil, errormsg2, 'check no error message')
-  test:assertEquals(1, chunk2(), 'check lua file runs')
+
+  if test:isAtLeastLuaVersion(5.2) or test:isLuaJITEnabled() then
+    -- check file that doesn't exist
+    local chunk1, errormsg1 = love.filesystem.load('faker.lua', 'b')
+    test:assertEquals(nil, chunk1, 'check file doesnt exist')
+    -- check valid lua file (text load)
+    local chunk2, errormsg2 = love.filesystem.load('test1.lua', 't')
+    test:assertEquals(nil, errormsg2, 'check no error message')
+    test:assertEquals(1, chunk2(), 'check lua file runs')
+  else
+    local _, errormsg3 = love.filesystem.load('test1.lua', 'b')
+    test:assertNotEquals(nil, errormsg3, 'check for an error message')
+
+    local _, errormsg4 = love.filesystem.load('test1.lua', 't')
+    test:assertNotEquals(nil, errormsg4, 'check for an error message')
+  end
+
   -- check valid lua file (any load)
-  local chunk4, errormsg4 = love.filesystem.load('test1.lua', 'bt')
-  test:assertEquals(nil, errormsg2, 'check no error message')
-  test:assertEquals(1, chunk4(), 'check lua file runs')
+  local chunk5, errormsg5 = love.filesystem.load('test1.lua', 'bt')
+  test:assertEquals(nil, errormsg5, 'check no error message')
+  test:assertEquals(1, chunk5(), 'check lua file runs')
+
   -- check invalid lua file
   local ok, chunk, err = pcall(love.filesystem.load, 'test2.lua')
   test:assertFalse(ok, 'check invalid lua file')
@@ -410,7 +421,7 @@ end
 
 -- love.filesystem.unmountCommonPath
 --love.test.filesystem.unmountCommonPath = function(test)
---  -- check unmounting invalid 
+--  -- check unmounting invalid
 --  local ok = pcall(love.filesystem.unmountCommonPath, 'fakepath')
 --  test:assertFalse(ok, 'check unmount invalid common path')
 --  -- check mounting valid paths

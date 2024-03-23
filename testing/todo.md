@@ -23,8 +23,6 @@ These are all the outstanding methods that require test coverage, along with a f
 - love.graphics.drawIndirect()
 - love.graphics.getQuadIndexBuffer()
 - love.graphics.setBlendState()
-- love.graphics.setOrthoProjection()
-- love.graphics.setPerspectiveProjection()
 - love.graphics.resetProjection()
 - love.graphics.Mesh:getAttachedAttributes()
 - love.graphics.Shader:hasStage()
