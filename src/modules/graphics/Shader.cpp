@@ -124,16 +124,17 @@ uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
 
 static const char global_functions[] = R"(
 #ifdef GL_ES
+	precision mediump sampler2D;
 	#if __VERSION__ >= 300 || defined(LOVE_EXT_TEXTURE_ARRAY_ENABLED)
-		precision lowp sampler2DArray;
+		precision mediump sampler2DArray;
 	#endif
 	#if __VERSION__ >= 300 || defined(GL_OES_texture_3D)
-		precision lowp sampler3D;
+		precision mediump sampler3D;
 	#endif
 	#if __VERSION__ >= 300 && !defined(LOVE_GLSL1_ON_GLSL3)
-		precision lowp sampler2DShadow;
-		precision lowp samplerCubeShadow;
-		precision lowp sampler2DArrayShadow;
+		precision mediump sampler2DShadow;
+		precision mediump samplerCubeShadow;
+		precision mediump sampler2DArrayShadow;
 	#endif
 #endif
 
