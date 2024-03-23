@@ -921,8 +921,8 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 		const auto &rt = state.renderTargets.getFirstTarget();
 		if (rt.texture.get())
 		{
-			rtw = rt.texture->getPixelWidth();
-			rth = rt.texture->getPixelHeight();
+			rtw = rt.texture->getPixelWidth(rt.mipmap);
+			rth = rt.texture->getPixelHeight(rt.mipmap);
 		}
 		else
 		{
@@ -1134,11 +1134,11 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	builtins->normalMatrix[1].w = getPointSize();
 
 	builtins->screenSizeParams = Vector4(getPixelWidth(), getPixelHeight(), 1.0f, 0.0f);
-	auto rt = states.back().renderTargets.getFirstTarget().texture.get();
-	if (rt != nullptr)
+	auto rt = states.back().renderTargets.getFirstTarget();
+	if (rt.texture.get())
 	{
-		builtins->screenSizeParams.x = rt->getPixelWidth();
-		builtins->screenSizeParams.y = rt->getPixelHeight();
+		builtins->screenSizeParams.x = rt.texture->getPixelWidth(rt.mipmap);
+		builtins->screenSizeParams.y = rt.texture->getPixelHeight(rt.mipmap);
 	}
 
 	builtins->constantColor = getColor();
