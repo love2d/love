@@ -3900,28 +3900,6 @@ int w_inverseTransformPoint(lua_State *L)
 	return 2;
 }
 
-int w_setOrthoProjection(lua_State *L)
-{
-	float w = (float) luaL_checknumber(L, 1);
-	float h = (float) luaL_checknumber(L, 2);
-	float near = (float) luaL_optnumber(L, 3, -10.0);
-	float far = (float) luaL_optnumber(L, 4, 10.0);
-
-	luax_catchexcept(L, [&]() { instance()->setOrthoProjection(w, h, near, far); });
-	return 0;
-}
-
-int w_setPerspectiveProjection(lua_State *L)
-{
-	float verticalfov = (float) luaL_checknumber(L, 1);
-	float aspect = (float) luaL_checknumber(L, 2);
-	float near = (float) luaL_checknumber(L, 3);
-	float far = (float) luaL_checknumber(L, 4);
-
-	luax_catchexcept(L, [&]() { instance()->setPerspectiveProjection(verticalfov, aspect, near, far); });
-	return 0;
-}
-
 int w_resetProjection(lua_State */*L*/)
 {
 	instance()->resetProjection();
@@ -4074,8 +4052,6 @@ static const luaL_Reg functions[] =
 	{ "transformPoint", w_transformPoint },
 	{ "inverseTransformPoint", w_inverseTransformPoint },
 
-	{ "setOrthoProjection", w_setOrthoProjection },
-	{ "setPerspectiveProjection", w_setPerspectiveProjection },
 	{ "resetProjection", w_resetProjection },
 
 	// Deprecated

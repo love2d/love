@@ -875,8 +875,6 @@ public:
 	Vector2 transformPoint(Vector2 point);
 	Vector2 inverseTransformPoint(Vector2 point);
 
-	void setOrthoProjection(float w, float h, float near, float far);
-	void setPerspectiveProjection(float verticalfov, float aspect, float near, float far);
 	void setCustomProjection(const Matrix4 &m);
 	void resetProjection();
 

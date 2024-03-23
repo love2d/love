@@ -2802,27 +2802,6 @@ Vector2 Graphics::inverseTransformPoint(Vector2 point)
 	return p;
 }
 
-void Graphics::setOrthoProjection(float w, float h, float near, float far)
-{
-	if (near >= far)
-		throw love::Exception("Orthographic projection Z far value must be greater than the Z near value.");
-
-	Matrix4 m = Matrix4::ortho(0.0f, w, 0.0f, h, near, far);
-	setCustomProjection(m);
-}
-
-void Graphics::setPerspectiveProjection(float verticalfov, float aspect, float near, float far)
-{
-	if (near <= 0.0f)
-		throw love::Exception("Perspective projection Z near value must be greater than 0.");
-
-	if (near >= far)
-		throw love::Exception("Perspective projection Z far value must be greater than the Z near value.");
-
-	Matrix4 m = Matrix4::perspective(verticalfov, aspect, near, far);
-	setCustomProjection(m);
-}
-
 void Graphics::setCustomProjection(const Matrix4 &m)
 {
 	flushBatchedDraws();
