@@ -1430,8 +1430,17 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	// Same with point size.
 	data.normalMatrix[1].w = getPointSize();
 
-	data.screenSizeParams.x = static_cast<float>(swapChainExtent.width);
-	data.screenSizeParams.y = static_cast<float>(swapChainExtent.height);
+	const auto &rt = states.back().renderTargets.getFirstTarget();
+	if (rt.texture != nullptr)
+	{
+		data.screenSizeParams.x = rt.texture->getPixelWidth(rt.mipmap);
+		data.screenSizeParams.y = rt.texture->getPixelHeight(rt.mipmap);
+	}
+	else
+	{
+		data.screenSizeParams.x = getPixelWidth();
+		data.screenSizeParams.y = getPixelHeight();
+	}
 
 	data.screenSizeParams.z = 1.0f;
 	data.screenSizeParams.w = 0.0f;
