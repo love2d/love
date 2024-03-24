@@ -1239,12 +1239,6 @@ bool Graphics::dispatch(love::graphics::Shader *shader, love::graphics::Buffer *
 	return true;
 }
 
-Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const
-{
-	uint32 flags = DEVICE_PROJECTION_DEFAULT;
-	return calculateDeviceProjection(projection, flags);
-}
-
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
 {
 	if (renderPassState.active)
@@ -1429,6 +1423,11 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 
 	// Same with point size.
 	data.normalMatrix[1].w = getPointSize();
+
+	// Flip y to convert input y-up [-1, 1] to vulkan's y-down [-1, 1].
+	// Convert input z [-1, 1] to vulkan [0, 1].
+	uint32 flags = Shader::CLIP_TRANSFORM_FLIP_Y | Shader::CLIP_TRANSFORM_Z_NEG1_1_TO_0_1;
+	data.clipSpaceParams = Shader::computeClipSpaceParams(flags);
 
 	const auto &rt = states.back().renderTargets.getFirstTarget();
 	if (rt.texture != nullptr)

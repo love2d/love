@@ -188,18 +188,6 @@ love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod m
 	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
 }
 
-Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const
-{
-	uint32 flags = DEVICE_PROJECTION_DEFAULT;
-
-	// The projection matrix is flipped compared to rendering to a texture, due
-	// to OpenGL considering (0,0) bottom-left instead of top-left.
-	if (!rendertotexture)
-		flags |= DEVICE_PROJECTION_FLIP_Y;
-
-	return calculateDeviceProjection(projection, flags);
-}
-
 void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 {
 	bool changed = width != this->width || height != this->height

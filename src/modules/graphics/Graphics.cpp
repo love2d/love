@@ -2831,29 +2831,14 @@ void Graphics::resetProjection()
 
 	state.useCustomProjection = false;
 
-	updateDeviceProjection(Matrix4::ortho(0.0f, w, 0.0f, h, -10.0f, 10.0f));
+	// NDC is y-up. The ortho() parameter names assume that as well. We want
+	// a y-down projection, so we set bottom to h and top to 0.
+	updateDeviceProjection(Matrix4::ortho(0.0f, w, h, 0.0f, -10.0f, 10.0f));
 }
 
 void Graphics::updateDeviceProjection(const Matrix4 &projection)
 {
-	// Note: graphics implementations define computeDeviceProjection.
-	deviceProjectionMatrix = computeDeviceProjection(projection, isRenderTargetActive());
-}
-
-Matrix4 Graphics::calculateDeviceProjection(const Matrix4 &projection, uint32 flags) const
-{
-	Matrix4 m = projection;
-	bool reverseZ = (flags & DEVICE_PROJECTION_REVERSE_Z) != 0;
-
-	if (flags & DEVICE_PROJECTION_FLIP_Y)
-		m.setRow(1, -m.getRow(1));
-
-	if (flags & DEVICE_PROJECTION_Z_01) // Go from Z [-1, 1] to Z [0, 1].
-		m.setRow(2, m.getRow(2) * (reverseZ ? -0.5f : 0.5f) + m.getRow(3));
-	else if (reverseZ)
-		m.setRow(2, -m.getRow(2));
-
-	return m;
+	deviceProjectionMatrix = projection;
 }
 
 STRINGMAP_CLASS_BEGIN(Graphics, Graphics::DrawMode, Graphics::DRAW_MAX_ENUM, drawMode)

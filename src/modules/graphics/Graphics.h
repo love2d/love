@@ -627,6 +627,9 @@ public:
 	void setMeshCullMode(CullMode cull);
 	CullMode getMeshCullMode() const;
 
+	// Note: These are meant to be relative to the y-down default projection,
+	// which may be flipped compared to device NDC. Implementations may have
+	// to flip the winding internally.
 	virtual void setFrontFaceWinding(Winding winding) = 0;
 	Winding getFrontFaceWinding() const;
 
@@ -878,8 +881,6 @@ public:
 	void setCustomProjection(const Matrix4 &m);
 	void resetProjection();
 
-	virtual Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const = 0;
-
 	virtual void draw(const DrawCommand &cmd) = 0;
 	virtual void draw(const DrawIndexedCommand &cmd) = 0;
 	virtual void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, Texture *texture) = 0;
@@ -921,14 +922,6 @@ public:
 	STRINGMAP_CLASS_DECLARE(StackType);
 
 protected:
-
-	enum DeviceProjectionFlags
-	{
-		DEVICE_PROJECTION_DEFAULT = 0,
-		DEVICE_PROJECTION_FLIP_Y = (1 << 0),
-		DEVICE_PROJECTION_Z_01 = (1 << 1),
-		DEVICE_PROJECTION_REVERSE_Z = (1 << 2),
-	};
 
 	struct DisplayState
 	{
@@ -1058,7 +1051,6 @@ protected:
 	void popTransform();
 
 	void updateDeviceProjection(const Matrix4 &projection);
-	Matrix4 calculateDeviceProjection(const Matrix4 &projection, uint32 flags) const;
 
 	int width;
 	int height;

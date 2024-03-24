@@ -271,7 +271,6 @@ public:
 	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty) override;
 	void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) override;
-	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
 	void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override;
 	void present(void *screenshotCallbackdata) override;
 	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;

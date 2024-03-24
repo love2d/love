@@ -108,6 +108,14 @@ public:
 		ACCESS_WRITE = (1 << 1),
 	};
 
+	enum ClipSpaceTransformFlags
+	{
+		CLIP_TRANSFORM_NONE = 0,
+		CLIP_TRANSFORM_FLIP_Y = 1 << 0,
+		CLIP_TRANSFORM_Z_NEG1_1_TO_0_1 = 1 << 1,
+		CLIP_TRANSFORM_Z_0_1_TO_NEG1_1 = 1 << 2,
+	};
+
 	struct CompileOptions
 	{
 		std::map<std::string, std::string> defines;
@@ -177,6 +185,7 @@ public:
  		Matrix4 transformMatrix;
  		Matrix4 projectionMatrix;
  		Vector4 normalMatrix[3]; // 3x3 matrix padded to an array of 3 vector4s.
+		Vector4 clipSpaceParams;
  		Colorf constantColor;
 
 		// Pixel shader-centric variables past this point.
@@ -211,6 +220,18 @@ public:
 	 * Gets whether any of the default shaders are currently active.
 	 **/
 	static bool isDefaultActive();
+
+	/**
+	 * Used for transforming standardized post-projection clip space positions
+	 * into the backend's current clip space.
+	 * Right now, the standard is:
+	 *   NDC y is [-1, 1] starting at the bottom (y-up).
+	 *   NDC z is [-1, 1].
+	 *   Pixel coordinates are y-down.
+	 *   Pixel (0, 0) in a texture is the top-left.
+	 * Aside from NDC z, this matches Metal and D3D12.
+	 */
+	static Vector4 computeClipSpaceParams(uint32 clipSpaceTransformFlags);
 
 	/**
 	 * Returns any warnings this Shader may have generated.

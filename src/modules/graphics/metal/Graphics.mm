@@ -465,12 +465,6 @@ love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod m
 	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
 }
 
-Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool /*rendertotexture*/) const
-{
-	uint32 flags = DEVICE_PROJECTION_FLIP_Y;
-	return calculateDeviceProjection(projection, flags);
-}
-
 void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 {
 	bool sizechanged = width != this->width || height != this->height
@@ -1132,6 +1126,9 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 
 	// Same with point size.
 	builtins->normalMatrix[1].w = getPointSize();
+
+	uint32 flags = Shader::CLIP_TRANSFORM_Z_NEG1_1_TO_0_1;
+	builtins->clipSpaceParams = Shader::computeClipSpaceParams(flags);
 
 	builtins->screenSizeParams = Vector4(getPixelWidth(), getPixelHeight(), 1.0f, 0.0f);
 	auto rt = states.back().renderTargets.getFirstTarget();

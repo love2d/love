@@ -767,6 +767,8 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 	if (current != this)
 		return;
 
+	bool rt = gfx->isRenderTargetActive();
+
 	BuiltinUniformData data;
 
 	data.transformMatrix = gfx->getTransform();
@@ -792,13 +794,26 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 	// Same with point size.
 	data.normalMatrix[1].w = gfx->getPointSize();
 
+	// Users expect to work with y-up NDC, y-down pixel coordinates and textures
+	// (see graphics/Shader.h).
+	// OpenGL has y-up NDC and y-up pixel coordinates and textures. If we just flip
+	// NDC y when rendering to a texture, it's enough to make (0, 0) on the texture
+	// match what we expect when sampling from it - so it's the same as if textures
+	// are y-down with y-up NDC.
+	// Windowing systems treat (0, 0) on the backbuffer texture as the bottom left,
+	// so we don't need to do that there.
+	uint32 clipflags = 0;
+	if (rt)
+		clipflags |= CLIP_TRANSFORM_FLIP_Y;
+	data.clipSpaceParams = computeClipSpaceParams(clipflags);
+
 	data.screenSizeParams.x = viewportW;
 	data.screenSizeParams.y = viewportH;
 
 	// The shader does pixcoord.y = gl_FragCoord.y * params.z + params.w.
 	// This lets us flip pixcoord.y when needed, to be consistent (drawing
 	// with no RT active makes the pixel coordinates y-flipped.)
-	if (gfx->isRenderTargetActive())
+	if (rt)
 	{
 		// No flipping: pixcoord.y = gl_FragCoord.y * 1.0 + 0.0.
 		data.screenSizeParams.z = 1.0f;
@@ -825,7 +840,7 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 	{
 		GLint location = builtinUniforms[BUILTIN_UNIFORMS_PER_DRAW];
 		if (location >= 0)
-			glUniform4fv(location, 12, (const GLfloat *) &data);
+			glUniform4fv(location, 13, (const GLfloat *) &data);
 		GLint location2 = builtinUniforms[BUILTIN_UNIFORMS_PER_DRAW_2];
 		if (location2 >= 0)
 			glUniform4fv(location2, 1, (const GLfloat *) &data.screenSizeParams);
@@ -834,7 +849,7 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 	{
 		GLint location = builtinUniforms[BUILTIN_UNIFORMS_PER_DRAW];
 		if (location >= 0)
-			glUniform4fv(location, 13, (const GLfloat *) &data);
+			glUniform4fv(location, 14, (const GLfloat *) &data);
 	}
 }
 
