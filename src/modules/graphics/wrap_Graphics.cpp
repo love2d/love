@@ -3900,6 +3900,34 @@ int w_inverseTransformPoint(lua_State *L)
 	return 2;
 }
 
+int w_setCustomProjection(lua_State *L)
+{
+	math::Transform *transform = luax_totype<math::Transform>(L, 1);
+	if (transform != nullptr)
+	{
+		instance()->setCustomProjection(transform->getMatrix());
+		return 0;
+	}
+
+	math::Transform::MatrixLayout layout = math::Transform::MATRIX_ROW_MAJOR;
+
+	int idx = 1;
+	if (lua_type(L, idx) == LUA_TSTRING)
+	{
+		const char* layoutstr = lua_tostring(L, idx);
+		if (!math::Transform::getConstant(layoutstr, layout))
+			return luax_enumerror(L, "matrix layout", math::Transform::getConstants(layout), layoutstr);
+
+		idx++;
+	}
+
+	float elements[16];
+	love::math::luax_checkmatrix(L, idx, layout, elements);
+
+	instance()->setCustomProjection(Matrix4(elements));
+	return 0;
+}
+
 int w_resetProjection(lua_State */*L*/)
 {
 	instance()->resetProjection();
@@ -4052,6 +4080,7 @@ static const luaL_Reg functions[] =
 	{ "transformPoint", w_transformPoint },
 	{ "inverseTransformPoint", w_inverseTransformPoint },
 
+	{ "setCustomProjection", w_setCustomProjection },
 	{ "resetProjection", w_resetProjection },
 
 	// Deprecated

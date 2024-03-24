@@ -30,6 +30,99 @@ Transform *luax_checktransform(lua_State *L, int idx)
 	return luax_checktype<Transform>(L, idx, Transform::type);
 }
 
+void luax_checkmatrix(lua_State *L, int idx, Transform::MatrixLayout layout, float elements[16])
+{
+	bool columnmajor = layout == Transform::MATRIX_COLUMN_MAJOR;
+
+	if (lua_istable(L, idx))
+	{
+		lua_rawgeti(L, idx, 1);
+		bool tableoftables = lua_istable(L, -1);
+		lua_pop(L, 1);
+
+		if (tableoftables)
+		{
+			if (columnmajor)
+			{
+				for (int column = 0; column < 4; column++)
+				{
+					lua_rawgeti(L, idx, column + 1);
+
+					for (int row = 0; row < 4; row++)
+					{
+						lua_rawgeti(L, -(row + 1), row + 1);
+						elements[column * 4 + row] = (float) luaL_checknumber(L, -1);
+					}
+
+					lua_pop(L, 4 + 1);
+				}
+			}
+			else
+			{
+				for (int row = 0; row < 4; row++)
+				{
+					lua_rawgeti(L, idx, row + 1);
+
+					for (int column = 0; column < 4; column++)
+					{
+						// The table has the matrix elements laid out in row-major
+						// order, but we need to store them column-major in memory.
+						lua_rawgeti(L, -(column + 1), column + 1);
+						elements[column * 4 + row] = (float) luaL_checknumber(L, -1);
+					}
+
+					lua_pop(L, 4 + 1);
+				}
+			}
+		}
+		else
+		{
+			if (columnmajor)
+			{
+				for (int column = 0; column < 4; column++)
+				{
+					for (int row = 0; row < 4; row++)
+					{
+						lua_rawgeti(L, idx, column * 4 + row + 1);
+						elements[column * 4 + row] = (float) luaL_checknumber(L, -1);
+					}
+				}
+			}
+			else
+			{
+				for (int column = 0; column < 4; column++)
+				{
+					for (int row = 0; row < 4; row++)
+					{
+						// The table has the matrix elements laid out in row-major
+						// order, but we need to store them column-major in memory.
+						lua_rawgeti(L, idx, row * 4 + column + 1);
+						elements[column * 4 + row] = (float) luaL_checknumber(L, -1);
+					}
+				}
+			}
+
+			lua_pop(L, 16);
+		}
+	}
+	else
+	{
+		if (columnmajor)
+		{
+			for (int i = 0; i < 16; i++)
+				elements[i] = (float) luaL_checknumber(L, idx + i);
+		}
+		else
+		{
+			for (int column = 0; column < 4; column++)
+			{
+				for (int row = 0; row < 4; row++)
+					elements[column * 4 + row] = (float) luaL_checknumber(L, row * 4 + column + idx);
+			}
+		}
+	}
+}
+
 int w_Transform_clone(lua_State *L)
 {
 	Transform *t = luax_checktransform(L, 1);
@@ -131,110 +224,20 @@ int w_Transform_setTransformation(lua_State *L)
 int w_Transform_setMatrix(lua_State *L)
 {
 	Transform *t = luax_checktransform(L, 1);
-
-	bool columnmajor = false;
+	Transform::MatrixLayout layout = Transform::MATRIX_ROW_MAJOR;
 
 	int idx = 2;
 	if (lua_type(L, idx) == LUA_TSTRING)
 	{
 		const char *layoutstr = lua_tostring(L, idx);
-		Transform::MatrixLayout layout;
 		if (!Transform::getConstant(layoutstr, layout))
 			return luax_enumerror(L, "matrix layout", Transform::getConstants(layout), layoutstr);
 
-		columnmajor = (layout == Transform::MATRIX_COLUMN_MAJOR);
 		idx++;
 	}
 
 	float elements[16];
-
-	if (lua_istable(L, idx))
-	{
-		lua_rawgeti(L, idx, 1);
-		bool tableoftables = lua_istable(L, -1);
-		lua_pop(L, 1);
-
-		if (tableoftables)
-		{
-			if (columnmajor)
-			{
-				for (int column = 0; column < 4; column++)
-				{
-					lua_rawgeti(L, idx, column + 1);
-
-					for (int row = 0; row < 4; row++)
-					{
-						lua_rawgeti(L, -(row + 1), row + 1);
-						elements[column * 4 + row] = (float) luaL_checknumber(L, -1);
-					}
-
-					lua_pop(L, 4 + 1);
-				}
-			}
-			else
-			{
-				for (int row = 0; row < 4; row++)
-				{
-					lua_rawgeti(L, idx, row + 1);
-
-					for (int column = 0; column < 4; column++)
-					{
-						// The table has the matrix elements laid out in row-major
-						// order, but we need to store them column-major in memory.
-						lua_rawgeti(L, -(column + 1), column + 1);
-						elements[column * 4 + row] = (float) luaL_checknumber(L, -1);
-					}
-
-					lua_pop(L, 4 + 1);
-				}
-			}
-		}
-		else
-		{
-			if (columnmajor)
-			{
-				for (int column = 0; column < 4; column++)
-				{
-					for (int row = 0; row < 4; row++)
-					{
-						lua_rawgeti(L, idx, column * 4 + row + 1);
-						elements[column * 4 + row] = (float) luaL_checknumber(L, -1);
-					}
-				}
-			}
-			else
-			{
-				for (int column = 0; column < 4; column++)
-				{
-					for (int row = 0; row < 4; row++)
-					{
-						// The table has the matrix elements laid out in row-major
-						// order, but we need to store them column-major in memory.
-						lua_rawgeti(L, idx, row * 4 + column + 1);
-						elements[column * 4 + row] = (float) luaL_checknumber(L, -1);
-					}
-				}
-			}
-
-			lua_pop(L, 16);
-		}
-	}
-	else
-	{
-		if (columnmajor)
-		{
-			for (int i = 0; i < 16; i++)
-				elements[i] = (float) luaL_checknumber(L, idx + i);
-		}
-		else
-		{
-			for (int column = 0; column < 4; column++)
-			{
-				for (int row = 0; row < 4; row++)
-					elements[column * 4 + row] = (float) luaL_checknumber(L, row * 4 + column + idx);
-			}
-		}
-	}
+	luax_checkmatrix(L, idx, layout, elements);
 
 	t->setMatrix(Matrix4(elements));
 	lua_pushvalue(L, 1);

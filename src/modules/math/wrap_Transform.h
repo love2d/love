@@ -30,6 +30,7 @@ namespace math
 {
 
 Transform *luax_checktransform(lua_State *L, int idx);
+void luax_checkmatrix(lua_State *L, int idx, Transform::MatrixLayout layout, float elements[16]);
 extern "C" int luaopen_transform(lua_State *L);
 
 } // math
