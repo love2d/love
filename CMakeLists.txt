@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2023 LOVE Development Team
+# Copyright (c) 2006-2024 LOVE Development Team
 #
 # This software is provided 'as-is', without any express or implied
 # warranty.  In no event will the authors be held liable for any damages
@@ -60,7 +60,7 @@ else()
 endif()
 
 
-if(APPLE OR MEGA_ARM64)
+if(APPLE)
 	set(LOVE_DEFAULT_JIT FALSE)
 else()
 	set(LOVE_DEFAULT_JIT TRUE)

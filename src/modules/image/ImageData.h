@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -110,8 +110,6 @@ public:
 	 **/
 	love::filesystem::FileData *encode(FormatHandler::EncodedFormat format, const char *filename, bool writefile) const;
 
-	love::thread::Mutex *getMutex() const;
-
 	// Implements ImageDataBase.
 	ImageData *clone() const override;
 	void *getData() const override;
@@ -141,8 +139,6 @@ private:
 
 	// The actual data.
 	unsigned char *data = nullptr;
-
-	love::thread::MutexRef mutex;
 
 	// The format handler that was used to decode the ImageData. We need to know
 	// this so we can properly delete memory allocated by the decoder.

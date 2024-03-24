@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,7 @@ namespace math
 {
 
 Transform *luax_checktransform(lua_State *L, int idx);
+void luax_checkmatrix(lua_State *L, int idx, Transform::MatrixLayout layout, float elements[16]);
 extern "C" int luaopen_transform(lua_State *L);
 
 } // math

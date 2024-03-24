@@ -64,7 +64,7 @@ TestMethod = {
     table.insert(self.asserts, {
       key = 'assert ' .. tostring(self.count),
       passed = expected == actual,
-      message = 'expected \'' .. tostring(expected) .. '\' got \'' .. 
+      message = 'expected \'' .. tostring(expected) .. '\' got \'' ..
         tostring(actual) .. '\'',
       test = label or 'no label given'
     })
@@ -81,7 +81,7 @@ TestMethod = {
     table.insert(self.asserts, {
       key = 'assert ' .. tostring(self.count),
       passed = value == true,
-      message = 'expected \'true\' got \'' .. 
+      message = 'expected \'true\' got \'' ..
         tostring(value) .. '\'',
       test = label or 'no label given'
     })
@@ -98,7 +98,7 @@ TestMethod = {
     table.insert(self.asserts, {
       key = 'assert ' .. tostring(self.count),
       passed = value == false,
-      message = 'expected \'false\' got \'' .. 
+      message = 'expected \'false\' got \'' ..
         tostring(value) .. '\'',
       test = label or 'no label given'
     })
@@ -120,38 +120,6 @@ TestMethod = {
         tostring(actual) .. '\'',
       test = label or 'no label given'
     })
-  end,
-
-
-  -- @method - TestMethod:assertPixels()
-  -- @desc - checks a list of coloured pixels agaisnt given imgdata
-  -- @param {ImageData} imgdata - image data to check
-  -- @param {table} pixelchecks - map of colors to list of pixel coords, i.e.
-  --                              { blue = { {1, 1}, {2, 2}, {3, 4} } }
-  -- @return {nil}
-  assertPixels = function(self, imgdata, pixelchecks, label)
-    for i, v in pairs(pixelchecks) do
-      local col = self.colors[i]
-      local pixels = v
-      for p=1,#pixels do
-        local coord = pixels[p]
-        local tr, tg, tb, ta = imgdata:getPixel(coord[1], coord[2])
-        local compare_id = tostring(coord[1]) .. ',' .. tostring(coord[2])
-        -- prevent us getting stuff like 0.501960785 for 0.5 red 
-        tr = math.floor((tr*10)+0.5)/10
-        tg = math.floor((tg*10)+0.5)/10
-        tb = math.floor((tb*10)+0.5)/10
-        ta = math.floor((ta*10)+0.5)/10
-        col[1] = math.floor((col[1]*10)+0.5)/10
-        col[2] = math.floor((col[2]*10)+0.5)/10
-        col[3] = math.floor((col[3]*10)+0.5)/10
-        col[4] = math.floor((col[4]*10)+0.5)/10
-        self:assertEquals(col[1], tr, 'check pixel r for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
-        self:assertEquals(col[2], tg, 'check pixel g for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
-        self:assertEquals(col[3], tb, 'check pixel b for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
-        self:assertEquals(col[4], ta, 'check pixel a for ' .. i .. ' at ' .. compare_id .. '(' .. label .. ')')
-      end
-    end
   end,
 
 
@@ -197,7 +165,7 @@ TestMethod = {
 
 
   -- @method - TestMethod:assertGreaterEqual()
-  -- @desc - used to check a value is >= than a certain target value 
+  -- @desc - used to check a value is >= than a certain target value
   -- @param {any} target - value to check the test agaisnt
   -- @param {any} actual - actual value of the test
   -- @param {string} label - label for this test to use in exports
@@ -219,7 +187,7 @@ TestMethod = {
 
 
   -- @method - TestMethod:assertLessEqual()
-  -- @desc - used to check a value is <= than a certain target value 
+  -- @desc - used to check a value is <= than a certain target value
   -- @param {any} target - value to check the test agaisnt
   -- @param {any} actual - actual value of the test
   -- @param {string} label - label for this test to use in exports
@@ -241,7 +209,7 @@ TestMethod = {
 
 
   -- @method - TestMethod:assertObject()
-  -- @desc - used to check a table is a love object, this runs 3 seperate 
+  -- @desc - used to check a table is a love object, this runs 3 seperate
   --         tests to check table has the basic properties of an object
   -- @note - actual object functionality tests have their own methods
   -- @param {table} obj - table to check is a valid love object
@@ -270,7 +238,7 @@ TestMethod = {
     table.insert(self.asserts, {
       key = 'assert ' .. tostring(self.count),
       passed = passing,
-      message = 'expected \'' .. tostring(expected[1]) .. 'x,' .. 
+      message = 'expected \'' .. tostring(expected[1]) .. 'x,' ..
         tostring(expected[2]) .. 'y\' got \'' ..
         tostring(actual[1]) .. 'x,' .. tostring(actual[2]) .. 'y\'',
       test = label or 'no label given'
@@ -279,7 +247,7 @@ TestMethod = {
 
 
   -- @method - TestMethod:assertNotNil()
-  -- @desc - quick assert for value not nil 
+  -- @desc - quick assert for value not nil
   -- @param {any} value - value to check not nil
   -- @return {nil}
   assertNotNil = function (self, value, err)
@@ -296,34 +264,39 @@ TestMethod = {
 
 
   -- @method - TestMethod:compareImg()
-  -- @desc - compares a given image to the 'expected' version, with a tolerance of 
-  --         1px in any direction, and then saves it as the 'actual' version for 
+  -- @desc - compares a given image to the 'expected' version, with a tolerance of
+  --         1px in any direction, and then saves it as the 'actual' version for
   --         report viewing
   -- @param {table} imgdata - imgdata to save as a png
   -- @return {nil}
   compareImg = function(self, imgdata)
-    local expected = love.image.newImageData(
-      'tempoutput/expected/love.test.graphics.' .. self.method .. '-' .. 
-      tostring(self.imgs) .. '.png'
-    )
-    local iw = imgdata:getWidth()-2
-    local ih = imgdata:getHeight()-2
+    local expected_path = 'tempoutput/expected/love.test.graphics.' ..
+      self.method .. '-' .. tostring(self.imgs) .. '.png'
+    local ok, chunk, _ = pcall(love.image.newImageData, expected_path)
+    if ok == false then return self:assertEquals(true, false, chunk) end
+    local expected = chunk
+    local iw = imgdata:getWidth()-1
+    local ih = imgdata:getHeight()-1
+    local differences = {}
     local rgba_tolerance = self.rgba_tolerance * (1/255)
-    for ix=2,iw do
-      for iy=2,ih do
+
+    -- for each pixel, compare the expected vs the actual pixel data
+    -- by default rgba_tolerance is 0
+    for ix=0,iw do
+      for iy=0,ih do
         local ir, ig, ib, ia = imgdata:getPixel(ix, iy)
         local points = {
           {expected:getPixel(ix, iy)}
         }
         if self.pixel_tolerance > 0 then
-          table.insert(points, {expected:getPixel(ix-1, iy+1)})
-          table.insert(points, {expected:getPixel(ix-1, iy)})
-          table.insert(points, {expected:getPixel(ix-1, iy-1)})
-          table.insert(points, {expected:getPixel(ix, iy+1)})
-          table.insert(points, {expected:getPixel(ix, iy-1)})
-          table.insert(points, {expected:getPixel(ix+1, iy+1)})
-          table.insert(points, {expected:getPixel(ix+1, iy)})
-          table.insert(points, {expected:getPixel(ix+1, iy-1)})
+          if ix > 0 and iy < ih-1 then table.insert(points, {expected:getPixel(ix-1, iy+1)}) end
+          if ix > 0 then table.insert(points, {expected:getPixel(ix-1, iy)}) end
+          if ix > 0 and iy > 0 then table.insert(points, {expected:getPixel(ix-1, iy-1)}) end
+          if iy < ih-1 then table.insert(points, {expected:getPixel(ix, iy+1)}) end
+          if iy > 0 then table.insert(points, {expected:getPixel(ix, iy-1)}) end
+          if ix < iw-1 and iy < ih-1 then table.insert(points, {expected:getPixel(ix+1, iy+1)}) end
+          if ix < iw-1 then table.insert(points, {expected:getPixel(ix+1, iy)}) end
+          if ix < iw-1 and iy > 0 then table.insert(points, {expected:getPixel(ix+1, iy-1)}) end
         end
         local has_match_r = false
         local has_match_g = false
@@ -348,12 +321,54 @@ TestMethod = {
           tostring(ix) .. ',' .. tostring(iy) .. ', matching = ' .. ymatch ..
           ', not matching = ' .. nmatch .. ' (' .. self.method .. '-' .. tostring(self.imgs) .. ')'
         )
+        -- add difference co-ord for rendering later
+        if matching ~= true then
+          table.insert(differences, ix+1)
+          table.insert(differences, iy+1)
+        end
       end
     end
-    local path = 'tempoutput/actual/love.test.graphics.' .. 
+    local path = 'tempoutput/actual/love.test.graphics.' ..
       self.method .. '-' .. tostring(self.imgs) .. '.png'
     imgdata:encode('png', path)
+
+    -- if we have differences draw them to a new canvas to display in HTML report
+    local dpath = 'tempoutput/difference/love.test.graphics.' ..
+      self.method .. '-' .. tostring(self.imgs) .. '.png'
+    if #differences > 0 then
+      local difference = love.graphics.newCanvas(iw+1, ih+1)
+      love.graphics.setCanvas(difference)
+        love.graphics.clear(0, 0, 0, 1)
+        love.graphics.setColor(1, 0, 1, 1)
+        love.graphics.points(differences)
+        love.graphics.setColor(1, 1, 1, 1)
+      love.graphics.setCanvas()
+      love.graphics.readbackTexture(difference):encode('png', dpath)
+
+    -- otherwise clear the old difference file (if any) to stop it coming up 
+    -- in future reports when there's no longer a difference
+    elseif love.filesystem.openFile(dpath, 'r') then
+      love.filesystem.remove(dpath)
+    end
+
     self.imgs = self.imgs + 1
+  end,
+
+
+  -- @method - TestMethod:exportImg()
+  -- @desc - exports the given imgdata to the 'output/expected/' folder, to use when
+  --         writing new graphics tests to set the expected image output
+  -- @NOTE - you should not leave this method in when you are finished this is
+  --         for test writing only
+  -- @param {table} imgdata - imgdata to save as a png
+  -- @param {integer} imgdata - index of the png, graphic tests are run sequentially
+  --                            and each test image is numbered in order that its
+  --                            compared to, so set the number here to match
+  -- @return {nil}
+  exportImg = function(self, imgdata, index)
+    local path = 'tempoutput/expected/love.test.graphics.' ..
+      self.method .. '-' .. tostring(index) .. '.png'
+    imgdata:encode('png', path)
   end,
 
 
@@ -367,11 +382,19 @@ TestMethod = {
   end,
 
 
+  -- @method - TestMethod:waitFrames()
+  -- @desc - yields the method for x amount of frames
+  -- @param {number} frames - no. frames to wait
+  -- @return {nil}
   waitFrames = function(self, frames)
-    for i=1,frames do coroutine.yield() end
+    for _=1,frames do coroutine.yield() end
   end,
 
 
+  -- @method - TestMethod:waitSeconds()
+  -- @desc - yields the method for x amount of seconds
+  -- @param {number} seconds - no. seconds to wait
+  -- @return {nil}
   waitSeconds = function(self, seconds)
     local start = love.timer.getTime()
     while love.timer.getTime() < start + seconds do
@@ -380,73 +403,117 @@ TestMethod = {
   end,
 
 
+  -- @method - TestMethod:isOS()
+  -- @desc - checks for a specific OS (or list of OSs)
+  -- @param {string/s} - each arg passed will be checked as a valid OS, as long
+  --                     as one passed the function will return true
+  -- @return {boolean} - returns true if one of the OSs given matches actual OS
+  isOS = function(self, ...)
+    for os=1,select("#", ...) do
+      if select(os, ...) == love.test.current_os then return true end
+    end
+    return false
+  end,
+
+  -- @method - TestMethod:isLuaVersion()
+  -- @desc - checks for a specific Lua version (or list of versions)
+  -- @param {number} - the minimum Lua version to check against
+  -- @return {boolean} - returns true if the current Lua version is at least the given version
+  isAtLeastLuaVersion = function(self, version)
+    return love.test.lua_version >= version
+  end,
+
+  -- @method - TestMethod:isLuaJITEnabled()
+  -- @desc - checks if LuaJIT is enabled
+  -- @return {boolean} - returns true if LuaJIT is enabled
+  isLuaJITEnabled = function(self)
+    return love.test.has_lua_jit
+  end,
+
   -- @method - TestMethod:evaluateTest()
   -- @desc - evaluates the results of all assertions for a final restult
   -- @return {nil}
   evaluateTest = function(self)
     local failure = ''
     local failures = 0
+
+    -- check all asserts for failures, additional failures are also printed
+    local assert_failures = {}
     for a=1,#self.asserts do
-      -- @TODO show all failed assertion methods?
-      -- currently just shows the first assert that failed
       if not self.asserts[a].passed and not self.skipped then
         if failure == '' then failure = self.asserts[a] end
+        table.insert(assert_failures, self.asserts[a])
         failures = failures + 1
       end
     end
     if self.fatal ~= '' then failure = self.fatal end
     local passed = tostring(#self.asserts - failures)
     local total = '(' .. passed .. '/' .. tostring(#self.asserts) .. ')'
+
+    -- skipped tests have a special log
     if self.skipped then
       self.testmodule.skipped = self.testmodule.skipped + 1
       love.test.totals[3] = love.test.totals[3] + 1
-      self.result = { 
-        total = '', 
-        result = "SKIP", 
-        passed = false, 
-        message = '(0/0) - method skipped [' .. self.skipreason .. ']'
+      self.result = {
+        total = '',
+        result = "SKIP",
+        passed = false,
+        message = '(0/0) - method skipped [' .. self.skipreason .. ']',
+        failures = {}
       }
     else
+
+      -- if no failure but has asserts, then passed
       if failure == '' and #self.asserts > 0 then
         self.passed = true
         self.testmodule.passed = self.testmodule.passed + 1
         love.test.totals[1] = love.test.totals[1] + 1
-        self.result = { 
-          total = total, 
-          result = 'PASS', 
-          passed = true, 
-          message = nil
+        self.result = {
+          total = total,
+          result = 'PASS',
+          passed = true,
+          message = nil,
+          failures = {}
         }
+
+      -- otherwise it failed
       else
         self.passed = false
         self.testmodule.failed = self.testmodule.failed + 1
         love.test.totals[2] = love.test.totals[2] + 1
+
+        -- no asserts means invalid test
         if #self.asserts == 0 then
           local msg = 'no asserts defined'
           if self.fatal ~= '' then msg = self.fatal end
-          self.result = { 
-            total = total, 
-            result = 'FAIL', 
-            passed = false, 
-            key = 'test', 
-            message = msg 
+          self.result = {
+            total = total,
+            result = 'FAIL',
+            passed = false,
+            key = 'test',
+            message = msg,
+            failures = {}
           }
+
+        -- otherwise we had failures, log the first and supply the list of
+        -- additional failures if any for printResult()
         else
           local key = failure['key']
           if failure['test'] ~= nil then
             key = key .. ' [' .. failure['test'] .. ']'
           end
           local msg = failure['message']
-          if self.fatal ~= '' then 
+          if self.fatal ~= '' then
             key = 'code'
             msg = self.fatal
           end
-          self.result = { 
-            total = total, 
-            result = 'FAIL', 
-            passed = false, 
+          self.result = {
+            total = total,
+            result = 'FAIL',
+            passed = false,
             key = key,
-            message = msg
+            message = msg,
+            failures = assert_failures
           }
         end
       end
@@ -494,25 +561,25 @@ TestMethod = {
     local preview = ''
     if self.testmodule.module == 'graphics' then
       local filename = 'love.test.graphics.' .. self.method
-      if love.filesystem.openFile('tempoutput/actual/' .. filename .. '-1.png', 'r') then
-        preview = '<div class="preview">' .. '<img src="expected/' .. filename .. '-1.png"/><p>Expected</p></div>' ..
-          '<div class="preview">' .. '<img src="actual/' .. filename .. '-1.png"/><p>Actual</p></div>'
-      end
-      if love.filesystem.openFile('tempoutput/actual/' .. filename .. '-2.png', 'r') then
-        preview = preview .. '<div class="preview">' .. '<img src="expected/' .. filename .. '-2.png"/><p>Expected</p></div>' ..
-          '<div class="preview">' .. '<img src="actual/' .. filename .. '-2.png"/><p>Actual</p></div>'
-      end
-      if love.filesystem.openFile('tempoutput/actual/' .. filename .. '-3.png', 'r') then
-        preview = preview .. '<div class="preview">' .. '<img src="expected/' .. filename .. '-3.png"/><p>Expected</p></div>' ..
-          '<div class="preview">' .. '<img src="actual/' .. filename .. '-3.png"/><p>Actual</p></div>'
+      for f=1,5 do
+        local fstr = tostring(f)
+        if love.filesystem.openFile('tempoutput/actual/' .. filename .. '-' .. fstr .. '.png', 'r') then
+          preview = preview .. '<div class="preview-wrap">'
+          preview = preview .. '<div class="preview">' .. '<img src="expected/' .. filename .. '-' .. fstr .. '.png"/><p>Expected</p></div>' ..
+            '<div class="preview">' .. '<img src="actual/' .. filename .. '-' .. fstr .. '.png"/><p>Actual</p></div>'
+          if love.filesystem.openFile('tempoutput/difference/' .. filename .. '-' .. fstr .. '.png', 'r') then
+            preview = preview .. '<div class="preview">' .. '<img src="difference/' .. filename .. '-' .. fstr .. '.png"/><p>Difference</p></div>'
+          end
+          preview = preview .. '</div>'
+        end
       end
     end
 
-    -- append HTML for the test class result 
-    local status = '🔴'
+    -- append HTML for the test class result
+    local status = ''
     local cls = 'red'
-    if self.passed then status = '🟢'; cls = '' end
-    if self.skipped then status = '🟡'; cls = '' end
+    if self.passed then status = '<div class="icon pass"></div>'; cls = 'green' end
+    if self.skipped then status = ''; cls = 'yellow' end
     self.testmodule.html = self.testmodule.html ..
       '<tr class=" ' .. cls .. '">' ..
         '<td>' .. status .. '</td>' ..
@@ -541,6 +608,21 @@ TestMethod = {
       ' ==> ' .. self.result.result .. ' - ' .. endtime .. 's ' ..
       self.result.total .. msg
     )
+
+    -- if we failed on multiple asserts, list them here - makes it easier for
+    -- debugging new methods added that are failing multiple asserts
+    if #self.result.failures > 1 then
+      for f=2,#self.result.failures do
+        local addf = self.result.failures[f]
+        self.testmodule:log(
+          self.testmodule.colors[self.result.result],
+          '  ' .. tested .. matching,
+          ' ==> ' ..
+          addf['key'] .. ' [' .. addf['test'] .. '] failed - ' .. addf['message']
+        )
+      end
+    end
+
   end
 
 

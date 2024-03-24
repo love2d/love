@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -57,13 +57,9 @@ static void clampToWindow(double *x, double *y)
 		window->clampPositionInWindow(x, y);
 }
 
-const char *Mouse::getName() const
-{
-	return "love.mouse.sdl";
-}
-
 Mouse::Mouse()
-	: curCursor(nullptr)
+	: love::mouse::Mouse("love.mouse.sdl")
+	, curCursor(nullptr)
 {
 	// SDL may need the video subsystem in order to clean up the cursor when
 	// quitting. Subsystems are reference-counted.

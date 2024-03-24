@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -116,10 +116,6 @@ public:
 
 	DataModule();
 	virtual ~DataModule();
-
-	// Implements Module.
-	ModuleType getModuleType() const override { return M_DATA; }
-	const char *getName() const override { return "love.data"; }
 
 	DataView *newDataView(Data *data, size_t offset, size_t size);
 	ByteData *newByteData(size_t size);

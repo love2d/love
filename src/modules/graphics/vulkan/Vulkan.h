@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -81,7 +81,7 @@ public:
 	static VkIndexType getVulkanIndexBufferType(IndexDataType type);
 
 	static void cmdTransitionImageLayout(
-		VkCommandBuffer, VkImage, VkImageLayout oldLayout, VkImageLayout newLayout,
+		VkCommandBuffer, VkImage, PixelFormat format, VkImageLayout oldLayout, VkImageLayout newLayout,
 		uint32_t baseLevel = 0, uint32_t levelCount = VK_REMAINING_MIP_LEVELS, uint32_t baseLayer = 0, uint32_t layerCount = VK_REMAINING_ARRAY_LAYERS);
 };
 

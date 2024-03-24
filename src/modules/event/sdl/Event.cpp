@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -156,12 +156,8 @@ static int SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
 	return 1;
 }
 
-const char *Event::getName() const
-{
-	return "love.event.sdl";
-}
-
 Event::Event()
+	: love::event::Event("love.event.sdl")
 {
 	if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
 		throw love::Exception("Could not initialize SDL events subsystem (%s)", SDL_GetError());

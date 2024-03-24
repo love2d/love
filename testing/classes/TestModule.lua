@@ -82,8 +82,8 @@ TestModule = {
   -- @return {nil}
   printResult = function(self)
     local finaltime = UtilTimeFormat(self.time)
-    local status = '🔴'
-    if self.failed == 0 then status = '🟢' end
+    local status = '<div class="icon fail"></div>'
+    if self.failed == 0 then status = '<div class="icon pass"></div>' end
     -- add md row to main output
     love.test.mdrows = love.test.mdrows .. '| ' .. status .. 
       ' ' .. self.module .. 
@@ -98,13 +98,23 @@ TestModule = {
       '" skipped="' .. tostring(self.skipped) ..
       '" time="' .. finaltime .. '">\n' .. self.xml .. '\t</testsuite>\n'
     -- add html to main output
-    love.test.html = love.test.html .. '<h2>' .. status .. '&nbsp;love.' .. self.module .. '</h2><ul class="summary">' ..
-      '<li>🟢&nbsp;' .. tostring(self.passed) .. ' Tests</li>' ..
-      '<li>🔴&nbsp;' .. tostring(self.failed) .. ' Failures</li>' ..
-      '<li>🟡&nbsp;' .. tostring(self.skipped) .. ' Skipped</li>' ..
-      '<li>' .. finaltime .. 's</li>' .. '<ul><br/><br/>' ..
+    local module_cls = 'toggle close'
+    local module_txt = '▶'
+    local wrap_cls = ''
+    if self.failed > 0 then
+      module_cls = 'toggle open'
+      module_txt = '▼'
+      wrap_cls = 'fail'
+    end
+    love.test.html = love.test.html .. '<div class="module ' .. wrap_cls .. '">' ..
+      '<div class="' .. module_cls .. '" onclick="toggle(this)">' .. module_txt .. '</div>' .. 
+      '<h2>' .. status .. '&nbsp;love.' .. self.module .. '</h2><ul class="summary">' ..
+      '<li class="l' .. tostring(self.passed) .. '">' .. tostring(self.passed) .. ' Passed</li>' ..
+      '<li class="l' .. tostring(self.failed) .. '">' .. tostring(self.failed) .. ' Failed</li>' ..
+      '<li class="l' .. tostring(self.skipped) .. '">' .. tostring(self.skipped) .. ' Skipped</li>' ..
+      '<li>' .. finaltime .. 's</li>' .. '</ul><br/><br/>' ..
       '<table><thead><tr><td width="20px"></td><td width="100px">Method</td><td width="60px">Time</td><td>Details</td></tr></thead><tbody>' ..
-      self.html .. '</tbody></table>'
+      self.html .. '</tbody></table></div>'
     -- print module results to console
     self:log('yellow', 'love.' .. self.module .. '.testmodule.end')
     local failedcol = '\27[31m'

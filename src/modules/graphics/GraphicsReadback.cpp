@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -192,6 +192,7 @@ GraphicsReadback::Status GraphicsReadback::readbackBuffer(Buffer *buffer, size_t
 
 		if (imageData.get())
 		{
+			// Always lock the mutex since the user can't know when to do it.
 			love::thread::Lock lock(imageData->getMutex());
 
 			if (imageData->getWidth() != rect.w)

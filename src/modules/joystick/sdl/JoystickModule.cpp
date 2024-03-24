@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -41,6 +41,7 @@ namespace sdl
 {
 
 JoystickModule::JoystickModule()
+	: love::joystick::JoystickModule("love.joystick.sdl")
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD) < 0)
@@ -89,11 +90,6 @@ JoystickModule::~JoystickModule()
 #else
 	SDL_QuitSubSystem(SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER);
 #endif
-}
-
-const char *JoystickModule::getName() const
-{
-	return "love.joystick.sdl";
 }
 
 love::joystick::Joystick *JoystickModule::getJoystick(int joyindex)

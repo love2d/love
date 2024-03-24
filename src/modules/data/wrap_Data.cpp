@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,7 @@
 
 #include "wrap_Data.h"
 #include "common/int.h"
+#include "thread/threads.h"
 
 // Put the Lua code directly into a raw string literal.
 static const char data_lua[] =
@@ -76,6 +77,26 @@ int w_Data_getSize(lua_State *L)
 	Data *t = luax_checkdata(L, 1);
 	lua_pushnumber(L, (lua_Number) t->getSize());
 	return 1;
+}
+
+int w_Data_performAtomic(lua_State *L)
+{
+	Data *t = luax_checkdata(L, 1);
+	int err = 0;
+
+	{
+		love::thread::Lock lock(t->getMutex());
+		// call the function, passing any user-specified arguments.
+		err = lua_pcall(L, lua_gettop(L) - 2, LUA_MULTRET, 0);
+	}
+
+	// Unfortunately, this eats the stack trace, too bad.
+	if (err != 0)
+		return lua_error(L);
+
+	// The function and everything after it in the stack are eaten by the pcall,
+	// leaving only the Data object. Everything else is a return value.
+	return lua_gettop(L) - 1;
 }
 
 template <typename T>
@@ -139,16 +160,6 @@ int w_Data_getUInt32(lua_State* L)
 	return w_Data_getT<uint32>(L);
 }
 
-int w_Data_getInt64(lua_State* L)
-{
-	return w_Data_getT<int64>(L);
-}
-
-int w_Data_getUInt64(lua_State* L)
-{
-	return w_Data_getT<uint64>(L);
-}
-
 // C functions in a struct, necessary for the FFI versions of Data methods.
 struct FFI_Data
 {
@@ -170,6 +181,7 @@ const luaL_Reg w_Data_functions[] =
 	{ "getPointer", w_Data_getPointer },
 	{ "getFFIPointer", w_Data_getFFIPointer },
 	{ "getSize", w_Data_getSize },
+	{ "performAtomic", w_Data_performAtomic },
 	{ "getFloat", w_Data_getFloat },
 	{ "getDouble", w_Data_getDouble },
 	{ "getInt8", w_Data_getInt8 },
@@ -178,8 +190,6 @@ const luaL_Reg w_Data_functions[] =
 	{ "getUInt16", w_Data_getUInt16 },
 	{ "getInt32", w_Data_getInt32 },
 	{ "getUInt32", w_Data_getUInt32 },
-	{ "getInt64", w_Data_getInt64 },
-	{ "getUInt64", w_Data_getUInt64 },
 	{ 0, 0 }
 };
 

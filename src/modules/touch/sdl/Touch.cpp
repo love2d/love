@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -35,6 +35,11 @@ namespace touch
 namespace sdl
 {
 
+Touch::Touch()
+	: love::touch::Touch("love.touch.sdl")
+{
+}
+
 const std::vector<Touch::TouchInfo> &Touch::getTouches() const
 {
 	return touches;
@@ -49,11 +54,6 @@ const Touch::TouchInfo &Touch::getTouch(int64 id) const
 	}
 
 	throw love::Exception("Invalid active touch ID: %d", id);
-}
-
-const char *Touch::getName() const
-{
-	return "love.touch.sdl";
 }
 
 void Touch::onEvent(Uint32 eventtype, const TouchInfo &info)

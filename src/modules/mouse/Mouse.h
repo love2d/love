@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -63,6 +63,12 @@ public:
 	virtual bool isGrabbed() const = 0;
 	virtual bool setRelativeMode(bool relative) = 0;
 	virtual bool getRelativeMode() const = 0;
+
+protected:
+
+	Mouse(const char *name)
+		: Module(M_MOUSE, name)
+	{}
 
 }; // Mouse
 

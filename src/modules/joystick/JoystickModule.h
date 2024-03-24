@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -35,9 +35,6 @@ class JoystickModule : public Module
 public:
 
 	virtual ~JoystickModule() {}
-
-	// Implements Module.
-	ModuleType getModuleType() const override { return M_JOYSTICK; }
 
 	/**
 	 * Adds a connected Joystick device and opens it for use.
@@ -100,6 +97,12 @@ public:
 	 * Gets the gamepad mapping string for the given GUID.
 	 **/
 	virtual std::string getGamepadMappingString(const std::string &guid) const = 0;
+
+protected:
+
+	JoystickModule(const char *name)
+		: Module(M_JOYSTICK, name)
+	{}
 
 }; // JoystickModule
 

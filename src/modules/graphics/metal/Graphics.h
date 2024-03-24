@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -60,13 +60,9 @@ public:
 	Graphics();
 	virtual ~Graphics();
 
-	// Implements Module.
-	const char *getName() const override { return "love.graphics.metal"; }
-
 	love::graphics::Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) override;
+	love::graphics::Texture *newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings) override;
 	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) override;
-
-	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
 
 	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
 	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
@@ -244,6 +240,7 @@ private:
 	StreamBuffer *uniformBuffer;
 	StreamBuffer::MapInfo uniformBufferData;
 	size_t uniformBufferOffset;
+	size_t uniformBufferGPUStart;
 
 	Buffer *defaultAttributesBuffer;
 

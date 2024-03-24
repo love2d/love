@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,14 +22,19 @@
 #define LOVE_DATA_H
 
 // LOVE
-#include "config.h"
 #include "Object.h"
 
 // C
 #include <stddef.h>
+#include <mutex>
 
 namespace love
 {
+
+namespace thread
+{
+class Mutex;
+}
 
 /**
  * This class is a simple abstraction over all objects which contain data.
@@ -40,10 +45,8 @@ public:
 
 	static love::Type type;
 
-	/**
-	 * Destructor.
-	 **/
-	virtual ~Data() {}
+	Data() {};
+	virtual ~Data();
 
 	/**
 	 * Creates a duplicate of Data derived class instance.
@@ -59,6 +62,17 @@ public:
 	 * Gets the size of the Data in bytes.
 	 **/
 	virtual size_t getSize() const = 0;
+
+	/**
+	 * Gets the Mutex associated with this Data object. Creates it in a thread-
+	 * safe manner if necessary.
+	 **/
+	love::thread::Mutex *getMutex();
+
+private:
+
+	love::thread::Mutex *mutex = nullptr;
+	std::once_flag mutexCreated;
 
 }; // Data
 

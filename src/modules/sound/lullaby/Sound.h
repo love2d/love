@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -47,9 +47,6 @@ public:
 
 	Sound();
 	virtual ~Sound();
-
-	/// @copydoc love::Module::getName
-	const char *getName() const override;
 
 	/// @copydoc love::sound::Sound::newDecoder
 	sound::Decoder *newDecoder(Stream *stream, int bufferSize) override;

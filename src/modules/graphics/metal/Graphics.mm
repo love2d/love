@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -263,7 +263,8 @@ struct DefaultVertexAttributes
 Graphics *Graphics::graphicsInstance = nullptr;
 
 Graphics::Graphics()
-	: device(nil)
+	: love::graphics::Graphics("love.graphics.metal")
+	, device(nil)
 	, commandQueue(nil)
 	, commandBuffer(nil)
 	, renderEncoder(nil)
@@ -279,6 +280,7 @@ Graphics::Graphics()
 	, attachmentStoreActions()
 	, renderBindings()
 	, uniformBufferOffset(0)
+	, uniformBufferGPUStart(0)
 	, defaultAttributesBuffer(nullptr)
 	, families()
 { @autoreleasepool {
@@ -340,6 +342,7 @@ Graphics::Graphics()
 		};
 
 		Buffer::Settings attribsettings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
+		attribsettings.debugName = "Default Vertex Attributes";
 
 		defaultAttributesBuffer = newBuffer(attribsettings, dataformat, &defaults, sizeof(DefaultVertexAttributes), 0);
 	}
@@ -432,6 +435,11 @@ love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings,
 	return new Texture(this, device, settings, data);
 }
 
+love::graphics::Texture *Graphics::newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings)
+{
+	return new Texture(this, device, base, viewsettings);
+}
+
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles)
 {
 	return new ShaderStage(this, stage, source, gles, cachekey);
@@ -455,12 +463,6 @@ love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod m
 love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty)
 {
 	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
-}
-
-Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool /*rendertotexture*/) const
-{
-	uint32 flags = DEVICE_PROJECTION_FLIP_Y;
-	return calculateDeviceProjection(projection, flags);
 }
 
 void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
@@ -913,8 +915,8 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 		const auto &rt = state.renderTargets.getFirstTarget();
 		if (rt.texture.get())
 		{
-			rtw = rt.texture->getPixelWidth();
-			rth = rt.texture->getPixelHeight();
+			rtw = rt.texture->getPixelWidth(rt.mipmap);
+			rth = rt.texture->getPixelHeight(rt.mipmap);
 		}
 		else
 		{
@@ -1028,14 +1030,19 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 	if (uniformBuffer->getSize() < uniformBufferOffset + size)
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
+		if (uniformBufferOffset > 0)
+			uniformBuffer->nextFrame();
 		uniformBuffer->release();
-		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, newsize);
+		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, newsize);
 		uniformBufferData = {};
 		uniformBufferOffset = 0;
 	}
 
 	if (uniformBufferData.data == nullptr)
+	{
 		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+		uniformBufferGPUStart = uniformBuffer->getGPUReadOffset();
+	}
 
 	memcpy(uniformBufferData.data + uniformBufferOffset, bufferdata, size);
 
@@ -1043,7 +1050,7 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 	int uniformindex = Shader::getUniformBufferBinding();
 
 	auto &bindings = renderBindings;
-	setBuffer(encoder, bindings, uniformindex, buffer, uniformBufferOffset);
+	setBuffer(encoder, bindings, uniformindex, buffer, uniformBufferGPUStart + uniformBufferOffset);
 
 	uniformBufferOffset += alignUp(size, alignment);
 
@@ -1120,12 +1127,15 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	// Same with point size.
 	builtins->normalMatrix[1].w = getPointSize();
 
+	uint32 flags = Shader::CLIP_TRANSFORM_Z_NEG1_1_TO_0_1;
+	builtins->clipSpaceParams = Shader::computeClipSpaceParams(flags);
+
 	builtins->screenSizeParams = Vector4(getPixelWidth(), getPixelHeight(), 1.0f, 0.0f);
-	auto rt = states.back().renderTargets.getFirstTarget().texture.get();
-	if (rt != nullptr)
+	auto rt = states.back().renderTargets.getFirstTarget();
+	if (rt.texture.get())
 	{
-		builtins->screenSizeParams.x = rt->getPixelWidth();
-		builtins->screenSizeParams.y = rt->getPixelHeight();
+		builtins->screenSizeParams.x = rt.texture->getPixelWidth(rt.mipmap);
+		builtins->screenSizeParams.y = rt.texture->getPixelHeight(rt.mipmap);
 	}
 
 	builtins->constantColor = getColor();
@@ -1134,14 +1144,19 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	if (uniformBuffer->getSize() < uniformBufferOffset + size)
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
+		if (uniformBufferOffset > 0)
+			uniformBuffer->nextFrame();
 		uniformBuffer->release();
-		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, newsize);
+		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, newsize);
 		uniformBufferData = {};
 		uniformBufferOffset = 0;
 	}
 
 	if (uniformBufferData.data == nullptr)
+	{
 		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+		uniformBufferGPUStart = uniformBuffer->getGPUReadOffset();
+	}
 
 	memcpy(uniformBufferData.data + uniformBufferOffset, bufferdata, size);
 
@@ -1149,8 +1164,8 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	int uniformindex = Shader::getUniformBufferBinding();
 
 	auto &bindings = renderBindings;
-	setBuffer(renderEncoder, bindings, SHADERSTAGE_VERTEX, uniformindex, buffer, uniformBufferOffset);
-	setBuffer(renderEncoder, bindings, SHADERSTAGE_PIXEL, uniformindex, buffer, uniformBufferOffset);
+	setBuffer(renderEncoder, bindings, SHADERSTAGE_VERTEX, uniformindex, buffer, uniformBufferGPUStart + uniformBufferOffset);
+	setBuffer(renderEncoder, bindings, SHADERSTAGE_PIXEL, uniformindex, buffer, uniformBufferGPUStart + uniformBufferOffset);
 
 	uniformBufferOffset += alignUp(size, alignment);
 

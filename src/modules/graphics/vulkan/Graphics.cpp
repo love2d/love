@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,7 @@
 #include "common/Exception.h"
 #include "common/pixelformat.h"
 #include "common/version.h"
+#include "common/memory.h"
 #include "window/Window.h"
 #include "Buffer.h"
 #include "Graphics.h"
@@ -60,11 +61,6 @@ static const std::vector<const char*> deviceExtensions = {
 
 constexpr uint32_t USAGES_POLL_INTERVAL = 5000;
 
-const char *Graphics::getName() const
-{
-	return "love.graphics.vulkan";
-}
-
 VkDevice Graphics::getDevice() const
 {
 	return device;
@@ -95,6 +91,7 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext)
 }
 
 Graphics::Graphics()
+	: love::graphics::Graphics("love.graphics.vulkan")
 {
 	if (SDL_Vulkan_LoadLibrary(nullptr))
 		throw love::Exception("could not find vulkan");
@@ -157,6 +154,7 @@ Graphics::~Graphics()
 {
 	defaultConstantTexCoord.set(nullptr);
 	defaultConstantColor.set(nullptr);
+	localUniformBuffer.set(nullptr);
 
 	Volatile::unloadAll();
 	cleanup();
@@ -170,6 +168,11 @@ Graphics::~Graphics()
 love::graphics::Texture *Graphics::newTexture(const love::graphics::Texture::Settings &settings, const love::graphics::Texture::Slices *data)
 {
 	return new Texture(this, settings, data);
+}
+
+love::graphics::Texture *Graphics::newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings)
+{
+	return new Texture(this, base, viewsettings);
 }
 
 love::graphics::Buffer *Graphics::newBuffer(const love::graphics::Buffer::Settings &settings, const std::vector<love::graphics::Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
@@ -383,61 +386,48 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 	if (renderPassState.active)
 		endRenderPass();
 
+	VkBuffer screenshotBuffer = VK_NULL_HANDLE;
+	VmaAllocation screenshotAllocation = VK_NULL_HANDLE;
+	VmaAllocationInfo screenshotAllocationInfo = {};
+
 	if (submitMode == SUBMIT_PRESENT)
 	{
 		if (pendingScreenshotCallbacks.empty())
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				swapChainImages.at(imageIndex),
+				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 		else
 		{
+			VkBufferCreateInfo bufferInfo{};
+			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			bufferInfo.size = 4ll * swapChainExtent.width * swapChainExtent.height;
+			bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+			VmaAllocationCreateInfo allocCreateInfo{};
+			allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+			allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+			auto result = vmaCreateBuffer(
+				vmaAllocator,
+				&bufferInfo,
+				&allocCreateInfo,
+				&screenshotBuffer,
+				&screenshotAllocation,
+				&screenshotAllocationInfo);
+
+			if (result != VK_SUCCESS)
+				throw love::Exception("failed to create screenshot readback buffer");
+
+			// TODO: swap chain images aren't guaranteed to support TRANSFER_SRC_BIT usage flags.
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				swapChainImages.at(imageIndex),
+				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				screenshotReadbackBuffers.at(currentFrame).image,
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-			VkImageBlit blit{};
-			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			blit.srcSubresource.layerCount = 1;
-			blit.srcOffsets[1] = {
-				static_cast<int>(swapChainExtent.width),
-				static_cast<int>(swapChainExtent.height),
-				1
-			};
-			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			blit.dstSubresource.layerCount = 1;
-			blit.dstOffsets[1] = {
-				static_cast<int>(swapChainExtent.width),
-				static_cast<int>(swapChainExtent.height),
-				1
-			};
-
-			vkCmdBlitImage(
-				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				screenshotReadbackBuffers.at(currentFrame).image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-				1, &blit,
-				VK_FILTER_NEAREST);
-
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex),
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				screenshotReadbackBuffers.at(currentFrame).image,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 			VkBufferImageCopy region{};
@@ -451,32 +441,17 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 
 			vkCmdCopyImageToBuffer(
 				commandBuffers.at(currentFrame),
-				screenshotReadbackBuffers.at(currentFrame).image,
+				swapChainImages.at(imageIndex),
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				screenshotReadbackBuffers.at(currentFrame).buffer,
+				screenshotBuffer,
 				1, &region);
 
-			addReadbackCallback([
-				w = swapChainExtent.width,
-				h = swapChainExtent.height,
-				pendingScreenshotCallbacks = pendingScreenshotCallbacks,
-				screenShotReadbackBuffer = screenshotReadbackBuffers.at(currentFrame),
-				screenshotCallbackData = screenshotCallbackData]() {
-				auto imageModule = Module::getInstance<love::image::Image>(M_IMAGE);
-
-				for (const auto &info : pendingScreenshotCallbacks)
-				{
-					image::ImageData *img = imageModule->newImageData(
-						w,
-						h,
-						PIXELFORMAT_RGBA8_UNORM,
-						screenShotReadbackBuffer.allocationInfo.pMappedData);
-					info.callback(&info, img, screenshotCallbackData);
-					img->release();
-				}
-			});
-
-			pendingScreenshotCallbacks.clear();
+			Vulkan::cmdTransitionImageLayout(
+				commandBuffers.at(currentFrame),
+				swapChainImages.at(imageIndex),
+				swapChainPixelFormat,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 		}
 	}
 
@@ -521,7 +496,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
 		throw love::Exception("failed to submit draw command buffer");
 	
-	if (submitMode == SUBMIT_NOPRESENT || submitMode == SUBMIT_RESTART)
+	if (submitMode == SUBMIT_NOPRESENT || submitMode == SUBMIT_RESTART || screenshotBuffer != VK_NULL_HANDLE)
 	{
 		vkQueueWaitIdle(graphicsQueue);
 
@@ -530,6 +505,64 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 			for (const auto &callback : callbacks)
 				callback();
 			callbacks.clear();
+		}
+
+		if (screenshotBuffer != VK_NULL_HANDLE)
+		{
+			auto imageModule = Module::getInstance<love::image::Image>(M_IMAGE);
+
+			for (int i = 0; i < (int)pendingScreenshotCallbacks.size(); i++)
+			{
+				const auto &info = pendingScreenshotCallbacks[i];
+				image::ImageData *img = nullptr;
+
+				try
+				{
+					img = imageModule->newImageData(
+						swapChainExtent.width,
+						swapChainExtent.height,
+						PIXELFORMAT_RGBA8_UNORM,
+						screenshotAllocationInfo.pMappedData);
+				}
+				catch (love::Exception &)
+				{
+					info.callback(&info, nullptr, nullptr);
+					for (int j = i + 1; j < (int)pendingScreenshotCallbacks.size(); j++)
+					{
+						const auto& ninfo = pendingScreenshotCallbacks[j];
+						ninfo.callback(&ninfo, nullptr, nullptr);
+					}
+					vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
+					pendingScreenshotCallbacks.clear();
+					throw;
+				}
+
+				uint8 *screenshot = (uint8*)img->getData();
+
+				if (swapChainImageFormat == VK_FORMAT_B8G8R8A8_UNORM || swapChainImageFormat == VK_FORMAT_B8G8R8A8_SRGB)
+				{
+					// Convert from BGRA to RGBA and replace alpha with full opacity.
+					for (size_t i = 0; i < img->getSize(); i += 4)
+					{
+						uint8 r = screenshot[i + 2];
+						screenshot[i + 2] = screenshot[i + 0];
+						screenshot[i + 0] = r;
+						screenshot[i + 3] = 255;
+					}
+				}
+				else
+				{
+					// Replace alpha with full opacity.
+					for (size_t i = 0; i < img->getSize(); i += 4)
+						screenshot[i + 3] = 255;
+				}
+
+				info.callback(&info, img, screenshotCallbackData);
+				img->release();
+			}
+
+			vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
+			pendingScreenshotCallbacks.clear();
 		}
 
 		if (submitMode == SUBMIT_RESTART)
@@ -637,7 +670,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 
 	createSwapChain();
 	createImageViews();
-	createScreenshotCallbackBuffers();
 	createColorResources();
 	createDepthResources();
 	transitionColorDepthLayouts = true;
@@ -648,6 +680,9 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 		createCommandBuffers();
 		createSyncObjects();
 	}
+
+	if (localUniformBuffer == nullptr)
+		localUniformBuffer.set(new StreamBuffer(this, BUFFERUSAGE_UNIFORM, 1024 * 512 * 1), Acquire::NORETAIN);
 
 	beginFrame();
 
@@ -1057,6 +1092,22 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 {
 	format = getSizedFormat(format);
 
+	switch (format)
+	{
+	case PIXELFORMAT_PVR1_RGB2_UNORM:
+	case PIXELFORMAT_PVR1_RGB2_sRGB:
+	case PIXELFORMAT_PVR1_RGB4_UNORM:
+	case PIXELFORMAT_PVR1_RGB4_sRGB:
+	case PIXELFORMAT_PVR1_RGBA2_UNORM:
+	case PIXELFORMAT_PVR1_RGBA2_sRGB:
+	case PIXELFORMAT_PVR1_RGBA4_UNORM:
+	case PIXELFORMAT_PVR1_RGBA4_sRGB:
+		// Lets not support these in Vulkan - they're deprecated.
+		return false;
+	default:
+		break;
+	}
+
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkFormatProperties formatProperties;
@@ -1188,12 +1239,6 @@ bool Graphics::dispatch(love::graphics::Shader *shader, love::graphics::Buffer *
 	return true;
 }
 
-Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const
-{
-	uint32 flags = DEVICE_PROJECTION_DEFAULT;
-	return calculateDeviceProjection(projection, flags);
-}
-
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
 {
 	if (renderPassState.active)
@@ -1277,6 +1322,7 @@ void Graphics::beginFrame()
 	Vulkan::cmdTransitionImageLayout(
 		commandBuffers.at(currentFrame),
 		swapChainImages[imageIndex],
+		swapChainPixelFormat,
 		VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -1286,6 +1332,7 @@ void Graphics::beginFrame()
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				depthImage,
+				depthStencilPixelFormat,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
@@ -1293,6 +1340,7 @@ void Graphics::beginFrame()
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				colorImage,
+				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -1301,9 +1349,11 @@ void Graphics::beginFrame()
 
 	Vulkan::resetShaderSwitches();
 
-	for (const auto shader : usedShadersInFrame)
+	for (const auto &shader : usedShadersInFrame)
 		shader->newFrame();
 	usedShadersInFrame.clear();
+
+	localUniformBuffer->nextFrame();
 }
 
 void Graphics::startRecordingGraphicsCommands()
@@ -1327,11 +1377,6 @@ void Graphics::endRecordingGraphicsCommands() {
 
 	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS)
 		throw love::Exception("failed to record command buffer");
-}
-
-const VkDeviceSize Graphics::getMinUniformBufferOffsetAlignment() const
-{
-	return minUniformBufferOffsetAlignment;
 }
 
 VkCommandBuffer Graphics::getCommandBufferForDataTransfer()
@@ -1379,8 +1424,22 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	// Same with point size.
 	data.normalMatrix[1].w = getPointSize();
 
-	data.screenSizeParams.x = static_cast<float>(swapChainExtent.width);
-	data.screenSizeParams.y = static_cast<float>(swapChainExtent.height);
+	// Flip y to convert input y-up [-1, 1] to vulkan's y-down [-1, 1].
+	// Convert input z [-1, 1] to vulkan [0, 1].
+	uint32 flags = Shader::CLIP_TRANSFORM_FLIP_Y | Shader::CLIP_TRANSFORM_Z_NEG1_1_TO_0_1;
+	data.clipSpaceParams = Shader::computeClipSpaceParams(flags);
+
+	const auto &rt = states.back().renderTargets.getFirstTarget();
+	if (rt.texture != nullptr)
+	{
+		data.screenSizeParams.x = rt.texture->getPixelWidth(rt.mipmap);
+		data.screenSizeParams.y = rt.texture->getPixelHeight(rt.mipmap);
+	}
+	else
+	{
+		data.screenSizeParams.x = getPixelWidth();
+		data.screenSizeParams.y = getPixelHeight();
+	}
 
 	data.screenSizeParams.z = 1.0f;
 	data.screenSizeParams.w = 0.0f;
@@ -1459,6 +1518,18 @@ void Graphics::pickPhysicalDevice()
 	deviceApiVersion = properties.apiVersion;
 
 	depthStencilFormat = findDepthFormat();
+	switch (depthStencilFormat)
+	{
+	case VK_FORMAT_D32_SFLOAT_S8_UINT:
+		depthStencilPixelFormat = PIXELFORMAT_DEPTH32_FLOAT_STENCIL8;
+		break;
+	case VK_FORMAT_D24_UNORM_S8_UINT:
+		depthStencilPixelFormat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+		break;
+	default:
+		throw love::Exception("Failed to convert vulkan depth/stencil swapchain pixel format %d to love PixelFormat.", depthStencilFormat);
+		break;
+	}
 }
 
 bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device)
@@ -1848,6 +1919,25 @@ void Graphics::createSwapChain()
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
 	preTransform = swapChainSupport.capabilities.currentTransform;
+
+	switch (swapChainImageFormat)
+	{
+	case VK_FORMAT_B8G8R8A8_SRGB:
+		swapChainPixelFormat = PIXELFORMAT_BGRA8_sRGB;
+		break;
+	case VK_FORMAT_B8G8R8A8_UNORM:
+		swapChainPixelFormat = PIXELFORMAT_BGRA8_UNORM;
+		break;
+	case VK_FORMAT_R8G8B8A8_SRGB:
+		swapChainPixelFormat = PIXELFORMAT_RGBA8_sRGB;
+		break;
+	case VK_FORMAT_R8G8B8A8_UNORM:
+		swapChainPixelFormat = PIXELFORMAT_RGBA8_UNORM;
+		break;
+	default:
+		throw love::Exception("Failed to convert vulkan depth/stencil swapchain image format %d to love PixelFormat.", swapChainImageFormat);
+		break;
+	}
 }
 
 VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
@@ -1980,65 +2070,6 @@ void Graphics::createImageViews()
 
 		if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews.at(i)) != VK_SUCCESS)
 			throw love::Exception("failed to create image views");
-	}
-}
-
-void Graphics::createScreenshotCallbackBuffers()
-{
-	screenshotReadbackBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-
-	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = 4ll * swapChainExtent.width * swapChainExtent.height;
-		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		VmaAllocationCreateInfo allocCreateInfo{};
-		allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
-		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-		auto result = vmaCreateBuffer(
-			vmaAllocator,
-			&bufferInfo,
-			&allocCreateInfo,
-			&screenshotReadbackBuffers.at(i).buffer,
-			&screenshotReadbackBuffers.at(i).allocation,
-			&screenshotReadbackBuffers.at(i).allocationInfo);
-
-		if (result != VK_SUCCESS)
-			throw love::Exception("failed to create screenshot readback buffer");
-
-		VkImageCreateInfo imageInfo{};
-		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-		imageInfo.extent = {
-			swapChainExtent.width,
-			swapChainExtent.height,
-			1
-		};
-		imageInfo.mipLevels = 1;
-		imageInfo.arrayLayers = 1;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-		imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-		VmaAllocationCreateInfo imageAllocCreateInfo{};
-
-		result = vmaCreateImage(
-			vmaAllocator, 
-			&imageInfo, 
-			&imageAllocCreateInfo, 
-			&screenshotReadbackBuffers.at(i).image, 
-			&screenshotReadbackBuffers.at(i).imageAllocation, 
-			nullptr);
-
-		if (result != VK_SUCCESS)
-			throw love::Exception("failed to create screenshot readback image");
 	}
 }
 
@@ -2272,7 +2303,7 @@ void Graphics::createVulkanVertexFormat(
 			attributeDescription.location = i;
 			attributeDescription.binding = bufferBinding;
 			attributeDescription.offset = attrib.offsetFromVertex;
-			attributeDescription.format = Vulkan::getVulkanVertexFormat(attrib.format);
+			attributeDescription.format = Vulkan::getVulkanVertexFormat(attrib.getFormat());
 
 			attributeDescriptions.push_back(attributeDescription);
 		}
@@ -2353,28 +2384,39 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		configuration.dynamicState.cullmode = cullmode;
 	}
 
-	std::vector<VkBuffer> bufferVector;
-	std::vector<VkDeviceSize> offsets;
+	VkBuffer vkbuffers[VertexAttributes::MAX + 2];
+	VkDeviceSize vkoffsets[VertexAttributes::MAX + 2];
+	int buffercount = 0;
 
-	for (uint32_t i = 0; i < VertexAttributes::MAX; i++)
+	uint32 allbits = buffers.useBits;
+	uint32 i = 0;
+	while (allbits)
 	{
-		if (buffers.useBits & (1u << i))
+		uint32 bit = 1u << i;
+
+		if (buffers.useBits & bit)
 		{
-			bufferVector.push_back((VkBuffer)buffers.info[i].buffer->getHandle());
-			offsets.push_back((VkDeviceSize)buffers.info[i].offset);
+			vkbuffers[buffercount] = (VkBuffer)buffers.info[i].buffer->getHandle();
+			vkoffsets[buffercount] = (VkDeviceSize)buffers.info[i].offset;
+			buffercount++;
 		}
+
+		i++;
+		allbits >>= 1;
 	}
 
 	if (!(attributes.enableBits & (1u << ATTRIB_TEXCOORD)))
 	{
-		bufferVector.push_back((VkBuffer)defaultConstantTexCoord->getHandle());
-		offsets.push_back((VkDeviceSize)0);
+		vkbuffers[buffercount] = (VkBuffer)defaultConstantTexCoord->getHandle();
+		vkoffsets[buffercount] = (VkDeviceSize)0;
+		buffercount++;
 	}
 
 	if (!(attributes.enableBits & (1u << ATTRIB_COLOR)))
 	{
-		bufferVector.push_back((VkBuffer)defaultConstantColor->getHandle());
-		offsets.push_back((VkDeviceSize)0);
+		vkbuffers[buffercount] = (VkBuffer)defaultConstantColor->getHandle();
+		vkoffsets[buffercount] = (VkDeviceSize)0;
+		buffercount++;
 	}
 
 	configuration.shader->setMainTex(texture);
@@ -2382,7 +2424,9 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	ensureGraphicsPipelineConfiguration(configuration);
 
 	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS);
-	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
+
+	if (buffercount > 0)
+		vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(buffercount), vkbuffers, vkoffsets);
 }
 
 void Graphics::setDefaultRenderPass()
@@ -2455,12 +2499,12 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 
 	FramebufferConfiguration configuration{};
 
-	std::vector<VkImage> transitionImages;
+	std::vector<std::tuple<VkImage, PixelFormat>> transitionImages;
 
 	for (const auto &color : rts.colors)
 	{
 		configuration.colorViews.push_back(dynamic_cast<Texture*>(color.texture)->getRenderTargetView(color.mipmap, color.slice));
-		transitionImages.push_back((VkImage) color.texture->getHandle());
+		transitionImages.push_back({ (VkImage)color.texture->getHandle(), color.texture->getPixelFormat() });
 	}
 	if (rts.depthStencil.texture != nullptr)
 		configuration.staticData.depthView = dynamic_cast<Texture*>(rts.depthStencil.texture)->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
@@ -2513,8 +2557,8 @@ void Graphics::startRenderPass()
 	renderPassState.framebufferConfiguration.staticData.renderPass = renderPassState.beginInfo.renderPass;
 	renderPassState.beginInfo.framebuffer = getFramebuffer(renderPassState.framebufferConfiguration);
 
-	for (const auto &image : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	for (const auto &[image, format] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
@@ -2525,8 +2569,8 @@ void Graphics::endRenderPass()
 
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 
-	for (const auto &image : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	for (const auto &[image, format] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	for (auto &colorAttachment : renderPassState.renderPassConfiguration.colorAttachments)
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -2855,6 +2899,23 @@ int Graphics::getVsync() const
 	return vsync;
 }
 
+void Graphics::mapLocalUniformData(void *data, size_t size, VkDescriptorBufferInfo &bufferInfo)
+{
+	size_t alignedSize = alignUp(size, minUniformBufferOffsetAlignment);
+
+	if (localUniformBuffer->getUsableSize() < alignedSize)
+		localUniformBuffer.set(new StreamBuffer(this, BUFFERUSAGE_UNIFORM, localUniformBuffer->getSize() * 2), Acquire::NORETAIN);
+
+	auto mapInfo = localUniformBuffer->map(size);
+	memcpy(mapInfo.data, data, size);
+
+	bufferInfo.buffer = (VkBuffer)localUniformBuffer->getHandle();
+	bufferInfo.offset = localUniformBuffer->unmap(size);
+	bufferInfo.range = size;
+
+	localUniformBuffer->markUsed(alignedSize);
+}
+
 void Graphics::createColorResources()
 {
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
@@ -3073,11 +3134,6 @@ void Graphics::cleanup()
 
 void Graphics::cleanupSwapChain()
 {
-	for (const auto &readbackBuffer : screenshotReadbackBuffers)
-	{
-		vmaDestroyBuffer(vmaAllocator, readbackBuffer.buffer, readbackBuffer.allocation);
-		vmaDestroyImage(vmaAllocator, readbackBuffer.image, readbackBuffer.imageAllocation);
-	}
 	if (colorImage)
 	{
 		vkDestroyImageView(device, colorImageView, nullptr);
@@ -3104,7 +3160,6 @@ void Graphics::recreateSwapChain()
 
 	createSwapChain();
 	createImageViews();
-	createScreenshotCallbackBuffers();
 	createColorResources();
 	createDepthResources();
 

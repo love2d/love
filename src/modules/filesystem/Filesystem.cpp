@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -45,7 +45,8 @@ namespace filesystem
 
 love::Type Filesystem::type("filesystem", &Module::type);
 
-Filesystem::Filesystem()
+Filesystem::Filesystem(const char *name)
+	: Module(M_FILESYSTEM, name)
 {
 }
 

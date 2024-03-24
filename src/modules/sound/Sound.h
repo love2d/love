@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -46,9 +46,6 @@ public:
 
 	virtual ~Sound();
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_SOUND; }
-
 	/**
 	 * Creates new SoundData from a decoder. Fully expands the
 	 * encoded sound data into raw sound data. Not recommended
@@ -88,6 +85,10 @@ public:
 	 * @return A Decoder object on success, or zero if no decoder could be found.
 	 **/
 	virtual Decoder *newDecoder(Stream *stream, int bufferSize) = 0;
+
+protected:
+
+	Sound(const char *name);
 
 }; // Sound
 

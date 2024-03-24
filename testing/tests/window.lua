@@ -8,6 +8,13 @@
 --------------------------------------------------------------------------------
 
 
+-- love.window.focus
+love.test.window.focus = function(test)
+  -- cant test as doesnt return anything
+  test:assertEquals('function', type(love.window.focus), 'check method exists')
+end
+
+
 -- love.window.fromPixels
 love.test.window.fromPixels = function(test)
   -- check dpi/pixel ratio as expected
@@ -351,19 +358,4 @@ love.test.window.updateMode = function(test)
     fullscreen = false,
     resizable = true
   })
-end
-
--- love.window.close
--- calling love.window.close() last as it will stop the main test image drawing
-love.test.window.z_close = function(test)
-  -- closing window should cause graphics to not be active
-  love.window.close()
-  local active = love.graphics.isActive()
-  test:assertFalse(active, 'check window not active')
-  -- should also mark the window as not open and not visible
-  test:assertFalse(love.window.isOpen(), 'check window closed')
-  test:assertFalse(love.window.isVisible(), 'check window not visible')
-  love.window.updateMode(360, 240) -- reset
-  active = love.graphics.isActive() 
-  test:assertTrue(active, 'check window active again')
 end

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@
 #include <memory>
 #include <functional>
 #include <set>
-
+#include <tuple>
 
 namespace love
 {
@@ -236,7 +236,7 @@ struct RenderpassState
 	RenderPassConfiguration renderPassConfiguration{};
 	FramebufferConfiguration framebufferConfiguration{};
 	VkPipeline pipeline = VK_NULL_HANDLE;
-	std::vector<VkImage> transitionImages;
+	std::vector<std::tuple<VkImage, PixelFormat>> transitionImages;
 	uint32_t numColorAttachments = 0;
 	float width = 0.0f;
 	float height = 0.0f;
@@ -247,16 +247,6 @@ struct RenderpassState
 	OptionalColorD mainWindowClearColorValue;
 	OptionalDouble mainWindowClearDepthValue;
 	OptionalInt mainWindowClearStencilValue;
-};
-
-struct ScreenshotReadbackBuffer
-{
-	VkBuffer buffer;
-	VmaAllocation allocation;
-	VmaAllocationInfo allocationInfo;
-
-	VkImage image;
-	VmaAllocation imageAllocation;
 };
 
 enum SubmitMode
@@ -274,14 +264,13 @@ public:
 	~Graphics();
 
 	// implementation for virtual functions
-	const char *getName() const override;
 	love::graphics::Texture *newTexture(const love::graphics::Texture::Settings &settings, const love::graphics::Texture::Slices *data) override;
+	love::graphics::Texture *newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings) override;
 	love::graphics::Buffer *newBuffer(const love::graphics::Buffer::Settings &settings, const std::vector<love::graphics::Buffer::DataDeclaration>& format, const void *data, size_t size, size_t arraylength) override;
 	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) override;
 	graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty) override;
 	void clear(OptionalColorD color, OptionalInt stencil, OptionalDouble depth) override;
 	void clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth) override;
-	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
 	void discard(const std::vector<bool>& colorbuffers, bool depthstencil) override;
 	void present(void *screenshotCallbackdata) override;
 	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
@@ -316,7 +305,6 @@ public:
 	void queueCleanUp(std::function<void()> cleanUp);
 	void addReadbackCallback(std::function<void()> callback);
 	void submitGpuCommands(SubmitMode, void *screenshotCallbackData = nullptr);
-	const VkDeviceSize getMinUniformBufferOffsetAlignment() const;
 	VkSampler getCachedSampler(const SamplerState &sampler);
 	void setComputeShader(Shader *computeShader);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
@@ -325,6 +313,9 @@ public:
 	VkSampleCountFlagBits getMsaaCount(int requestedMsaa) const;
 	void setVsync(int vsync);
 	int getVsync() const;
+	void mapLocalUniformData(void *data, size_t size, VkDescriptorBufferInfo &bufferInfo);
+
+	uint32 getDeviceApiVersion() const { return deviceApiVersion; }
 
 protected:
 	graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
@@ -353,7 +344,6 @@ private:
 	VkCompositeAlphaFlagBitsKHR chooseCompositeAlpha(const VkSurfaceCapabilitiesKHR &capabilities);
 	void createSwapChain();
 	void createImageViews();
-	void createScreenshotCallbackBuffers();
 	VkFramebuffer createFramebuffer(FramebufferConfiguration &configuration);
 	VkFramebuffer getFramebuffer(FramebufferConfiguration &configuration);
 	void createDefaultShaders();
@@ -406,7 +396,9 @@ private:
 	Matrix4 displayRotation;
 	std::vector<VkImage> swapChainImages;
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
+	PixelFormat swapChainPixelFormat = PIXELFORMAT_UNKNOWN;
 	VkFormat depthStencilFormat = VK_FORMAT_UNDEFINED;
+	PixelFormat depthStencilPixelFormat = PIXELFORMAT_UNKNOWN;
 	VkExtent2D swapChainExtent = VkExtent2D();
 	std::vector<VkImageView> swapChainImageViews;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -442,12 +434,12 @@ private:
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;
 	StrongRef<love::graphics::Buffer> defaultConstantColor;
 	StrongRef<love::graphics::Buffer> defaultConstantTexCoord;
+	StrongRef<StreamBuffer> localUniformBuffer;
 	// functions that need to be called to cleanup objects that were needed for rendering a frame.
 	// We need a vector for each frame in flight.
 	std::vector<std::vector<std::function<void()>>> cleanUpFunctions;
 	std::vector<std::vector<std::function<void()>>> readbackCallbacks;
-	std::vector<ScreenshotReadbackBuffer> screenshotReadbackBuffers;
-	std::set<Shader*> usedShadersInFrame;
+	std::set<StrongRef<Shader>> usedShadersInFrame;
 	RenderpassState renderPassState;
 };
 

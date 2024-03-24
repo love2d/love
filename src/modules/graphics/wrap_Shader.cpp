@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -446,7 +446,7 @@ int w_Shader_send(lua_State *L)
 	const char *name = luaL_checkstring(L, 2);
 
 	const Shader::UniformInfo *info = shader->getUniformInfo(name);
-	if (info == nullptr)
+	if (info == nullptr || !info->active)
 		return luaL_error(L, "Shader uniform '%s' does not exist.\nA common error is to define but not use the variable.", name);
 
 	if (luax_istype(L, 3, Data::type) || (info->baseType == Shader::UNIFORM_MATRIX && luax_istype(L, 4, Data::type)))
@@ -461,14 +461,11 @@ int w_Shader_sendColors(lua_State *L)
 	const char *name = luaL_checkstring(L, 2);
 
 	const Shader::UniformInfo *info = shader->getUniformInfo(name);
-	if (info == nullptr)
-	{
-		luax_pushboolean(L, false);
-		return 1;
-	}
+	if (info == nullptr || !info->active)
+		return luaL_error(L, "Shader uniform '%s' does not exist.\nA common error is to define but not use the variable.", name);
 
 	if (info->baseType != Shader::UNIFORM_FLOAT || info->components < 3)
-		return luaL_error(L, "sendColor can only be used on vec3 or vec4 uniforms.");
+		return luaL_error(L, "Shader:sendColor can only be used with vec3 or vec4 uniforms.");
 
 	if (luax_istype(L, 3, Data::type))
 		w_Shader_sendData(L, 3, shader, info, true);

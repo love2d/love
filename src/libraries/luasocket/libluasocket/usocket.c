@@ -236,7 +236,7 @@ int socket_sendto(p_socket ps, const char *data, size_t count, size_t *sent,
     *sent = 0;
     if (*ps == SOCKET_INVALID) return IO_CLOSED;
     for ( ;; ) {
-        long put = (long) sendto(*ps, data, count, 0, addr, len); 
+        long put = (long) sendto(*ps, data, count, 0, addr, len);
         if (put >= 0) {
             *sent = put;
             return IO_DONE;

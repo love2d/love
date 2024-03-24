@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -324,14 +324,6 @@ void OpenGL::setupContext()
 	setColorWriteMask(state.colorWriteMask);
 
 	contextInitialized = true;
-
-#ifdef LOVE_ANDROID
-	// This can't be done in initContext with the rest of the bug checks because
-	// isPixelFormatSupported relies on state initialized here / after init.
-	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (GLAD_ES_VERSION_3_0 && gfx != nullptr && !gfx->isPixelFormatSupported(PIXELFORMAT_R8_UNORM, PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET))
-		bugs.brokenR8PixelFormat = true;
-#endif
 }
 
 void OpenGL::deInitContext()
@@ -870,7 +862,7 @@ void OpenGL::setVertexAttributes(const VertexAttributes &attributes, const Buffe
 			int components = 0;
 			GLboolean normalized = GL_FALSE;
 			bool intformat = false;
-			GLenum gltype = getGLVertexDataType(attrib.format, components, normalized, intformat);
+			GLenum gltype = getGLVertexDataType(attrib.getFormat(), components, normalized, intformat);
 
 			const void *offsetpointer = reinterpret_cast<void*>(bufferinfo.offset + attrib.offsetFromVertex);
 
@@ -1344,7 +1336,17 @@ bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelform
 		glTexParameteri(gltarget, GL_TEXTURE_SWIZZLE_A, fmt.swizzle[3]);
 	}
 
-	if (isTexStorageSupported())
+	bool usetexstorage = isTexStorageSupported();
+
+	// The fallback for bugs.brokenR8PixelFormat is GL_LUMINANCE, which doesn't have a sized
+	// version in ES3 so it can't be used with glTexStorage.
+	if (pixelformat == PIXELFORMAT_R8_UNORM && bugs.brokenR8PixelFormat && GLAD_ES_VERSION_3_0)
+	{
+		usetexstorage = false;
+		fmt.internalformat = fmt.externalformat;
+	}
+
+	if (usetexstorage)
 	{
 		if (target == TEXTURE_2D || target == TEXTURE_CUBE)
 			glTexStorage2D(gltarget, levels, fmt.internalformat, width, height);
@@ -2162,8 +2164,6 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0
 			|| ((GLAD_ARB_framebuffer_sRGB || GLAD_EXT_framebuffer_sRGB) && (GLAD_VERSION_2_1 || GLAD_EXT_texture_sRGB)))
 			flags |= commonrender;
-		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
-			flags |= computewrite;
 		break;
 	case PIXELFORMAT_BGRA8_UNORM:
 	case PIXELFORMAT_BGRA8_sRGB:
@@ -2190,7 +2190,7 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		if (GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_half_float && GLAD_EXT_texture_rg))
 			flags |= commonsample;
-		if (GLAD_EXT_color_buffer_half_float && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg))
+		if ((GLAD_EXT_color_buffer_half_float || GLAD_EXT_color_buffer_float) && (GLAD_ES_VERSION_3_0 || GLAD_EXT_texture_rg))
 			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
@@ -2202,7 +2202,7 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		if (GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float)
 			flags |= commonsample;
-		if (GLAD_EXT_color_buffer_half_float)
+		if (GLAD_EXT_color_buffer_half_float || GLAD_EXT_color_buffer_float)
 			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
@@ -2218,6 +2218,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		if (GLAD_ES_VERSION_3_0 || (GLAD_OES_texture_float && GLAD_EXT_texture_rg))
 			flags |= commonsample;
+		if (GLAD_EXT_color_buffer_float)
+			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_half_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
 		if (GLAD_VERSION_4_3)
@@ -2228,6 +2230,8 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= commonsample | commonrender;
 		if (GLAD_ES_VERSION_3_0 || GLAD_OES_texture_float)
 			flags |= commonsample;
+		if (GLAD_EXT_color_buffer_float)
+			flags |= commonrender;
 		if (!(GLAD_VERSION_1_1 || GLAD_OES_texture_float_linear))
 			flags &= ~PIXELFORMATUSAGEFLAGS_LINEAR;
 		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_1)
@@ -2295,9 +2299,11 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 			flags |= computewrite;
 		break;
 	case PIXELFORMAT_RG11B10_FLOAT:
-		if (GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_texture_packed_float)
+		if (GLAD_ES_VERSION_3_1 || GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_texture_packed_float)
 			flags |= commonsample;
 		if (GLAD_VERSION_3_0 || GLAD_EXT_packed_float || GLAD_APPLE_color_buffer_packed_float)
+			flags |= commonrender;
+		if (GLAD_EXT_color_buffer_float)
 			flags |= commonrender;
 		if (GLAD_VERSION_4_3)
 			flags |= computewrite;
@@ -2506,6 +2512,8 @@ const char *OpenGL::debugSeverityString(GLenum severity)
 		return "medium";
 	case GL_DEBUG_SEVERITY_LOW:
 		return "low";
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		return "notification";
 	default:
 		return "unknown";
 	}

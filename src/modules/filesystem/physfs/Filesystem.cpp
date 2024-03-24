@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -107,7 +107,8 @@ static bool isAppCommonPath(Filesystem::CommonPath path)
 }
 
 Filesystem::Filesystem()
-	: appendIdentityToPath(false)
+	: love::filesystem::Filesystem("love.filesystem.physfs")
+	, appendIdentityToPath(false)
 	, fused(false)
 	, fusedSet(false)
 	, fullPaths()
@@ -126,11 +127,6 @@ Filesystem::~Filesystem()
 
 	if (PHYSFS_isInit())
 		PHYSFS_deinit();
-}
-
-const char *Filesystem::getName() const
-{
-	return "love.filesystem.physfs";
 }
 
 void Filesystem::init(const char *arg0)
@@ -249,8 +245,14 @@ bool Filesystem::setSource(const char *source)
 	if (hasFusedGame)
 	{
 		if (gameLoveIO)
-			// Actually we should just be able to mount gameLoveIO, but that's experimental.
+		{
+			if (PHYSFS_mountIo(gameLoveIO, ".zip", nullptr, 0)) {
+				gameSource = new_search_path;
+				return true;
+			}
+
 			gameLoveIO->destroy(gameLoveIO);
+		}
 		else
 		{
 			if (!love::android::initializeVirtualArchive())
@@ -278,6 +280,8 @@ bool Filesystem::setSource(const char *source)
 				gameSource = new_search_path;
 				return true;
 			}
+
+			io->destroy(io);
 		}
 	}
 #endif

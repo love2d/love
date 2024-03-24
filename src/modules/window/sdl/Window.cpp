@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -90,7 +90,8 @@ namespace sdl
 {
 
 Window::Window()
-	: open(false)
+	: love::window::Window("love.window.sdl")
+	, open(false)
 	, mouseGrabbed(false)
 	, window(nullptr)
 	, glcontext(nullptr)
@@ -1271,17 +1272,11 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	int bytesperpixel = (int) getPixelFormatBlockSize(imgd->getFormat());
 	int pitch = w * bytesperpixel;
 
-	SDL_Surface *sdlicon = nullptr;
-
-	{
-		// We don't want another thread modifying the ImageData mid-copy.
-		love::thread::Lock lock(imgd->getMutex());
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-		sdlicon = SDL_CreateSurfaceFrom(imgd->getData(), w, h, pitch, SDL_PIXELFORMAT_RGBA8888);
+	SDL_Surface *sdlicon = SDL_CreateSurfaceFrom(imgd->getData(), w, h, pitch, SDL_PIXELFORMAT_RGBA8888);
 #else
-		sdlicon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, bytesperpixel * 8, pitch, rmask, gmask, bmask, amask);
+	SDL_Surface *sdlicon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, bytesperpixel * 8, pitch, rmask, gmask, bmask, amask);
 #endif
-	}
 
 	if (!sdlicon)
 		return false;
@@ -1747,11 +1742,6 @@ void Window::requestAttention(bool continuous)
 #endif
 	
 	// TODO: Linux?
-}
-
-const char *Window::getName() const
-{
-	return "love.window.sdl";
 }
 
 } // sdl

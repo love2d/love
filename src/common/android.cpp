@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -385,18 +385,20 @@ struct AssetInfo: public love::filesystem::physfs::PhysfsIo<AssetInfo>
 		return 1;
 	}
 
-	AssetInfo *duplicate() const
+	AssetInfo(const AssetInfo &other)
+	: assetManager(other.assetManager)
+	, size(strlen(other.filename) + 1)
 	{
-		AAsset *newAsset = AAssetManager_open(assetManager, filename, AASSET_MODE_RANDOM);
+		asset = AAssetManager_open(assetManager, other.filename, AASSET_MODE_RANDOM);
 
-		if (newAsset == nullptr)
+		if (asset == nullptr)
 		{
 			PHYSFS_setErrorCode(PHYSFS_ERR_OS_ERROR);
-			return nullptr;
+			throw new love::Exception("Unable to duplicate AssetInfo");
 		}
 
-		AAsset_seek64(asset, tell(), SEEK_SET);
-		return fromAAsset(assetManager, filename, asset);
+		filename = new (std::nothrow) char[size];
+		memcpy(filename, other.filename, size);
 	}
 
 	~AssetInfo() override

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -343,6 +343,7 @@ GlyphData *BMFontRasterizer::getGlyphDataForIndex(int index) const
 	uint8 *pixels = (uint8 *) g->getData();
 	const uint8 *ipixels = (const uint8 *) imagedata->getData();
 
+	// Always lock the mutex since the user can't know when to do it.
 	love::thread::Lock lock(imagedata->getMutex());
 
 	// Copy the subsection of the texture from the ImageData to the GlyphData.

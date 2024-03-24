@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,7 @@ namespace theora
 {
 
 Video::Video()
+	: love::video::Video("love.video.theora")
 {
 	workerThread = new Worker();
 	workerThread->start();
@@ -49,11 +50,6 @@ VideoStream *Video::newVideoStream(love::filesystem::File *file)
 	TheoraVideoStream *stream = new TheoraVideoStream(file);
 	workerThread->addStream(stream);
 	return stream;
-}
-
-const char *Video::getName() const
-{
-	return "love.video.theora";
 }
 
 Worker::Worker()

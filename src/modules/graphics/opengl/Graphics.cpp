@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -106,7 +106,8 @@ love::graphics::Graphics *createInstance()
 }
 
 Graphics::Graphics()
-	: windowHasStencil(false)
+	: love::graphics::Graphics("love.graphics.opengl")
+	, windowHasStencil(false)
 	, mainVAO(0)
 	, internalBackbufferFBO(0)
 	, requestedBackbufferMSAA(0)
@@ -147,11 +148,6 @@ Graphics::~Graphics()
 	delete[] bufferMapMemory;
 }
 
-const char *Graphics::getName() const
-{
-	return "love.graphics.opengl";
-}
-
 love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
 {
 	return CreateStreamBuffer(type, size);
@@ -160,6 +156,11 @@ love::graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t
 love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings, const Texture::Slices *data)
 {
 	return new Texture(this, settings, data);
+}
+
+love::graphics::Texture *Graphics::newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings)
+{
+	return new Texture(this, base, viewsettings);
 }
 
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles)
@@ -185,18 +186,6 @@ love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod m
 love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod method, love::graphics::Texture *texture, int slice, int mipmap, const Rect &rect, image::ImageData *dest, int destx, int desty)
 {
 	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
-}
-
-Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const
-{
-	uint32 flags = DEVICE_PROJECTION_DEFAULT;
-
-	// The projection matrix is flipped compared to rendering to a texture, due
-	// to OpenGL considering (0,0) bottom-left instead of top-left.
-	if (!rendertotexture)
-		flags |= DEVICE_PROJECTION_FLIP_Y;
-
-	return calculateDeviceProjection(projection, flags);
 }
 
 void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
@@ -707,24 +696,27 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 
 static void APIENTRY debugCB(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei /*len*/, const GLchar *msg, const GLvoid* /*usr*/)
 {
+	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+		return;
+
 	// Human-readable strings for the debug info.
 	const char *sourceStr = OpenGL::debugSourceString(source);
 	const char *typeStr = OpenGL::debugTypeString(type);
 	const char *severityStr = OpenGL::debugSeverityString(severity);
 
-	const char *fmt = "OpenGL: %s [source=%s, type=%s, severity=%s, id=%d]\n";
-	printf(fmt, msg, sourceStr, typeStr, severityStr, id);
+	const char *fmt = "OpenGL: [source=%s, type=%s, severity=%s, id=%d]: %s\n";
+	printf(fmt, sourceStr, typeStr, severityStr, id, msg);
 }
 
 void Graphics::setDebug(bool enable)
 {
 	// Make sure debug output is supported. The AMD ext. is a bit different
 	// so we don't make use of it, since AMD drivers now support KHR_debug.
-	if (!(GLAD_VERSION_4_3 || GLAD_KHR_debug || GLAD_ARB_debug_output))
+	if (!(GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_2 || GLAD_KHR_debug || GLAD_ARB_debug_output))
 		return;
 
 	// TODO: We don't support GL_KHR_debug in GLES yet.
-	if (GLAD_ES_VERSION_2_0)
+	if (GLAD_ES_VERSION_2_0 && !GLAD_ES_VERSION_3_2)
 		return;
 
 	// Ugly hack to reduce code duplication.
@@ -740,7 +732,7 @@ void Graphics::setDebug(bool enable)
 		glDebugMessageCallback(nullptr, nullptr);
 
 		// We can disable debug output entirely with KHR_debug.
-		if (GLAD_VERSION_4_3 || GLAD_KHR_debug)
+		if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_2 || GLAD_KHR_debug)
 			glDisable(GL_DEBUG_OUTPUT);
 
 		return;
@@ -758,7 +750,7 @@ void Graphics::setDebug(bool enable)
 	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DONT_CARE, 0, 0, GL_FALSE);
 	glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR, GL_DONT_CARE, 0, 0, GL_FALSE);
 
-	if (GLAD_VERSION_4_3 || GLAD_KHR_debug)
+	if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_2 || GLAD_KHR_debug)
 		glEnable(GL_DEBUG_OUTPUT);
 
 	::printf("OpenGL debug output enabled (LOVE_GRAPHICS_DEBUG=1)\n");
@@ -1689,6 +1681,17 @@ void Graphics::initCapabilities()
 		pixelFormatUsage[i][0] = computePixelFormatUsage(format, false);
 		pixelFormatUsage[i][1] = computePixelFormatUsage(format, true);
 	}
+
+#ifdef LOVE_ANDROID
+	// This can't be done in initContext with the rest of the bug checks because
+	// isPixelFormatSupported relies on state initialized here / after init.
+	if (GLAD_ES_VERSION_3_0 && !isPixelFormatSupported(PIXELFORMAT_R8_UNORM, PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+	{
+		gl.bugs.brokenR8PixelFormat = true;
+		pixelFormatUsage[PIXELFORMAT_R8_UNORM][0] = computePixelFormatUsage(PIXELFORMAT_R8_UNORM, false);
+		pixelFormatUsage[PIXELFORMAT_R8_UNORM][1] = computePixelFormatUsage(PIXELFORMAT_R8_UNORM, true);
+	}
+#endif
 }
 
 uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)

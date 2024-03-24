@@ -1,0 +1,3 @@
+# Graphic Differences
+If a graphics test fails then a "difference" image will be created to highlight 
+the differences between the actual + expected image, for use in the HTML report

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -158,18 +158,15 @@ int w_ImageData_setPixel(lua_State *L)
 	return 0;
 }
 
-// ImageData:mapPixel. Not thread-safe! See wrap_ImageData.lua for the thread-
-// safe wrapper function.
-int w_ImageData__mapPixelUnsafe(lua_State *L)
+int w_ImageData_mapPixel(lua_State *L)
 {
 	ImageData *t = luax_checkimagedata(L, 1);
 	luaL_checktype(L, 2, LUA_TFUNCTION);
 
-	// No optints because we assume they're done in the wrapper function.
-	int sx = (int) lua_tonumber(L, 3);
-	int sy = (int) lua_tonumber(L, 4);
-	int w  = (int) lua_tonumber(L, 5);
-	int h  = (int) lua_tonumber(L, 6);
+	int sx = luaL_optint(L, 3, 0);
+	int sy = luaL_optint(L, 4, 0);
+	int w  = luaL_optint(L, 5, t->getWidth());
+	int h  = luaL_optint(L, 6, t->getHeight());
 
 	if (!(t->inside(sx, sy) && t->inside(sx+w-1, sy+h-1)))
 		return luaL_error(L, "Invalid rectangle dimensions.");
@@ -264,32 +261,9 @@ int w_ImageData_encode(lua_State *L)
 	return 1;
 }
 
-int w_ImageData__performAtomic(lua_State *L)
-{
-	ImageData *t = luax_checkimagedata(L, 1);
-	int err = 0;
-
-	{
-		love::thread::Lock lock(t->getMutex());
-		// call the function, passing any user-specified arguments.
-		err = lua_pcall(L, lua_gettop(L) - 2, LUA_MULTRET, 0);
-	}
-
-	// Unfortunately, this eats the stack trace, too bad.
-	if (err != 0)
-		return lua_error(L);
-
-	// The function and everything after it in the stack are eaten by the pcall,
-	// leaving only the ImageData object. Everything else is a return value.
-	return lua_gettop(L) - 1;
-}
-
 // C functions in a struct, necessary for the FFI versions of ImageData methods.
 struct FFI_ImageData
 {
-	void (*lockMutex)(Proxy *p);
-	void (*unlockMutex)(Proxy *p);
-
 	float (*float16to32)(float16 f);
 	float16 (*float32to16)(float f);
 
@@ -302,20 +276,6 @@ struct FFI_ImageData
 
 static FFI_ImageData ffifuncs =
 {
-	[](Proxy *p) // lockMutex
-	{
-		// We don't do any type-checking for the Proxy here since these functions
-		// are always called from code which has already done type checking.
-		ImageData *i = (ImageData *) p->object;
-		i->getMutex()->lock();
-	},
-
-	[](Proxy *p) // unlockMutex
-	{
-		ImageData *i = (ImageData *) p->object;
-		i->getMutex()->unlock();
-	},
-
 	float16to32,
 	float32to16,
 	float11to32,
@@ -336,12 +296,8 @@ static const luaL_Reg w_ImageData_functions[] =
 	{ "getPixel", w_ImageData_getPixel },
 	{ "setPixel", w_ImageData_setPixel },
 	{ "paste", w_ImageData_paste },
+	{ "mapPixel", w_ImageData_mapPixel },
 	{ "encode", w_ImageData_encode },
-
-	// Used in the Lua wrapper code.
-	{ "_mapPixelUnsafe", w_ImageData__mapPixelUnsafe },
-	{ "_performAtomic", w_ImageData__performAtomic },
-
 	{ 0, 0 }
 };
 

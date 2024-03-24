@@ -1,6 +1,6 @@
 # luasocket src/makefile
 #
-# Definitions in this section can be overriden on the command line or in the
+# Definitions in this section can be overridden on the command line or in the
 # environment.
 #
 # These are equivalent:
@@ -272,7 +272,7 @@ SOCKET_win64=wsocket.obj
 #
 SO=$(SO_$(PLAT))
 O=$(O_$(PLAT))
-SOCKET_V=3.0.0
+SOCKET_V=3.1.0
 MIME_V=1.0.3
 SOCKET_SO=socket-$(SOCKET_V).$(SO)
 MIME_SO=mime-$(MIME_V).$(SO)

@@ -2,7 +2,7 @@ name: continuous-integration
 on: [push, pull_request]
 
 jobs:
-  linux-os:
+  Linux:
     runs-on: ubuntu-22.04
     permissions:
       checks: write
@@ -25,12 +25,12 @@ jobs:
                                           libcurl4-openssl-dev libfuse2 wmctrl openbox mesa-vulkan-drivers \
                                           libvulkan1 vulkan-tools vulkan-validationlayers
     - name: Checkout love-appimage-source
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: love2d/love-appimage-source
         ref: 12.x
     - name: Checkout LÖVE
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: love2d-${{ github.sha }}
     - name: Get Dependencies for AppImage
@@ -61,60 +61,63 @@ jobs:
     - name: Run Test Suite (opengl)
       run: |
         chmod a+x love-${{ github.sha }}.AppImage
-        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner
+        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner
     - name: Love Test Report (opengl)
       id: report1
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite Linux
         title: test-report-linux-opengl
-        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+        path: love2d-${{ github.sha }}/testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengl)
       run: |
         7z a -tzip test-output-linux-opengl.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (opengl)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-output-linux-opengl-${{ steps.report1.outputs.conclusion }}
         path: test-output-linux-opengl.zip
     # linux opengles tests
     - name: Run Test Suite (opengles)
+      env:
+        LOVE_GRAPHICS_DEBUG: 1
       run: |
         export LOVE_GRAPHICS_USE_OPENGLES=1
-        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner
+        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner
     - name: Love Test Report (opengles)
       uses: ellraiser/love-test-report@main
       id: report2
       with:
         name: Love Testsuite Linux
         title: test-report-linux-opengles
-        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+        path: love2d-${{ github.sha }}/testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengles)
       run: |
         7z a -tzip test-output-linux-opengles.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (opengles)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-output-linux-opengles-${{ steps.report2.outputs.conclusion }}
         path: test-output-linux-opengles.zip
 #    # linux vulkan tests
 #    - name: Run Test Suite (vulkan)
+#      env:
+#        LOVE_GRAPHICS_DEBUG: 1
 #      run: |
-#        export LOVE_GRAPHICS_DEBUG=1
-#        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --runAllTests --isRunner --renderers vulkan
+#        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner --renderers vulkan
 #    - name: Love Test Report (vulkan)
 #      uses: ellraiser/love-test-report@main
 #      with:
 #        name: Love Testsuite Linux
 #        title: test-report-linux-vulkan
-#        path: love2d-${{ github.sha }}/testing/output/lovetest_runAllTests.md
+#        path: love2d-${{ github.sha }}/testing/output/lovetest_all.md
 #    - name: Zip Test Output (vulkan)
 #      run: |
 #        7z a -tzip test-output-linux-vulkan.zip love2d-${{ github.sha }}/testing/output/
 #    - name: Artifact Test Output (vulkan)
-#      uses: actions/upload-artifact@v3
+#      uses: actions/upload-artifact@v4
 #      with:
 #        name: test-output-linux-vulkan
 #        path: test-output-linux-vulkan.zip
@@ -125,12 +128,12 @@ jobs:
         kill $XVFBPID
         kill $OPENBOXPID
     - name: Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-linux-x86_64.AppImage
         path: love-${{ github.sha }}.AppImage
     - name: Artifact Debug Symbols
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-x86_64-AppImage-debug
         path: love-${{ github.sha }}.AppImage-debug.tar.gz
@@ -140,7 +143,7 @@ jobs:
         echo "${{ steps.report1.outputs.failed }} opengl tests failed"
         echo "${{ steps.report2.outputs.failed }} opengles tests failed"
         exit 1
-  windows-os:
+  Windows:
     runs-on: windows-latest
     permissions:
       checks: write
@@ -202,31 +205,32 @@ jobs:
         echo nofiles=ignore>> "%GITHUB_OUTPUT%"
         echo moredef=-DLOVE_EXTRA_DLLS=%CD%\angle\libEGL.dll;%CD%\angle\libGLESv2.dll>> "%GITHUB_OUTPUT%"
         exit /b 0
-    - name: Download Windows SDK Setup 10.0.20348
-      run: curl -Lo winsdksetup.exe https://go.microsoft.com/fwlink/?linkid=2164145
-    - name: Install Debugging Tools for Windows
-      id: windbg
+    - name: Download pdbstr
+      run: curl -Lfo pdbstr.nupkg https://www.nuget.org/api/v2/package/Microsoft.Debugging.Tools.PdbStr/20230731.1609.0
+    - name: Download srctool
+      run: curl -Lfo srctool.nupkg https://www.nuget.org/api/v2/package/Microsoft.Debugging.Tools.SrcTool/20230731.1609.0
+    - name: Extract Tools and Add to PATH
       run: |
-        setlocal enabledelayedexpansion
-        start /WAIT %CD%\winsdksetup.exe /features OptionId.WindowsDesktopDebuggers /q /log %CD%\log.txt
-        echo ERRORLEVEL=!ERRORLEVEL! >> %GITHUB_OUTPUT%
-    - name: Print Debugging Tools Install Log
-      if: always()
-      run: |
-        type log.txt
-        exit /b ${{ steps.windbg.outputs.ERRORLEVEL }}
+        mkdir debugtools
+        cd debugtools
+        if errorlevel 1 exit /b 1
+        7z e ..\srctool.nupkg content/amd64/srctool.exe
+        if errorlevel 1 exit /b 1
+        7z e ..\pdbstr.nupkg content/amd64/pdbstr.exe
+        if errorlevel 1 exit /b 1
+        echo %CD%>>%GITHUB_PATH%
     - name: Setup Python 3.10
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.10"
     - name: Download source_index.py
-      run: curl -Lo source_index.py https://gist.github.com/MikuAuahDark/d9c099f5714e09a765496471c2827a55/raw/df34956052035f3473c5f01861dfb53930d06843/source_index.py
+      run: curl -Lfo source_index.py https://gist.github.com/MikuAuahDark/d9c099f5714e09a765496471c2827a55/raw/df34956052035f3473c5f01861dfb53930d06843/source_index.py
     - name: Clone Megasource
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: megasource
         repository: love2d/megasource
-        ref: 12.x
+        ref: main
     - id: megasource
       name: Get Megasource Commit SHA
       shell: python
@@ -238,11 +242,11 @@ jobs:
         commit = result.stdout.split()[0]
         with open(os.environ["GITHUB_OUTPUT"], "w", encoding="UTF-8") as f: f.write(f"commit={commit}")
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: megasource/libs/love
     - name: Download ANGLE
-      uses: robinraju/release-downloader@v1.7
+      uses: robinraju/release-downloader@v1.9
       if: steps.vars.outputs.angle == '1'
       with:
         repository: MikuAuahDark/angle-winbuild
@@ -255,19 +259,19 @@ jobs:
       if: steps.vars.outputs.angle == '1'
       working-directory: angle
       run: 7z x angle-win-${{ steps.vars.outputs.arch }}.zip
-    - name: Delete Strawbery Perl
+    - name: Remove Strawbery Perl From Path
       # https://github.com/actions/runner-images/issues/6627
       # In particular, this is not pretty, but even CMAKE_IGNORE_PREFIX_PATH
-      # cannot help in this case. Delete the whole folder!
+      # cannot help in this case.
       run: |
-        rmdir /s /q C:\Strawberry
+        move /y C:\Strawberry C:\Strawberry_not_in_PATH
         exit /b 0
     - name: Configure
       env:
         CFLAGS: /Zi
         CXXFLAGS: /Zi
         LDFLAGS: /DEBUG:FULL /OPT:REF /OPT:ICF
-      run: cmake -Bbuild -Smegasource -T v142 -A ${{ matrix.platform }} --install-prefix %CD%\install -DCMAKE_PDB_OUTPUT_DIRECTORY=%CD%\pdb ${{ steps.vars.outputs.moredef }}
+      run: cmake -Bbuild -Smegasource -T v143 -A ${{ matrix.platform }} --install-prefix %CD%\install -DCMAKE_PDB_OUTPUT_DIRECTORY=%CD%\pdb ${{ steps.vars.outputs.moredef }}
     - name: Install
       run: cmake --build build --target PACKAGE --config Release -j2
     - name: Copy LuaJIT lua51.pdb
@@ -285,7 +289,7 @@ jobs:
         --source %CD%\build\libs\LuaJIT https://raw.githubusercontent.com/love2d/megasource/${{ steps.megasource.outputs.commit }}/libs/LuaJIT ^
         pdb\Release\*.pdb
     - name: Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}
         path: |
@@ -294,12 +298,12 @@ jobs:
         if-no-files-found: ${{ steps.vars.outputs.nofiles }}
     - name: Artifact JIT Modules
       if: steps.vars.outputs.jitmodules == '1'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-windows-jitmodules
         path: build/libs/LuaJIT/src/jit/*.lua
     - name: Artifact PDB
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-dbg
         path: pdb/Release/*.pdb
@@ -317,10 +321,12 @@ jobs:
     # windows opengl tests
     - name: Run Tests (opengl)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      env:
+        LOVE_GRAPHICS_DEBUG: 1
       run: |
         echo 'check dir'
         ls
-        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner
+        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner
     - name: Love Test Report (opengl)
       id: report1
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
@@ -328,7 +334,7 @@ jobs:
       with:
         name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (opengl)
         title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl
-        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+        path: megasource/libs/love/testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengl)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
@@ -336,16 +342,18 @@ jobs:
         7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengl.zip megasource/libs/love/testing/output/
     - name: Artifact Test Output (opengl)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-output-windows-${{ steps.vars.outputs.arch }}-opengl-${{ steps.report1.outputs.conclusion }}
         path: test-output-windows-${{ steps.vars.outputs.arch }}-opengl.zip
     # windows opengles tests
     - name: Run Tests (opengles)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
+      env:
+        LOVE_GRAPHICS_DEBUG: 1
+        LOVE_GRAPHICS_USE_OPENGLES: 1
       run: |
-        $ENV:LOVE_GRAPHICS_USE_OPENGLES=1
-        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner
+        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner
     - name: Love Test Report (opengles)
       id: report2
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
@@ -353,7 +361,7 @@ jobs:
       with:
         name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (opengles)
         title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles
-        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+        path: megasource/libs/love/testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengles)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
@@ -361,7 +369,7 @@ jobs:
         7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-opengles.zip megasource/libs/love/testing/output/
     - name: Artifact Test Output (opengles)
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-output-windows-${{ steps.vars.outputs.arch }}-opengles-${{ steps.report2.outputs.conclusion }}
         path: test-output-windows-${{ steps.vars.outputs.arch }}-opengles.zip
@@ -387,23 +395,24 @@ jobs:
 #    # windows vulkan tests
 #    - name: Run Tests (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
+#      env:
+#        LOVE_GRAPHICS_DEBUG: 1
 #      run: |
-#        $ENV:LOVE_GRAPHICS_DEBUG=1
-#        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --runAllTests --isRunner --renderers vulkan
+#        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner --renderers vulkan
 #    - name: Love Test Report (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
 #      uses: ellraiser/love-test-report@main
 #      with:
 #        name: Love Testsuite Windows ${{ steps.vars.outputs.arch }} ${{ steps.vars.outputs.compatname }} (vulkan)
 #        title: test-report-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
-#        path: megasource/libs/love/testing/output/lovetest_runAllTests.md
+#        path: megasource/libs/love/testing/output/lovetest_all.md
 #    - name: Zip Test Output (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
 #      run: |
 #        7z a -tzip test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan.zip megasource/libs/love/testing/output/
 #    - name: Artifact Test Output (vulkan)
 #      if: steps.vars.outputs.arch != 'ARM64'
-#      uses: actions/upload-artifact@v3
+#      uses: actions/upload-artifact@v4
 #      with:
 #        name: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan
 #        path: test-output-windows-${{ steps.vars.outputs.arch }}${{ steps.vars.outputs.compatname }}-vulkan.zip
@@ -414,9 +423,9 @@ jobs:
       pull-requests: write
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Clone Dependencies
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
@@ -434,28 +443,30 @@ jobs:
       run:
         ditto -c -k --sequesterRsrc --keepParent love-macos/love.app love-macos.zip 
     - name: Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: love-macos
         path: love-macos.zip
     # macos opengl tests (metal not supported on runners)
     - name: Run Test Suite
+      env:
+        LOVE_GRAPHICS_DEBUG: 1
       run: |
         ls
-        love-macos/love.app/Contents/MacOS/love ./testing/main.lua --runAllTests --isRunner
+        love-macos/love.app/Contents/MacOS/love ./testing/main.lua --all --isRunner
     - name: Love Test Report
       id: report1
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite MacOS
         title: test-report-macos
-        path: testing/output/lovetest_runAllTests.md
+        path: testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output
       run: |
         7z a -tzip test-output-macos-opengl.zip ./testing/output/
     - name: Artifact Test Output
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-output-macos-opengl-${{ steps.report1.outputs.conclusion }}
         path: test-output-macos-opengl.zip
@@ -468,9 +479,9 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Clone Dependencies
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
@@ -481,3 +492,76 @@ jobs:
     - name: Build
       run:
         xcodebuild -project platform/xcode/love.xcodeproj -scheme love-ios -configuration Release -destination 'platform=iOS Simulator,name=iPhone 11'
+  Android:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_type: [Debug, Release]
+    env:
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs='-Xmx4G'"
+    steps:
+    - name: Prepare Environment
+      run: sudo apt-get update && curl -Lfo kitware-archive.sh https://apt.kitware.com/kitware-archive.sh && sudo bash ./kitware-archive.sh
+    - name: Install Dependencies
+      run: sudo apt-get install ninja-build cmake
+    - name: Checkout love-android
+      uses: actions/checkout@v4
+      with:
+        repository: love2d/love-android
+        submodules: false
+    - name: Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: adopt-hotspot
+        java-version: 17
+        cache: gradle
+    - name: Clone Megasource
+      uses: actions/checkout@v4
+      with:
+        path: app/src/main/cpp/megasource
+        repository: love2d/megasource
+        ref: main
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        path: app/src/main/cpp/love
+    - name: Build Normal Flavor
+      run: bash ./gradlew assembleNormalRecord${{ matrix.build_type }}
+    - name: Build Release-specific Binaries
+      if: ${{ matrix.build_type == 'Release' }}
+      run: bash ./gradlew bundleNormalNoRecordRelease bundleEmbedRecordRelease bundleEmbedNoRecordRelease
+    - name: Artifact (Normal debug APK)
+      if: ${{ matrix.build_type == 'Debug' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: love-android-debug.apk
+        path: app/build/outputs/apk/normalRecord/debug/app-normal-record-debug.apk
+    - name: Artifact (Normal unsigned APK)
+      if: ${{ matrix.build_type == 'Release' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: love-android.apk
+        path: app/build/outputs/apk/normalRecord/release/app-normal-record-release-unsigned.apk
+    - name: Artifact (Normal AAB w/o recording)
+      if: ${{ matrix.build_type == 'Release' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: love-android-ps.aab
+        path: app/build/outputs/bundle/normalNoRecordRelease/app-normal-noRecord-release.aab
+    - name: Artifact (Embed AAB)
+      if: ${{ matrix.build_type == 'Release' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: love-android-embed-record.aab
+        path: app/build/outputs/bundle/embedRecordRelease/app-embed-record-release.aab
+    - name: Artifact (Embed AAB w/o recording)
+      if: ${{ matrix.build_type == 'Release' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: love-android-embed.aab
+        path: app/build/outputs/bundle/embedNoRecordRelease/app-embed-noRecord-release.aab
+    - name: Artifact (Debug symbols)
+      uses: actions/upload-artifact@v4
+      with:
+        name: love-android-unstripped-debugsyms-${{ matrix.build_type }}
+        path: app/build/intermediates/cxx

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -40,6 +40,7 @@ namespace image
 love::Type Image::type("image", &Module::type);
 
 Image::Image()
+	: Module(M_IMAGE, "love.image.magpie")
 {
 	using namespace magpie;
 
@@ -63,11 +64,6 @@ Image::~Image()
 	// release them instead of deleting them completely here.
 	for (FormatHandler *handler : formatHandlers)
 		handler->release();
-}
-
-const char *Image::getName() const
-{
-	return "love.image.magpie";
 }
 
 love::image::ImageData *Image::newImageData(Data *data)

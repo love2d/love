@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -799,6 +799,13 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 		if (s.type == TEXTURE_2D_ARRAY || s.type == TEXTURE_VOLUME)
 			s.layers = luax_checkintflag(L, idx, Texture::getConstant(Texture::SETTING_LAYERS));
 	}
+	else
+	{
+		s.width = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_WIDTH), s.width);
+		s.height = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_HEIGHT), s.height);
+		if (s.type == TEXTURE_2D_ARRAY || s.type == TEXTURE_VOLUME)
+			s.layers = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_LAYERS), s.layers);
+	}
 
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_MIPMAPS));
 	if (!lua_isnoneornil(L, -1))
@@ -823,6 +830,25 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 	s.msaa = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_MSAA), s.msaa);
 
 	s.computeWrite = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), s.computeWrite);
+
+	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_VIEW_FORMATS));
+	if (!lua_isnoneornil(L, -1))
+	{
+		if (lua_type(L, -1) != LUA_TTABLE)
+			luaL_argerror(L, idx, "expected field 'viewformats' to be a table type");
+
+		for (int i = 1; i <= luax_objlen(L, -1); i++)
+		{
+			lua_rawgeti(L, -1, i);
+			const char *str = luaL_checkstring(L, -1);
+			PixelFormat viewformat = PIXELFORMAT_UNKNOWN;
+			if (!getConstant(str, viewformat))
+				luax_enumerror(L, "pixel format", str);
+			s.viewFormats.push_back(viewformat);
+			lua_pop(L, 1);
+		}
+	}
+	lua_pop(L, 1);
 
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_READABLE));
 	if (!lua_isnoneornil(L, -1))
@@ -1238,6 +1264,66 @@ int w_newVolumeImage(lua_State *L)
 {
 	//luax_markdeprecated(L, 1, "love.graphics.newVolumeImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newVolumeTexture");
 	return w_newVolumeTexture(L);
+}
+
+int w_newTextureView(lua_State *L)
+{
+	Texture *base = luax_checktexture(L, 1);
+	luaL_checktype(L, 2, LUA_TTABLE);
+
+	Texture::ViewSettings settings;
+
+	lua_getfield(L, 2, "format");
+	if (!lua_isnoneornil(L, -1))
+	{
+		const char *str = luaL_checkstring(L, -1);
+		if (!getConstant(str, settings.format.value))
+			luax_enumerror(L, "pixel format", str);
+		settings.format.hasValue = true;
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "type");
+	if (!lua_isnoneornil(L, -1))
+	{
+		const char *str = luaL_checkstring(L, -1);
+		if (!Texture::getConstant(str, settings.type.value))
+			luax_enumerror(L, "texture type", Texture::getConstants(settings.type.value), str);
+		settings.type.hasValue = true;
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "mipmapstart");
+	if (!lua_isnoneornil(L, -1))
+		settings.mipmapStart.set(luaL_checkint(L, -1) - 1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "mipmapcount");
+	if (!lua_isnoneornil(L, -1))
+		settings.mipmapCount.set(luaL_checkint(L, -1));
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "layerstart");
+	if (!lua_isnoneornil(L, -1))
+		settings.layerStart.set(luaL_checkint(L, -1) - 1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "layers");
+	if (!lua_isnoneornil(L, -1))
+		settings.layerCount.set(luaL_checkint(L, -1));
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "debugname");
+	if (!lua_isnoneornil(L, -1))
+		settings.debugName = luaL_checkstring(L, -1);
+	lua_pop(L, 1);
+
+	Texture *t = nullptr;
+	luax_catchexcept(L, [&]() { t = instance()->newTextureView(base, settings); });
+
+	luax_pushtype(L, t);
+	t->release();
+	return 1;
 }
 
 int w_newQuad(lua_State *L)
@@ -3052,13 +3138,12 @@ int w_draw(lua_State *L)
 {
 	Drawable *drawable = nullptr;
 	Texture *texture = nullptr;
-	Quad *quad = nullptr;
+	Quad *quad = luax_totype<Quad>(L, 2);
 	int startidx = 2;
 
-	if (luax_istype(L, 2, Quad::type))
+	if (quad != nullptr)
 	{
 		texture = luax_checktexture(L, 1);
-		quad = luax_totype<Quad>(L, 2);
 		startidx = 3;
 	}
 	else if (lua_isnil(L, 2) && !lua_isnoneornil(L, 3))
@@ -3088,14 +3173,14 @@ int w_draw(lua_State *L)
 int w_drawLayer(lua_State *L)
 {
 	Texture *texture = luax_checktexture(L, 1);
-	Quad *quad = nullptr;
 	int layer = (int) luaL_checkinteger(L, 2) - 1;
-	int startidx = 3;
 
-	if (luax_istype(L, startidx, Quad::type))
+	int startidx = 3;
+	Quad *quad = luax_totype<Quad>(L, startidx);
+
+	if (quad != nullptr)
 	{
 		texture = luax_checktexture(L, 1);
-		quad = luax_totype<Quad>(L, startidx);
 		startidx++;
 	}
 	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
@@ -3815,25 +3900,31 @@ int w_inverseTransformPoint(lua_State *L)
 	return 2;
 }
 
-int w_setOrthoProjection(lua_State *L)
+int w_setCustomProjection(lua_State *L)
 {
-	float w = (float) luaL_checknumber(L, 1);
-	float h = (float) luaL_checknumber(L, 2);
-	float near = (float) luaL_optnumber(L, 3, -10.0);
-	float far = (float) luaL_optnumber(L, 4, 10.0);
+	math::Transform *transform = luax_totype<math::Transform>(L, 1);
+	if (transform != nullptr)
+	{
+		instance()->setCustomProjection(transform->getMatrix());
+		return 0;
+	}
 
-	luax_catchexcept(L, [&]() { instance()->setOrthoProjection(w, h, near, far); });
-	return 0;
-}
+	math::Transform::MatrixLayout layout = math::Transform::MATRIX_ROW_MAJOR;
 
-int w_setPerspectiveProjection(lua_State *L)
-{
-	float verticalfov = (float) luaL_checknumber(L, 1);
-	float aspect = (float) luaL_checknumber(L, 2);
-	float near = (float) luaL_checknumber(L, 3);
-	float far = (float) luaL_checknumber(L, 4);
+	int idx = 1;
+	if (lua_type(L, idx) == LUA_TSTRING)
+	{
+		const char* layoutstr = lua_tostring(L, idx);
+		if (!math::Transform::getConstant(layoutstr, layout))
+			return luax_enumerror(L, "matrix layout", math::Transform::getConstants(layout), layoutstr);
 
-	luax_catchexcept(L, [&]() { instance()->setPerspectiveProjection(verticalfov, aspect, near, far); });
+		idx++;
+	}
+
+	float elements[16];
+	love::math::luax_checkmatrix(L, idx, layout, elements);
+
+	instance()->setCustomProjection(Matrix4(elements));
 	return 0;
 }
 
@@ -3857,6 +3948,7 @@ static const luaL_Reg functions[] =
 	{ "newCubeTexture", w_newCubeTexture },
 	{ "newArrayTexture", w_newArrayTexture },
 	{ "newVolumeTexture", w_newVolumeTexture },
+	{ "newTextureView", w_newTextureView },
 	{ "newQuad", w_newQuad },
 	{ "newFont", w_newFont },
 	{ "newImageFont", w_newImageFont },
@@ -3988,8 +4080,7 @@ static const luaL_Reg functions[] =
 	{ "transformPoint", w_transformPoint },
 	{ "inverseTransformPoint", w_inverseTransformPoint },
 
-	{ "setOrthoProjection", w_setOrthoProjection },
-	{ "setPerspectiveProjection", w_setPerspectiveProjection },
+	{ "setCustomProjection", w_setCustomProjection },
 	{ "resetProjection", w_resetProjection },
 
 	// Deprecated

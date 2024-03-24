@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -472,9 +472,6 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -3, m.name); // love.graphics = table
 	lua_remove(L, -2); // love
-
-	// Register module instance
-	Module::registerInstance(m.module);
 
 	return 1;
 }

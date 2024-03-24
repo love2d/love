@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -48,11 +48,8 @@ public:
 		POWER_MAX_ENUM
 	};
 
-	System();
+	System(const char *name);
 	virtual ~System() {}
-
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_SYSTEM; }
 
 	/**
 	 * Gets the current operating system.

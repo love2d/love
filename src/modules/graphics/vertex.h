@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -298,9 +298,12 @@ struct BufferBindings
 
 struct VertexAttributeInfo
 {
-	uint8 bufferIndex;
-	DataFormat format : 8;
 	uint16 offsetFromVertex;
+	uint8 packedFormat;
+	uint8 bufferIndex;
+
+	void setFormat(DataFormat format) { packedFormat = (uint8)format; }
+	DataFormat getFormat() const { return (DataFormat)packedFormat; }
 };
 
 struct VertexBufferLayout
@@ -335,7 +338,7 @@ struct VertexAttributes
 		enableBits |= (1u << index);
 
 		attribs[index].bufferIndex = bufferindex;
-		attribs[index].format = format;
+		attribs[index].setFormat(format);
 		attribs[index].offsetFromVertex = offsetfromvertex;
 	}
 

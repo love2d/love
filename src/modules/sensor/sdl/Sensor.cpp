@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,8 @@ namespace sdl
 {
 
 Sensor::Sensor()
-: sensors()
+	: love::sensor::Sensor("love.sensor.sdl")
+	, sensors()
 {
 	if (SDL_InitSubSystem(SDL_INIT_SENSOR) < 0)
 		throw love::Exception("Could not initialize SDL sensor subsystem (%s)", SDL_GetError());
@@ -42,11 +43,6 @@ Sensor::Sensor()
 Sensor::~Sensor()
 {
 	SDL_QuitSubSystem(SDL_INIT_SENSOR);
-}
-
-const char *Sensor::getName() const
-{
-	return "love.sensor.sdl";
 }
 
 bool Sensor::hasSensor(SensorType type)

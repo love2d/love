@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,11 @@ namespace love
 namespace thread
 {
 
+ThreadModule::ThreadModule()
+	: love::Module(M_THREAD, "love.thread.sdl")
+{
+}
+
 LuaThread *ThreadModule::newThread(const std::string &name, love::Data *data)
 {
 	return new LuaThread(name, data);
@@ -46,11 +51,6 @@ Channel *ThreadModule::getChannel(const std::string &name)
 	Channel *c = new Channel();
 	namedChannels[name].set(c, Acquire::NORETAIN);
 	return c;
-}
-
-const char *ThreadModule::getName() const
-{
-	return "love.thread.sdl";
 }
 
 } // thread

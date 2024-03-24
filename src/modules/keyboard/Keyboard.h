@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -533,9 +533,6 @@ public:
 
 	virtual ~Keyboard() {}
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_KEYBOARD; }
-
 	/**
 	 * Sets whether repeat keypress events should be sent if a key is held down.
 	 * Does not affect text input events.
@@ -613,6 +610,10 @@ public:
 
 	static bool getConstant(const char *in, ModifierKey &out);
 	static bool getConstant(ModifierKey in, const char *&out);
+
+protected:
+
+	Keyboard(const char *name);
 
 private:
 

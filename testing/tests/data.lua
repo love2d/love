@@ -33,6 +33,10 @@ love.test.data.ByteData = function(test)
     test:assertEquals('o', byte5)
   end
 
+  -- check overwriting the byte data string
+  data:setString('love!', 5)
+  test:assertEquals('hellolove!', data:getString(), 'check change string')
+
 end
 
 
@@ -79,6 +83,10 @@ love.test.data.compress = function(test)
     { love.data.compress('string', 'gzip', 'helloworld', -1), 'string'},
     { love.data.compress('string', 'gzip', 'helloworld', 0), 'string'},
     { love.data.compress('string', 'gzip', 'helloworld', 9), 'string'},
+    { love.data.compress('string', 'deflate', 'aaaaaa', 1), 'string'},
+    { love.data.compress('string', 'deflate', 'heloworld', -1), 'string'},
+    { love.data.compress('string', 'deflate', 'heloworld', 0), 'string'},
+    { love.data.compress('string', 'deflate', 'heloworld', 9), 'string'},
     { love.data.compress('data', 'lz4', 'helloworld', -1), 'userdata'},
     { love.data.compress('data', 'lz4', 'helloworld', 0), 'userdata'},
     { love.data.compress('data', 'lz4', 'helloworld', 9), 'userdata'},
@@ -87,7 +95,10 @@ love.test.data.compress = function(test)
     { love.data.compress('data', 'zlib', 'helloworld', 9), 'userdata'},
     { love.data.compress('data', 'gzip', 'helloworld', -1), 'userdata'},
     { love.data.compress('data', 'gzip', 'helloworld', 0), 'userdata'},
-    { love.data.compress('data', 'gzip', 'helloworld', 9), 'userdata'}
+    { love.data.compress('data', 'gzip', 'helloworld', 9), 'userdata'},
+    { love.data.compress('data', 'deflate', 'heloworld', -1), 'userdata'},
+    { love.data.compress('data', 'deflate', 'heloworld', 0), 'userdata'},
+    { love.data.compress('data', 'deflate', 'heloworld', 9), 'userdata'},
   }
   for c=1,#compressions do
     test:assertNotNil(compressions[c][1])
@@ -196,19 +207,33 @@ end
 -- love.data.hash
 love.test.data.hash = function(test)
   -- setup all the different hashing types
-  local str1 = love.data.hash('md5', 'helloworld')
-  local str2 = love.data.hash('sha1', 'helloworld')
-  local str3 = love.data.hash('sha224', 'helloworld')
-  local str4 = love.data.hash('sha256', 'helloworld')
-  local str5 = love.data.hash('sha384', 'helloworld')
-  local str6 = love.data.hash('sha512', 'helloworld')
+  local str1 = love.data.hash('string', 'md5', 'helloworld')
+  local str2 = love.data.hash('string', 'sha1', 'helloworld')
+  local str3 = love.data.hash('string', 'sha224', 'helloworld')
+  local str4 = love.data.hash('string', 'sha256', 'helloworld')
+  local str5 = love.data.hash('string', 'sha384', 'helloworld')
+  local str6 = love.data.hash('string', 'sha512', 'helloworld')
+  local data1 = love.data.hash('data', 'md5', 'helloworld')
+  local data2 = love.data.hash('data', 'sha1', 'helloworld')
+  local data3 = love.data.hash('data', 'sha224', 'helloworld')
+  local data4 = love.data.hash('data', 'sha256', 'helloworld')
+  local data5 = love.data.hash('data', 'sha384', 'helloworld')
+  local data6 = love.data.hash('data', 'sha512', 'helloworld')
   -- check encoded hash value matches what's expected for that algo
-  test:assertEquals('fc5e038d38a57032085441e7fe7010b0', love.data.encode("string", "hex", str1), 'check md5 encode')
-  test:assertEquals('6adfb183a4a2c94a2f92dab5ade762a47889a5a1', love.data.encode("string", "hex", str2), 'check sha1 encode')
-  test:assertEquals('b033d770602994efa135c5248af300d81567ad5b59cec4bccbf15bcc', love.data.encode("string", "hex", str3), 'check sha224 encode')
-  test:assertEquals('936a185caaa266bb9cbe981e9e05cb78cd732b0b3280eb944412bb6f8f8f07af', love.data.encode("string", "hex", str4), 'check sha256 encode')
-  test:assertEquals('97982a5b1414b9078103a1c008c4e3526c27b41cdbcf80790560a40f2a9bf2ed4427ab1428789915ed4b3dc07c454bd9', love.data.encode("string", "hex", str5), 'check sha384 encode')
-  test:assertEquals('1594244d52f2d8c12b142bb61f47bc2eaf503d6d9ca8480cae9fcf112f66e4967dc5e8fa98285e36db8af1b8ffa8b84cb15e0fbcf836c3deb803c13f37659a60', love.data.encode("string", "hex", str6), 'check sha512 encode')
+    -- test container string
+  test:assertEquals('fc5e038d38a57032085441e7fe7010b0', love.data.encode("string", "hex", str1), 'check string md5 encode')
+  test:assertEquals('6adfb183a4a2c94a2f92dab5ade762a47889a5a1', love.data.encode("string", "hex", str2), 'check string sha1 encode')
+  test:assertEquals('b033d770602994efa135c5248af300d81567ad5b59cec4bccbf15bcc', love.data.encode("string", "hex", str3), 'check string sha224 encode')
+  test:assertEquals('936a185caaa266bb9cbe981e9e05cb78cd732b0b3280eb944412bb6f8f8f07af', love.data.encode("string", "hex", str4), 'check string sha256 encode')
+  test:assertEquals('97982a5b1414b9078103a1c008c4e3526c27b41cdbcf80790560a40f2a9bf2ed4427ab1428789915ed4b3dc07c454bd9', love.data.encode("string", "hex", str5), 'check string sha384 encode')
+  test:assertEquals('1594244d52f2d8c12b142bb61f47bc2eaf503d6d9ca8480cae9fcf112f66e4967dc5e8fa98285e36db8af1b8ffa8b84cb15e0fbcf836c3deb803c13f37659a60', love.data.encode("string", "hex", str6), 'check string sha512 encode')
+    -- test container data
+  test:assertEquals('fc5e038d38a57032085441e7fe7010b0', love.data.encode("string", "hex", data1), 'check data md5 encode')
+  test:assertEquals('6adfb183a4a2c94a2f92dab5ade762a47889a5a1', love.data.encode("string", "hex", data2), 'check data sha1 encode')
+  test:assertEquals('b033d770602994efa135c5248af300d81567ad5b59cec4bccbf15bcc', love.data.encode("string", "hex", data3), 'check data sha224 encode')
+  test:assertEquals('936a185caaa266bb9cbe981e9e05cb78cd732b0b3280eb944412bb6f8f8f07af', love.data.encode("string", "hex", data4), 'check data sha256 encode')
+  test:assertEquals('97982a5b1414b9078103a1c008c4e3526c27b41cdbcf80790560a40f2a9bf2ed4427ab1428789915ed4b3dc07c454bd9', love.data.encode("string", "hex", data5), 'check data sha384 encode')
+  test:assertEquals('1594244d52f2d8c12b142bb61f47bc2eaf503d6d9ca8480cae9fcf112f66e4967dc5e8fa98285e36db8af1b8ffa8b84cb15e0fbcf836c3deb803c13f37659a60', love.data.encode("string", "hex", data6), 'check data sha512 encode')
 end
 
 

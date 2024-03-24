@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -39,6 +39,7 @@ class Texture final : public love::graphics::Texture, public Volatile
 public:
 
 	Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data);
+	Texture(love::graphics::Graphics *gfx, love::graphics::Texture *base, const Texture::ViewSettings &viewsettings);
 
 	virtual ~Texture();
 
@@ -61,9 +62,10 @@ public:
 	void readbackInternal(int slice, int mipmap, const Rect &rect, int destwidth, size_t size, void *dest);
 
 private:
+
 	void createTexture();
 
-	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
+	void uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r) override;
 
 	void generateMipmapsInternal() override;
 

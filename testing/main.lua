@@ -41,6 +41,8 @@ love.load = function(args)
       resizable = true,
       centered = true
     })
+
+    -- set up some graphics to draw if enabled
     if love.graphics ~= nil then
       love.graphics.setDefaultFilter("nearest", "nearest")
       love.graphics.setLineStyle('rough')
@@ -54,6 +56,7 @@ love.load = function(args)
       TextCommand = 'Loading...'
       TextRun = ''
     end
+
   end
 
   -- mount for output later
@@ -71,7 +74,7 @@ love.load = function(args)
   end
 
   -- convert args to the cmd to run, modules, method (if any) and disabled
-  local testcmd = '--runAllTests'
+  local testcmd = '--all'
   local module = ''
   local method = ''
   local cmderr = 'Invalid flag used'
@@ -82,7 +85,7 @@ love.load = function(args)
   }
   GITHUB_RUNNER = false
   for a=1,#arglist do
-    if testcmd == '--runSpecificMethod' then
+    if testcmd == '--method' then
       if module == '' and (arglist[a] == 'love' or love[ arglist[a] ] ~= nil) then 
         module = arglist[a] 
         table.insert(modules, module)
@@ -90,16 +93,16 @@ love.load = function(args)
         if love.test[module][arglist[a]] ~= nil then method = arglist[a] end
       end
     end
-    if testcmd == '--runSpecificModules' then
+    if testcmd == '--modules' then
       if (arglist[a] == 'love' or love[ arglist[a] ] ~= nil) and arglist[a] ~= '--isRunner' then 
         table.insert(modules, arglist[a]) 
       end
     end
-    if arglist[a] == '--runSpecificMethod' then
+    if arglist[a] == '--method' then
       testcmd = arglist[a]
       modules = {}
     end
-    if arglist[a] == '--runSpecificModules' then
+    if arglist[a] == '--modules' then
       testcmd = arglist[a]
       modules = {}
     end
@@ -108,22 +111,22 @@ love.load = function(args)
     end
   end
 
-  -- runSpecificMethod uses the module + method given
-  if testcmd == '--runSpecificMethod' then
+  -- method uses the module + method given
+  if testcmd == '--method' then
     local testmodule = TestModule:new(module, method)
     table.insert(love.test.modules, testmodule)
     if module ~= '' and method ~= '' then
       love.test.module = testmodule
-      love.test.module:log('grey', '--runSpecificMethod "' .. module .. '" "' .. method .. '"')
-      love.test.output = 'lovetest_runSpecificMethod_' .. module .. '_' .. method
+      love.test.module:log('grey', '--method "' .. module .. '" "' .. method .. '"')
+      love.test.output = 'lovetest_method_' .. module .. '_' .. method
     else
       if method == '' then cmderr = 'No valid method specified' end
       if module == '' then cmderr = 'No valid module specified' end
     end
   end
 
-  -- runSpecificModules runs all methods for all the modules given
-  if testcmd == '--runSpecificModules' then
+  -- modules runs all methods for all the modules given
+  if testcmd == '--modules' then
     local modulelist = {}
     for m=1,#modules do
       local testmodule = TestModule:new(modules[m])
@@ -132,22 +135,22 @@ love.load = function(args)
     end
     if #modulelist > 0 then
       love.test.module = love.test.modules[1]
-      love.test.module:log('grey', '--runSpecificModules "' .. table.concat(modulelist, '" "') .. '"')
-      love.test.output = 'lovetest_runSpecificModules_' .. table.concat(modulelist, '_')
+      love.test.module:log('grey', '--modules "' .. table.concat(modulelist, '" "') .. '"')
+      love.test.output = 'lovetest_modules_' .. table.concat(modulelist, '_')
     else
       cmderr = 'No modules specified'
     end
   end
 
   -- otherwise default runs all methods for all modules
-  if arglist[1] == nil or arglist[1] == '' or arglist[1] == '--runAllTests' then
+  if arglist[1] == nil or arglist[1] == '' or arglist[1] == '--all' then
     for m=1,#modules do
       local testmodule = TestModule:new(modules[m])
       table.insert(love.test.modules, testmodule)
     end
     love.test.module = love.test.modules[1]
-    love.test.module:log('grey', '--runAllTests')
-    love.test.output = 'lovetest_runAllTests'
+    love.test.module:log('grey', '--all')
+    love.test.output = 'lovetest_all'
   end
 
   if GITHUB_RUNNER then

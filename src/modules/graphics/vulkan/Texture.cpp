@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -47,10 +47,21 @@ Texture::Texture(love::graphics::Graphics *gfx, const Settings &settings, const 
 	slices.clear();
 }
 
+Texture::Texture(love::graphics::Graphics *gfx, love::graphics::Texture *base, const Texture::ViewSettings &viewsettings)
+	: love::graphics::Texture(gfx, base, viewsettings)
+	, vgfx(dynamic_cast<Graphics*>(gfx))
+	, slices(viewsettings.type.get(base->getTextureType()))
+	, imageAspect(0)
+{
+	loadVolatile();
+}
+
 bool Texture::loadVolatile()
 {
 	allocator = vgfx->getVmaAllocator();
 	device = vgfx->getDevice();
+
+	bool root = rootView.texture == this;
 
 	if (isPixelFormatDepth(format))
 		imageAspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -79,82 +90,115 @@ bool Texture::loadVolatile()
 			usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	}
 
-	VkImageCreateFlags createFlags = 0;
-
 	layerCount = 1;
 
 	if (texType == TEXTURE_2D_ARRAY)
 		layerCount = getLayerCount();
 	else if (texType == TEXTURE_CUBE)
-	{
 		layerCount = 6;
-		createFlags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-	}
 
-	msaaSamples = vgfx->getMsaaCount(requestedMSAA);
-	
-	VkImageCreateInfo imageInfo{};
-	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.flags = createFlags;
-	imageInfo.imageType = Vulkan::getImageType(getTextureType());
-	imageInfo.extent.width = static_cast<uint32_t>(pixelWidth);
-	imageInfo.extent.height = static_cast<uint32_t>(pixelHeight);
-	imageInfo.extent.depth = static_cast<uint32_t>(depth);
-	imageInfo.arrayLayers = static_cast<uint32_t>(layerCount);
-	imageInfo.mipLevels = static_cast<uint32_t>(mipmapCount);
-	imageInfo.format = vulkanFormat.internalFormat;
-	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	imageInfo.usage = usageFlags;
-	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageInfo.samples = msaaSamples;
-
-	VmaAllocationCreateInfo imageAllocationCreateInfo{};
-
-	if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS)
-		throw love::Exception("failed to create image");
-
-	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
-
-	if (isPixelFormatDepthStencil(format))
-		imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	else if (computeWrite)
-		imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-	else
-		imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-	Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
-		VK_IMAGE_LAYOUT_UNDEFINED, imageLayout,
-		0, VK_REMAINING_MIP_LEVELS,
-		0, VK_REMAINING_ARRAY_LAYERS);
-
-	bool hasdata = slices.get(0, 0) != nullptr;
-
-	if (hasdata)
+	if (root)
 	{
-		for (int mip = 0; mip < getMipmapCount(); mip++)
-		{
-			int sliceCount;
-			if (texType == TEXTURE_CUBE)
-				sliceCount = 6;
-			else
-				sliceCount = slices.getSliceCount();
+		VkImageCreateFlags createFlags = 0;
+		std::vector<VkFormat> vkviewformats;
 
-			for (int slice = 0; slice < sliceCount; slice++)
+		for (PixelFormat viewformat : viewFormats)
+		{
+			if (viewformat != format)
 			{
-				auto id = slices.get(slice, mip);
-				if (id != nullptr)
-					uploadImageData(id, mip, slice, 0, 0);
+				createFlags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+				TextureFormat f = Vulkan::getTextureFormat(viewformat);
+				vkviewformats.push_back(f.internalFormat);
 			}
 		}
+
+		if (texType == TEXTURE_CUBE || (texType == TEXTURE_2D_ARRAY && layerCount >= 6))
+			createFlags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+
+		msaaSamples = vgfx->getMsaaCount(requestedMSAA);
+
+		VkImageCreateInfo imageInfo{};
+		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		imageInfo.flags = createFlags;
+		imageInfo.imageType = Vulkan::getImageType(getTextureType());
+		imageInfo.extent.width = static_cast<uint32_t>(pixelWidth);
+		imageInfo.extent.height = static_cast<uint32_t>(pixelHeight);
+		imageInfo.extent.depth = static_cast<uint32_t>(depth);
+		imageInfo.arrayLayers = static_cast<uint32_t>(layerCount);
+		imageInfo.mipLevels = static_cast<uint32_t>(mipmapCount);
+		imageInfo.format = vulkanFormat.internalFormat;
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		imageInfo.usage = usageFlags;
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		imageInfo.samples = msaaSamples;
+
+		VkImageFormatListCreateInfo viewFormatsInfo{};
+		viewFormatsInfo.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO;
+
+		if (!vkviewformats.empty() && vgfx->getDeviceApiVersion() >= VK_API_VERSION_1_2)
+		{
+			viewFormatsInfo.viewFormatCount = (uint32)vkviewformats.size();
+			viewFormatsInfo.pViewFormats = vkviewformats.data();
+
+			imageInfo.pNext = &viewFormatsInfo;
+		}
+
+		VmaAllocationCreateInfo imageAllocationCreateInfo{};
+
+		if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS)
+			throw love::Exception("failed to create image");
+
+		auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
+
+		if (isPixelFormatDepthStencil(format))
+			imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		else if (computeWrite)
+			imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		else
+			imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
+			VK_IMAGE_LAYOUT_UNDEFINED, imageLayout,
+			0, VK_REMAINING_MIP_LEVELS,
+			0, VK_REMAINING_ARRAY_LAYERS);
+
+		bool hasdata = slices.get(0, 0) != nullptr;
+
+		if (hasdata)
+		{
+			for (int mip = 0; mip < getMipmapCount(); mip++)
+			{
+				int sliceCount;
+				if (texType == TEXTURE_CUBE)
+					sliceCount = 6;
+				else
+					sliceCount = slices.getSliceCount();
+
+				for (int slice = 0; slice < sliceCount; slice++)
+				{
+					auto id = slices.get(slice, mip);
+					if (id != nullptr)
+						uploadImageData(id, mip, slice, 0, 0);
+				}
+			}
+		}
+		else
+			clear();
 	}
 	else
-		clear();
+	{
+		Texture *roottex = (Texture *) rootView.texture;
+		textureImage = roottex->textureImage;
+		textureImageAllocation = VK_NULL_HANDLE;
+		imageLayout = roottex->imageLayout;
+		msaaSamples = roottex->msaaSamples;
+	}
 
 	createTextureImageView();
-	textureSampler = vgfx->getCachedSampler(samplerState);
+	setSamplerState(samplerState);
 
-	if (!isPixelFormatDepthStencil(format) && slices.getMipmapCount() <= 1 && getMipmapsMode() != MIPMAPS_NONE)
+	if (root && !isPixelFormatDepthStencil(format) && slices.getMipmapCount() <= 1 && getMipmapsMode() != MIPMAPS_NONE)
 		generateMipmaps();
 
 	if (renderTarget)
@@ -172,9 +216,9 @@ bool Texture::loadVolatile()
 				viewInfo.viewType = Vulkan::getImageViewType(getTextureType());
 				viewInfo.format = vulkanFormat.internalFormat;
 				viewInfo.subresourceRange.aspectMask = imageAspect;
-				viewInfo.subresourceRange.baseMipLevel = mip;
+				viewInfo.subresourceRange.baseMipLevel = mip + rootView.startMipmap;
 				viewInfo.subresourceRange.levelCount = 1;
-				viewInfo.subresourceRange.baseArrayLayer = slice;
+				viewInfo.subresourceRange.baseArrayLayer = slice + rootView.startLayer;
 				viewInfo.subresourceRange.layerCount = 1;
 				viewInfo.components.r = vulkanFormat.swizzleR;
 				viewInfo.components.g = vulkanFormat.swizzleG;
@@ -189,15 +233,18 @@ bool Texture::loadVolatile()
 
 	int64 memsize = 0;
 
-	for (int mip = 0; mip < getMipmapCount(); mip++)
+	if (root)
 	{
-		int w = getPixelWidth(mip);
-		int h = getPixelHeight(mip);
-		int slices = getDepth(mip) * layerCount;
-		memsize += getPixelFormatSliceSize(format, w, h) * slices;
-	}
+		for (int mip = 0; mip < getMipmapCount(); mip++)
+		{
+			int w = getPixelWidth(mip);
+			int h = getPixelHeight(mip);
+			int slices = getDepth(mip) * layerCount;
+			memsize += getPixelFormatSliceSize(format, w, h) * slices;
+		}
 
-	memsize *= static_cast<int>(msaaSamples);
+		memsize *= static_cast<int>(msaaSamples);
+	}
 
 	setGraphicsMemorySize(memsize);
 
@@ -207,8 +254,16 @@ bool Texture::loadVolatile()
 		{
 			VkDebugUtilsObjectNameInfoEXT nameInfo{};
 			nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-			nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
-			nameInfo.objectHandle = (uint64_t)textureImage;
+			if (root)
+			{
+				nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
+				nameInfo.objectHandle = (uint64_t)textureImage;
+			}
+			else
+			{
+				nameInfo.objectType = VK_OBJECT_TYPE_IMAGE_VIEW;
+				nameInfo.objectHandle = (uint64_t)textureImageView;
+			}
 			nameInfo.pObjectName = debugName.c_str();
 			vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
 		}
@@ -230,13 +285,15 @@ void Texture::unloadVolatile()
 		textureImageAllocation = textureImageAllocation,
 		textureImageViews = std::move(renderTargetImageViews)] () {
 		vkDestroyImageView(device, textureImageView, nullptr);
-		vmaDestroyImage(allocator, textureImage, textureImageAllocation);
+		if (textureImageAllocation)
+			vmaDestroyImage(allocator, textureImage, textureImageAllocation);
 		for (const auto &views : textureImageViews)
 			for (const auto &view : views)
 				vkDestroyImageView(device, view, nullptr);
 	});
 
 	textureImage = VK_NULL_HANDLE;
+	textureImageAllocation = VK_NULL_HANDLE;
 
 	setGraphicsMemorySize(0);
 }
@@ -278,8 +335,7 @@ ptrdiff_t Texture::getHandle() const
 
 void Texture::setSamplerState(const SamplerState &s)
 {
-	love::graphics::Texture::setSamplerState(s);
-
+	samplerState = validateSamplerState(s);
 	textureSampler = vgfx->getCachedSampler(samplerState);
 }
 
@@ -291,16 +347,15 @@ VkImageLayout Texture::getImageLayout() const
 void Texture::createTextureImageView()
 {
 	auto vulkanFormat = Vulkan::getTextureFormat(format);
-
 	VkImageViewCreateInfo viewInfo{};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewInfo.image = textureImage;
 	viewInfo.viewType = Vulkan::getImageViewType(getTextureType());
 	viewInfo.format = vulkanFormat.internalFormat;
 	viewInfo.subresourceRange.aspectMask = imageAspect;
-	viewInfo.subresourceRange.baseMipLevel = 0;
+	viewInfo.subresourceRange.baseMipLevel = rootView.startMipmap;
 	viewInfo.subresourceRange.levelCount = getMipmapCount();
-	viewInfo.subresourceRange.baseArrayLayer = 0;
+	viewInfo.subresourceRange.baseArrayLayer = rootView.startLayer;
 	viewInfo.subresourceRange.layerCount = layerCount;
 	viewInfo.components.r = vulkanFormat.swizzleR;
 	viewInfo.components.g = vulkanFormat.swizzleG;
@@ -324,7 +379,7 @@ void Texture::clear()
 
 	if (imageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 
@@ -332,7 +387,7 @@ void Texture::clear()
 
 		vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &range);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
@@ -344,7 +399,7 @@ void Texture::clear()
 	}
 	else
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 
@@ -354,7 +409,7 @@ void Texture::clear()
 
 		vkCmdClearDepthStencilImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &depthStencilColor, 1, &range);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
@@ -394,7 +449,7 @@ void Texture::generateMipmapsInternal()
 	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			0, static_cast<uint32_t>(getMipmapCount()), 0, static_cast<uint32_t>(layerCount));
 
@@ -404,16 +459,16 @@ void Texture::generateMipmapsInternal()
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.baseArrayLayer = rootView.startLayer;
 	barrier.subresourceRange.layerCount = static_cast<uint32_t>(layerCount);
-	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.baseMipLevel = rootView.startMipmap;
 	barrier.subresourceRange.levelCount = 1u;
 
 	uint32_t mipLevels = static_cast<uint32_t>(getMipmapCount());
 
 	for (uint32_t i = 1; i < mipLevels; i++)
 	{
-		barrier.subresourceRange.baseMipLevel = i - 1;
+		barrier.subresourceRange.baseMipLevel = rootView.startMipmap + i - 1;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -429,15 +484,15 @@ void Texture::generateMipmapsInternal()
 		blit.srcOffsets[0] = { 0, 0, 0 };
 		blit.srcOffsets[1] = { getPixelWidth(i - 1), getPixelHeight(i - 1), 1 };
 		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		blit.srcSubresource.mipLevel = i - 1;
-		blit.srcSubresource.baseArrayLayer = 0;
+		blit.srcSubresource.mipLevel = rootView.startMipmap + i - 1;
+		blit.srcSubresource.baseArrayLayer = rootView.startLayer;
 		blit.srcSubresource.layerCount = static_cast<uint32_t>(layerCount);
 
 		blit.dstOffsets[0] = { 0, 0, 0 };
 		blit.dstOffsets[1] = { getPixelWidth(i), getPixelHeight(i), 1 };
 		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		blit.dstSubresource.mipLevel = i;
-		blit.dstSubresource.baseArrayLayer = 0;
+		blit.dstSubresource.mipLevel = rootView.startMipmap + i;
+		blit.dstSubresource.baseArrayLayer = rootView.startLayer;
 		blit.dstSubresource.layerCount = static_cast<uint32_t>(layerCount);
 
 		vkCmdBlitImage(commandBuffer, 
@@ -458,7 +513,7 @@ void Texture::generateMipmapsInternal()
 				1, &barrier);
 	}
 
-	barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+	barrier.subresourceRange.baseMipLevel = rootView.startMipmap + mipLevels - 1;
 	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -472,7 +527,7 @@ void Texture::generateMipmapsInternal()
 			1, &barrier);
 }
 
-void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r)
+void Texture::uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r)
 {
 	VkBuffer stagingBuffer;
 	VmaAllocation vmaAllocation;
@@ -496,11 +551,11 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 	region.bufferRowLength = 0;
 	region.bufferImageHeight = 0;
 
-	uint32_t baseLayer;
-	if (getTextureType() == TEXTURE_VOLUME)
-		baseLayer = 0;
-	else
-		baseLayer = slice;
+	uint32_t baseLayer = rootView.startLayer;
+	if (getTextureType() != TEXTURE_VOLUME)
+		baseLayer += slice;
+
+	level += rootView.startMipmap;
 
 	region.imageSubresource.aspectMask = imageAspect;
 	region.imageSubresource.mipLevel = level;
@@ -520,7 +575,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, 
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			level, 1, baseLayer, 1);
 
@@ -533,7 +588,7 @@ void Texture::uploadByteData(PixelFormat pixelformat, const void *data, size_t s
 			&region
 		);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout,
 			level, 1, baseLayer, 1);
 	}
@@ -558,8 +613,8 @@ void Texture::copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int 
 
 	VkImageSubresourceLayers layers{};
 	layers.aspectMask = imageAspect;
-	layers.mipLevel = mipmap;
-	layers.baseArrayLayer = slice;
+	layers.mipLevel = mipmap + rootView.startMipmap;
+	layers.baseArrayLayer = slice + rootView.startLayer;
 	layers.layerCount = 1;
 
 	VkBufferImageCopy region{};
@@ -572,11 +627,11 @@ void Texture::copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int 
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 	else
 		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_GENERAL, 1, &region);
@@ -588,8 +643,8 @@ void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const 
 
 	VkImageSubresourceLayers layers{};
 	layers.aspectMask = imageAspect;
-	layers.mipLevel = mipmap;
-	layers.baseArrayLayer = slice;
+	layers.mipLevel = mipmap + rootView.startMipmap;
+	layers.baseArrayLayer = slice + rootView.startLayer;
 	layers.layerCount = 1;
 
 	VkBufferImageCopy region{};
@@ -603,11 +658,11 @@ void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const 
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, imageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, imageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageLayout);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageLayout);
 	}
 	else
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, (VkBuffer)dest->getHandle(), 1, &region);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -62,7 +62,7 @@ ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string
 
 	bool forwardcompat = supportsGLSL3 && !forcedefault;
 
-	if (!glslangShader->parse(GetDefaultResources(), defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
+	if (!glslangShader->parse(GetResources(), defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
 	{
 		const char *stagename = "unknown";
 		getConstant(stage, stagename);

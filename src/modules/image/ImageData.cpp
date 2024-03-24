@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -194,10 +194,7 @@ love::filesystem::FileData *ImageData::encode(FormatHandler::EncodedFormat encod
 	}
 
 	if (encoder != nullptr)
-	{
-		thread::Lock lock(mutex);
 		encodedimage = encoder->encode(rawimage, encodedFormat);
-	}
 
 	if (encoder == nullptr || encodedimage.data == nullptr)
 		throw love::Exception("No suitable image encoder for the %s pixel format.", getPixelFormatName(format));
@@ -537,8 +534,6 @@ void ImageData::setPixel(int x, int y, const Colorf &c)
 	if (pixelSetFunction == nullptr)
 		throw love::Exception("ImageData:setPixel does not currently support the %s pixel format.", getPixelFormatName(format));
 
-	Lock lock(mutex);
-
 	pixelSetFunction(c, p);
 }
 
@@ -552,8 +547,6 @@ void ImageData::getPixel(int x, int y, Colorf &c) const
 
 	if (pixelGetFunction == nullptr)
 		throw love::Exception("ImageData:getPixel does not currently support the %s pixel format.", getPixelFormatName(format));
-
-	Lock lock(mutex);
 
 	pixelGetFunction(p, c);
 }
@@ -701,9 +694,6 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 	if (sy + sh > srcH)
 		sh = srcH - sy;
 
-	Lock lock2(src->mutex);
-	Lock lock1(mutex);
-
 	uint8 *s = (uint8 *) src->getData();
 	uint8 *d = (uint8 *) getData();
 
@@ -772,11 +762,6 @@ void ImageData::paste(ImageData *src, int dx, int dy, int sx, int sy, int sw, in
 				throw love::Exception("ImageData:paste does not currently support converting to the %s pixel format.", getPixelFormatName(dstformat));
 		}
 	}
-}
-
-love::thread::Mutex *ImageData::getMutex() const
-{
-	return mutex;
 }
 
 size_t ImageData::getPixelSize() const

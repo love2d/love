@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -180,8 +180,9 @@ Graphics::DisplayState::DisplayState()
 	defaultSamplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_LINEAR;
 }
 
-Graphics::Graphics()
-	: width(0)
+Graphics::Graphics(const char *name)
+	: Module(M_GRAPHICS, name)
+	, width(0)
 	, height(0)
 	, pixelWidth(0)
 	, pixelHeight(0)
@@ -1202,15 +1203,16 @@ bool Graphics::isRenderTargetActive() const
 
 bool Graphics::isRenderTargetActive(Texture *texture) const
 {
+	Texture *roottexture = texture->getRootViewInfo().texture;
 	const auto &rts = states.back().renderTargets;
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.texture.get() == texture)
+		if (rt.texture.get() && rt.texture->getRootViewInfo().texture == roottexture)
 			return true;
 	}
 
-	if (rts.depthStencil.texture.get() == texture)
+	if (rts.depthStencil.texture.get() && rts.depthStencil.texture->getRootViewInfo().texture == roottexture)
 		return true;
 
 	return false;
@@ -1218,16 +1220,27 @@ bool Graphics::isRenderTargetActive(Texture *texture) const
 
 bool Graphics::isRenderTargetActive(Texture *texture, int slice) const
 {
+	const auto &rootinfo = texture->getRootViewInfo();
+	slice += rootinfo.startLayer;
+
 	const auto &rts = states.back().renderTargets;
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.texture.get() == texture && rt.slice == slice)
-			return true;
+		if (rt.texture.get())
+		{
+			const auto &info = rt.texture->getRootViewInfo();
+			if (rootinfo.texture == info.texture && rt.slice + info.startLayer == slice)
+				return true;
+		}
 	}
 
-	if (rts.depthStencil.texture.get() == texture && rts.depthStencil.slice == slice)
-		return true;
+	if (rts.depthStencil.texture.get())
+	{
+		const auto &info = rts.depthStencil.texture->getRootViewInfo();
+		if (rootinfo.texture == info.texture && rts.depthStencil.slice + info.startLayer == slice)
+			return true;
+	}
 
 	return false;
 }
@@ -2576,21 +2589,42 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool 
 
 		BatchedDrawCommand cmd;
 		cmd.formats[0] = getSinglePositionFormat(is2D);
-		cmd.formats[1] = CommonFormat::RGBAub;
+		cmd.formats[1] = CommonFormat::STf_RGBAub;
 		cmd.indexMode = TRIANGLEINDEX_FAN;
 		cmd.vertexCount = (int)count - (skipLastFilledVertex ? 1 : 0);
 
 		BatchedVertexData data = requestBatchedDraw(cmd);
 
-		if (is2D)
-			t.transformXY((Vector2 *) data.stream[0], coords, cmd.vertexCount);
-		else
-			t.transformXY0((Vector3 *) data.stream[0], coords, cmd.vertexCount);
+		// Compute texture coordinates.
+		constexpr float inf = std::numeric_limits<float>::infinity();
+		Vector2 mincoord(inf, inf);
+		Vector2 maxcoord(-inf, -inf);
+
+		for (int i = 0; i < cmd.vertexCount; i++)
+		{
+			Vector2 v = coords[i];
+			mincoord.x = std::min(mincoord.x, v.x);
+			mincoord.y = std::min(mincoord.y, v.y);
+			maxcoord.x = std::max(maxcoord.x, v.x);
+			maxcoord.y = std::max(maxcoord.y, v.y);
+		}
+
+		Vector2 invsize(1.0f / (maxcoord.x - mincoord.x), 1.0f / (maxcoord.y - mincoord.y));
+		Vector2 start(mincoord.x * invsize.x, mincoord.y * invsize.y);
 
 		Color32 c = toColor32(getColor());
-		Color32 *colordata = (Color32 *) data.stream[1];
+		STf_RGBAub *attributes = (STf_RGBAub *) data.stream[1];
 		for (int i = 0; i < cmd.vertexCount; i++)
-			colordata[i] = c;
+		{
+			attributes[i].s = coords[i].x * invsize.x - start.x;
+			attributes[i].t = coords[i].y * invsize.y - start.y;
+			attributes[i].color = c;
+		}
+
+		if (is2D)
+			t.transformXY((Vector2*)data.stream[0], coords, cmd.vertexCount);
+		else
+			t.transformXY0((Vector3*)data.stream[0], coords, cmd.vertexCount);
 	}
 }
 
@@ -2768,27 +2802,6 @@ Vector2 Graphics::inverseTransformPoint(Vector2 point)
 	return p;
 }
 
-void Graphics::setOrthoProjection(float w, float h, float near, float far)
-{
-	if (near >= far)
-		throw love::Exception("Orthographic projection Z far value must be greater than the Z near value.");
-
-	Matrix4 m = Matrix4::ortho(0.0f, w, 0.0f, h, near, far);
-	setCustomProjection(m);
-}
-
-void Graphics::setPerspectiveProjection(float verticalfov, float aspect, float near, float far)
-{
-	if (near <= 0.0f)
-		throw love::Exception("Perspective projection Z near value must be greater than 0.");
-
-	if (near >= far)
-		throw love::Exception("Perspective projection Z far value must be greater than the Z near value.");
-
-	Matrix4 m = Matrix4::perspective(verticalfov, aspect, near, far);
-	setCustomProjection(m);
-}
-
 void Graphics::setCustomProjection(const Matrix4 &m)
 {
 	flushBatchedDraws();
@@ -2818,29 +2831,14 @@ void Graphics::resetProjection()
 
 	state.useCustomProjection = false;
 
-	updateDeviceProjection(Matrix4::ortho(0.0f, w, 0.0f, h, -10.0f, 10.0f));
+	// NDC is y-up. The ortho() parameter names assume that as well. We want
+	// a y-down projection, so we set bottom to h and top to 0.
+	updateDeviceProjection(Matrix4::ortho(0.0f, w, h, 0.0f, -10.0f, 10.0f));
 }
 
 void Graphics::updateDeviceProjection(const Matrix4 &projection)
 {
-	// Note: graphics implementations define computeDeviceProjection.
-	deviceProjectionMatrix = computeDeviceProjection(projection, isRenderTargetActive());
-}
-
-Matrix4 Graphics::calculateDeviceProjection(const Matrix4 &projection, uint32 flags) const
-{
-	Matrix4 m = projection;
-	bool reverseZ = (flags & DEVICE_PROJECTION_REVERSE_Z) != 0;
-
-	if (flags & DEVICE_PROJECTION_FLIP_Y)
-		m.setRow(1, -m.getRow(1));
-
-	if (flags & DEVICE_PROJECTION_Z_01) // Go from Z [-1, 1] to Z [0, 1].
-		m.setRow(2, m.getRow(2) * (reverseZ ? -0.5f : 0.5f) + m.getRow(3));
-	else if (reverseZ)
-		m.setRow(2, -m.getRow(2));
-
-	return m;
+	deviceProjectionMatrix = projection;
 }
 
 STRINGMAP_CLASS_BEGIN(Graphics, Graphics::DrawMode, Graphics::DRAW_MAX_ENUM, drawMode)
