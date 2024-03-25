@@ -334,14 +334,13 @@ Joystick::JoystickInput Joystick::getGamepadMapping(const GamepadInput &input) c
 
 	int bindcount = 0;
 	SDL_GamepadBinding **sdlbindings = SDL_GetGamepadBindings(controller, &bindcount);
-	const SDL_GamepadBinding *sdlbinding = nullptr;
 	for (int i = 0; i < bindcount; i++)
 	{
 		const SDL_GamepadBinding *b = sdlbindings[i];
-		if ((input.type == INPUT_TYPE_BUTTON && b->outputType == SDL_GAMEPAD_BINDTYPE_BUTTON && b->output.button == sdlbutton)
-			|| (input.type == INPUT_TYPE_AXIS && b->outputType == SDL_GAMEPAD_BINDTYPE_AXIS && b->output.axis.axis == sdlaxis))
+		if ((input.type == INPUT_TYPE_BUTTON && b->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON && b->output.button == sdlbutton)
+			|| (input.type == INPUT_TYPE_AXIS && b->output_type == SDL_GAMEPAD_BINDTYPE_AXIS && b->output.axis.axis == sdlaxis))
 		{
-			switch (b->inputType)
+			switch (b->input_type)
 			{
 			case SDL_GAMEPAD_BINDTYPE_BUTTON:
 				jinput.type = INPUT_TYPE_BUTTON;

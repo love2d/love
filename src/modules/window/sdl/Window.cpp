@@ -1512,13 +1512,21 @@ void Window::setMouseGrab(bool grab)
 {
 	mouseGrabbed = grab;
 	if (window)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		SDL_SetWindowMouseGrab(window, (SDL_bool) grab);
+#else
 		SDL_SetWindowGrab(window, (SDL_bool) grab);
+#endif
 }
 
 bool Window::isMouseGrabbed() const
 {
 	if (window)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		return SDL_GetWindowMouseGrab(window);
+#else
 		return SDL_GetWindowGrab(window) != SDL_FALSE;
+#endif
 	else
 		return mouseGrabbed;
 }
@@ -1684,7 +1692,11 @@ int Window::showMessageBox(const MessageBoxData &data)
 	{
 		SDL_MessageBoxButtonData sdlbutton = {};
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		sdlbutton.buttonID = i;
+#else
 		sdlbutton.buttonid = i;
+#endif
 		sdlbutton.text = data.buttons[i].c_str();
 
 		if (i == data.enterButtonIndex)
