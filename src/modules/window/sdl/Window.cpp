@@ -756,6 +756,10 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	love::android::setImmersive(fullscreen);
 #endif
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_SyncWindow(window);
+#endif
+
 	return true;
 }
 
@@ -804,6 +808,10 @@ bool Window::onSizeChanged(int width, int height)
 
 void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphicsViewport)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_SyncWindow(window);
+#endif
+
 	Uint32 wflags = SDL_GetWindowFlags(window);
 
 	// Set the new display mode as the current display mode.
@@ -1146,6 +1154,10 @@ void Window::setPosition(int x, int y, int displayindex)
 	y += displaybounds.y;
 
 	SDL_SetWindowPosition(window, x, y);
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_SyncWindow(window);
+#endif
 
 	settings.useposition = true;
 }
