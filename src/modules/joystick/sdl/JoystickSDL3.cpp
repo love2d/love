@@ -27,6 +27,8 @@
 // SDL
 #include <SDL_version.h>
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+
 // C++
 #include <algorithm>
 #include <limits>
@@ -646,3 +648,5 @@ EnumMap<Joystick::GamepadButton, SDL_GamepadButton, Joystick::GAMEPAD_BUTTON_MAX
 } // sdl
 } // joystick
 } // love
+
+#endif // SDL_VERSION_ATLEAST(3, 0, 0)

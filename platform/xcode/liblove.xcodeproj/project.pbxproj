@@ -54,6 +54,9 @@
 		D943E58E2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
 		D943E58F2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
 		D943E5902A24D56000D80361 /* PhysfsIo.h in Headers */ = {isa = PBXBuildFile; fileRef = D943E58D2A24D56000D80361 /* PhysfsIo.h */; };
+		D99081EE2BB2473900D2B0E4 /* JoystickSDL3.h in Headers */ = {isa = PBXBuildFile; fileRef = D99081EC2BB2473900D2B0E4 /* JoystickSDL3.h */; };
+		D99081EF2BB2473900D2B0E4 /* JoystickSDL3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D99081ED2BB2473900D2B0E4 /* JoystickSDL3.cpp */; };
+		D99081F02BB2473900D2B0E4 /* JoystickSDL3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D99081ED2BB2473900D2B0E4 /* JoystickSDL3.cpp */; };
 		D9DAB9222961F0EE00C64820 /* HarfbuzzShaper.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DAB9202961F0EE00C64820 /* HarfbuzzShaper.h */; };
 		D9DAB9232961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */; };
 		D9DAB9242961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */; };
@@ -1404,6 +1407,8 @@
 		D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = harfbuzz.xcframework; path = ios/libraries/harfbuzz.xcframework; sourceTree = "<group>"; };
 		D943E58C2A24D56000D80361 /* PhysfsIo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PhysfsIo.cpp; sourceTree = "<group>"; };
 		D943E58D2A24D56000D80361 /* PhysfsIo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PhysfsIo.h; sourceTree = "<group>"; };
+		D99081EC2BB2473900D2B0E4 /* JoystickSDL3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JoystickSDL3.h; sourceTree = "<group>"; };
+		D99081ED2BB2473900D2B0E4 /* JoystickSDL3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JoystickSDL3.cpp; sourceTree = "<group>"; };
 		D9DAB9202961F0EE00C64820 /* HarfbuzzShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HarfbuzzShaper.h; sourceTree = "<group>"; };
 		D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HarfbuzzShaper.cpp; sourceTree = "<group>"; };
 		D9DAB9252961F0FF00C64820 /* GenericShaper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GenericShaper.h; sourceTree = "<group>"; };
@@ -3047,6 +3052,8 @@
 				FA0B7BEE1A95902C000E1D17 /* Joystick.h */,
 				FA0B7BEF1A95902C000E1D17 /* JoystickModule.cpp */,
 				FA0B7BF01A95902C000E1D17 /* JoystickModule.h */,
+				D99081ED2BB2473900D2B0E4 /* JoystickSDL3.cpp */,
+				D99081EC2BB2473900D2B0E4 /* JoystickSDL3.h */,
 			);
 			path = sdl;
 			sourceTree = "<group>";
@@ -4210,6 +4217,7 @@
 				FABDA9BE2552448300B5C523 /* Box2D.h in Headers */,
 				D9DAB9222961F0EE00C64820 /* HarfbuzzShaper.h in Headers */,
 				FA56AA3A1FAFF02000A43D5F /* memory.h in Headers */,
+				D99081EE2BB2473900D2B0E4 /* JoystickSDL3.h in Headers */,
 				FA0B7E441A95902C000E1D17 /* wrap_CircleShape.h in Headers */,
 				FA0B7EB41A95902C000E1D17 /* System.h in Headers */,
 				FAF1405A1E20934C00F898D2 /* ConstantUnion.h in Headers */,
@@ -4735,6 +4743,7 @@
 				FA0B7CE61A95902C000E1D17 /* wrap_Source.cpp in Sources */,
 				FA9D8DDE1DEF842A002CD881 /* Drawable.cpp in Sources */,
 				FA0B7CCE1A95902C000E1D17 /* Audio.cpp in Sources */,
+				D99081F02BB2473900D2B0E4 /* JoystickSDL3.cpp in Sources */,
 				FADF54031E3D77B500012CC0 /* wrap_TextBatch.cpp in Sources */,
 				FA0B7DCB1A95902C000E1D17 /* Keyboard.cpp in Sources */,
 				FA0B7DFB1A95902C000E1D17 /* Body.cpp in Sources */,
@@ -5163,6 +5172,7 @@
 				FA0B7E421A95902C000E1D17 /* wrap_CircleShape.cpp in Sources */,
 				FA0B7CE51A95902C000E1D17 /* wrap_Source.cpp in Sources */,
 				FAC7CD921FE35E95006A60C7 /* physfs_archiver_hog.c in Sources */,
+				D99081EF2BB2473900D2B0E4 /* JoystickSDL3.cpp in Sources */,
 				FAF140931E20934C00F898D2 /* PpScanner.cpp in Sources */,
 				FA9D53AC1F5307E900125C6B /* Deprecations.cpp in Sources */,
 				FA0B7CCD1A95902C000E1D17 /* Audio.cpp in Sources */,

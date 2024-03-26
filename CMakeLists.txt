@@ -727,6 +727,8 @@ source_group("modules\\image\\magpie" FILES ${LOVE_SRC_MODULE_IMAGE_MAGPIE})
 set(LOVE_SRC_MODULE_JOYSTICK_ROOT
 	src/modules/joystick/Joystick.cpp
 	src/modules/joystick/Joystick.h
+	src/modules/joystick/JoystickSDL3.cpp
+	src/modules/joystick/JoystickSDL3.h
 	src/modules/joystick/JoystickModule.h
 	src/modules/joystick/wrap_Joystick.cpp
 	src/modules/joystick/wrap_Joystick.h
