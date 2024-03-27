@@ -1021,7 +1021,7 @@ void Graphics::setScissor(const Rect &rect)
 {
 	flushBatchedDraws();
 
-	VkRect2D scissor = computeScissor(rect, static_cast<double>(swapChainExtent.width), static_cast<double>(swapChainExtent.height), getCurrentDPIScale(), preTransform);
+	VkRect2D scissor = computeScissor(rect, static_cast<double>(swapChainExtent.width), static_cast<double>(swapChainExtent.height), getCurrentDPIScale(), VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR);
 	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 
 	states.back().scissor = true;
@@ -1402,7 +1402,7 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	love::graphics::Shader::BuiltinUniformData data;
 
 	data.transformMatrix = getTransform();
-	data.projectionMatrix = displayRotation * getDeviceProjection();
+	data.projectionMatrix = getDeviceProjection();
 
 	// The normal matrix is the transpose of the inverse of the rotation portion
 	// (top-left 3x3) of the transform matrix.
@@ -1842,36 +1842,6 @@ void Graphics::createSwapChain()
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
 	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
-	if ((swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) ||
-		(swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR))
-	{
-		uint32_t width, height;
-		width = extent.width;
-		height = extent.height;
-		extent.width = height;
-		extent.height = width;
-	}
-
-	auto currentTransform = swapChainSupport.capabilities.currentTransform;
-	constexpr float PI = 3.14159265358979323846f;
-	float angle = 0.0f;
-	if (currentTransform & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
-		angle = 0.0f;
-	else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR)
-		angle = -PI / 2.0f;
-	else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR)
-		angle = -PI;
-	else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
-		angle = -3.0f * PI / 2.0f;
-
-	float data[] = {
-		cosf(angle), -sinf(angle), 0.0f, 0.0f,
-		sinf(angle), cosf(angle), 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f,
-	};
-	displayRotation = Matrix4(data);
-
 	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
 	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
 		imageCount = swapChainSupport.capabilities.maxImageCount;
@@ -1903,7 +1873,7 @@ void Graphics::createSwapChain()
 		createInfo.pQueueFamilyIndices = nullptr;
 	}
 
-	createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+	createInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 	createInfo.compositeAlpha = chooseCompositeAlpha(swapChainSupport.capabilities);
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;
@@ -1918,7 +1888,6 @@ void Graphics::createSwapChain()
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
-	preTransform = swapChainSupport.capabilities.currentTransform;
 
 	switch (swapChainImageFormat)
 	{

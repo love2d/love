@@ -392,8 +392,6 @@ private:
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	VkSwapchainKHR swapChain = VK_NULL_HANDLE;
-	VkSurfaceTransformFlagBitsKHR preTransform = {};
-	Matrix4 displayRotation;
 	std::vector<VkImage> swapChainImages;
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
 	PixelFormat swapChainPixelFormat = PIXELFORMAT_UNKNOWN;
