@@ -54,13 +54,10 @@ Compilation
 Follow the instructions at the [megasource][megasource] repository page.
 
 ### *nix
-Run `platform/unix/automagic` from the repository root, then run ./configure and make.
+First pick a directory to store generated files to, say `build/` and then:
 
-	$ platform/unix/automagic
-	$ ./configure
-	$ make
-
-When using a source release, automagic has already been run, and the first step can be skipped.
+	$ cmake -B build -S. --install-prefix $PWD/prefix # this will create the directory `build/`
+	$ cmake --build build --target install # this will put the files in `prefix/`.
 
 ### macOS
 Download or clone [this repository][dependencies-apple] and copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder.
