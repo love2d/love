@@ -214,6 +214,8 @@ bool Texture::loadVolatile()
 				viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 				viewInfo.image = textureImage;
 				viewInfo.viewType = Vulkan::getImageViewType(getTextureType());
+				if (viewInfo.viewType == VK_IMAGE_VIEW_TYPE_CUBE)
+					viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 				viewInfo.format = vulkanFormat.internalFormat;
 				viewInfo.subresourceRange.aspectMask = imageAspect;
 				viewInfo.subresourceRange.baseMipLevel = mip + rootView.startMipmap;
