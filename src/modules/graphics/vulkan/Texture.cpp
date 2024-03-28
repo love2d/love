@@ -383,7 +383,7 @@ void Texture::clear()
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 
-		auto clearColor = getClearValue();
+		auto clearColor = getClearColor(this, ColorD(0, 0, 0, 0));
 
 		vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &range);
 
@@ -393,7 +393,7 @@ void Texture::clear()
 	}
 	else if (imageLayout == VK_IMAGE_LAYOUT_GENERAL)
 	{
-		auto clearColor = getClearValue();
+		auto clearColor = getClearColor(this, ColorD(0, 0, 0, 0));
 
 		vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &range);
 	}
@@ -415,33 +415,41 @@ void Texture::clear()
 	}
 }
 
-VkClearColorValue Texture::getClearValue()
+VkClearColorValue Texture::getClearColor(love::graphics::Texture *texture, const ColorD &color)
 {
-	auto vulkanFormat = Vulkan::getTextureFormat(format);
+	PixelFormatType formattype = PIXELFORMATTYPE_SFLOAT;
+	if (texture != nullptr)
+		formattype = getPixelFormatInfo(texture->getPixelFormat()).dataType;
 
-	VkClearColorValue clearColor{};
-	switch (vulkanFormat.internalFormatRepresentation)
+	VkClearColorValue c{};
+
+	switch (formattype)
 	{
-	case FORMATREPRESENTATION_FLOAT:
-		clearColor.float32[0] = 0.0f;
-		clearColor.float32[1] = 0.0f;
-		clearColor.float32[2] = 0.0f;
-		clearColor.float32[3] = 0.0f;
+	case PIXELFORMATTYPE_SINT:
+		c.int32[0] = (int32)color.r;
+		c.int32[1] = (int32)color.g;
+		c.int32[2] = (int32)color.b;
+		c.int32[3] = (int32)color.a;
 		break;
-	case FORMATREPRESENTATION_SINT:
-		clearColor.int32[0] = 0;
-		clearColor.int32[1] = 0;
-		clearColor.int32[2] = 0;
-		clearColor.int32[3] = 0;
+	case PIXELFORMATTYPE_UINT:
+		c.uint32[0] = (uint32)color.r;
+		c.uint32[1] = (uint32)color.g;
+		c.uint32[2] = (uint32)color.b;
+		c.uint32[3] = (uint32)color.a;
 		break;
-	case FORMATREPRESENTATION_UINT:
-		clearColor.uint32[0] = 0;
-		clearColor.uint32[1] = 0;
-		clearColor.uint32[2] = 0;
-		clearColor.uint32[3] = 0;
+	default:
+		{
+			Colorf cf((float)color.r, (float)color.g, (float)color.b, (float)color.a);
+			gammaCorrectColor(cf);
+			c.float32[0] = cf.r;
+			c.float32[1] = cf.g;
+			c.float32[2] = cf.b;
+			c.float32[3] = cf.a;
+		}
 		break;
 	}
-	return clearColor;
+
+	return c;
 }
 
 void Texture::generateMipmapsInternal()

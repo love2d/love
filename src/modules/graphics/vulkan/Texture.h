@@ -68,11 +68,11 @@ public:
 	int getMSAA() const override;
 	ptrdiff_t getHandle() const override;
 
+	static VkClearColorValue getClearColor(love::graphics::Texture *texture, const ColorD &color);
+
 private:
 	void createTextureImageView();
 	void clear();
-
-	VkClearColorValue getClearValue();
 
 	Graphics *vgfx = nullptr;
 	VkDevice device = VK_NULL_HANDLE;

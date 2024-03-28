@@ -185,89 +185,12 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 	if (!color.hasValue && !stencil.hasValue && !depth.hasValue)
 		return;
 
-	flushBatchedDraws();
+	std::vector<OptionalColorD> colors;
 
-	if (renderPassState.active)
-	{
-		VkClearAttachment attachment{};
+	if (color.hasValue)
+		colors.resize(std::max(1, (int)states.back().renderTargets.colors.size()), color);
 
-		if (color.hasValue)
-		{
-			Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
-			gammaCorrectColor(cf);
-
-			attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			attachment.clearValue.color.float32[0] = static_cast<float>(cf.r);
-			attachment.clearValue.color.float32[1] = static_cast<float>(cf.g);
-			attachment.clearValue.color.float32[2] = static_cast<float>(cf.b);
-			attachment.clearValue.color.float32[3] = static_cast<float>(cf.a);
-		}
-
-		VkClearAttachment depthStencilAttachment{};
-
-		if (stencil.hasValue)
-		{
-			depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-			depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
-		}
-		if (depth.hasValue)
-		{
-			depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
-			depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
-		}
-
-		std::array<VkClearAttachment, 2> attachments = {
-			attachment,
-			depthStencilAttachment
-		};
-
-		VkClearRect rect{};
-		rect.layerCount = 1;
-		rect.rect.extent.width = static_cast<uint32_t>(renderPassState.width);
-		rect.rect.extent.height = static_cast<uint32_t>(renderPassState.height);
-
-		vkCmdClearAttachments(
-			commandBuffers[currentFrame], 
-			static_cast<uint32_t>(attachments.size()), attachments.data(),
-			1, &rect);
-	}
-	else
-	{
-		if (color.hasValue)
-		{
-			renderPassState.renderPassConfiguration.colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-
-			Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
-			gammaCorrectColor(cf);
-
-			renderPassState.clearColors[0].color.float32[0] = static_cast<float>(cf.r);
-			renderPassState.clearColors[0].color.float32[1] = static_cast<float>(cf.g);
-			renderPassState.clearColors[0].color.float32[2] = static_cast<float>(cf.b);
-			renderPassState.clearColors[0].color.float32[3] = static_cast<float>(cf.a);
-		}
-
-		if (depth.hasValue)
-		{
-			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[1].depthStencil.depth = static_cast<float>(depth.value);
-		}
-
-		if (stencil.hasValue)
-		{
-			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[1].depthStencil.stencil = static_cast<uint32_t>(stencil.value);
-		}
-
-		if (renderPassState.isWindow)
-		{
-			renderPassState.windowClearRequested = true;
-			renderPassState.mainWindowClearColorValue = color;
-			renderPassState.mainWindowClearDepthValue = depth;
-			renderPassState.mainWindowClearStencilValue = stencil;
-		}
-		else
-			startRenderPass();
-	}
+	clear(colors, stencil, depth);
 }
 
 void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
@@ -277,22 +200,22 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 	flushBatchedDraws();
 
+	const auto &rts = states.back().renderTargets.colors;
+	size_t ncolorbuffers = isRenderTargetActive() ? rts.size() : 1;
+	size_t ncolors = std::min(ncolorbuffers, colors.size());
+
 	if (renderPassState.active)
 	{
 		std::vector<VkClearAttachment> attachments;
-		for (const auto &color : colors)
+		for (size_t i = 0; i < ncolors; i++)
 		{
+			const OptionalColorD &color = colors[i];
 			VkClearAttachment attachment{};
 			if (color.hasValue)
 			{
-				Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
-				gammaCorrectColor(cf);
-
+				auto texture = i < rts.size() ? rts[i].texture.get() : nullptr;
 				attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				attachment.clearValue.color.float32[0] = static_cast<float>(cf.r);
-				attachment.clearValue.color.float32[1] = static_cast<float>(cf.g);
-				attachment.clearValue.color.float32[2] = static_cast<float>(cf.b);
-				attachment.clearValue.color.float32[3] = static_cast<float>(cf.a);
+				attachment.clearValue.color = Texture::getClearColor(texture, color.value);
 			}
 			attachments.push_back(attachment);
 		}
@@ -310,7 +233,8 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 			depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
 		}
 
-		attachments.push_back(depthStencilAttachment);
+		if (stencil.hasValue || depth.hasValue)
+			attachments.push_back(depthStencilAttachment);
 
 		VkClearRect rect{};
 		rect.layerCount = 1;
@@ -324,36 +248,38 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 	}
 	else
 	{
-		for (size_t i = 0; i < colors.size(); i++)
+		for (size_t i = 0; i < ncolors; i++)
 		{
 			if (colors[i].hasValue)
 			{
 				renderPassState.renderPassConfiguration.colorAttachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 
-				auto &color = colors[i];
-				Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
-				gammaCorrectColor(cf);
-
-				renderPassState.clearColors[i].color.float32[0] = static_cast<float>(cf.r);
-				renderPassState.clearColors[i].color.float32[1] = static_cast<float>(cf.g);
-				renderPassState.clearColors[i].color.float32[2] = static_cast<float>(cf.b);
-				renderPassState.clearColors[i].color.float32[3] = static_cast<float>(cf.a);
+				auto texture = i < rts.size() ? rts[i].texture.get() : nullptr;
+				renderPassState.clearColors[i].color = Texture::getClearColor(texture, colors[i].value);
 			}
 		}
 
 		if (depth.hasValue)
 		{
 			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[colors.size()].depthStencil.depth = static_cast<float>(depth.value);
+			renderPassState.clearColors[ncolorbuffers].depthStencil.depth = static_cast<float>(depth.value);
 		}
 
 		if (stencil.hasValue)
 		{
 			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[colors.size()].depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+			renderPassState.clearColors[ncolorbuffers].depthStencil.stencil = static_cast<uint32_t>(stencil.value);
 		}
 
-		startRenderPass();
+		if (renderPassState.isWindow)
+		{
+			renderPassState.windowClearRequested = true;
+			renderPassState.mainWindowClearColorValue = colors.empty() ? OptionalColorD() : colors[0];
+			renderPassState.mainWindowClearDepthValue = depth;
+			renderPassState.mainWindowClearStencilValue = stencil;
+		}
+		else
+			startRenderPass();
 	}
 }
 
