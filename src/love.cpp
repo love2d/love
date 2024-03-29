@@ -299,6 +299,35 @@ static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &res
 	return done;
 }
 
+#ifdef LOVE_WINDOWS
+static INT_PTR CALLBACK EmptyDlgProc(HWND, UINT, WPARAM, LPARAM)
+{
+    return 0;
+}
+
+// Windows stores an initial window state passed in by the shell (or another process) if STARTF_USESHOWWINDOW is set.
+// This state is applied to the first window that receives a 'ShowWindow' call.
+// To ensure our window is not influenced by this, we create a dummy window to catch this initial state.
+// Ideally we would use SDL for this, but it skips calls to 'ShowWindow' if the window is hidden...
+static void love_windows_ignore_initial_wShowWindow()
+{
+    // Build up a dialog template
+    enum { DlgX = 0, DlgY = 0, DlgW = 100, DlgH = 60, ChildCount = 0, MenuId = 0, ClassName = 0, Title = 0 };
+    const UINT DialogStyle = DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU;
+    const UINT DialogStyleEx = 0;
+    static const WORD DialogTemplate[] =
+    {
+        LOWORD(DialogStyle), HIWORD(DialogStyle), LOWORD(DialogStyleEx), HIWORD(DialogStyleEx), ChildCount, DlgX, DlgY, DlgW, DlgH, MenuId, ClassName, Title,
+    };
+    // Create a window using the template
+    HWND hWnd = CreateDialogIndirectParamW(NULL, (LPCDLGTEMPLATE)DialogTemplate, NULL, EmptyDlgProc, NULL);
+    // Now catch the window state provided
+    ShowWindow(hWnd, SW_HIDE);
+    // We are done
+    DestroyWindow(hWnd);
+}
+#endif
+
 int main(int argc, char **argv)
 {
 	if (strcmp(LOVE_VERSION_STRING, love_version()) != 0)
@@ -311,6 +340,10 @@ int main(int argc, char **argv)
 	int retval = 0;
 	DoneAction done = DONE_QUIT;
 	love::Variant restartvalue;
+
+#ifdef LOVE_WINDOWS
+    love_windows_ignore_initial_wShowWindow();
+#endif
 
 	do
 	{
