@@ -634,8 +634,8 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 	}
 
 	// Not supported on all platforms or GL versions, I believe.
-	if (!attributes.isEnabled(ATTRIB_POS))
-		throw love::Exception("Mesh must have an enabled VertexPosition attribute to be drawn.");
+	if ((attributes.enableBits & ~(ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR)) == 0)
+		throw love::Exception("Mesh must have an enabled VertexPosition or custom attribute to be drawn.");
 
 	Graphics::TempTransform transform(gfx, m);
 
