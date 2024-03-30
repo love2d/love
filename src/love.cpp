@@ -26,6 +26,10 @@
 
 #ifdef LOVE_BUILD_EXE
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#include <SDL_main.h>
+#endif
+
 // Lua
 extern "C" {
 	#include <lua.h>

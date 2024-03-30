@@ -383,7 +383,11 @@ Message *Event::convert(const SDL_Event &e)
 		// (and SDL doesn't differentiate.) Non-screen touch devices like Mac
 		// trackpads won't give touch coords in the window's coordinate-space.
 #ifndef LOVE_MACOS
-		touchinfo.id = (int64) e.tfinger.fingerId;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		touchinfo.id = (int64) e.tfinger.fingerID;
+#else
+		touchinfo.id = (int64)e.tfinger.fingerId;
+#endif
 		touchinfo.x = e.tfinger.x;
 		touchinfo.y = e.tfinger.y;
 		touchinfo.dx = e.tfinger.dx;

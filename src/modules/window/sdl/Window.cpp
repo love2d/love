@@ -1472,15 +1472,27 @@ void Window::swapBuffers()
 					dwmRefreshRate = (double)info.rateRefresh.uiNumerator / (double)info.rateRefresh.uiDenominator;
 
 				SDL_DisplayMode dmode = {};
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+				SDL_DisplayID display = SDL_GetDisplayForWindow(window);
+				const SDL_DisplayMode* modePtr = SDL_GetCurrentDisplayMode(display);
+				if (modePtr)
+					dmode = *modePtr;
+#else
 				int displayindex = SDL_GetWindowDisplayIndex(window);
 
 				if (displayindex >= 0)
 					SDL_GetCurrentDisplayMode(displayindex, &dmode);
+#endif
 
 				if (dmode.refresh_rate > 0 && dwmRefreshRate > 0 && (fabs(dmode.refresh_rate - dwmRefreshRate) < 2))
 				{
 					SDL_GL_SetSwapInterval(0);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+					int interval = 0;
+					if (SDL_GL_GetSwapInterval(&interval) == 0 && interval == 0)
+#else
 					if (SDL_GL_GetSwapInterval() == 0)
+#endif
 						useDwmFlush = true;
 					else
 						SDL_GL_SetSwapInterval(swapInterval);
@@ -1735,25 +1747,29 @@ void Window::requestAttention(bool continuous)
 	if (hasFocus())
 		return;
 
+	FLASHWINFO flashinfo = { sizeof(FLASHWINFO) };
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	flashinfo.hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+#else
 	SDL_SysWMinfo wminfo = {};
 	SDL_VERSION(&wminfo.version);
+	if (!SDL_GetWindowWMInfo(window, &wminfo))
+		return;
 
-	if (SDL_GetWindowWMInfo(window, &wminfo))
+	flashinfo.hwnd = wminfo.info.win.window;
+#endif
+
+	flashinfo.uCount = 1;
+	flashinfo.dwFlags = FLASHW_ALL;
+
+	if (continuous)
 	{
-		FLASHWINFO flashinfo = {};
-		flashinfo.cbSize = sizeof(FLASHWINFO);
-		flashinfo.hwnd = wminfo.info.win.window;
-		flashinfo.uCount = 1;
-		flashinfo.dwFlags = FLASHW_ALL;
-
-		if (continuous)
-		{
-			flashinfo.uCount = 0;
-			flashinfo.dwFlags |= FLASHW_TIMERNOFG;
-		}
-
-		FlashWindowEx(&flashinfo);
+		flashinfo.uCount = 0;
+		flashinfo.dwFlags |= FLASHW_TIMERNOFG;
 	}
+
+	FlashWindowEx(&flashinfo);
 
 #elif defined(LOVE_MACOS)
 

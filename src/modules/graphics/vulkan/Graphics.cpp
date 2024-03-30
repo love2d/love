@@ -29,6 +29,7 @@
 #include "Shader.h"
 #include "Vulkan.h"
 
+#include <SDL_version.h>
 #include <SDL_vulkan.h>
 
 #include <algorithm>
@@ -120,10 +121,18 @@ Graphics::Graphics()
 	// GetInstanceExtensions works with a null window parameter as long as
 	// SDL_Vulkan_LoadLibrary has been called (which we do earlier).
 	unsigned int count;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	char const* const* extensions_string = SDL_Vulkan_GetInstanceExtensions(&count);
+	if (extensions_string == nullptr)
+		throw love::Exception("couldn't retrieve sdl vulkan extensions");
+
+	std::vector<const char*> extensions(extensions_string, extensions_string + count);
+#else
 	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, nullptr) != SDL_TRUE)
 		throw love::Exception("couldn't retrieve sdl vulkan extensions");
 
 	std::vector<const char*> extensions = {};
+#endif
 
 	checkOptionalInstanceExtensions(optionalInstanceExtensions);
 
@@ -132,11 +141,13 @@ Graphics::Graphics()
 	if (optionalInstanceExtensions.debugInfo)
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
 	size_t additional_extension_count = extensions.size();
 	extensions.resize(additional_extension_count + count);
 
 	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, extensions.data() + additional_extension_count) != SDL_TRUE)
 		throw love::Exception("couldn't retrieve sdl vulkan extensions");
+#endif
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
@@ -1769,8 +1780,13 @@ void Graphics::createSurface()
 {
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 	const void *handle = window->getHandle();
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, nullptr, &surface) != SDL_TRUE)
+		throw love::Exception("failed to create window surface");
+#else
 	if (SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, &surface) != SDL_TRUE)
 		throw love::Exception("failed to create window surface");
+#endif
 }
 
 SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device)
