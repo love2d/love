@@ -547,6 +547,10 @@ int luax_register_type(lua_State *L, love::Type *type, ...)
 	lua_pushcfunction(L, w__release);
 	lua_setfield(L, -2, "release");
 
+	// Add __close for lua 5.4 (just calls release)
+	lua_pushcfunction(L, w__release);
+	lua_setfield(L, -2, "__close");
+
 	va_list fs;
 	va_start(fs, type);
 	for (const luaL_Reg *f = va_arg(fs, const luaL_Reg *); f; f = va_arg(fs, const luaL_Reg *))
