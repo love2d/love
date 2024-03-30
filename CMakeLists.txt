@@ -399,6 +399,7 @@ add_library(love_data STATIC
 	src/modules/data/wrap_CompressedData.h
 	src/modules/data/wrap_Data.cpp
 	src/modules/data/wrap_Data.h
+	src/modules/data/wrap_Data.lua
 	src/modules/data/wrap_DataModule.cpp
 	src/modules/data/wrap_DataModule.h
 	src/modules/data/wrap_DataView.cpp
@@ -418,6 +419,7 @@ add_library(love_event_root STATIC
 	src/modules/event/Event.h
 	src/modules/event/wrap_Event.cpp
 	src/modules/event/wrap_Event.h
+	src/modules/event/wrap_Event.lua
 )
 target_link_libraries(love_event_root PUBLIC
 	lovedep::Lua
@@ -589,6 +591,7 @@ add_library(love_graphics_root STATIC
 	src/modules/graphics/wrap_Font.h
 	src/modules/graphics/wrap_Graphics.cpp
 	src/modules/graphics/wrap_Graphics.h
+	src/modules/graphics/wrap_Graphics.lua
 	src/modules/graphics/wrap_GraphicsReadback.cpp
 	src/modules/graphics/wrap_GraphicsReadback.h
 	src/modules/graphics/wrap_Mesh.cpp
@@ -607,6 +610,7 @@ add_library(love_graphics_root STATIC
 	src/modules/graphics/wrap_TextBatch.h
 	src/modules/graphics/wrap_Video.cpp
 	src/modules/graphics/wrap_Video.h
+	src/modules/graphics/wrap_Video.lua
 )
 target_link_libraries(love_graphics_root PUBLIC
 	lovedep::Lua
@@ -689,6 +693,7 @@ add_library(love_image_root STATIC
 	src/modules/image/wrap_Image.h
 	src/modules/image/wrap_ImageData.cpp
 	src/modules/image/wrap_ImageData.h
+	src/modules/image/wrap_ImageData.lua
 )
 target_link_libraries(love_image_root PUBLIC
 	lovedep::Lua
@@ -803,8 +808,10 @@ add_library(love_math STATIC
 	src/modules/math/wrap_BezierCurve.h
 	src/modules/math/wrap_Math.cpp
 	src/modules/math/wrap_Math.h
+	src/modules/math/wrap_Math.lua
 	src/modules/math/wrap_RandomGenerator.cpp
 	src/modules/math/wrap_RandomGenerator.h
+	src/modules/math/wrap_RandomGenerator.lua
 	src/modules/math/wrap_Transform.cpp
 	src/modules/math/wrap_Transform.h
 )
@@ -1001,6 +1008,7 @@ add_library(love_sound_root STATIC
 	src/modules/sound/wrap_Sound.h
 	src/modules/sound/wrap_SoundData.cpp
 	src/modules/sound/wrap_SoundData.h
+	src/modules/sound/wrap_SoundData.lua
 )
 target_link_libraries(love_sound_root PUBLIC
 	lovedep::Lua
@@ -1848,6 +1856,12 @@ endif()
 add_library(liblove SHARED
 	src/modules/love/love.cpp
 	src/modules/love/love.h
+	# These are here so they show up in Visual Studio:
+	src/modules/love/arg.lua
+	src/modules/love/boot.lua
+	src/modules/love/callbacks.lua
+	src/modules/love/jitsetup.lua
+	src/scripts/nogame.lua
 )
 set_target_properties(liblove PROPERTIES
 	C_VISIBILITY_PRESET hidden
