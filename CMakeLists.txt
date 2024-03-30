@@ -23,18 +23,13 @@ if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
 	message(FATAL_ERROR "Prevented in-tree build.")
 endif()
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.16)
 
 project(love)
 
-set(LOVE_EXE_NAME love)
-set(LOVE_LIB_NAME liblove)
-
 set(CMAKE_MODULE_PATH "${love_SOURCE_DIR}/extra/cmake" ${CMAKE_MODULE_PATH})
-# Needed for shared libs on Linux. (-fPIC).
-set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-
-set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE) # Needed for shared libs on Linux. (-fPIC).
+set(CMAKE_CXX_STANDARD 17)
 
 if(APPLE)
 	message(WARNING "CMake is not an officially supported build system for love on Apple platforms.")
@@ -47,9 +42,33 @@ if(MINGW)
 	message(WARNING "Please see https://github.com/love2d/megasource")
 endif()
 
-if(MSVC OR MINGW)
-	set(LOVE_CONSOLE_EXE_NAME lovec)
+# Extract version.h contents.
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h LOVE_VERSION_FILE_CONTENTS)
+
+# Extract one of LOVE_VERSION_MAJOR/MINOR/REV.
+function(match_version ARG_STRING OUT_VAR)
+	string(REGEX MATCH "VERSION_${ARG_STRING} = ([0-9]+);" TMP_VER "${LOVE_VERSION_FILE_CONTENTS}")
+	string(REGEX MATCH "[0-9]+" TMP_VER "${TMP_VER}")
+	set(${OUT_VAR} ${TMP_VER} PARENT_SCOPE)
+endfunction()
+
+match_version("MAJOR" LOVE_VERSION_MAJOR)
+match_version("MINOR" LOVE_VERSION_MINOR)
+match_version("REV" LOVE_VERSION_REV)
+
+set(LOVE_VERSION_STR "${LOVE_VERSION_MAJOR}.${LOVE_VERSION_MINOR}")
+
+message(STATUS "Version: ${LOVE_VERSION_STR}")
+
+set(LOVE_EXE_NAME love CACHE STRING "The name of the executable, usually 'love'")
+
+set(LOVE_DEFAULT_LIB_NAME liblove)
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+	set(LOVE_DEFAULT_LIB_NAME "${LOVE_EXE_NAME}-${LOVE_VERSION_STR}")
 endif()
+
+set(LOVE_LIB_NAME ${LOVE_DEFAULT_LIB_NAME} CACHE STRING "The name of the lua library, usually 'liblove' or 'love'")
+set(LOVE_CONSOLE_EXE_NAME "${LOVE_EXE_NAME}c" CACHE STRING "The name of the console version of the executable, usually 'lovec'")
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	set(LOVE_X64 TRUE)
@@ -79,23 +98,21 @@ endif()
 
 message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
 
-if(POLICY CMP0072)
-	cmake_policy(SET CMP0072 NEW)
-endif()
-
-if(POLICY CMP0063)
-	cmake_policy(SET CMP0063 NEW)
-endif()
+add_library(lovedep::SDL2 INTERFACE IMPORTED)
+add_library(lovedep::Freetype INTERFACE IMPORTED)
+add_library(lovedep::Harfbuzz INTERFACE IMPORTED)
+add_library(lovedep::OpenAL INTERFACE IMPORTED)
+add_library(lovedep::Modplug INTERFACE IMPORTED)
+add_library(lovedep::Theora INTERFACE IMPORTED)
+add_library(lovedep::Vorbis INTERFACE IMPORTED)
+add_library(lovedep::Ogg INTERFACE IMPORTED)
+add_library(lovedep::Zlib INTERFACE IMPORTED)
+add_library(lovedep::Lua INTERFACE IMPORTED)
 
 if(MEGA)
 	# LOVE_MSVC_DLLS contains runtime DLLs that should be bundled with the love
 	# binary (in e.g. the installer). Example: msvcp140.dll.
 	set(LOVE_MSVC_DLLS ${MEGA_MSVC_DLLS})
-
-	# LOVE_INCLUDE_DIRS contains the search directories for #include. It's mostly
-	# not needed for MEGA builds, since almost all the libraries (except LuaJIT)
-	# are CMake targets, causing include paths to be added automatically.
-	set(LOVE_INCLUDE_DIRS)
 
 	if(APPLE)
 		# Some files do #include <SDL2/SDL.h>, but building with megasource
@@ -106,20 +123,6 @@ if(MEGA)
 	# SDL2 links with some DirectX libraries, and we apparently also
 	# pull those libraries in for linkage because we link with SDL2.
 	set(LOVE_LINK_DIRS ${SDL_LINK_DIR})
-
-	set(LOVE_LINK_LIBRARIES
-		${MEGA_FREETYPE}
-		${MEGA_HARFBUZZ}
-		${MEGA_LIBOGG}
-		${MEGA_LIBVORBISFILE}
-		${MEGA_LIBVORBIS}
-		${MEGA_LIBTHEORA}
-		${MEGA_MODPLUG}
-		${MEGA_OPENAL}
-		${MEGA_SDL2MAIN}
-		${MEGA_SDL2}
-		${MEGA_ZLIB}
-	)
 
 	# These DLLs are moved next to the love binary in a post-build step to
 	# love runnable from inside Visual Studio.
@@ -140,36 +143,33 @@ if(MEGA)
 		set(LOVE_EXTRA_DLLS)
 	endif()
 
+	target_link_libraries(lovedep::SDL2 INTERFACE ${MEGA_SDL2} ${MEGA_SDL2MAIN})
+	target_link_libraries(lovedep::Freetype INTERFACE ${MEGA_FREETYPE})
+	target_link_libraries(lovedep::Harfbuzz INTERFACE ${MEGA_HARFBUZZ})
+	target_link_libraries(lovedep::OpenAL INTERFACE ${MEGA_OPENAL})
+	target_link_libraries(lovedep::Modplug INTERFACE ${MEGA_MODPLUG})
+	target_link_libraries(lovedep::Theora INTERFACE ${MEGA_LIBTHEORA})
+	target_link_libraries(lovedep::Vorbis INTERFACE ${MEGA_LIBVORBIS} ${MEGA_LIBVORBISFILE})
+	target_link_libraries(lovedep::Ogg INTERFACE ${MEGA_LIBOGG})
+	target_link_libraries(lovedep::Zlib INTERFACE ${MEGA_ZLIB})
+
 	if(LOVE_JIT)
-		set(LOVE_LUA_LIBRARY ${MEGA_LUAJIT_LIB})
+		target_include_directories(lovedep::Lua INTERFACE ${MEGA_LUAJIT_INCLUDE})
+		target_link_libraries(lovedep::Lua INTERFACE ${MEGA_LUAJIT_LIB})
 		set(LOVE_EXTRA_DLLS ${LOVE_EXTRA_DLLS} ${MEGA_LUAJIT_DLL})
 		set(LOVE_EXTRA_DEPENDECIES luajit)
-
-		set(LOVE_INCLUDE_DIRS
-			${LOVE_INCLUDE_DIRS}
-			${MEGA_LUAJIT_INCLUDE}
-		)
-		set(LOVE_LINK_LIBRARIES
-			${LOVE_LINK_LIBRARIES}
-			${LOVE_LUA_LIBRARY}
-		)
 		set(LOVE_MOVE_DLLS
 			${LOVE_MOVE_DLLS}
 			${MEGA_LUAJIT_DLL}
 		)
 	else()
-		set(LOVE_LUA_LIBRARY ${MEGA_LUA51})
-
-		set(LOVE_LINK_LIBRARIES
-			${LOVE_LINK_LIBRARIES}
-			${LOVE_LUA_LIBRARY}
-		)
-		set(LOVE_MOVE_DLLS
-			${LOVE_MOVE_DLLS}
-			${LOVE_LUA_LIBRARY}
-		)
 		# MEGA_LUA51 is a CMake target, so includes are handled
 		# automatically.
+		target_link_libraries(lovedep::Lua INTERFACE ${MEGA_LUA51})
+		set(LOVE_MOVE_DLLS
+			${LOVE_MOVE_DLLS}
+			${MEGA_LUA51}
+		)
 	endif()
 else()
 	if(MSVC OR ANDROID)
@@ -179,64 +179,54 @@ Please see https://github.com/love2d/megasource
 ")
 	endif()
 
-	find_package(Freetype REQUIRED)
-	find_package(Harfbuzz REQUIRED)
-	find_package(ModPlug REQUIRED)
-	find_package(OpenAL REQUIRED)
-	find_package(SDL2 2.0.9 REQUIRED CONFIG COMPONENTS SDL2main)
-	find_package(Theora REQUIRED)
-	find_package(Vorbis REQUIRED)
-	find_package(ZLIB REQUIRED)
-	find_package(Ogg REQUIRED)
-
 	# required for enet
 	add_definitions(-D HAS_SOCKLEN_T)
 
-	set(LOVE_INCLUDE_DIRS
-		${SDL2_INCLUDE_DIRS}
-		${FREETYPE_INCLUDE_DIRS}
-		${HARFBUZZ_INCLUDE_DIR}
-		${VORBIS_INCLUDE_DIR}
-		${OPENAL_INCLUDE_DIR}
-		${ZLIB_INCLUDE_DIRS}
-		${MODPLUG_INCLUDE_DIR}
-		${OGG_INCLUDE_DIR}
-		${THEORA_INCLUDE_DIR}
-	)
+	find_package(SDL2 2.0.9 REQUIRED CONFIG COMPONENTS SDL2main)
+	target_include_directories(lovedep::SDL2 INTERFACE ${SDL2_INCLUDE_DIRS})
+	target_link_libraries(lovedep::SDL2 INTERFACE ${SDL2_LIBRARIES})
 
-	set(LOVE_LINK_LIBRARIES
-		${SDL2_LIBRARIES}
-		${FREETYPE_LIBRARY}
-		${HARFBUZZ_LIBRARY}
-		${OPENAL_LIBRARY}
-		${MODPLUG_LIBRARY}
-		${THEORA_LIBRARY}
-		${THEORADEC_LIBRARY}
-		${VORBISFILE_LIBRARY}
-		${LOVE_LUA_LIBRARY}
-		${OGG_LIBRARY}
-		${ZLIB_LIBRARY}
-	)
+	find_package(Freetype REQUIRED)
+	target_include_directories(lovedep::Freetype INTERFACE ${FREETYPE_INCLUDE_DIRS})
+	target_link_libraries(lovedep::Freetype INTERFACE ${FREETYPE_LIBRARY})
+
+	find_package(Harfbuzz REQUIRED)
+	target_include_directories(lovedep::Harfbuzz INTERFACE ${HARFBUZZ_INCLUDE_DIR})
+	target_link_libraries(lovedep::Harfbuzz INTERFACE ${HARFBUZZ_LIBRARY})
+
+	find_package(OpenAL REQUIRED)
+	target_include_directories(lovedep::OpenAL INTERFACE ${OPENAL_INCLUDE_DIR})
+	target_link_libraries(lovedep::OpenAL INTERFACE ${OPENAL_LIBRARY})
+
+	find_package(ModPlug REQUIRED)
+	target_include_directories(lovedep::Modplug INTERFACE ${MODPLUG_INCLUDE_DIR})
+	target_link_libraries(lovedep::Modplug INTERFACE ${MODPLUG_LIBRARY})
+
+	find_package(Theora REQUIRED)
+	target_include_directories(lovedep::Theora INTERFACE ${THEORA_INCLUDE_DIR})
+	target_link_libraries(lovedep::Theora INTERFACE ${THEORA_LIBRARY} ${THEORADEC_LIBRARY})
+
+	find_package(Vorbis REQUIRED)
+	target_include_directories(lovedep::Vorbis INTERFACE ${VORBIS_INCLUDE_DIR})
+	target_link_libraries(lovedep::Vorbis INTERFACE ${VORBISFILE_LIBRARY})
+
+	find_package(Ogg REQUIRED)
+	target_include_directories(lovedep::Ogg INTERFACE ${OGG_INCLUDE_DIR})
+	target_link_libraries(lovedep::Ogg INTERFACE ${OGG_LIBRARY})
+
+	find_package(ZLIB REQUIRED)
+	target_include_directories(lovedep::Zlib INTERFACE ${ZLIB_INCLUDE_DIRS})
+	target_link_libraries(lovedep::Zlib INTERFACE ${ZLIB_LIBRARY})
 
 	if(LOVE_JIT)
 		find_package(LuaJIT REQUIRED)
-		set(LOVE_LUA_LIBRARY ${LUAJIT_LIBRARY})
-		set(LOVE_LUA_INCLUDE_DIR ${LUAJIT_INCLUDE_DIR})
+		target_include_directories(lovedep::Lua INTERFACE ${LUAJIT_INCLUDE_DIR})
+		target_link_libraries(lovedep::Lua INTERFACE ${LUAJIT_LIBRARY})
 	else()
 		find_package(Lua51 REQUIRED)
-		set(LOVE_LUA_LIBRARY ${LUA_LIBRARY})
-		set(LOVE_LUA_INCLUDE_DIR ${LUA_INCLUDE_DIR})
+		target_include_directories(lovedep::Lua INTERFACE ${LUA_INCLUDE_DIR})
+		target_link_libraries(lovedep::Lua INTERFACE ${LUA_LIBRARY})
 	endif()
-
-	set(LOVE_INCLUDE_DIRS
-		${LOVE_INCLUDE_DIRS}
-		${LOVE_LUA_INCLUDE_DIR}
-	)
-	set(LOVE_LINK_LIBRARIES
-		${LOVE_LINK_LIBRARIES}
-		${LOVE_LUA_LIBRARY}
-	)
-
 endif()
 
 ###
@@ -250,41 +240,14 @@ else()
 endif()
 
 function(love_disable_warnings ARG_TARGET)
-	get_target_property(OLD_FLAGS ${ARG_TARGET} COMPILE_FLAGS)
-	set(NEW_FLAGS ${DISABLE_WARNING_FLAG})
-	if(OLD_FLAGS)
-		set(NEW_FLAGS "${OLD_FLAGS} ${NEW_FLAGS}")
-	endif()
-	set_target_properties(${ARG_TARGET} PROPERTIES COMPILE_FLAGS ${NEW_FLAGS})
+	target_compile_options(${ARG_TARGET} PRIVATE ${DISABLE_WARNING_FLAG})
 endfunction()
-
-###################################
-# Version
-###################################
-
-# Extract version.h contents.
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h LOVE_VERSION_FILE_CONTENTS)
-
-# Extract one of LOVE_VERSION_MAJOR/MINOR/REV.
-function(match_version ARG_STRING OUT_VAR)
-	string(REGEX MATCH "VERSION_${ARG_STRING} = ([0-9]+);" TMP_VER "${LOVE_VERSION_FILE_CONTENTS}")
-	string(REGEX MATCH "[0-9]+" TMP_VER "${TMP_VER}")
-	set(${OUT_VAR} ${TMP_VER} PARENT_SCOPE)
-endfunction()
-
-match_version("MAJOR" LOVE_VERSION_MAJOR)
-match_version("MINOR" LOVE_VERSION_MINOR)
-match_version("REV" LOVE_VERSION_REV)
-
-set(LOVE_VERSION_STR "${LOVE_VERSION_MAJOR}.${LOVE_VERSION_MINOR}")
-
-message(STATUS "Version: ${LOVE_VERSION_STR}")
 
 #
 # common
 #
 
-set(LOVE_SRC_COMMON
+add_library(love_common STATIC
 	src/common/android.cpp
 	src/common/android.h
 	src/common/b64.cpp
@@ -334,23 +297,27 @@ set(LOVE_SRC_COMMON
 	src/common/Vector.h
 	src/common/version.h
 )
+target_link_libraries(love_common PUBLIC
+	lovedep::Lua
+	lovedep::SDL2
+)
 
 if (APPLE)
-	set(LOVE_SRC_COMMON ${LOVE_SRC_COMMON}
+	target_sources(love_common PRIVATE
 		src/common/macos.mm
 	)
-	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} objc)
-	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework CoreFoundation")
-	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework AppKit")
+	target_link_libraries(love_common PUBLIC
+		objc
+		"-framework CoreFoundation"
+		"-framework AppKit"
+	)
 endif()
-
-source_group("common" FILES ${LOVE_SRC_COMMON})
 
 #
 # love.audio
 #
 
-set(LOVE_SRC_MODULE_AUDIO_ROOT
+add_library(love_audio_root STATIC
 	src/modules/audio/Audio.cpp
 	src/modules/audio/Audio.h
 	src/modules/audio/Source.cpp
@@ -368,8 +335,12 @@ set(LOVE_SRC_MODULE_AUDIO_ROOT
 	src/modules/audio/wrap_RecordingDevice.cpp
 	src/modules/audio/wrap_RecordingDevice.h
 )
+target_link_libraries(love_audio_root PUBLIC
+	lovedep::Lua
+	lovedep::OpenAL
+)
 
-set(LOVE_SRC_MODULE_AUDIO_NULL
+add_library(love_audio_null STATIC
 	src/modules/audio/null/Audio.cpp
 	src/modules/audio/null/Audio.h
 	src/modules/audio/null/Source.cpp
@@ -378,7 +349,7 @@ set(LOVE_SRC_MODULE_AUDIO_NULL
 	src/modules/audio/null/RecordingDevice.h
 )
 
-set(LOVE_SRC_MODULE_AUDIO_OPENAL
+add_library(love_audio_openal STATIC
 	src/modules/audio/openal/Audio.cpp
 	src/modules/audio/openal/Audio.h
 	src/modules/audio/openal/Pool.cpp
@@ -392,22 +363,22 @@ set(LOVE_SRC_MODULE_AUDIO_OPENAL
 	src/modules/audio/openal/Effect.cpp
 	src/modules/audio/openal/Effect.h
 )
-
-set(LOVE_SRC_MODULE_AUDIO
-	${LOVE_SRC_MODULE_AUDIO_ROOT}
-	${LOVE_SRC_MODULE_AUDIO_NULL}
-	${LOVE_SRC_MODULE_AUDIO_OPENAL}
+target_link_libraries(love_audio_openal PUBLIC
+	lovedep::OpenAL
 )
 
-source_group("modules\\audio" FILES ${LOVE_SRC_MODULE_AUDIO_ROOT})
-source_group("modules\\audio\\null" FILES ${LOVE_SRC_MODULE_AUDIO_NULL})
-source_group("modules\\audio\\openal" FILES ${LOVE_SRC_MODULE_AUDIO_OPENAL})
+add_library(love_audio INTERFACE)
+target_link_libraries(love_audio INTERFACE
+	love_audio_root
+	love_audio_null
+	love_audio_openal
+)
 
 #
 # love.data
 #
 
-set(LOVE_SRC_MODULE_DATA
+add_library(love_data STATIC
 	src/modules/data/ByteData.cpp
 	src/modules/data/ByteData.h
 	src/modules/data/CompressedData.cpp
@@ -433,38 +404,45 @@ set(LOVE_SRC_MODULE_DATA
 	src/modules/data/wrap_DataView.cpp
 	src/modules/data/wrap_DataView.h
 )
-
-source_group("modules\\data" FILES ${LOVE_SRC_MODULE_DATA})
+target_link_libraries(love_data PUBLIC
+	lovedep::Lua
+	lovedep::Zlib
+)
 
 #
 # love.event
 #
 
-set(LOVE_SRC_MODULE_EVENT_ROOT
+add_library(love_event_root STATIC
 	src/modules/event/Event.cpp
 	src/modules/event/Event.h
 	src/modules/event/wrap_Event.cpp
 	src/modules/event/wrap_Event.h
 )
+target_link_libraries(love_event_root PUBLIC
+	lovedep::Lua
+	lovedep::SDL2
+)
 
-set(LOVE_SRC_MODULE_EVENT_SDL
+add_library(love_event_sdl STATIC
 	src/modules/event/sdl/Event.cpp
 	src/modules/event/sdl/Event.h
 )
-
-set(LOVE_SRC_MODULE_EVENT
-	${LOVE_SRC_MODULE_EVENT_ROOT}
-	${LOVE_SRC_MODULE_EVENT_SDL}
+target_link_libraries(love_event_sdl PUBLIC
+	lovedep::SDL2
 )
 
-source_group("modules\\event" FILES ${LOVE_SRC_MODULE_EVENT_ROOT})
-source_group("modules\\event\\sdl" FILES ${LOVE_SRC_MODULE_EVENT_SDL})
+add_library(love_event INTERFACE)
+target_link_libraries(love_event INTERFACE
+	love_event_root
+	love_event_sdl
+)
 
 #
 # love.filesystem
 #
 
-set(LOVE_SRC_MODULE_FILESYSTEM_ROOT
+add_library(love_filesystem_root STATIC
 	src/modules/filesystem/File.cpp
 	src/modules/filesystem/File.h
 	src/modules/filesystem/FileData.cpp
@@ -482,8 +460,12 @@ set(LOVE_SRC_MODULE_FILESYSTEM_ROOT
 	src/modules/filesystem/wrap_NativeFile.cpp
 	src/modules/filesystem/wrap_NativeFile.h
 )
+target_link_libraries(love_filesystem_root PUBLIC
+	lovedep::Lua
+	lovedep::SDL2
+)
 
-set(LOVE_SRC_MODULE_FILESYSTEM_PHYSFS
+add_library(love_filesystem_physfs STATIC
 	src/modules/filesystem/physfs/File.cpp
 	src/modules/filesystem/physfs/File.h
 	src/modules/filesystem/physfs/Filesystem.cpp
@@ -491,20 +473,23 @@ set(LOVE_SRC_MODULE_FILESYSTEM_PHYSFS
 	src/modules/filesystem/physfs/PhysfsIo.h
 	src/modules/filesystem/physfs/PhysfsIo.cpp
 )
+if(ANDROID)
+	target_link_libraries(love_filesystem_physfs PUBLIC
+		lovedep::SDL2
+	)
+endif()
 
-set(LOVE_SRC_MODULE_FILESYSTEM
-	${LOVE_SRC_MODULE_FILESYSTEM_ROOT}
-	${LOVE_SRC_MODULE_FILESYSTEM_PHYSFS}
+add_library(love_filesystem INTERFACE)
+target_link_libraries(love_filesystem INTERFACE
+	love_filesystem_root
+	love_filesystem_physfs
 )
-
-source_group("modules\\filesystem" FILES ${LOVE_SRC_MODULE_FILESYSTEM_ROOT})
-source_group("modules\\filesystem\\physfs" FILES ${LOVE_SRC_MODULE_FILESYSTEM_PHYSFS})
 
 #
 # love.font
 #
 
-set(LOVE_SRC_MODULE_FONT_ROOT
+add_library(love_font_root STATIC
 	src/modules/font/BMFontRasterizer.cpp
 	src/modules/font/BMFontRasterizer.h
 	src/modules/font/Font.cpp
@@ -528,8 +513,12 @@ set(LOVE_SRC_MODULE_FONT_ROOT
 	src/modules/font/wrap_Rasterizer.cpp
 	src/modules/font/wrap_Rasterizer.h
 )
+target_link_libraries(love_font_root PUBLIC
+	lovedep::Lua
+	lovedep::Freetype
+)
 
-set(LOVE_SRC_MODULE_FONT_FREETYPE
+add_library(love_font_freetype STATIC
 	src/modules/font/freetype/Font.cpp
 	src/modules/font/freetype/Font.h
 	src/modules/font/freetype/HarfbuzzShaper.cpp
@@ -537,20 +526,22 @@ set(LOVE_SRC_MODULE_FONT_FREETYPE
 	src/modules/font/freetype/TrueTypeRasterizer.cpp
 	src/modules/font/freetype/TrueTypeRasterizer.h
 )
-
-set(LOVE_SRC_MODULE_FONT
-	${LOVE_SRC_MODULE_FONT_ROOT}
-	${LOVE_SRC_MODULE_FONT_FREETYPE}
+target_link_libraries(love_font_freetype PUBLIC
+	lovedep::Freetype
+	lovedep::Harfbuzz
 )
 
-source_group("modules\\font" FILES ${LOVE_SRC_MODULE_FONT_ROOT})
-source_group("modules\\font\\freetype" FILES ${LOVE_SRC_MODULE_FONT_FREETYPE})
+add_library(love_font INTERFACE)
+target_link_libraries(love_font INTERFACE
+	love_font_root
+	love_font_freetype
+)
 
 #
 # love.graphics
 #
 
-set(LOVE_SRC_MODULE_GRAPHICS_ROOT
+add_library(love_graphics_root STATIC
 	src/modules/graphics/Buffer.cpp
 	src/modules/graphics/Buffer.h
 	src/modules/graphics/Deprecations.cpp
@@ -617,8 +608,11 @@ set(LOVE_SRC_MODULE_GRAPHICS_ROOT
 	src/modules/graphics/wrap_Video.cpp
 	src/modules/graphics/wrap_Video.h
 )
+target_link_libraries(love_graphics_root PUBLIC
+	lovedep::Lua
+)
 
-set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
+add_library(love_graphics_opengl STATIC
 	src/modules/graphics/opengl/Buffer.cpp
 	src/modules/graphics/opengl/Buffer.h
 	src/modules/graphics/opengl/FenceSync.cpp
@@ -638,8 +632,11 @@ set(LOVE_SRC_MODULE_GRAPHICS_OPENGL
 	src/modules/graphics/opengl/Texture.cpp
 	src/modules/graphics/opengl/Texture.h
 )
+target_link_libraries(love_graphics_opengl PUBLIC
+	lovedep::SDL2
+)
 
-set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
+add_library(love_graphics_vulkan STATIC
 	src/modules/graphics/vulkan/Graphics.h
 	src/modules/graphics/vulkan/Graphics.cpp
 	src/modules/graphics/vulkan/GraphicsReadback.h
@@ -656,23 +653,24 @@ set(LOVE_SRC_MODULE_GRAPHICS_VULKAN
 	src/modules/graphics/vulkan/Texture.cpp
 	src/modules/graphics/vulkan/Vulkan.h
 	src/modules/graphics/vulkan/Vulkan.cpp
-	src/modules/graphics/vulkan/VulkanWrapper.h)
-
-set(LOVE_SRC_MODULE_GRAPHICS
-	${LOVE_SRC_MODULE_GRAPHICS_ROOT}
-	${LOVE_SRC_MODULE_GRAPHICS_OPENGL}
-	${LOVE_SRC_MODULE_GRAPHICS_VULKAN}
+	src/modules/graphics/vulkan/VulkanWrapper.h
+)
+target_link_libraries(love_graphics_vulkan PUBLIC
+	lovedep::SDL2
 )
 
-source_group("modules\\graphics" FILES ${LOVE_SRC_MODULE_GRAPHICS_ROOT})
-source_group("modules\\graphics\\opengl" FILES ${LOVE_SRC_MODULE_GRAPHICS_OPENGL})
-source_group("modules\\graphics\\vulkan" FILES ${LOVE_SRC_MODULE_GRAPHICS_VULKAN})
+add_library(love_graphics INTERFACE)
+target_link_libraries(love_graphics INTERFACE
+	love_graphics_root
+	love_graphics_opengl
+	love_graphics_vulkan
+)
 
 #
 # love.image
 #
 
-set(LOVE_SRC_MODULE_IMAGE_ROOT
+add_library(love_image_root STATIC
 	src/modules/image/CompressedImageData.cpp
 	src/modules/image/CompressedImageData.h
 	src/modules/image/CompressedSlice.cpp
@@ -692,8 +690,11 @@ set(LOVE_SRC_MODULE_IMAGE_ROOT
 	src/modules/image/wrap_ImageData.cpp
 	src/modules/image/wrap_ImageData.h
 )
+target_link_libraries(love_image_root PUBLIC
+	lovedep::Lua
+)
 
-set(LOVE_SRC_MODULE_IMAGE_MAGPIE
+add_library(love_image_magpie STATIC
 	src/modules/image/magpie/ASTCHandler.cpp
 	src/modules/image/magpie/ASTCHandler.h
 	src/modules/image/magpie/ddsHandler.cpp
@@ -711,20 +712,21 @@ set(LOVE_SRC_MODULE_IMAGE_MAGPIE
 	src/modules/image/magpie/STBHandler.cpp
 	src/modules/image/magpie/STBHandler.h
 )
-
-set(LOVE_SRC_MODULE_IMAGE
-	${LOVE_SRC_MODULE_IMAGE_ROOT}
-	${LOVE_SRC_MODULE_IMAGE_MAGPIE}
+target_link_libraries(love_image_magpie PUBLIC
+	lovedep::Zlib
 )
 
-source_group("modules\\image" FILES ${LOVE_SRC_MODULE_IMAGE_ROOT})
-source_group("modules\\image\\magpie" FILES ${LOVE_SRC_MODULE_IMAGE_MAGPIE})
+add_library(love_image INTERFACE)
+target_link_libraries(love_image INTERFACE
+	love_image_root
+	love_image_magpie
+)
 
 #
 # love.joystick
 #
 
-set(LOVE_SRC_MODULE_JOYSTICK_ROOT
+add_library(love_joystick_root STATIC
 	src/modules/joystick/Joystick.cpp
 	src/modules/joystick/Joystick.h
 	src/modules/joystick/JoystickModule.h
@@ -733,8 +735,11 @@ set(LOVE_SRC_MODULE_JOYSTICK_ROOT
 	src/modules/joystick/wrap_JoystickModule.cpp
 	src/modules/joystick/wrap_JoystickModule.h
 )
+target_link_libraries(love_joystick_root PUBLIC
+	lovedep::Lua
+)
 
-set(LOVE_SRC_MODULE_JOYSTICK_SDL
+add_library(love_joystick_sdl STATIC
 	src/modules/joystick/sdl/Joystick.cpp
 	src/modules/joystick/sdl/Joystick.h
 	src/modules/joystick/sdl/JoystickSDL3.cpp
@@ -742,44 +747,50 @@ set(LOVE_SRC_MODULE_JOYSTICK_SDL
 	src/modules/joystick/sdl/JoystickModule.cpp
 	src/modules/joystick/sdl/JoystickModule.h
 )
-
-set(LOVE_SRC_MODULE_JOYSTICK
-	${LOVE_SRC_MODULE_JOYSTICK_ROOT}
-	${LOVE_SRC_MODULE_JOYSTICK_SDL}
+target_link_libraries(love_joystick_sdl PUBLIC
+	lovedep::SDL2
 )
 
-source_group("modules\\joystick" FILES ${LOVE_SRC_MODULE_JOYSTICK_ROOT})
-source_group("modules\\joystick\\sdl" FILES ${LOVE_SRC_MODULE_JOYSTICK_SDL})
+add_library(love_joystick INTERFACE)
+target_link_libraries(love_joystick INTERFACE
+	love_joystick_root
+	love_joystick_sdl
+)
 
 #
 # love.keyboard
 #
 
-set(LOVE_SRC_MODULE_KEYBOARD_ROOT
+add_library(love_keyboard_root STATIC
 	src/modules/keyboard/Keyboard.cpp
 	src/modules/keyboard/Keyboard.h
 	src/modules/keyboard/wrap_Keyboard.cpp
 	src/modules/keyboard/wrap_Keyboard.h
 )
+target_link_libraries(love_keyboard_root PUBLIC
+	lovedep::Lua
+	lovedep::SDL2
+)
 
-set(LOVE_SRC_MODULE_KEYBOARD_SDL
+add_library(love_keyboard_sdl STATIC
 	src/modules/keyboard/sdl/Keyboard.cpp
 	src/modules/keyboard/sdl/Keyboard.h
 )
-
-set(LOVE_SRC_MODULE_KEYBOARD
-	${LOVE_SRC_MODULE_KEYBOARD_ROOT}
-	${LOVE_SRC_MODULE_KEYBOARD_SDL}
+target_link_libraries(love_keyboard_sdl PUBLIC
+	lovedep::SDL2
 )
 
-source_group("modules\\keyboard" FILES ${LOVE_SRC_MODULE_KEYBOARD_ROOT})
-source_group("modules\\keyboard\\sdl" FILES ${LOVE_SRC_MODULE_KEYBOARD_SDL})
+add_library(love_keyboard INTERFACE)
+target_link_libraries(love_keyboard INTERFACE
+	love_keyboard_root
+	love_keyboard_sdl
+)
 
 #
 # love.math
 #
 
-set(LOVE_SRC_MODULE_MATH
+add_library(love_math STATIC
 	src/modules/math/BezierCurve.cpp
 	src/modules/math/BezierCurve.h
 	src/modules/math/MathModule.cpp
@@ -797,24 +808,15 @@ set(LOVE_SRC_MODULE_MATH
 	src/modules/math/wrap_Transform.cpp
 	src/modules/math/wrap_Transform.h
 )
-
-source_group("modules\\math" FILES ${LOVE_SRC_MODULE_MATH})
-
-#
-# love (module)
-#
-set(LOVE_SRC_MODULE_LOVE
-	src/modules/love/love.cpp
-	src/modules/love/love.h
+target_link_libraries(love_math PUBLIC
+	lovedep::Lua
 )
-
-source_group("modules\\love" FILES ${LOVE_SRC_MODULE_LOVE})
 
 #
 # love.mouse
 #
 
-set(LOVE_SRC_MODULE_MOUSE_ROOT
+add_library(love_mouse_root STATIC
 	src/modules/mouse/Cursor.cpp
 	src/modules/mouse/Cursor.h
 	src/modules/mouse/Mouse.h
@@ -823,27 +825,32 @@ set(LOVE_SRC_MODULE_MOUSE_ROOT
 	src/modules/mouse/wrap_Mouse.cpp
 	src/modules/mouse/wrap_Mouse.h
 )
+target_link_libraries(love_mouse_root PUBLIC
+	lovedep::Lua
+	lovedep::SDL2
+)
 
-set(LOVE_SRC_MODULE_MOUSE_SDL
+add_library(love_mouse_sdl STATIC
 	src/modules/mouse/sdl/Cursor.cpp
 	src/modules/mouse/sdl/Cursor.h
 	src/modules/mouse/sdl/Mouse.cpp
 	src/modules/mouse/sdl/Mouse.h
 )
-
-set(LOVE_SRC_MODULE_MOUSE
-	${LOVE_SRC_MODULE_MOUSE_ROOT}
-	${LOVE_SRC_MODULE_MOUSE_SDL}
+target_link_libraries(love_mouse_sdl PUBLIC
+	lovedep::SDL2
 )
 
-source_group("modules\\mouse" FILES ${LOVE_SRC_MODULE_MOUSE_ROOT})
-source_group("modules\\mouse\\sdl" FILES ${LOVE_SRC_MODULE_MOUSE_SDL})
+add_library(love_mouse INTERFACE)
+target_link_libraries(love_mouse INTERFACE
+	love_mouse_root
+	love_mouse_sdl
+)
 
 #
 # love.physics
 #
 
-set(LOVE_SRC_MODULE_PHYSICS_ROOT
+add_library(love_physics_root STATIC
 	src/modules/physics/Body.cpp
 	src/modules/physics/Body.h
 	src/modules/physics/Joint.cpp
@@ -852,7 +859,7 @@ set(LOVE_SRC_MODULE_PHYSICS_ROOT
 	src/modules/physics/Shape.h
 )
 
-set(LOVE_SRC_MODULE_PHYSICS_BOX2D
+add_library(love_physics_box2d STATIC
 	src/modules/physics/box2d/Body.cpp
 	src/modules/physics/box2d/Body.h
 	src/modules/physics/box2d/ChainShape.cpp
@@ -938,44 +945,50 @@ set(LOVE_SRC_MODULE_PHYSICS_BOX2D
 	src/modules/physics/box2d/wrap_World.cpp
 	src/modules/physics/box2d/wrap_World.h
 )
-
-set(LOVE_SRC_MODULE_PHYSICS
-	${LOVE_SRC_MODULE_PHYSICS_ROOT}
-	${LOVE_SRC_MODULE_PHYSICS_BOX2D}
+target_link_libraries(love_physics_box2d PUBLIC
+	lovedep::Lua
 )
 
-source_group("modules\\physics" FILES ${LOVE_SRC_MODULE_PHYSICS_ROOT})
-source_group("modules\\physics\\box2d" FILES ${LOVE_SRC_MODULE_PHYSICS_BOX2D})
+add_library(love_physics INTERFACE)
+target_link_libraries(love_physics INTERFACE
+	love_physics_root
+	love_physics_box2d
+)
 
 #
 # love.sensor
 #
 
-set(LOVE_SRC_MODULE_SENSOR_ROOT
+add_library(love_sensor_root STATIC
 	src/modules/sensor/Sensor.cpp
 	src/modules/sensor/Sensor.h
 	src/modules/sensor/wrap_Sensor.cpp
 	src/modules/sensor/wrap_Sensor.h
 )
+target_link_libraries(love_sensor_root PUBLIC
+	lovedep::Lua
+	lovedep::SDL2
+)
 
-set(LOVE_SRC_MODULE_SENSOR_SDL
+add_library(love_sensor_sdl STATIC
 	src/modules/sensor/sdl/Sensor.cpp
 	src/modules/sensor/sdl/Sensor.h
 )
-
-set(LOVE_SRC_MODULE_SENSOR
-	${LOVE_SRC_MODULE_SENSOR_ROOT}
-	${LOVE_SRC_MODULE_SENSOR_SDL}
+target_link_libraries(love_sensor_sdl PUBLIC
+	lovedep::SDL2
 )
 
-source_group("modules\\sensor" FILES ${LOVE_SRC_MODULE_SENSOR_ROOT})
-source_group("modules\\sensor\\sdl" FILES ${LOVE_SRC_MODULE_SENSOR_SDL})
+add_library(love_sensor INTERFACE)
+target_link_libraries(love_sensor INTERFACE
+	love_sensor_root
+	love_sensor_sdl
+)
 
 #
 # love.sound
 #
 
-set(LOVE_SRC_MODULE_SOUND_ROOT
+add_library(love_sound_root STATIC
 	src/modules/sound/Decoder.cpp
 	src/modules/sound/Decoder.h
 	src/modules/sound/Sound.cpp
@@ -989,8 +1002,11 @@ set(LOVE_SRC_MODULE_SOUND_ROOT
 	src/modules/sound/wrap_SoundData.cpp
 	src/modules/sound/wrap_SoundData.h
 )
+target_link_libraries(love_sound_root PUBLIC
+	lovedep::Lua
+)
 
-set(LOVE_SRC_MODULE_SOUND_LULLABY
+add_library(love_sound_lullaby STATIC
 	src/modules/sound/lullaby/FLACDecoder.cpp
 	src/modules/sound/lullaby/FLACDecoder.h
 	src/modules/sound/lullaby/ModPlugDecoder.cpp
@@ -1004,44 +1020,52 @@ set(LOVE_SRC_MODULE_SOUND_LULLABY
 	src/modules/sound/lullaby/WaveDecoder.cpp
 	src/modules/sound/lullaby/WaveDecoder.h
 )
-
-set(LOVE_SRC_MODULE_SOUND
-	${LOVE_SRC_MODULE_SOUND_ROOT}
-	${LOVE_SRC_MODULE_SOUND_LULLABY}
+target_link_libraries(love_sound_lullaby PUBLIC
+	lovedep::Modplug
+	lovedep::Vorbis
+	lovedep::Ogg
 )
 
-source_group("modules\\sound" FILES ${LOVE_SRC_MODULE_SOUND_ROOT})
-source_group("modules\\sound\\lullaby" FILES ${LOVE_SRC_MODULE_SOUND_LULLABY})
+add_library(love_sound INTERFACE)
+target_link_libraries(love_sound INTERFACE
+	love_sound_root
+	love_sound_lullaby
+)
 
 #
 # love.system
 #
 
-set(LOVE_SRC_MODULE_SYSTEM_ROOT
+add_library(love_system_root STATIC
 	src/modules/system/System.cpp
 	src/modules/system/System.h
 	src/modules/system/wrap_System.cpp
 	src/modules/system/wrap_System.h
 )
+target_link_libraries(love_system_root PUBLIC
+	lovedep::Lua
+	lovedep::SDL2
+)
 
-set(LOVE_SRC_MODULE_SYSTEM_SDL
+add_library(love_system_sdl STATIC
 	src/modules/system/sdl/System.cpp
 	src/modules/system/sdl/System.h
 )
-
-set(LOVE_SRC_MODULE_SYSTEM
-	${LOVE_SRC_MODULE_SYSTEM_ROOT}
-	${LOVE_SRC_MODULE_SYSTEM_SDL}
+target_link_libraries(love_system_sdl PUBLIC
+	lovedep::SDL2
 )
 
-source_group("modules\\system" FILES ${LOVE_SRC_MODULE_SYSTEM_ROOT})
-source_group("modules\\system\\sdl" FILES ${LOVE_SRC_MODULE_SYSTEM_SDL})
+add_library(love_system INTERFACE)
+target_link_libraries(love_system INTERFACE
+	love_system_root
+	love_system_sdl
+)
 
 #
 # love.thread
 #
 
-set(LOVE_SRC_MODULE_THREAD_ROOT
+add_library(love_thread_root STATIC
 	src/modules/thread/Channel.cpp
 	src/modules/thread/Channel.h
 	src/modules/thread/LuaThread.cpp
@@ -1058,63 +1082,72 @@ set(LOVE_SRC_MODULE_THREAD_ROOT
 	src/modules/thread/wrap_ThreadModule.cpp
 	src/modules/thread/wrap_ThreadModule.h
 )
+target_link_libraries(love_thread_root PUBLIC
+	lovedep::Lua
+)
 
-set(LOVE_SRC_MODULE_THREAD_SDL
+add_library(love_thread_sdl STATIC
 	src/modules/thread/sdl/Thread.cpp
 	src/modules/thread/sdl/Thread.h
 	src/modules/thread/sdl/threads.cpp
 	src/modules/thread/sdl/threads.h
 )
-
-set(LOVE_SRC_MODULE_THREAD
-	${LOVE_SRC_MODULE_THREAD_ROOT}
-	${LOVE_SRC_MODULE_THREAD_SDL}
+target_link_libraries(love_thread_sdl PUBLIC
+	lovedep::SDL2
 )
 
-source_group("modules\\thread" FILES ${LOVE_SRC_MODULE_THREAD_ROOT})
-source_group("modules\\thread\\sdl" FILES ${LOVE_SRC_MODULE_THREAD_SDL})
+add_library(love_thread INTERFACE)
+target_link_libraries(love_thread INTERFACE
+	love_thread_root
+	love_thread_sdl
+)
 
 #
 # love.timer
 #
 
-set(LOVE_SRC_MODULE_TIMER
+add_library(love_timer STATIC
 	src/modules/timer/Timer.cpp
 	src/modules/timer/Timer.h
 	src/modules/timer/wrap_Timer.cpp
 	src/modules/timer/wrap_Timer.h
 )
-
-source_group("modules\\timer" FILES ${LOVE_SRC_MODULE_TIMER})
+target_link_libraries(love_timer PUBLIC
+	lovedep::Lua
+)
 
 #
 # love.touch
 #
 
-set(LOVE_SRC_MODULE_TOUCH_ROOT
+add_library(love_touch_root STATIC
 	src/modules/touch/Touch.h
 	src/modules/touch/wrap_Touch.cpp
 	src/modules/touch/wrap_Touch.h
 )
+target_link_libraries(love_touch_root PUBLIC
+	lovedep::Lua
+	lovedep::SDL2
+)
 
-set(LOVE_SRC_MODULE_TOUCH_SDL
+add_library(love_touch_sdl STATIC
 	src/modules/touch/sdl/Touch.cpp
 	src/modules/touch/sdl/Touch.h
 )
-
-set(LOVE_SRC_MODULE_TOUCH
-	${LOVE_SRC_MODULE_TOUCH_ROOT}
-	${LOVE_SRC_MODULE_TOUCH_SDL}
+target_link_libraries(love_touch_sdl PUBLIC
+	lovedep::SDL2
 )
 
-source_group("modules\\touch" FILES ${LOVE_SRC_MODULE_TOUCH_ROOT})
-source_group("modules\\touch\\sdl" FILES ${LOVE_SRC_MODULE_TOUCH_SDL})
-
+add_library(love_touch INTERFACE)
+target_link_libraries(love_touch INTERFACE
+	love_touch_root
+	love_touch_sdl
+)
 #
 # love.video
 #
 
-set(LOVE_SRC_MODULE_VIDEO_ROOT
+add_library(love_video_root STATIC
 	src/modules/video/Video.h
 	src/modules/video/VideoStream.cpp
 	src/modules/video/VideoStream.h
@@ -1123,8 +1156,13 @@ set(LOVE_SRC_MODULE_VIDEO_ROOT
 	src/modules/video/wrap_VideoStream.cpp
 	src/modules/video/wrap_VideoStream.h
 )
+target_link_libraries(love_video_root PUBLIC
+	lovedep::Lua
+	lovedep::Theora
+	lovedep::Ogg
+)
 
-set(LOVE_SRC_MODULE_VIDEO_THEORA
+add_library(love_video_theora STATIC
 	src/modules/video/theora/Video.cpp
 	src/modules/video/theora/Video.h
 	src/modules/video/theora/OggDemuxer.cpp
@@ -1132,38 +1170,45 @@ set(LOVE_SRC_MODULE_VIDEO_THEORA
 	src/modules/video/theora/TheoraVideoStream.cpp
 	src/modules/video/theora/TheoraVideoStream.h
 )
-
-set(LOVE_SRC_MODULE_VIDEO
-	${LOVE_SRC_MODULE_VIDEO_ROOT}
-	${LOVE_SRC_MODULE_VIDEO_THEORA}
+target_link_libraries(love_video_theora PUBLIC
+	lovedep::Theora
+	lovedep::Ogg
 )
 
-source_group("modules\\video" FILES ${LOVE_SRC_MODULE_VIDEO_ROOT})
-source_group("modules\\video\\theora" FILES ${LOVE_SRC_MODULE_VIDEO_THEORA})
+add_library(love_video INTERFACE)
+target_link_libraries(love_video INTERFACE
+	love_video_root
+	love_video_theora
+)
 
 #
 # love.window
 #
 
-set(LOVE_SRC_MODULE_WINDOW_ROOT
+add_library(love_window_root STATIC
 	src/modules/window/Window.cpp
 	src/modules/window/Window.h
 	src/modules/window/wrap_Window.cpp
 	src/modules/window/wrap_Window.h
 )
+target_link_libraries(love_window_root PUBLIC
+	lovedep::Lua
+	lovedep::SDL2
+)
 
-set(LOVE_SRC_MODULE_WINDOW_SDL
+add_library(love_window_sdl STATIC
 	src/modules/window/sdl/Window.cpp
 	src/modules/window/sdl/Window.h
 )
-
-set(LOVE_SRC_MODULE_WINDOW
-	${LOVE_SRC_MODULE_WINDOW_ROOT}
-	${LOVE_SRC_MODULE_WINDOW_SDL}
+target_link_libraries(love_window_sdl PUBLIC
+	lovedep::SDL2
 )
 
-source_group("modules\\window" FILES ${LOVE_SRC_MODULE_WINDOW_ROOT})
-source_group("modules\\window\\sdl" FILES ${LOVE_SRC_MODULE_WINDOW_SDL})
+add_library(love_window INTERFACE)
+target_link_libraries(love_window INTERFACE
+	love_window_root
+	love_window_sdl
+)
 
 ###################################
 # Third-party libraries
@@ -1173,128 +1218,100 @@ source_group("modules\\window\\sdl" FILES ${LOVE_SRC_MODULE_WINDOW_SDL})
 # Box2D
 #
 
-set(LOVE_SRC_3P_BOX2D_ROOT
+add_library(love_3p_box2d
 	src/libraries/box2d/Box2D.h
-)
-
-set(LOVE_SRC_3P_BOX2D_COLLISION
-    src/libraries/box2d/collision/b2_broad_phase.cpp
-    src/libraries/box2d/collision/b2_chain_shape.cpp
-    src/libraries/box2d/collision/b2_circle_shape.cpp
-    src/libraries/box2d/collision/b2_collide_circle.cpp
-    src/libraries/box2d/collision/b2_collide_edge.cpp
-    src/libraries/box2d/collision/b2_collide_polygon.cpp
-    src/libraries/box2d/collision/b2_collision.cpp
-    src/libraries/box2d/collision/b2_distance.cpp
-    src/libraries/box2d/collision/b2_dynamic_tree.cpp
-    src/libraries/box2d/collision/b2_edge_shape.cpp
-    src/libraries/box2d/collision/b2_polygon_shape.cpp
-    src/libraries/box2d/collision/b2_time_of_impact.cpp
-)
-
-set(LOVE_SRC_3P_BOX2D_COMMON
-    src/libraries/box2d/common/b2_block_allocator.cpp
-    src/libraries/box2d/common/b2_draw.cpp
-    src/libraries/box2d/common/b2_math.cpp
-    src/libraries/box2d/common/b2_settings.cpp
-    src/libraries/box2d/common/b2_stack_allocator.cpp
-    src/libraries/box2d/common/b2_timer.cpp
-)
-
-set(LOVE_SRC_3P_BOX2D_DYNAMICS
-    src/libraries/box2d/dynamics/b2_body.cpp
-    src/libraries/box2d/dynamics/b2_chain_circle_contact.cpp
-    src/libraries/box2d/dynamics/b2_chain_circle_contact.h
-    src/libraries/box2d/dynamics/b2_chain_polygon_contact.cpp
-    src/libraries/box2d/dynamics/b2_chain_polygon_contact.h
-    src/libraries/box2d/dynamics/b2_circle_contact.cpp
-    src/libraries/box2d/dynamics/b2_circle_contact.h
-    src/libraries/box2d/dynamics/b2_contact.cpp
-    src/libraries/box2d/dynamics/b2_contact_manager.cpp
-    src/libraries/box2d/dynamics/b2_contact_solver.cpp
-    src/libraries/box2d/dynamics/b2_contact_solver.h
-    src/libraries/box2d/dynamics/b2_distance_joint.cpp
-    src/libraries/box2d/dynamics/b2_edge_circle_contact.cpp
-    src/libraries/box2d/dynamics/b2_edge_circle_contact.h
-    src/libraries/box2d/dynamics/b2_edge_polygon_contact.cpp
-    src/libraries/box2d/dynamics/b2_edge_polygon_contact.h
-    src/libraries/box2d/dynamics/b2_fixture.cpp
-    src/libraries/box2d/dynamics/b2_friction_joint.cpp
-    src/libraries/box2d/dynamics/b2_gear_joint.cpp
-    src/libraries/box2d/dynamics/b2_island.cpp
-    src/libraries/box2d/dynamics/b2_island.h
-    src/libraries/box2d/dynamics/b2_joint.cpp
-    src/libraries/box2d/dynamics/b2_motor_joint.cpp
-    src/libraries/box2d/dynamics/b2_mouse_joint.cpp
-    src/libraries/box2d/dynamics/b2_polygon_circle_contact.cpp
-    src/libraries/box2d/dynamics/b2_polygon_circle_contact.h
-    src/libraries/box2d/dynamics/b2_polygon_contact.cpp
-    src/libraries/box2d/dynamics/b2_polygon_contact.h
-    src/libraries/box2d/dynamics/b2_prismatic_joint.cpp
-    src/libraries/box2d/dynamics/b2_pulley_joint.cpp
-    src/libraries/box2d/dynamics/b2_revolute_joint.cpp
-    src/libraries/box2d/dynamics/b2_weld_joint.cpp
-    src/libraries/box2d/dynamics/b2_wheel_joint.cpp
-    src/libraries/box2d/dynamics/b2_world.cpp
-    src/libraries/box2d/dynamics/b2_world_callbacks.cpp
-)
-
-set(LOVE_SRC_3P_BOX2D_ROPE
+	src/libraries/box2d/collision/b2_broad_phase.cpp
+	src/libraries/box2d/collision/b2_chain_shape.cpp
+	src/libraries/box2d/collision/b2_circle_shape.cpp
+	src/libraries/box2d/collision/b2_collide_circle.cpp
+	src/libraries/box2d/collision/b2_collide_edge.cpp
+	src/libraries/box2d/collision/b2_collide_polygon.cpp
+	src/libraries/box2d/collision/b2_collision.cpp
+	src/libraries/box2d/collision/b2_distance.cpp
+	src/libraries/box2d/collision/b2_dynamic_tree.cpp
+	src/libraries/box2d/collision/b2_edge_shape.cpp
+	src/libraries/box2d/collision/b2_polygon_shape.cpp
+	src/libraries/box2d/collision/b2_time_of_impact.cpp
+	src/libraries/box2d/common/b2_block_allocator.cpp
+	src/libraries/box2d/common/b2_draw.cpp
+	src/libraries/box2d/common/b2_math.cpp
+	src/libraries/box2d/common/b2_settings.cpp
+	src/libraries/box2d/common/b2_stack_allocator.cpp
+	src/libraries/box2d/common/b2_timer.cpp
+	src/libraries/box2d/dynamics/b2_body.cpp
+	src/libraries/box2d/dynamics/b2_chain_circle_contact.cpp
+	src/libraries/box2d/dynamics/b2_chain_circle_contact.h
+	src/libraries/box2d/dynamics/b2_chain_polygon_contact.cpp
+	src/libraries/box2d/dynamics/b2_chain_polygon_contact.h
+	src/libraries/box2d/dynamics/b2_circle_contact.cpp
+	src/libraries/box2d/dynamics/b2_circle_contact.h
+	src/libraries/box2d/dynamics/b2_contact.cpp
+	src/libraries/box2d/dynamics/b2_contact_manager.cpp
+	src/libraries/box2d/dynamics/b2_contact_solver.cpp
+	src/libraries/box2d/dynamics/b2_contact_solver.h
+	src/libraries/box2d/dynamics/b2_distance_joint.cpp
+	src/libraries/box2d/dynamics/b2_edge_circle_contact.cpp
+	src/libraries/box2d/dynamics/b2_edge_circle_contact.h
+	src/libraries/box2d/dynamics/b2_edge_polygon_contact.cpp
+	src/libraries/box2d/dynamics/b2_edge_polygon_contact.h
+	src/libraries/box2d/dynamics/b2_fixture.cpp
+	src/libraries/box2d/dynamics/b2_friction_joint.cpp
+	src/libraries/box2d/dynamics/b2_gear_joint.cpp
+	src/libraries/box2d/dynamics/b2_island.cpp
+	src/libraries/box2d/dynamics/b2_island.h
+	src/libraries/box2d/dynamics/b2_joint.cpp
+	src/libraries/box2d/dynamics/b2_motor_joint.cpp
+	src/libraries/box2d/dynamics/b2_mouse_joint.cpp
+	src/libraries/box2d/dynamics/b2_polygon_circle_contact.cpp
+	src/libraries/box2d/dynamics/b2_polygon_circle_contact.h
+	src/libraries/box2d/dynamics/b2_polygon_contact.cpp
+	src/libraries/box2d/dynamics/b2_polygon_contact.h
+	src/libraries/box2d/dynamics/b2_prismatic_joint.cpp
+	src/libraries/box2d/dynamics/b2_pulley_joint.cpp
+	src/libraries/box2d/dynamics/b2_revolute_joint.cpp
+	src/libraries/box2d/dynamics/b2_weld_joint.cpp
+	src/libraries/box2d/dynamics/b2_wheel_joint.cpp
+	src/libraries/box2d/dynamics/b2_world.cpp
+	src/libraries/box2d/dynamics/b2_world_callbacks.cpp
 	src/libraries/box2d/rope/b2_rope.cpp
 )
-
-set(LOVE_SRC_3P_BOX2D
-	${LOVE_SRC_3P_BOX2D_ROOT}
-	${LOVE_SRC_3P_BOX2D_COLLISION}
-	${LOVE_SRC_3P_BOX2D_COMMON}
-	${LOVE_SRC_3P_BOX2D_DYNAMICS}
-	${LOVE_SRC_3P_BOX2D_ROPE}
-)
-
-add_library(love_3p_box2d ${LOVE_SRC_3P_BOX2D})
+love_disable_warnings(love_3p_box2d)
 
 #
 # ddsparse
 #
 
-set(LOVE_SRC_3P_DDSPARSE
+add_library(love_3p_ddsparse
 	src/libraries/ddsparse/ddsinfo.h
 	src/libraries/ddsparse/ddsparse.cpp
 	src/libraries/ddsparse/ddsparse.h
 )
 
-add_library(love_3p_ddsparse ${LOVE_SRC_3P_DDSPARSE})
-
 #
 # dr_flac
 #
 
-set(LOVE_SRC_3P_DRFLAC
-	src/libraries/dr/dr_flac.h
-)
-
 # dr_flac has no implementation files of its own.
+#add_library(love_3p_drflac
+#	src/libraries/dr/dr_flac.h
+#)
 
 #
 # dr_mp3
 #
 
-set(LOVE_SRC_3P_DRMP3
-	src/libraries/dr/dr_mp3.h
-)
-
 # dr_mp3 has no implementation files of its own.
+#add_library(love_3p_drmp3
+#	src/libraries/dr/dr_mp3.h
+#)
 
 #
 # enet
 #
 
-set(LOVE_SRC_3P_ENET_ROOT
+add_library(love_3p_enet
 	src/libraries/enet/enet.cpp
 	src/libraries/enet/lua-enet.h
-)
-
-set(LOVE_SRC_3P_ENET_LIBENET
 	src/libraries/enet/libenet/callbacks.c
 	src/libraries/enet/libenet/compress.c
 	src/libraries/enet/libenet/host.c
@@ -1304,9 +1321,6 @@ set(LOVE_SRC_3P_ENET_LIBENET
 	src/libraries/enet/libenet/protocol.c
 	src/libraries/enet/libenet/unix.c
 	src/libraries/enet/libenet/win32.c
-)
-
-set(LOVE_SRC_3P_ENET_LIBENET_INCLUDE_ENET
 	src/libraries/enet/libenet/include/enet/enet.h
 	src/libraries/enet/libenet/include/enet/list.h
 	src/libraries/enet/libenet/include/enet/protocol.h
@@ -1316,15 +1330,8 @@ set(LOVE_SRC_3P_ENET_LIBENET_INCLUDE_ENET
 	src/libraries/enet/libenet/include/enet/utility.h
 	src/libraries/enet/libenet/include/enet/win32.h
 )
-
-set(LOVE_SRC_3P_ENET
-	${LOVE_SRC_3P_ENET_ROOT}
-	${LOVE_SRC_3P_ENET_LIBENET}
-	${LOVE_SRC_3P_ENET_LIBENET_INCLUDE_ENET}
-)
-
-add_library(love_3p_enet ${LOVE_SRC_3P_ENET})
-target_link_libraries(love_3p_enet ${LOVE_LUA_LIBRARY})
+love_disable_warnings(love_3p_enet)
+target_link_libraries(love_3p_enet lovedep::Lua)
 target_include_directories(love_3p_enet PUBLIC src/libraries/enet/libenet/include)
 if(MINGW)
 	target_link_libraries(love_3p_enet winmm.a)
@@ -1334,24 +1341,20 @@ endif()
 # GLAD
 #
 
-set(LOVE_SRC_3P_GLAD
+add_library(love_3p_glad
 	src/libraries/glad/glad.cpp
 	src/libraries/glad/glad.hpp
 	src/libraries/glad/gladfuncs.hpp
 )
 
-add_library(love_3p_glad ${LOVE_SRC_3P_GLAD})
-
 #
 # glslang
 #
 
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_GENERICCODEGEN
+add_library(love_3p_glslang
+	src/libraries/glslang/glslang/build_info.h
 	src/libraries/glslang/glslang/GenericCodeGen/CodeGen.cpp
 	src/libraries/glslang/glslang/GenericCodeGen/Link.cpp
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE
 	src/libraries/glslang/glslang/Include/arrays.h
 	src/libraries/glslang/glslang/Include/BaseTypes.h
 	src/libraries/glslang/glslang/Include/Common.h
@@ -1364,9 +1367,6 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE
 	src/libraries/glslang/glslang/Include/ShHandle.h
 	src/libraries/glslang/glslang/Include/SpirvIntrinsics.h
 	src/libraries/glslang/glslang/Include/Types.h
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/Pp.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpAtom.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpContext.cpp
@@ -1374,10 +1374,6 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpTokens.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpTokens.h
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT_PREPROCESSOR}
 	src/libraries/glslang/glslang/MachineIndependent/attribute.cpp
 	src/libraries/glslang/glslang/MachineIndependent/attribute.h
 	src/libraries/glslang/glslang/MachineIndependent/Constant.cpp
@@ -1419,44 +1415,10 @@ set(LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT
 	src/libraries/glslang/glslang/MachineIndependent/SymbolTable.h
 	src/libraries/glslang/glslang/MachineIndependent/Versions.cpp
 	src/libraries/glslang/glslang/MachineIndependent/Versions.h
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
 	src/libraries/glslang/glslang/OSDependent/osinclude.h
-)
-
-if(MSVC OR MINGW)
-	set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
-		${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
-		src/libraries/glslang/glslang/OSDependent/Windows/ossource.cpp
-	)
-else()
-	set(LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT
-		${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
-		src/libraries/glslang/glslang/OSDependent/Unix/ossource.cpp
-	)
-endif()
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC
 	src/libraries/glslang/glslang/Public/ResourceLimits.h
 	src/libraries/glslang/glslang/Public/ShaderLang.h
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG_RESOURCELIMITS
 	src/libraries/glslang/glslang/ResourceLimits/ResourceLimits.cpp
-)
-
-set(LOVE_SRC_3P_GLSLANG_GLSLANG
-	src/libraries/glslang/glslang/build_info.h
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_GENERICCODEGEN}
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_INCLUDE}
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_MACHINEINDEPENDENT}
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_OSDEPENDENT}
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_PUBLIC}
-	${LOVE_SRC_3P_GLSLANG_GLSLANG_RESOURCELIMITS}
-)
-
-set(LOVE_SRC_3P_GLSLANG_SPIRV
 	src/libraries/glslang/SPIRV/bitutils.h
 	src/libraries/glslang/SPIRV/disassemble.cpp
 	src/libraries/glslang/SPIRV/disassemble.h
@@ -1488,34 +1450,38 @@ set(LOVE_SRC_3P_GLSLANG_SPIRV
 	src/libraries/glslang/SPIRV/SpvTools.h
 )
 
-set(LOVE_SRC_3P_GLSLANG
-	${LOVE_SRC_3P_GLSLANG_GLSLANG}
-	${LOVE_SRC_3P_GLSLANG_SPIRV}
-)
-
-add_library(love_3p_glslang ${LOVE_SRC_3P_GLSLANG})
+if(MSVC OR MINGW)
+	target_sources(love_3p_glslang PRIVATE
+		src/libraries/glslang/glslang/OSDependent/Windows/ossource.cpp
+	)
+else()
+	target_sources(love_3p_glslang PRIVATE
+		src/libraries/glslang/glslang/OSDependent/Unix/ossource.cpp
+	)
+endif()
 
 #
 # LodePNG
 #
 
-set(LOVE_SRC_3P_LODEPNG
+add_library(love_3p_lodepng
 	src/libraries/lodepng/lodepng.cpp
 	src/libraries/lodepng/lodepng.h
 )
-
-add_library(love_3p_lodepng ${LOVE_SRC_3P_LODEPNG})
 
 #
 # luasocket
 #
 
-set(LOVE_SRC_3P_LUASOCKET_ROOT
+if(MINGW)
+	set(WIN32_LIB_EXT .a)
+else()
+	set(WIN32_LIB_EXT .lib)
+endif()
+
+add_library(love_3p_luasocket
 	src/libraries/luasocket/luasocket.cpp
 	src/libraries/luasocket/luasocket.h
-)
-
-set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 	src/libraries/luasocket/libluasocket/auxiliar.c
 	src/libraries/luasocket/libluasocket/auxiliar.h
 	src/libraries/luasocket/libluasocket/buffer.c
@@ -1561,73 +1527,48 @@ set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
 	src/libraries/luasocket/libluasocket/unixstream.c
 	src/libraries/luasocket/libluasocket/unixstream.h
 )
-
-set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET)
-
-if(MINGW)
-	set(WIN32_LIB_EXT .a)
-else()
-	set(WIN32_LIB_EXT .lib)
-endif()
+target_link_libraries(love_3p_luasocket lovedep::Lua)
+love_disable_warnings(love_3p_luasocket)
 
 if(MSVC OR MINGW)
-	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
-		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
+	target_sources(love_3p_luasocket PRIVATE
 		src/libraries/luasocket/libluasocket/wsocket.c
 		src/libraries/luasocket/libluasocket/wsocket.h
 	)
 
-	set(LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET
-		${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET}
+	target_link_libraries(love_3p_luasocket
 		ws2_32${WIN32_LIB_EXT}
 	)
 else()
-	set(LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET
-		${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
+	target_sources(love_3p_luasocket PRIVATE
 		src/libraries/luasocket/libluasocket/serial.c
 		src/libraries/luasocket/libluasocket/usocket.c
 		src/libraries/luasocket/libluasocket/usocket.h
 	)
 endif()
 
-set(LOVE_SRC_3P_LUASOCKET
-	${LOVE_SRC_3P_LUASOCKET_ROOT}
-	${LOVE_SRC_3P_LUASOCKET_LIBLUASOCKET}
-)
-
-add_library(love_3p_luasocket ${LOVE_SRC_3P_LUASOCKET})
-target_link_libraries(love_3p_luasocket ${LOVE_LUA_LIBRARY} ${LOVE_LINK_L3P_LUASOCKET_LIBLUASOCKET})
-
 #
 # APIs from Lua 5.3
 #
 
-set(LOVE_SRC_3P_LUA53
+add_library(love_3p_lua53
 	src/libraries/lua53/lprefix.h
 	src/libraries/lua53/lstrlib.c
 	src/libraries/lua53/lstrlib.h
 	src/libraries/lua53/lutf8lib.c
 	src/libraries/lua53/lutf8lib.h
 )
-
-add_library(love_3p_lua53 ${LOVE_SRC_3P_LUA53})
-target_link_libraries(love_3p_lua53 ${LOVE_LUA_LIBRARY})
+target_link_libraries(love_3p_lua53 lovedep::Lua)
 
 #
 # Lua HTTPS
 #
 
-set(LOVE_SRC_3P_LUAHTTPS_ANDROID
+add_library(love_3p_luahttps
+	# These are platform-dependent but have ifdef guards to make sure they only
+	# compile on supported platforms.
 	src/libraries/luahttps/src/android/AndroidClient.cpp
 	src/libraries/luahttps/src/android/AndroidClient.h
-)
-
-set(LOVE_SRC_3P_LUAHTTPS_APPLE
-	src/libraries/luahttps/src/apple/NSURLClient.mm
-	src/libraries/luahttps/src/apple/NSURLClient.h
-)
-
-set(LOVE_SRC_3P_LUAHTTPS_COMMON
 	src/libraries/luahttps/src/common/config.h
 	src/libraries/luahttps/src/common/Connection.h
 	src/libraries/luahttps/src/common/ConnectionClient.h
@@ -1639,64 +1580,43 @@ set(LOVE_SRC_3P_LUAHTTPS_COMMON
 	src/libraries/luahttps/src/common/HTTPSClient.h
 	src/libraries/luahttps/src/common/PlaintextConnection.cpp
 	src/libraries/luahttps/src/common/PlaintextConnection.h
-)
-
-set(LOVE_SRC_3P_LUAHTTPS_GENERIC
 	src/libraries/luahttps/src/generic/CurlClient.cpp
 	src/libraries/luahttps/src/generic/CurlClient.h
 	src/libraries/luahttps/src/generic/OpenSSLConnection.cpp
 	src/libraries/luahttps/src/generic/OpenSSLConnection.h
-)
-
-set(LOVE_SRC_3P_LUAHTTPS_LUA
 	src/libraries/luahttps/src/lua/main.cpp
-)
-
-set(LOVE_SRC_3P_LUAHTTPS_WINDOWS
 	src/libraries/luahttps/src/windows/SChannelConnection.cpp
 	src/libraries/luahttps/src/windows/SChannelConnection.h
 	src/libraries/luahttps/src/windows/WinINetClient.cpp
 	src/libraries/luahttps/src/windows/WinINetClient.h
 )
-
-# These are platform-dependent but have ifdef guards to make sure they only
-# compile on supported platforms.
-set(LOVE_SRC_3P_LUAHTTPS
-	${LOVE_SRC_3P_LUAHTTPS_ANDROID}
-	${LOVE_SRC_3P_LUAHTTPS_COMMON}
-	${LOVE_SRC_3P_LUAHTTPS_GENERIC}
-	${LOVE_SRC_3P_LUAHTTPS_LUA}
-	${LOVE_SRC_3P_LUAHTTPS_WINDOWS}
-	)
+target_link_libraries(love_3p_luahttps lovedep::Lua)
 
 if (APPLE)
-	set(LOVE_SRC_3P_LUAHTTPS ${LOVE_SRC_3P_LUAHTTPS} ${LOVE_SRC_3P_LUAHTTPS_APPLE})
+	target_sources(love_3p_luahttps PRIVATE
+		src/libraries/luahttps/src/apple/NSURLClient.mm
+		src/libraries/luahttps/src/apple/NSURLClient.h
+	)
 endif()
 
-set(LOVE_LINK_L3P_LUAHTTPS)
 if(MSVC)
-	set(LOVE_LINK_L3P_LUAHTTPS
-		${LOVE_LINK_L3P_LUAHTTPS}
+	target_link_libraries(love_3p_luahttps
 		ws2_32
 		secur32
 	)
 
 	if(NOT CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-		set(LOVE_LINK_L3P_LUAHTTPS
-			${LOVE_LINK_L3P_LUAHTTPS}
+		target_link_libraries(love_3p_luahttps
 			wininet
 		)
 	endif()
 endif()
 
-add_library(love_3p_luahttps ${LOVE_SRC_3P_LUAHTTPS})
-target_link_libraries(love_3p_luahttps ${LOVE_LUA_LIBRARY} ${LOVE_LINK_L3P_LUAHTTPS})
-
 #
 # lz4
 #
 
-set(LOVE_SRC_3P_LZ4
+add_library(love_3p_lz4
 	src/libraries/lz4/lz4.c
 	src/libraries/lz4/lz4.h
 	src/libraries/lz4/lz4hc.c
@@ -1704,26 +1624,22 @@ set(LOVE_SRC_3P_LZ4
 	src/libraries/lz4/lz4opt.h
 )
 
-add_library(love_3p_lz4 ${LOVE_SRC_3P_LZ4})
-
 #
 # noise1234
 #
 
-set(LOVE_SRC_3P_NOISE1234
+add_library(love_3p_noise1234
 	src/libraries/noise1234/noise1234.cpp
 	src/libraries/noise1234/noise1234.h
 	src/libraries/noise1234/simplexnoise1234.cpp
 	src/libraries/noise1234/simplexnoise1234.h
 )
 
-add_library(love_3p_noise1234 ${LOVE_SRC_3P_NOISE1234})
-
 #
 # physfs
 #
 
-set(LOVE_SRC_3P_PHYSFS
+add_library(love_3p_physfs
 	src/libraries/physfs/physfs_archiver_7z.c
 	src/libraries/physfs/physfs_archiver_dir.c
 	src/libraries/physfs/physfs_archiver_grp.c
@@ -1754,21 +1670,22 @@ set(LOVE_SRC_3P_PHYSFS
 	src/libraries/physfs/physfs.c
 	src/libraries/physfs/physfs.h
 )
+love_disable_warnings(love_3p_physfs)
 
 if(APPLE)
-	set(LOVE_SRC_3P_PHYSFS ${LOVE_SRC_3P_PHYSFS}
+	target_sources(love_3p_physfs PRIVATE
 		src/libraries/physfs/physfs_platform_apple.m
 	)
-	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} "-framework IOKit")
+	target_link_libraries(love_3p_physfs INTERFACE
+		"-framework IOKit"
+	)
 endif()
-
-add_library(love_3p_physfs ${LOVE_SRC_3P_PHYSFS})
 
 #
 # spirv_cross
 #
 
-set(LOVE_SRC_3P_SPIRV_CROSS
+add_library(love_3p_spirv_cross
 	src/libraries/spirv_cross/GLSL.std.450.h
 	src/libraries/spirv_cross/spirv_cfg.cpp
 	src/libraries/spirv_cross/spirv_cfg.hpp
@@ -1796,112 +1713,100 @@ set(LOVE_SRC_3P_SPIRV_CROSS
 	src/libraries/spirv_cross/spirv.hpp
 )
 
-add_library(love_3p_spirv_cross ${LOVE_SRC_3P_SPIRV_CROSS})
-
 #
 # stb_image
 #
 
-set(LOVE_SRC_3P_STB
-	src/libraries/stb/stb_image.h
-)
-
 # stb_image has no implementation files of its own.
+#add_library(love_3p_stb
+#	src/libraries/stb/stb_image.h
+#)
 
 #
 # tiny exr
 #
 
-set(LOVE_SRC_3P_TINYEXR
-	src/libraries/tinyexr/tinyexr.h
-)
-
 # tinyexr has no implementation files of its own.
+#add_library(love_3p_tinyexr
+#	src/libraries/tinyexr/tinyexr.h
+#)
 
 #
 # utf8
 #
 
-set(LOVE_SRC_3P_UTF8_ROOT src/libraries/utf8/utf8.h)
-
-set(LOVE_SRC_3P_UTF8_UTF8
-	src/libraries/utf8/utf8/checked.h
-	src/libraries/utf8/utf8/core.h
-	src/libraries/utf8/utf8/unchecked.h
-)
-
-set(LOVE_SRC_3P_UTF8
-	${LOVE_SRC_3P_UTF8_ROOT}
-	${LOVE_SRC_3P_UTF8_UTF8}
-)
-
 # This library is all headers ... so there is no need to
 # add_library() here.
+#add_library(love_3p_utf8
+#	src/libraries/utf8/utf8.h
+#	src/libraries/utf8/utf8/checked.h
+#	src/libraries/utf8/utf8/core.h
+#	src/libraries/utf8/utf8/unchecked.h
+#)
 
 #
 # vma
 #
 
-set(LOVE_SRC_3P_VMA src/libraries/vma/vk_mem_alloc.h)
-
 # vulkan memory allocatory has no implementation files of its own.
+#add_library(love_3p_vma
+#	src/libraries/vma/vk_mem_alloc.h
+#)
 
 #
 # volk
 #
 
-set(LOVE_SRC_3P_VOLK 
-	src/libraries/volk/volk.h
-	src/libraries/volk/volk.c)
-
 # since we don't want to use the system vulkan header files we need to 
 # compile this library in the löve source code using VOLK_IMPLEMENTATION.
+#add_library(love_3p_volk 
+#	src/libraries/volk/volk.h
+#	src/libraries/volk/volk.c)
 
 #
 # vulkan headers
 #
 
-set(LOVE_SRC_3P_VULKAN_HEADERS
-	src/libraries/vulkanheaders/vk_icd.h
-	src/libraries/vulkanheaders/vk_layer.h
-	src/libraries/vulkanheaders/vk_platform.h
-	src/libraries/vulkanheaders/vk_sdk-platform.h
-	src/libraries/vulkanheaders/vulkan_android.h
-	src/libraries/vulkanheaders/vulkan_beta.h
-	src/libraries/vulkanheaders/vulkan_core.h
-	src/libraries/vulkanheaders/vulkan_directfb.h
-	src/libraries/vulkanheaders/vulkan_enums.hpp
-	src/libraries/vulkanheaders/vulkan_format_traits.hpp
-	src/libraries/vulkanheaders/vulkan_fuchsia.h
-	src/libraries/vulkanheaders/vulkan_funcs.h
-	src/libraries/vulkanheaders/vulkan_ggp.h
-	src/libraries/vulkanheaders/vulkan_handles.h
-	src/libraries/vulkanheaders/vulkan_hash.hpp
-	src/libraries/vulkanheaders/vulkan_ios.h
-	src/libraries/vulkanheaders/vulkan_macos.h
-	src/libraries/vulkanheaders/vulkan_metal.h
-	src/libraries/vulkanheaders/vulkan_raii.hpp
-	src/libraries/vulkanheaders/vulkan_screen.h
-	src/libraries/vulkanheaders/vulkan_static_assertions.h
-	src/libraries/vulkanheaders/vulkan_structs.hpp
-	src/libraries/vulkanheaders/vulkan_to_string.h
-	src/libraries/vulkanheaders/vulkan_vi.h
-	src/libraries/vulkanheaders/vulkan_wayland.h
-	src/libraries/vulkanheaders/vulkan_win32.h
-	src/libraries/vulkanheaders/vulkan_xcb.h
-	src/libraries/vulkanheaders/vulkan_xlib_xrandr.h
-	src/libraries/vulkanheaders/vulkan_xlib.h
-	src/libraries/vulkanheaders/vulkan.h
-	src/libraries/vulkanheaders/vulkan.hpp
-)
-
 # vulkan headers has no implementation files of its own.
+#add_library(love_3p_vulkan_headers
+#	src/libraries/vulkanheaders/vk_icd.h
+#	src/libraries/vulkanheaders/vk_layer.h
+#	src/libraries/vulkanheaders/vk_platform.h
+#	src/libraries/vulkanheaders/vk_sdk-platform.h
+#	src/libraries/vulkanheaders/vulkan_android.h
+#	src/libraries/vulkanheaders/vulkan_beta.h
+#	src/libraries/vulkanheaders/vulkan_core.h
+#	src/libraries/vulkanheaders/vulkan_directfb.h
+#	src/libraries/vulkanheaders/vulkan_enums.hpp
+#	src/libraries/vulkanheaders/vulkan_format_traits.hpp
+#	src/libraries/vulkanheaders/vulkan_fuchsia.h
+#	src/libraries/vulkanheaders/vulkan_funcs.h
+#	src/libraries/vulkanheaders/vulkan_ggp.h
+#	src/libraries/vulkanheaders/vulkan_handles.h
+#	src/libraries/vulkanheaders/vulkan_hash.hpp
+#	src/libraries/vulkanheaders/vulkan_ios.h
+#	src/libraries/vulkanheaders/vulkan_macos.h
+#	src/libraries/vulkanheaders/vulkan_metal.h
+#	src/libraries/vulkanheaders/vulkan_raii.hpp
+#	src/libraries/vulkanheaders/vulkan_screen.h
+#	src/libraries/vulkanheaders/vulkan_static_assertions.h
+#	src/libraries/vulkanheaders/vulkan_structs.hpp
+#	src/libraries/vulkanheaders/vulkan_to_string.h
+#	src/libraries/vulkanheaders/vulkan_vi.h
+#	src/libraries/vulkanheaders/vulkan_wayland.h
+#	src/libraries/vulkanheaders/vulkan_win32.h
+#	src/libraries/vulkanheaders/vulkan_xcb.h
+#	src/libraries/vulkanheaders/vulkan_xlib_xrandr.h
+#	src/libraries/vulkanheaders/vulkan_xlib.h
+#	src/libraries/vulkanheaders/vulkan.h
+#	src/libraries/vulkanheaders/vulkan.hpp
+#)
 
 #
 # Wuff
 #
 
-set(LOVE_SRC_3P_WUFF
+add_library(love_3p_wuff
 	src/libraries/Wuff/wuff.c
 	src/libraries/Wuff/wuff.h
 	src/libraries/Wuff/wuff_config.h
@@ -1912,20 +1817,65 @@ set(LOVE_SRC_3P_WUFF
 	src/libraries/Wuff/wuff_memory.c
 )
 
-add_library(love_3p_wuff ${LOVE_SRC_3P_WUFF})
-
 #
 # xxHash
 #
 
-set(LOVE_SRC_3P_XXHASH
+add_library(love_3p_xxhash
 	src/libraries/xxHash/xxhash.c
 	src/libraries/xxHash/xxhash.h
 )
 
-add_library(love_3p_xxhash ${LOVE_SRC_3P_XXHASH})
+#
+# liblove
+#
+include_directories(
+	BEFORE
+	src
+	src/libraries
+	src/libraries/box2D
+	src/modules
+)
 
-set(LOVE_3P
+link_directories(${LOVE_LINK_DIRS})
+
+if(MINGW)
+	# UTF-16 flags passed to windres. windres invokes gcc as preprocessor
+	# -> gcc outputs utf8, so windres must read-in codepage 65001 (utf8)
+	set(CMAKE_RC_FLAGS ${CMAKE_RC_FLAGS} "-c 65001 --preprocessor-arg=-finput-charset=UTF-16LE")
+endif()
+
+add_library(liblove SHARED
+	src/modules/love/love.cpp
+	src/modules/love/love.h
+)
+set_target_properties(liblove PROPERTIES
+	C_VISIBILITY_PRESET hidden
+	CXX_VISIBILITY_PRESET hidden
+	VISIBILITY_INLINES_HIDDEN ON
+	LIBRARY_OUTPUT_NAME "${LOVE_LIB_NAME}")
+target_link_libraries(liblove
+	love_common
+	love_audio
+	love_data
+	love_event
+	love_filesystem
+	love_font
+	love_graphics
+	love_image
+	love_joystick
+	love_keyboard
+	love_math
+	love_mouse
+	love_physics
+	love_sensor
+	love_sound
+	love_system
+	love_thread
+	love_timer
+	love_touch
+	love_video
+	love_window
 	love_3p_box2d
 	love_3p_ddsparse
 	love_3p_enet
@@ -1943,136 +1893,81 @@ set(LOVE_3P
 	love_3p_xxhash
 )
 
-love_disable_warnings(love_3p_box2d love_3p_enet love_3p_luasocket love_3p_physfs)
+if(LOVE_EXTRA_DEPENDECIES)
+	add_dependencies(liblove ${LOVE_EXTRA_DEPENDECIES})
+endif()
 
-#
-# liblove
-#
-set(LOVE_LIB_SRC
-	${LOVE_SRC_COMMON}
-	# Modules
-	${LOVE_SRC_MODULE_AUDIO}
-	${LOVE_SRC_MODULE_DATA}
-	${LOVE_SRC_MODULE_EVENT}
-	${LOVE_SRC_MODULE_FILESYSTEM}
-	${LOVE_SRC_MODULE_FONT}
-	${LOVE_SRC_MODULE_GRAPHICS}
-	${LOVE_SRC_MODULE_IMAGE}
-	${LOVE_SRC_MODULE_JOYSTICK}
-	${LOVE_SRC_MODULE_KEYBOARD}
-	${LOVE_SRC_MODULE_LOVE}
-	${LOVE_SRC_MODULE_MATH}
-	${LOVE_SRC_MODULE_MOUSE}
-	${LOVE_SRC_MODULE_PHYSICS}
-	${LOVE_SRC_MODULE_SENSOR}
-	${LOVE_SRC_MODULE_SOUND}
-	${LOVE_SRC_MODULE_SYSTEM}
-	${LOVE_SRC_MODULE_THREAD}
-	${LOVE_SRC_MODULE_TIMER}
-	${LOVE_SRC_MODULE_TOUCH}
-	${LOVE_SRC_MODULE_VIDEO}
-	${LOVE_SRC_MODULE_WINDOW}
-)
-
-include_directories(
-	BEFORE
-	src
-	src/libraries
-	src/libraries/box2D
-	src/modules
-	${LOVE_INCLUDE_DIRS}
-)
-
-link_directories(${LOVE_LINK_DIRS})
-
-set(LOVE_RC)
+if(MSVC)
+	set_target_properties(liblove PROPERTIES RELEASE_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
+	set_target_properties(liblove PROPERTIES DEBUG_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
+endif()
 
 if(MSVC OR MINGW)
-	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES}
+	target_link_libraries(liblove
 		ws2_32${WIN32_LIB_EXT}
 		winmm${WIN32_LIB_EXT}
 		dwmapi${WIN32_LIB_EXT}
 	)
 
-	set(LOVE_RC
+	target_sources(liblove PUBLIC
 		extra/windows/love.rc
 		extra/windows/love.ico
 	)
-
-	if(MINGW)
-		# UTF-16 flags passed to windres. windres invokes gcc as preprocessor
-		# -> gcc outputs utf8, so windres must read-in codepage 65001 (utf8)
-		set(CMAKE_RC_FLAGS ${CMAKE_RC_FLAGS} "-c 65001 --preprocessor-arg=-finput-charset=UTF-16LE")
-	endif()
-endif()
-
-if(ANDROID)
-	# In Android, the LOVE main entrypoint needs to be compiled
-	# as shared library, so change the library name and add love.cpp
-	set(LOVE_LIB_NAME ${LOVE_EXE_NAME})
-	set(LOVE_LIB_SRC ${LOVE_LIB_SRC} src/love.cpp)
-	set(LOVE_LINK_LIBRARIES ${LOVE_LINK_LIBRARIES} android)
-endif()
-
-add_library(${LOVE_LIB_NAME} SHARED ${LOVE_LIB_SRC} ${LOVE_RC})
-set_target_properties(${LOVE_LIB_NAME} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
-target_link_libraries(${LOVE_LIB_NAME} ${LOVE_LINK_LIBRARIES} ${LOVE_3P})
-
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
-	set_target_properties(${LOVE_LIB_NAME} PROPERTIES LIBRARY_OUTPUT_NAME "${LOVE_EXE_NAME}-${LOVE_VERSION_STR}")
-endif()
-
-if(LOVE_EXTRA_DEPENDECIES)
-	add_dependencies(${LOVE_LIB_NAME} ${LOVE_EXTRA_DEPENDECIES})
-endif()
-
-if(MSVC)
-	set_target_properties(${LOVE_LIB_NAME} PROPERTIES RELEASE_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
-	set_target_properties(${LOVE_LIB_NAME} PROPERTIES DEBUG_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
 endif()
 
 #
 # love (executable)
 #
-if(NOT ANDROID)
-	add_executable(${LOVE_EXE_NAME} WIN32 src/love.cpp ${LOVE_RC})
-	target_link_libraries(${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
-	set_target_properties(${LOVE_EXE_NAME} PROPERTIES C_VISIBILITY_PRESET hidden CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
+if(ANDROID)
+	add_library(love SHARED) # On Android, the LOVE main entrypoint needs to be compiled as shared library
+	target_link_libraries(liblove android)
+else()
+	add_executable(love WIN32)
+endif()
 
-	if(MSVC OR MINGW)
-		add_executable(${LOVE_CONSOLE_EXE_NAME} src/love.cpp ${LOVE_RC})
-		target_link_libraries(${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME})
+target_sources(love PRIVATE src/love.cpp)
+target_link_libraries(love liblove)
+set_target_properties(love PROPERTIES
+	C_VISIBILITY_PRESET hidden
+	CXX_VISIBILITY_PRESET hidden
+	VISIBILITY_INLINES_HIDDEN ON
+	OUTPUT_NAME ${LOVE_EXE_NAME})
+
+if(MSVC OR MINGW)
+	add_executable(lovec src/love.cpp)
+	target_link_libraries(lovec liblove)
+	set_target_properties(lovec PROPERTIES
+		OUTPUT_NAME ${LOVE_CONSOLE_EXE_NAME})
+endif()
+
+function(post_step_move_dll ARG_POST_TARGET ARG_TARGET_OR_FILE)
+	if(TARGET ${ARG_TARGET_OR_FILE})
+		add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+			$<TARGET_FILE:${ARG_TARGET_OR_FILE}>
+			${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/$<TARGET_FILE_NAME:${ARG_TARGET_OR_FILE}>)
+	else()
+		get_filename_component(TEMP_FILENAME ${ARG_TARGET_OR_FILE} NAME)
+		add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+			${ARG_TARGET_OR_FILE}
+			${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/${TEMP_FILENAME})
 	endif()
+endfunction()
 
-	function(post_step_move_dll ARG_POST_TARGET ARG_TARGET_OR_FILE)
-		if(TARGET ${ARG_TARGET_OR_FILE})
-			add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E copy
-				$<TARGET_FILE:${ARG_TARGET_OR_FILE}>
-				${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/$<TARGET_FILE_NAME:${ARG_TARGET_OR_FILE}>)
-		else()
-			get_filename_component(TEMP_FILENAME ${ARG_TARGET_OR_FILE} NAME)
-			add_custom_command(TARGET ${ARG_POST_TARGET} POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E copy
-				${ARG_TARGET_OR_FILE}
-				${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>/${TEMP_FILENAME})
-		endif()
-	endfunction()
-
-	# Add post build steps to move the DLLs next to the binary. Otherwise
-	# running/debugging the binary will not work from inside VS.
-	if(LOVE_MOVE_DLLS)
-		foreach(DLL ${LOVE_MOVE_DLLS})
-			post_step_move_dll(love ${DLL})
-		endforeach()
-	endif()
+# Add post build steps to move the DLLs next to the binary. Otherwise
+# running/debugging the binary will not work from inside VS.
+if(LOVE_MOVE_DLLS)
+	foreach(DLL ${LOVE_MOVE_DLLS})
+		post_step_move_dll(love ${DLL})
+	endforeach()
 endif()
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 	###################################
 	# CPack
 	###################################
-	install(TARGETS ${LOVE_EXE_NAME} ${LOVE_CONSOLE_EXE_NAME} ${LOVE_LIB_NAME} RUNTIME DESTINATION .)
+	install(TARGETS love lovec liblove RUNTIME DESTINATION .)
 
 	# Our install script (and NSIS) doesn't fully support Windows ARM64 yet.
 	if(MEGA_ARM64)
@@ -2194,7 +2089,7 @@ elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 
 	configure_file(platform/unix/love.desktop.in love.desktop @ONLY)
 
-	install(TARGETS ${LOVE_EXE_NAME} ${LOVE_LIB_NAME})
+	install(TARGETS love liblove)
 	install(FILES platform/unix/love.6
 			DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
 			RENAME love.1)
