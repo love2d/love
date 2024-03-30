@@ -288,8 +288,19 @@ void Shader::buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv
 		switch (membertype.basetype)
 		{
 			case SPIRType::Struct:
-				name += ".";
-				buildLocalUniforms(msl, membertype, offset, name);
+				if (membertype.op == spv::OpTypeArray)
+				{
+					for (uint32 i = 0; i < membertype.array[0]; i++)
+					{
+						std::string structname = name + "[" + std::to_string(i) + "].";
+						buildLocalUniforms(msl, membertype, offset, structname);
+					}
+				}
+				else
+				{
+					std::string structname = name = ".";
+					buildLocalUniforms(msl, membertype, offset, structname);
+				}
 				continue;
 			case SPIRType::Int:
 			case SPIRType::UInt:
