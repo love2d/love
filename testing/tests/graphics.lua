@@ -122,6 +122,8 @@ love.test.graphics.Canvas = function(test)
   test:assertEquals(1, canvas:getDepth(), 'check depth is 2d')
   test:assertEquals(nil, canvas:getDepthSampleMode(), 'check depth sample nil')
 
+  local maxanisotropy = love.graphics.getSystemLimits().anisotropy
+
   -- check fliter
   local min1, mag1, ani1 = canvas:getFilter()
   test:assertEquals('nearest', min1, 'check filter def min')
@@ -131,7 +133,7 @@ love.test.graphics.Canvas = function(test)
   local min2, mag2, ani2 = canvas:getFilter()
   test:assertEquals('linear', min2, 'check filter changed min')
   test:assertEquals('linear', mag2, 'check filter changed mag')
-  test:assertEquals(2, ani2, 'check filter changed ani')
+  test:assertEquals(math.min(maxanisotropy, 2), ani2, 'check filter changed ani')
 
   -- check layer
   test:assertEquals(1, canvas:getLayerCount(), 'check 1 layer for 2d')
