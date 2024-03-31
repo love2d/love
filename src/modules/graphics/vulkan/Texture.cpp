@@ -355,6 +355,10 @@ void Texture::createTextureImageView()
 	viewInfo.viewType = Vulkan::getImageViewType(getTextureType());
 	viewInfo.format = vulkanFormat.internalFormat;
 	viewInfo.subresourceRange.aspectMask = imageAspect;
+	// This view is used in descriptor sets, where having both depth and
+	// stencil aspects in the same view isn't allowed.
+	if (imageAspect & VK_IMAGE_ASPECT_DEPTH_BIT)
+		viewInfo.subresourceRange.aspectMask &= ~VK_IMAGE_ASPECT_STENCIL_BIT;
 	viewInfo.subresourceRange.baseMipLevel = rootView.startMipmap;
 	viewInfo.subresourceRange.levelCount = getMipmapCount();
 	viewInfo.subresourceRange.baseArrayLayer = rootView.startLayer;
