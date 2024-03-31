@@ -151,12 +151,16 @@ bool Texture::loadVolatile()
 
 		auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
-		if (isPixelFormatDepthStencil(format))
-			imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		else if (computeWrite)
+		if (computeWrite)
 			imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-		else
+		else if (readable)
 			imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		else if (renderTarget && isPixelFormatDepthStencil(format))
+			imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		else if (renderTarget)
+			imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		else // TODO: is there a better layout for this situation?
+			imageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
 		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
 			VK_IMAGE_LAYOUT_UNDEFINED, imageLayout,
@@ -383,40 +387,32 @@ void Texture::clear()
 	range.baseArrayLayer = 0;
 	range.layerCount = VK_REMAINING_ARRAY_LAYERS;
 
-	if (imageLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	VkImageLayout clearLayout = imageLayout == VK_IMAGE_LAYOUT_GENERAL ? imageLayout : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+	if (clearLayout != imageLayout)
 	{
 		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
-
-		auto clearColor = getClearColor(this, ColorD(0, 0, 0, 0));
-
-		vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &range);
-
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			imageLayout, clearLayout,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
-	else if (imageLayout == VK_IMAGE_LAYOUT_GENERAL)
-	{
-		auto clearColor = getClearColor(this, ColorD(0, 0, 0, 0));
 
-		vkCmdClearColorImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &range);
-	}
-	else
+	if (isPixelFormatDepthStencil(format))
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
-			imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
-
 		VkClearDepthStencilValue depthStencilColor{};
 		depthStencilColor.depth = 0.0f;
 		depthStencilColor.stencil = 0;
+		vkCmdClearDepthStencilImage(commandBuffer, textureImage, clearLayout, &depthStencilColor, 1, &range);
+	}
+	else
+	{
+		auto clearColor = getClearColor(this, ColorD(0, 0, 0, 0));
+		vkCmdClearColorImage(commandBuffer, textureImage, clearLayout, &clearColor, 1, &range);
+	}
 
-		vkCmdClearDepthStencilImage(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &depthStencilColor, 1, &range);
-
+	if (clearLayout != imageLayout)
+	{
 		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout,
+			clearLayout, imageLayout,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
 }

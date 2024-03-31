@@ -1884,15 +1884,15 @@ VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurface
 	if (isGammaCorrect())
 	{
 		formatOrder = {
-				VK_FORMAT_B8G8R8A8_SRGB,
-				VK_FORMAT_R8G8B8A8_SRGB,
+			VK_FORMAT_B8G8R8A8_SRGB,
+			VK_FORMAT_R8G8B8A8_SRGB,
 		};
 	}
 	else
 	{
 		formatOrder = {
-				VK_FORMAT_B8G8R8A8_UNORM,
-				VK_FORMAT_R8G8B8A8_SNORM,
+			VK_FORMAT_B8G8R8A8_UNORM,
+			VK_FORMAT_R8G8B8A8_SNORM,
 		};
 	}
 
@@ -2392,15 +2392,24 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 
 	FramebufferConfiguration configuration{};
 
-	std::vector<std::tuple<VkImage, PixelFormat>> transitionImages;
+	std::vector<std::tuple<VkImage, PixelFormat, VkImageLayout, VkImageLayout>> transitionImages;
 
 	for (const auto &color : rts.colors)
 	{
-		configuration.colorViews.push_back(dynamic_cast<Texture*>(color.texture)->getRenderTargetView(color.mipmap, color.slice));
-		transitionImages.push_back({ (VkImage)color.texture->getHandle(), color.texture->getPixelFormat() });
+		auto tex = (Texture*)color.texture;
+		configuration.colorViews.push_back(tex->getRenderTargetView(color.mipmap, color.slice));
+		VkImageLayout imagelayout = tex->getImageLayout();
+		if (imagelayout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), imagelayout, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
 	}
 	if (rts.depthStencil.texture != nullptr)
-		configuration.staticData.depthView = dynamic_cast<Texture*>(rts.depthStencil.texture)->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
+	{
+		auto tex = (Texture*)rts.depthStencil.texture;
+		configuration.staticData.depthView = tex->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
+		VkImageLayout imagelayout = tex->getImageLayout();
+		if (imagelayout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), imagelayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL });
+	}
 
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
 	configuration.staticData.height = static_cast<uint32_t>(pixelh);
@@ -2450,8 +2459,8 @@ void Graphics::startRenderPass()
 	renderPassState.framebufferConfiguration.staticData.renderPass = renderPassState.beginInfo.renderPass;
 	renderPassState.beginInfo.framebuffer = getFramebuffer(renderPassState.framebufferConfiguration);
 
-	for (const auto &[image, format] : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	for (const auto &[image, format, imageLayout, renderLayout] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, imageLayout, renderLayout);
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
@@ -2462,8 +2471,8 @@ void Graphics::endRenderPass()
 
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 
-	for (const auto &[image, format] : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	for (const auto &[image, format, imageLayout, renderLayout] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, renderLayout, imageLayout);
 
 	for (auto &colorAttachment : renderPassState.renderPassConfiguration.colorAttachments)
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;

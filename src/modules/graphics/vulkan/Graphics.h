@@ -236,7 +236,7 @@ struct RenderpassState
 	RenderPassConfiguration renderPassConfiguration{};
 	FramebufferConfiguration framebufferConfiguration{};
 	VkPipeline pipeline = VK_NULL_HANDLE;
-	std::vector<std::tuple<VkImage, PixelFormat>> transitionImages;
+	std::vector<std::tuple<VkImage, PixelFormat, VkImageLayout, VkImageLayout>> transitionImages;
 	uint32_t numColorAttachments = 0;
 	float width = 0.0f;
 	float height = 0.0f;
