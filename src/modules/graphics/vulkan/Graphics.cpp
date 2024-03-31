@@ -61,6 +61,9 @@ static const std::vector<const char*> deviceExtensions = {
 
 constexpr uint32_t USAGES_POLL_INTERVAL = 5000;
 
+constexpr int DEFAULT_VERTEX_BUFFER_BINDING = 0;
+constexpr int VERTEX_BUFFER_BINDING_START = 1;
+
 VkDevice Graphics::getDevice() const
 {
 	return device;
@@ -152,8 +155,7 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
-	defaultConstantTexCoord.set(nullptr);
-	defaultConstantColor.set(nullptr);
+	defaultVertexBuffer.set(nullptr);
 	localUniformBuffer.set(nullptr);
 
 	Volatile::unloadAll();
@@ -623,22 +625,42 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 			batchedDrawState.indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
 		}
 
-		// sometimes the VertexTexCoord is not set, so we manually adjust it to (0, 0)
-		if (defaultConstantTexCoord == nullptr)
+		if (defaultVertexBuffer == nullptr)
 		{
-			float zeroTexCoord[2] = { 0.0f, 0.0f };
-			Buffer::DataDeclaration format("ConstantTexCoord", DATAFORMAT_FLOAT_VEC2);
-			Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
-			defaultConstantTexCoord = newBuffer(settings, { format }, zeroTexCoord, sizeof(zeroTexCoord), 1);
-		}
+			struct DefaultData
+			{
+				float floats[4];
+				int ints[4];
+				float color[4];
+			} data;
 
-		// sometimes the VertexColor is not set, so we manually adjust it to white color
-		if (defaultConstantColor == nullptr)
-		{
-			uint8 whiteColor[] = { 255, 255, 255, 255 };
-			Buffer::DataDeclaration format("ConstantColor", DATAFORMAT_UNORM8_VEC4);
+			data.floats[0] = 0.0f;
+			data.floats[1] = 0.0f;
+			data.floats[2] = 0.0f;
+			data.floats[3] = 1.0f;
+
+			data.ints[0] = 0;
+			data.ints[1] = 0;
+			data.ints[2] = 0;
+			data.ints[3] = 1;
+
+			data.color[0] = 1.0f;
+			data.color[1] = 1.0f;
+			data.color[2] = 1.0f;
+			data.color[3] = 1.0f;
+
+			std::vector<Buffer::DataDeclaration> format = {
+				Buffer::DataDeclaration("Floats", DATAFORMAT_FLOAT_VEC4),
+				Buffer::DataDeclaration("Ints", DATAFORMAT_INT32_VEC4),
+				Buffer::DataDeclaration("Color", DATAFORMAT_FLOAT_VEC4)
+			};
+
 			Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
-			defaultConstantColor = newBuffer(settings, { format }, whiteColor, sizeof(whiteColor), 1);
+			defaultVertexBuffer.set(newBuffer(settings, format, &data, sizeof(DefaultData), 1), Acquire::NORETAIN);
+
+			VkBuffer buffer = (VkBuffer)defaultVertexBuffer->getHandle();
+			VkDeviceSize offset = 0;
+			vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), DEFAULT_VERTEX_BUFFER_BINDING, 1, &buffer, &offset);
 		}
 
 		createDefaultShaders();
@@ -1295,6 +1317,13 @@ void Graphics::startRecordingGraphicsCommands()
 	initDynamicState();
 
 	setDefaultRenderPass();
+
+	if (defaultVertexBuffer)
+	{
+		VkBuffer buffer = (VkBuffer)defaultVertexBuffer->getHandle();
+		VkDeviceSize offset = 0;
+		vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), DEFAULT_VERTEX_BUFFER_BINDING, 1, &buffer, &offset);
+	}
 }
 
 void Graphics::endRecordingGraphicsCommands() {
@@ -2151,100 +2180,71 @@ VkRenderPass Graphics::getRenderPass(RenderPassConfiguration &configuration)
 }
 
 void Graphics::createVulkanVertexFormat(
-	VertexAttributes vertexAttributes,
+	Shader *shader,
+	const VertexAttributes &attributes,
 	std::vector<VkVertexInputBindingDescription> &bindingDescriptions,
 	std::vector<VkVertexInputAttributeDescription> &attributeDescriptions)
 {
 	std::set<uint32_t> usedBuffers;
 
-	auto enableBits = vertexAttributes.enableBits;
-	auto allBits = enableBits;
-
-	bool usesColor = false;
-	bool usesTexCoord = false;
-
-	uint8_t highestBufferBinding = 0;
-
-	uint32_t i = 0;
-	while (allBits)
+	for (const auto &pair : shader->getVertexAttributeIndices())
 	{
+		int i = pair.second;
 		uint32 bit = 1u << i;
-		if (enableBits & bit)
+
+		VkVertexInputAttributeDescription attribdesc{};
+		attribdesc.location = i;
+
+		if (attributes.enableBits & bit)
 		{
-			if (i == ATTRIB_TEXCOORD)
-				usesTexCoord = true;
-			if (i == ATTRIB_COLOR)
-				usesColor = true;
+			const auto &attrib = attributes.attribs[i];
 
-			auto attrib = vertexAttributes.attribs[i];
-			auto bufferBinding = attrib.bufferIndex;
-			if (usedBuffers.find(bufferBinding) == usedBuffers.end())
+			int bufferbinding = VERTEX_BUFFER_BINDING_START + attrib.bufferIndex;
+
+			attribdesc.binding = bufferbinding;
+			attribdesc.offset = attrib.offsetFromVertex;
+			attribdesc.format = Vulkan::getVulkanVertexFormat(attrib.getFormat());
+
+			if (usedBuffers.find(bufferbinding) == usedBuffers.end())
 			{
-				usedBuffers.insert(bufferBinding);
+				usedBuffers.insert(bufferbinding);
 
-				VkVertexInputBindingDescription bindingDescription{};
-				bindingDescription.binding = bufferBinding;
-				if (vertexAttributes.instanceBits & (1u << bufferBinding))
-					bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+				VkVertexInputBindingDescription bindingdesc{};
+				bindingdesc.binding = bufferbinding;
+				if (attributes.instanceBits & (1u << attrib.bufferIndex))
+					bindingdesc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 				else
-					bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-				bindingDescription.stride = vertexAttributes.bufferLayouts[bufferBinding].stride;
-				bindingDescriptions.push_back(bindingDescription);
-
-				highestBufferBinding = std::max(highestBufferBinding, bufferBinding);
+					bindingdesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+				bindingdesc.stride = attributes.bufferLayouts[attrib.bufferIndex].stride;
+				bindingDescriptions.push_back(bindingdesc);
 			}
+		}
+		else
+		{
+			attribdesc.binding = DEFAULT_VERTEX_BUFFER_BINDING;
 
-			VkVertexInputAttributeDescription attributeDescription{};
-			attributeDescription.location = i;
-			attributeDescription.binding = bufferBinding;
-			attributeDescription.offset = attrib.offsetFromVertex;
-			attributeDescription.format = Vulkan::getVulkanVertexFormat(attrib.getFormat());
+			// Indices should match the creation parameters for defaultVertexBuffer.
+			// TODO: handle int/uint attributes?
+			if (i == ATTRIB_COLOR)
+				attribdesc.offset = defaultVertexBuffer->getDataMember(2).offset;
+			else
+				attribdesc.offset = defaultVertexBuffer->getDataMember(0).offset;
 
-			attributeDescriptions.push_back(attributeDescription);
+			attribdesc.format = Vulkan::getVulkanVertexFormat(DATAFORMAT_FLOAT_VEC4);
+
+			if (usedBuffers.find(DEFAULT_VERTEX_BUFFER_BINDING) == usedBuffers.end())
+			{
+				usedBuffers.insert(DEFAULT_VERTEX_BUFFER_BINDING);
+
+				VkVertexInputBindingDescription bindingdesc{};
+				bindingdesc.binding = DEFAULT_VERTEX_BUFFER_BINDING;
+				bindingdesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+				bindingdesc.stride = 0; // no stride, will always read the same coord multiple times.
+				bindingDescriptions.push_back(bindingdesc);
+			}
 		}
 
-		i++;
-		allBits >>= 1;
-	}
-
-	if (!usesTexCoord)
-	{
-		// FIXME: is there a case where gaps happen between buffer bindings?
-		// then this doesn't work. We might need to enable null buffers again.
-		const auto constantTexCoordBufferBinding = ++highestBufferBinding;
-
-		VkVertexInputBindingDescription bindingDescription{};
-		bindingDescription.binding = constantTexCoordBufferBinding;
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-		bindingDescription.stride = 0;	// no stride, will always read the same coord multiple times.
-		bindingDescriptions.push_back(bindingDescription);
-
-		VkVertexInputAttributeDescription attributeDescription{};
-		attributeDescription.binding = constantTexCoordBufferBinding;
-		attributeDescription.location = ATTRIB_TEXCOORD;
-		attributeDescription.offset = 0;
-		attributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions.push_back(attributeDescription);
-	}
-
-	if (!usesColor)
-	{
-		// FIXME: is there a case where gaps happen between buffer bindings?
-		// then this doesn't work. We might need to enable null buffers again.
-		const auto constantColorBufferBinding = ++highestBufferBinding;
-
-		VkVertexInputBindingDescription bindingDescription{};
-		bindingDescription.binding = constantColorBufferBinding;
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-		bindingDescription.stride = 0;	// no stride, will always read the same color multiple times.
-		bindingDescriptions.push_back(bindingDescription);
-
-		VkVertexInputAttributeDescription attributeDescription{};
-		attributeDescription.binding = constantColorBufferBinding;
-		attributeDescription.location = ATTRIB_COLOR;
-		attributeDescription.offset = 0;
-		attributeDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-		attributeDescriptions.push_back(attributeDescription);
+		attributeDescriptions.push_back(attribdesc);
 	}
 }
 
@@ -2279,9 +2279,15 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		configuration.dynamicState.cullmode = cullmode;
 	}
 
-	VkBuffer vkbuffers[VertexAttributes::MAX + 2];
-	VkDeviceSize vkoffsets[VertexAttributes::MAX + 2];
-	int buffercount = 0;
+	configuration.shader->setMainTex(texture);
+
+	ensureGraphicsPipelineConfiguration(configuration);
+
+	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+	VkBuffer vkbuffers[BufferBindings::MAX];
+	VkDeviceSize vkoffsets[BufferBindings::MAX];
+	uint32 buffercount = 0;
 
 	uint32 allbits = buffers.useBits;
 	uint32 i = 0;
@@ -2289,6 +2295,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	{
 		uint32 bit = 1u << i;
 
+		// TODO: handle split ranges.
 		if (buffers.useBits & bit)
 		{
 			vkbuffers[buffercount] = (VkBuffer)buffers.info[i].buffer->getHandle();
@@ -2300,28 +2307,8 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		allbits >>= 1;
 	}
 
-	if (!(attributes.enableBits & (1u << ATTRIB_TEXCOORD)))
-	{
-		vkbuffers[buffercount] = (VkBuffer)defaultConstantTexCoord->getHandle();
-		vkoffsets[buffercount] = (VkDeviceSize)0;
-		buffercount++;
-	}
-
-	if (!(attributes.enableBits & (1u << ATTRIB_COLOR)))
-	{
-		vkbuffers[buffercount] = (VkBuffer)defaultConstantColor->getHandle();
-		vkoffsets[buffercount] = (VkDeviceSize)0;
-		buffercount++;
-	}
-
-	configuration.shader->setMainTex(texture);
-
-	ensureGraphicsPipelineConfiguration(configuration);
-
-	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS);
-
 	if (buffercount > 0)
-		vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(buffercount), vkbuffers, vkoffsets);
+		vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), VERTEX_BUFFER_BINDING_START, buffercount, vkbuffers, vkoffsets);
 }
 
 void Graphics::setDefaultRenderPass()
@@ -2586,7 +2573,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	std::vector<VkVertexInputBindingDescription> bindingDescriptions;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-	createVulkanVertexFormat(configuration.vertexAttributes, bindingDescriptions, attributeDescriptions);
+	createVulkanVertexFormat(configuration.shader, configuration.vertexAttributes, bindingDescriptions, attributeDescriptions);
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

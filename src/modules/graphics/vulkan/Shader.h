@@ -75,6 +75,7 @@ public:
 	std::string getWarnings() const override { return ""; }
 
 	int getVertexAttributeIndex(const std::string &name) override;
+	const std::unordered_map<std::string, int> getVertexAttributeIndices() const { return attributes; }
 
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 

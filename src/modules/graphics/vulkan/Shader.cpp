@@ -552,18 +552,28 @@ void Shader::compileShaders()
 		glslang::SpvOptions opt;
 		opt.validate = true;
 
-		std::vector<uint32_t> spirv;
+		std::vector<uint32> spirv;
+
 		GlslangToSpv(*intermediate, spirv, &logger, &opt);
 
-		spirv_cross::CompilerGLSL comp(spirv);
+		auto compiler = std::make_unique<spirv_cross::CompilerGLSL>(spirv);
+		auto &comp = *compiler;
 
-		// we only care about variables that are actually getting used.
-		auto active = comp.get_active_interface_variables();
-		auto shaderResources = comp.get_shader_resources(active);
-		comp.set_enabled_interface_variables(std::move(active));
+		// We aren't recompiling the SPIR-V to something else, so
+		// set_enabled_interface_variables wouldn't do much.
+		// Vulkan has various rules about making sure bindings to inputs and
+		// resources are valid, so we can't skip inactive ones here.
+		// Unfortunately GlslangToSpv doesn't strip unused resources even
+		// though it knows about them...
+		auto active = compiler->get_active_interface_variables();
+		auto shaderResources = comp.get_shader_resources();
 
 		for (const auto &resource : shaderResources.uniform_buffers)
 		{
+			// TODO: Do something smarter here.
+			if (active.find(resource.id) == active.end())
+				continue;
+
 			if (resource.name == "gl_DefaultUniformBlock")
 			{
 				const auto &type = comp.get_type(resource.base_type_id);
@@ -587,6 +597,10 @@ void Shader::compileShaders()
 
 		for (const auto &r : shaderResources.sampled_images)
 		{
+			// TODO: Do something smarter here.
+			if (active.find(r.id) == active.end())
+				continue;
+
 			std::string name = canonicaliizeUniformName(r.name);
 			auto uniformit = reflection.allUniforms.find(name);
 			if (uniformit == reflection.allUniforms.end())
@@ -606,6 +620,10 @@ void Shader::compileShaders()
 
 		for (const auto &r : shaderResources.storage_buffers)
 		{
+			// TODO: Do something smarter here.
+			if (active.find(r.id) == active.end())
+				continue;
+
 			std::string name = canonicaliizeUniformName(r.name);
 			const auto &uniformit = reflection.storageBuffers.find(name);
 			if (uniformit == reflection.storageBuffers.end())
@@ -621,6 +639,10 @@ void Shader::compileShaders()
 
 		for (const auto &r : shaderResources.storage_images)
 		{
+			// TODO: Do something smarter here.
+			if (active.find(r.id) == active.end())
+				continue;
+
 			std::string name = canonicaliizeUniformName(r.name);
 			const auto &uniformit = reflection.storageTextures.find(name);
 			if (uniformit == reflection.storageTextures.end())
@@ -638,6 +660,8 @@ void Shader::compileShaders()
 		{
 			int nextAttributeIndex = ATTRIB_MAX_ENUM;
 
+			// Don't skip unused inputs, vulkan still needs to have valid
+			// bindings for them.
 			for (const auto &r : shaderResources.stage_inputs)
 			{
 				int index;
@@ -699,7 +723,7 @@ void Shader::compileShaders()
 	if (localUniformData.size() > 0)
 		numBuffers++;
 
-	for (const auto kvp : reflection.allUniforms)
+	for (const auto &kvp : reflection.allUniforms)
 	{
 		if (!kvp.second->active)
 			continue;
@@ -925,7 +949,7 @@ void Shader::createDescriptorPoolSizes()
 
 	for (const auto &entry : reflection.allUniforms)
 	{
-		if (entry.second->location < 0)
+		if (!entry.second->active)
 			continue;
 
 		VkDescriptorPoolSize size{};

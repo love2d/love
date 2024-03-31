@@ -366,7 +366,8 @@ private:
 	void endRecordingGraphicsCommands();
 	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration);
 	void createVulkanVertexFormat(
-		VertexAttributes vertexAttributes, 
+		Shader *shader,
+		const VertexAttributes &attributes, 
 		std::vector<VkVertexInputBindingDescription> &bindingDescriptions, 
 		std::vector<VkVertexInputAttributeDescription> &attributeDescriptions);
 	void prepareDraw(
@@ -430,8 +431,7 @@ private:
 	bool swapChainRecreationRequested = false;
 	bool transitionColorDepthLayouts = false;
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;
-	StrongRef<love::graphics::Buffer> defaultConstantColor;
-	StrongRef<love::graphics::Buffer> defaultConstantTexCoord;
+	StrongRef<love::graphics::Buffer> defaultVertexBuffer;
 	StrongRef<StreamBuffer> localUniformBuffer;
 	// functions that need to be called to cleanup objects that were needed for rendering a frame.
 	// We need a vector for each frame in flight.
