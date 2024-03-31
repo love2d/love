@@ -202,8 +202,9 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 	flushBatchedDraws();
 
-	const auto &rts = states.back().renderTargets.colors;
-	size_t ncolorbuffers = isRenderTargetActive() ? rts.size() : 1;
+	const auto &rts = states.back().renderTargets;
+	bool rtactive = isRenderTargetActive();
+	size_t ncolorbuffers = rtactive ? rts.colors.size() : 1;
 	size_t ncolors = std::min(ncolorbuffers, colors.size());
 
 	if (renderPassState.active)
@@ -215,7 +216,7 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 			VkClearAttachment attachment{};
 			if (color.hasValue)
 			{
-				auto texture = i < rts.size() ? rts[i].texture.get() : nullptr;
+				auto texture = i < rts.colors.size() ? rts.colors[i].texture.get() : nullptr;
 				attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				attachment.clearValue.color = Texture::getClearColor(texture, color.value);
 			}
@@ -224,18 +225,28 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 		VkClearAttachment depthStencilAttachment{};
 
+		auto dstexture = rts.depthStencil.texture.get();
+
 		if (stencil.hasValue)
 		{
-			depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-			depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+			if ((!rtactive && backbufferHasStencil)
+				|| (dstexture && isPixelFormatStencil(dstexture->getPixelFormat())) || (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) != 0)
+			{
+				depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+				depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+			}
 		}
 		if (depth.hasValue)
 		{
-			depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
-			depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
+			if ((!rtactive && backbufferHasDepth)
+				|| (dstexture && isPixelFormatDepth(dstexture->getPixelFormat())) || (rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) != 0)
+			{
+				depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+				depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
+			}
 		}
 
-		if (stencil.hasValue || depth.hasValue)
+		if (depthStencilAttachment.aspectMask != 0)
 			attachments.push_back(depthStencilAttachment);
 
 		VkClearRect rect{};
@@ -256,7 +267,7 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 			{
 				renderPassState.renderPassConfiguration.colorAttachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 
-				auto texture = i < rts.size() ? rts[i].texture.get() : nullptr;
+				auto texture = i < rts.colors.size() ? rts.colors[i].texture.get() : nullptr;
 				renderPassState.clearColors[i].color = Texture::getClearColor(texture, colors[i].value);
 			}
 		}
