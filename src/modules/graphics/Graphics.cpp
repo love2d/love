@@ -888,7 +888,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	setDefaultSamplerState(s.defaultSamplerState);
 
 	if (s.useCustomProjection)
-		setCustomProjection(s.customProjection);
+		setProjection(s.customProjection);
 	else if (cur.useCustomProjection)
 		resetProjection();
 }
@@ -2802,7 +2802,7 @@ Vector2 Graphics::inverseTransformPoint(Vector2 point)
 	return p;
 }
 
-void Graphics::setCustomProjection(const Matrix4 &m)
+void Graphics::setProjection(const Matrix4 &m)
 {
 	flushBatchedDraws();
 

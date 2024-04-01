@@ -878,7 +878,7 @@ public:
 	Vector2 transformPoint(Vector2 point);
 	Vector2 inverseTransformPoint(Vector2 point);
 
-	void setCustomProjection(const Matrix4 &m);
+	void setProjection(const Matrix4 &m);
 	void resetProjection();
 
 	virtual void draw(const DrawCommand &cmd) = 0;
