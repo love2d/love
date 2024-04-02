@@ -929,6 +929,25 @@ love.test.graphics.Shader = function(test)
   shader6:send("data[1].boolValue", true)
   shader6:send("data[0].tex", canvas2)
 
+  local shader7 = love.graphics.newShader[[
+    uniform vec3 vec3s[3];
+
+    vec4 effect(vec4 vcolor, Image tex, vec2 tc, vec2 pc) {
+      return vec4(vec3s[1], 1.0);
+    }
+  ]]
+
+  shader7:send("vec3s", {0, 0, 1}, {0, 1, 0}, {1, 0, 0})
+
+  local canvas3 = love.graphics.newCanvas(16, 16)
+  love.graphics.push("all")
+    love.graphics.setCanvas(canvas3)
+    love.graphics.setShader(shader7)
+    love.graphics.rectangle("fill", 0, 0, 16, 16)
+  love.graphics.pop()
+  local imgdata2 = love.graphics.readbackTexture(canvas3)
+  test:compareImg(imgdata2)
+
 end
 
 
