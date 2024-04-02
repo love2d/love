@@ -307,6 +307,9 @@ protected:
 
 	void handleUnknownUniformName(const char *name);
 
+	// std140 uniform buffer alignment-aware copy.
+	void copyToUniformBuffer(const UniformInfo *info, const void *src, void *dst, int count) const;
+
 	static std::string canonicaliizeUniformName(const std::string &name);
 	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, Reflection &reflection);
 	static DataBaseType getDataBaseType(PixelFormat format);

@@ -358,8 +358,14 @@ void Shader::updateUniform(const UniformInfo *info, int count)
 	if (current == this)
 		Graphics::flushBatchedDrawsGlobal();
 
-	if (usesLocalUniformData(info))
-		memcpy(localUniformData.data(), localUniformStagingData.data(), localUniformStagingData.size());
+	count = std::min(count, info->count);
+
+	if (info->data != nullptr)
+	{
+		size_t offset = (const uint8*)info->data - localUniformStagingData.data();
+		uint8 *dst = localUniformData.data() + offset;
+		copyToUniformBuffer(info, info->data, dst, count);
+	}
 }
 
 void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures, int count)
@@ -453,10 +459,15 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::
 		{
 			const auto &values = valuesit->second;
 			if (!values.empty())
+			{
 				memcpy(
 					u.data,
 					values.data(),
 					std::min(u.dataSize, values.size() * sizeof(LocalUniformValue)));
+
+				uint8 *dst = localUniformData.data() + offset;
+				copyToUniformBuffer(&u, u.data, dst, u.count);
+			}
 		}
 
 		BuiltinUniform builtin = BUILTIN_MAX_ENUM;
@@ -588,8 +599,6 @@ void Shader::compileShaders()
 
 				std::string basename("");
 				buildLocalUniforms(comp, type, 0, basename);
-
-				memcpy(localUniformData.data(), localUniformStagingData.data(), localUniformStagingData.size());
 			}
 			else
 				throw love::Exception("unimplemented: non default uniform blocks.");

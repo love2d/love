@@ -1478,6 +1478,43 @@ void Shader::handleUnknownUniformName(const char */*name*/)
 	// TODO: do something here?
 }
 
+void Shader::copyToUniformBuffer(const UniformInfo *info, const void *src, void *dst, int count) const
+{
+	count = std::min(count, info->count);
+
+	size_t elementsize = info->components * 4;
+	if (info->baseType == UNIFORM_MATRIX)
+		elementsize = info->matrix.columns * info->matrix.rows * 4;
+
+	// Assuming std140 packing rules, the source data can only be direct-copied
+	// to the uniform buffer in certain cases because it's tightly packed whereas
+	// the buffer's data isn't.
+	if (elementsize * info->count == info->dataSize || (count == 1 && info->baseType != UNIFORM_MATRIX))
+	{
+		memcpy(dst, src, elementsize * count);
+	}
+	else
+	{
+		int veccount = count;
+		int comp = info->components;
+
+		if (info->baseType == UNIFORM_MATRIX)
+		{
+			veccount *= info->matrix.rows;
+			comp = info->matrix.columns;
+		}
+
+		const int *isrc = (const int *) src;
+		int *idst = (int *) dst;
+
+		for (int i = 0; i < veccount; i++)
+		{
+			for (int c = 0; c < comp; c++)
+				idst[i * 4 + c] = isrc[i * comp + c];
+		}
+	}
+}
+
 bool Shader::initialize()
 {
 	bool success = glslang::InitializeProcess();
