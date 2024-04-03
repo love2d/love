@@ -30,6 +30,7 @@ project(love)
 set(CMAKE_MODULE_PATH "${love_SOURCE_DIR}/extra/cmake" ${CMAKE_MODULE_PATH})
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE) # Needed for shared libs on Linux. (-fPIC).
 set(CMAKE_CXX_STANDARD 17)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)	# Allow grouping projects in Visual Studio
 
 if(APPLE)
 	message(WARNING "CMake is not an officially supported build system for love on Apple platforms.")
@@ -41,6 +42,8 @@ if(MINGW)
 	message(WARNING "Use megasource with Visual Studio instead.")
 	message(WARNING "Please see https://github.com/love2d/megasource")
 endif()
+
+include(LoveMacros)
 
 # Extract version.h contents.
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/src/common/version.h LOVE_VERSION_FILE_CONTENTS)
@@ -1915,7 +1918,7 @@ set_target_properties(liblove PROPERTIES
 	CXX_VISIBILITY_PRESET hidden
 	VISIBILITY_INLINES_HIDDEN ON
 	LIBRARY_OUTPUT_NAME "${LOVE_LIB_NAME}")
-target_link_libraries(liblove
+set(LIBLOVE_DEPENDENCIES
 	love_common
 	love_audio
 	love_data
@@ -1937,6 +1940,8 @@ target_link_libraries(liblove
 	love_touch
 	love_video
 	love_window
+)
+set(LIBLOVE_LIBRARIES
 	love_3p_box2d
 	love_3p_ddsparse
 	love_3p_enet
@@ -1953,10 +1958,23 @@ target_link_libraries(liblove
 	love_3p_wuff
 	love_3p_xxhash
 )
+target_link_libraries(liblove ${LIBLOVE_DEPENDENCIES} ${LIBLOVE_LIBRARIES})
 
 if(LOVE_EXTRA_DEPENDECIES)
 	add_dependencies(liblove ${LOVE_EXTRA_DEPENDECIES})
 endif()
+
+#
+# Group projects in Visual Studio
+#
+
+love_group_projects(NAME "liblove" NESTED TARGETS ${LIBLOVE_DEPENDENCIES})
+love_group_projects(NAME "liblove/libraries" NESTED TARGETS ${LIBLOVE_LIBRARIES})
+love_group_projects(NAME "liblove" TARGETS liblove ${LOVE_EXTRA_DEPENDECIES})
+
+love_group_projects(NAME "lovedep" TARGETS lovedep::SDL2 lovedep::Freetype lovedep::Harfbuzz lovedep::OpenAL lovedep::Modplug lovedep::Theora lovedep::Vorbis lovedep::Ogg lovedep::Zlib lovedep::Lua)
+love_group_projects(NAME "lovedep" TARGETS lua51 alcommon al-excommon harfbuzz-subset zlib)
+
 
 if(MSVC)
 	set_target_properties(liblove PROPERTIES RELEASE_OUTPUT_NAME "love" PDB_NAME "liblove" IMPORT_PREFIX "lib")
