@@ -21,6 +21,7 @@
 // LOVE
 #include "wrap_System.h"
 #include "sdl/System.h"
+#include <SDL_version.h>
 
 namespace love
 {
@@ -117,6 +118,21 @@ int w_getPreferredLocales(lua_State* L)
 	return 1;
 }
 
+static int w_love_getSDLVersion(lua_State* L)
+{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_Version version = {};
+#else
+	SDL_version version = {};
+#endif
+	SDL_GetVersion(&version);
+	lua_pushinteger(L, version.major);
+	lua_pushinteger(L, version.minor);
+	lua_pushinteger(L, version.patch);
+	lua_pushstring(L, SDL_GetRevision());
+	return 4;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getOS", w_getOS },
@@ -128,6 +144,7 @@ static const luaL_Reg functions[] =
 	{ "vibrate", w_vibrate },
 	{ "hasBackgroundMusic", w_hasBackgroundMusic },
 	{ "getPreferredLocales", w_getPreferredLocales },
+	{ "getSDLVersion", w_love_getSDLVersion },
 	{ 0, 0 }
 };
 
