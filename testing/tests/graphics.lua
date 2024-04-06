@@ -919,15 +919,17 @@ love.test.graphics.Shader = function(test)
       sampler2D tex;
     };
 
-    uniform Data data[3];
+    uniform Data data;
+    uniform Data dataArray[3];
 
     vec4 effect(vec4 vcolor, Image tex, vec2 tc, vec2 pc) {
-      return data[1].boolValue ? Texel(data[0].tex, tc) : vec4(0.0, 0.0, 0.0, 0.0);
+      return (data.boolValue && dataArray[1].boolValue) ? Texel(dataArray[0].tex, tc) : vec4(0.0, 0.0, 0.0, 0.0);
     }
   ]]
 
-  shader6:send("data[1].boolValue", true)
-  shader6:send("data[0].tex", canvas2)
+  shader6:send("data.boolValue", true)
+  shader6:send("dataArray[1].boolValue", true)
+  shader6:send("dataArray[0].tex", canvas2)
 
   local shader7 = love.graphics.newShader[[
     uniform vec3 vec3s[3];
