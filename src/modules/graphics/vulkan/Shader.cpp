@@ -427,7 +427,7 @@ void Shader::buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::
 			}
 			else
 			{
-				std::string structname = name = ".";
+				std::string structname = name + ".";
 				buildLocalUniforms(comp, memberType, offset, structname);
 			}
 			continue;

@@ -298,7 +298,7 @@ void Shader::buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv
 				}
 				else
 				{
-					std::string structname = name = ".";
+					std::string structname = name + ".";
 					buildLocalUniforms(msl, membertype, offset, structname);
 				}
 				continue;
