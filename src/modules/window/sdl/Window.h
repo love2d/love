@@ -162,6 +162,10 @@ private:
 	WindowSettings settings;
 	StrongRef<love::image::ImageData> icon;
 
+#ifdef LOVE_WINDOWS
+	bool canUseDwmFlush = false;
+#endif
+
 	bool open;
 
 	bool mouseGrabbed;
