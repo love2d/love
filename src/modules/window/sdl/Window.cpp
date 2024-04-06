@@ -79,6 +79,12 @@ Window::Window()
 	SDL_version version = {};
 	SDL_GetVersion(&version);
 	hasSDL203orEarlier = (version.major == 2 && version.minor == 0 && version.patch <= 3);
+
+#ifdef LOVE_WINDOWS
+	// Turned off by default, because it (ironically) causes stuttering issues
+	// on some setups. More investigation is needed before enabling it.
+	canUseDwmFlush = SDL_GetHintBoolean("LOVE_GRAPHICS_VSYNC_DWM", SDL_FALSE) != SDL_FALSE;
+#endif
 }
 
 Window::~Window()
@@ -1032,7 +1038,7 @@ void Window::swapBuffers()
 	// - DWM refreshes don't always match the refresh rate of the monitor the window is in (or the requested swap
 	//   interval), so we only use it when they do match.
 	// - The user may force GL vsync, and DwmFlush shouldn't be used together with GL vsync.
-	if (context != nullptr && !settings.fullscreen && swapInterval == 1)
+	if (context != nullptr && canUseDwmFlush && !settings.fullscreen && swapInterval == 1)
 	{
 		// Desktop composition is always enabled in Windows 8+. But DwmIsCompositionEnabled won't always return true...
 		// (see DwmIsCompositionEnabled docs).
