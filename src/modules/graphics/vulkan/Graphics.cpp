@@ -2408,23 +2408,31 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 
 	FramebufferConfiguration configuration{};
 
-	std::vector<std::tuple<VkImage, PixelFormat, VkImageLayout, VkImageLayout>> transitionImages;
+	std::vector<std::tuple<VkImage, PixelFormat, VkImageLayout, VkImageLayout, int, int>> transitionImages;
 
 	for (const auto &color : rts.colors)
 	{
 		auto tex = (Texture*)color.texture;
 		configuration.colorViews.push_back(tex->getRenderTargetView(color.mipmap, color.slice));
+		const Texture::ViewInfo &viewinfo = tex->getRootViewInfo();
 		VkImageLayout imagelayout = tex->getImageLayout();
 		if (imagelayout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), imagelayout, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+		{
+			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), imagelayout, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				viewinfo.startMipmap + color.mipmap, viewinfo.startLayer + color.slice });
+		}
 	}
 	if (rts.depthStencil.texture != nullptr)
 	{
 		auto tex = (Texture*)rts.depthStencil.texture;
 		configuration.staticData.depthView = tex->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
+		const Texture::ViewInfo &viewinfo = tex->getRootViewInfo();
 		VkImageLayout imagelayout = tex->getImageLayout();
 		if (imagelayout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), imagelayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL });
+		{
+			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), imagelayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+				viewinfo.startMipmap + rts.depthStencil.mipmap, viewinfo.startLayer + rts.depthStencil.slice });
+		}
 	}
 
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
@@ -2475,8 +2483,8 @@ void Graphics::startRenderPass()
 	renderPassState.framebufferConfiguration.staticData.renderPass = renderPassState.beginInfo.renderPass;
 	renderPassState.beginInfo.framebuffer = getFramebuffer(renderPassState.framebufferConfiguration);
 
-	for (const auto &[image, format, imageLayout, renderLayout] : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, imageLayout, renderLayout);
+	for (const auto &[image, format, imageLayout, renderLayout, rootmip, rootlayer] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, imageLayout, renderLayout, rootmip, 1, rootlayer, 1);
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
@@ -2487,8 +2495,8 @@ void Graphics::endRenderPass()
 
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 
-	for (const auto &[image, format, imageLayout, renderLayout] : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, renderLayout, imageLayout);
+	for (const auto &[image, format, imageLayout, renderLayout, rootmip, rootlayer] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, renderLayout, imageLayout, rootmip, 1, rootlayer, 1);
 
 	for (auto &colorAttachment : renderPassState.renderPassConfiguration.colorAttachments)
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
