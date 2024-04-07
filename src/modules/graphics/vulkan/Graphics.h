@@ -394,6 +394,7 @@ private:
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
 	VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 	std::vector<VkImage> swapChainImages;
+	StrongRef<Texture> fakeBackbuffer;
 	VkFormat swapChainImageFormat = VK_FORMAT_UNDEFINED;
 	PixelFormat swapChainPixelFormat = PIXELFORMAT_UNKNOWN;
 	VkFormat depthStencilFormat = VK_FORMAT_UNDEFINED;

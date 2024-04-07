@@ -340,15 +340,22 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 	VmaAllocation screenshotAllocation = VK_NULL_HANDLE;
 	VmaAllocationInfo screenshotAllocationInfo = {};
 
+	VkImage backbufferImage = fakeBackbuffer != nullptr ? (VkImage)fakeBackbuffer->getHandle() : swapChainImages.at(imageIndex);
+
 	if (submitMode == SUBMIT_PRESENT)
 	{
 		if (pendingScreenshotCallbacks.empty())
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex),
-				swapChainPixelFormat,
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		{
+			if (fakeBackbuffer == nullptr)
+			{
+				Vulkan::cmdTransitionImageLayout(
+					commandBuffers.at(currentFrame),
+					backbufferImage,
+					swapChainPixelFormat,
+					VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+			}
+		}
 		else
 		{
 			VkBufferCreateInfo bufferInfo{};
@@ -372,10 +379,9 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 			if (result != VK_SUCCESS)
 				throw love::Exception("failed to create screenshot readback buffer");
 
-			// TODO: swap chain images aren't guaranteed to support TRANSFER_SRC_BIT usage flags.
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex),
+				backbufferImage,
 				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
@@ -391,25 +397,28 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 
 			vkCmdCopyImageToBuffer(
 				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex),
+				backbufferImage,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				screenshotBuffer,
 				1, &region);
 
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex),
+				backbufferImage,
 				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+				fakeBackbuffer == nullptr ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		}
 	}
 
 	endRecordingGraphicsCommands();
 
-	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
-		vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
-	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+	if (!imagesInFlight.empty())
+	{
+		if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
+			vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
+		imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+	}
 
 	std::array<VkCommandBuffer, 1> submitCommandbuffers = { commandBuffers.at(currentFrame) };
 
@@ -436,8 +445,11 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 
 	if (submitMode == SUBMIT_PRESENT)
 	{
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
+		if (!swapChainImages.empty())
+		{
+			submitInfo.signalSemaphoreCount = 1;
+			submitInfo.pSignalSemaphores = signalSemaphores;
+		}
 
 		vkResetFences(device, 1, &inFlightFences[currentFrame]);
 		fence = inFlightFences[currentFrame];
@@ -535,15 +547,32 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	submitGpuCommands(SUBMIT_PRESENT, screenshotCallbackdata);
 
-	VkPresentInfoKHR presentInfo{};
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &renderFinishedSemaphores.at(currentFrame);
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &swapChain;
-	presentInfo.pImageIndices = &imageIndex;
+	VkResult result = VK_SUCCESS;
 
-	VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
+	if (!swapChainImages.empty())
+	{
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = &renderFinishedSemaphores.at(currentFrame);
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &swapChain;
+		presentInfo.pImageIndices = &imageIndex;
+
+		result = vkQueuePresentKHR(presentQueue, &presentInfo);
+	}
+	else
+	{
+		// Presenting without a real swap chain can happen if the window is minimized.
+		// Check every frame to see if a proper one can be created, in this situation.
+		VkSurfaceCapabilitiesKHR capabilities = {};
+		if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &capabilities) == VK_SUCCESS)
+		{
+			VkExtent2D extent = chooseSwapExtent(capabilities);
+			if (extent.width > 0 && extent.height > 0)
+				swapChainRecreationRequested = true;
+		}
+	}
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || swapChainRecreationRequested)
 	{
@@ -1263,21 +1292,28 @@ void Graphics::beginFrame()
 		frameCounter = 0;
 	}
 
-	while (true)
+	if (swapChain != VK_NULL_HANDLE)
 	{
-		VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		while (true)
 		{
-			recreateSwapChain();
-			continue;
+			VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+			if (result == VK_ERROR_OUT_OF_DATE_KHR)
+			{
+				recreateSwapChain();
+				continue;
+			}
+			else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+				throw love::Exception("failed to acquire swap chain image");
+
+			break;
 		}
-		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-			throw love::Exception("failed to acquire swap chain image");
 
-		break;
+		imageRequested = true;
 	}
-
-	imageRequested = true;
+	else
+	{
+		imageRequested = false;
+	}
 
 	for (auto &readbackCallback : readbackCallbacks.at(currentFrame))
 		readbackCallback();
@@ -1289,12 +1325,15 @@ void Graphics::beginFrame()
 
 	startRecordingGraphicsCommands();
 
-	Vulkan::cmdTransitionImageLayout(
-		commandBuffers.at(currentFrame),
-		swapChainImages[imageIndex],
-		swapChainPixelFormat,
-		VK_IMAGE_LAYOUT_UNDEFINED,
-		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	if (!swapChainImages.empty())
+	{
+		Vulkan::cmdTransitionImageLayout(
+			commandBuffers.at(currentFrame),
+			swapChainImages[imageIndex],
+			swapChainPixelFormat,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	}
 
 	if (transitionColorDepthLayouts)
 	{
@@ -1337,6 +1376,20 @@ void Graphics::startRecordingGraphicsCommands()
 		throw love::Exception("failed to begin recording command buffer");
 
 	initDynamicState();
+
+	// This must be done after vkBeginCommandBuffer (since newTexture needs an
+	// active command buffer for layout transitions), and before setDefaultRenderPass
+	// (since that tries to use fakeBackbuffer).
+	if (swapChainImages.empty() && fakeBackbuffer == nullptr)
+	{
+		Texture::Settings settings;
+		settings.format = swapChainPixelFormat;
+		settings.width = swapChainExtent.width;
+		settings.height = swapChainExtent.height;
+		settings.renderTarget = true;
+		settings.readable.set(false);
+		fakeBackbuffer.set((Texture*)newTexture(settings, nullptr), Acquire::NORETAIN);
+	}
 
 	setDefaultRenderPass();
 
@@ -1824,49 +1877,66 @@ void Graphics::createSwapChain()
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
 	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
-	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
-		imageCount = swapChainSupport.capabilities.maxImageCount;
-
-	VkSwapchainCreateInfoKHR createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	createInfo.surface = surface;
-
-	createInfo.minImageCount = imageCount;
-	createInfo.imageFormat = surfaceFormat.format;
-	createInfo.imageColorSpace = surfaceFormat.colorSpace;
-	createInfo.imageExtent = extent;
-	createInfo.imageArrayLayers = 1;
-	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-
-	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value, indices.presentFamily.value };
-
-	if (indices.graphicsFamily.value != indices.presentFamily.value)
+	if (extent.width > 0 && extent.height > 0)
 	{
-		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		createInfo.queueFamilyIndexCount = 2;
-		createInfo.pQueueFamilyIndices = queueFamilyIndices;
+		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+		if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
+			imageCount = swapChainSupport.capabilities.maxImageCount;
+
+		VkSwapchainCreateInfoKHR createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		createInfo.surface = surface;
+
+		createInfo.minImageCount = imageCount;
+		createInfo.imageFormat = surfaceFormat.format;
+		createInfo.imageColorSpace = surfaceFormat.colorSpace;
+		createInfo.imageExtent = extent;
+		createInfo.imageArrayLayers = 1;
+		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+		uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value, indices.presentFamily.value };
+
+		if (indices.graphicsFamily.value != indices.presentFamily.value)
+		{
+			createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+			createInfo.queueFamilyIndexCount = 2;
+			createInfo.pQueueFamilyIndices = queueFamilyIndices;
+		}
+		else
+		{
+			createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			createInfo.queueFamilyIndexCount = 0;
+			createInfo.pQueueFamilyIndices = nullptr;
+		}
+
+		createInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+		createInfo.compositeAlpha = chooseCompositeAlpha(swapChainSupport.capabilities);
+		createInfo.presentMode = presentMode;
+		createInfo.clipped = VK_TRUE;
+		createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+		if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
+			throw love::Exception("failed to create swap chain");
+
+		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+		swapChainImages.resize(imageCount);
+		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
 	}
 	else
 	{
-		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		createInfo.queueFamilyIndexCount = 0;
-		createInfo.pQueueFamilyIndices = nullptr;
+		// Use a fake backbuffer. Creation is deferred until startRecordingGraphicsCommands
+		// because newTexture needs an active command buffer to do its initial
+		// layout transitions.
+		swapChainImages.clear();
+		extent.width = std::max(1, pixelWidth);
+		extent.height = std::max(1, pixelHeight);
+
+		if (isGammaCorrect())
+			surfaceFormat.format = VK_FORMAT_R8G8B8A8_SRGB;
+		else
+			surfaceFormat.format = VK_FORMAT_R8G8B8A8_UNORM;
 	}
-
-	createInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-	createInfo.compositeAlpha = chooseCompositeAlpha(swapChainSupport.capabilities);
-	createInfo.presentMode = presentMode;
-	createInfo.clipped = VK_TRUE;
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-	if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
-		throw love::Exception("failed to create swap chain");
-
-	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
-	swapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
@@ -2374,13 +2444,19 @@ void Graphics::setDefaultRenderPass()
 
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
 	{
-		framebufferConfiguration.colorViews.push_back(swapChainImageViews.at(imageIndex));
+		if (!swapChainImageViews.empty())
+			framebufferConfiguration.colorViews.push_back(swapChainImageViews.at(imageIndex));
+		else
+			framebufferConfiguration.colorViews.push_back(fakeBackbuffer->getRenderTargetView(0, 0));
 		framebufferConfiguration.staticData.resolveView = VK_NULL_HANDLE;
 	}
 	else
 	{
 		framebufferConfiguration.colorViews.push_back(colorImageView);
-		framebufferConfiguration.staticData.resolveView = swapChainImageViews.at(imageIndex);
+		if (!swapChainImageViews.empty())
+			framebufferConfiguration.staticData.resolveView = swapChainImageViews.at(imageIndex);
+		else
+			framebufferConfiguration.staticData.resolveView = fakeBackbuffer->getRenderTargetView(0, 0);
 	}
 
 	renderPassState.renderPassConfiguration = std::move(renderPassConfiguration);
@@ -3074,6 +3150,8 @@ void Graphics::cleanupSwapChain()
 		vkDestroyImageView(device, swapChainImageView, nullptr);
 	swapChainImageViews.clear();
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
+	swapChainImages.clear();
+	fakeBackbuffer.set(nullptr);
 
 	swapChain = VK_NULL_HANDLE;
 }
