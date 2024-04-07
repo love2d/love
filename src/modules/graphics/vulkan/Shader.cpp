@@ -69,7 +69,17 @@ public:
 			}
 		}
 		else
-			return (uint32_t)it->second.getOffset();
+		{
+			auto binding = (uint32_t)it->second.getOffset();
+
+			uint32_t binaryBindingOffset;
+			if (!comp.get_binary_offset_for_decoration(id, spv::DecorationBinding, binaryBindingOffset))
+				throw love::Exception("could not get binary offset for uniform %s binding", name.c_str());
+
+			spirv[binaryBindingOffset] = binding;
+
+			return binding;
+		}
 	};
 
 
