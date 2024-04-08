@@ -468,8 +468,8 @@ love.test.graphics.Mesh = function(test)
 
   -- check def vertex format
   local format = mesh1:getVertexFormat()
-  test:assertEquals('floatvec2', format[2][2], 'check def vertex format 2')
-  test:assertEquals('VertexColor', format[3][1], 'check def vertex format 3')
+  test:assertEquals('floatvec2', format[2].format, 'check def vertex format 2')
+  test:assertEquals('VertexColor', format[3].name, 'check def vertex format 3')
 
   -- check vertext attributes
   test:assertTrue(mesh1:isAttributeEnabled('VertexPosition'), 'check def attribute VertexPosition')
