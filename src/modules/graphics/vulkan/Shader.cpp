@@ -41,6 +41,11 @@ static const uint32_t DESCRIPTOR_POOL_SIZE = 1000;
 class BindingMapper
 {
 public:
+
+	BindingMapper(spv::Decoration decoration)
+		: decoration(decoration)
+	{}
+
 	uint32_t operator()(spirv_cross::CompilerGLSL &comp, std::vector<uint32_t> &spirv, const std::string &name, int count, const spirv_cross::ID &id)
 	{
 		auto it = bindingMappings.find(name);
@@ -58,7 +63,7 @@ public:
 				uint32_t freeBinding = getFreeBinding(count);
 
 				uint32_t binaryBindingOffset;
-				if (!comp.get_binary_offset_for_decoration(id, spv::DecorationBinding, binaryBindingOffset))
+				if (!comp.get_binary_offset_for_decoration(id, decoration, binaryBindingOffset))
 					throw love::Exception("could not get binary offset for uniform %s binding", name.c_str());
 
 				spirv[binaryBindingOffset] = freeBinding;
@@ -73,7 +78,7 @@ public:
 			auto binding = (uint32_t)it->second.getOffset();
 
 			uint32_t binaryBindingOffset;
-			if (!comp.get_binary_offset_for_decoration(id, spv::DecorationBinding, binaryBindingOffset))
+			if (!comp.get_binary_offset_for_decoration(id, decoration, binaryBindingOffset))
 				throw love::Exception("could not get binary offset for uniform %s binding", name.c_str());
 
 			spirv[binaryBindingOffset] = binding;
@@ -104,6 +109,7 @@ private:
 		return true;
 	}
 
+	spv::Decoration decoration;
 	std::map<std::string, Range> bindingMappings;
 
 };
@@ -570,7 +576,8 @@ void Shader::compileShaders()
 	if (!program->mapIO())
 		throw love::Exception("mapIO failed");
 
-	BindingMapper bindingMapper;
+	BindingMapper bindingMapper(spv::DecorationBinding);
+	BindingMapper ioLocationMapper(spv::DecorationLocation);
 
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
@@ -710,6 +717,24 @@ void Shader::compileShaders()
 				spirv[locationOffset] = (uint32_t)index;
 
 				attributes[r.name] = index;
+			}
+
+			for (const auto &r : shaderResources.stage_outputs)
+			{
+				const auto &type = comp.get_type(r.type_id);
+				int count = type.array.empty() ? 1 : type.array[0];
+
+				ioLocationMapper(comp, spirv, r.name, count, r.id);
+			}
+		}
+		else if (shaderStage == SHADERSTAGE_PIXEL)
+		{
+			for (const auto &r : shaderResources.stage_inputs)
+			{
+				const auto &type = comp.get_type(r.type_id);
+				int count = type.array.empty() ? 1 : type.array[0];
+
+				ioLocationMapper(comp, spirv, r.name, count, r.id);
 			}
 		}
 
