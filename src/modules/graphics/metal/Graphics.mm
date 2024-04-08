@@ -1459,10 +1459,15 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*pixelw*/
 	}
 
 	for (size_t i = rts.colors.size(); i < MAX_COLOR_RENDER_TARGETS; i++)
+	{
 		passDesc.colorAttachments[i] = nil;
+		passDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
+	}
 
 	passDesc.depthAttachment = nil;
+	passDesc.depthAttachment.loadAction = MTLLoadActionLoad;
 	passDesc.stencilAttachment = nil;
+	passDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
 
 	auto ds = rts.depthStencil.texture;
 	if (isbackbuffer && ds == nullptr)
