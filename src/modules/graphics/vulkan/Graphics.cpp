@@ -972,59 +972,29 @@ void Graphics::setColor(Colorf c)
 	states.back().color = c;
 }
 
-static VkRect2D computeScissor(const Rect &r, double bufferWidth, double bufferHeight, double dpiScale, VkSurfaceTransformFlagBitsKHR preTransform)
-{
-	double x = static_cast<double>(r.x) * dpiScale;
-	double y = static_cast<double>(r.y) * dpiScale;
-	double w = static_cast<double>(r.w) * dpiScale;
-	double h = static_cast<double>(r.h) * dpiScale;
-
-	double scissorX, scissorY, scissorW, scissorH;
-
-	switch (preTransform)
-	{
-	case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
-		scissorX = bufferWidth - h - y;
-		scissorY = x;
-		scissorW = h;
-		scissorH = w;
-		break;
-	case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
-		scissorX = bufferWidth - w - x;
-		scissorY = bufferHeight - h - y;
-		scissorW = w;
-		scissorH = h;
-		break;
-	case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
-		scissorX = y;
-		scissorY = bufferHeight - w - x;
-		scissorW = h;
-		scissorH = w;
-		break;
-	default:
-		scissorX = x;
-		scissorY = y;
-		scissorW = w;
-		scissorH = h;
-		break;
-	}
-
-	VkRect2D scissor = { 
-		{static_cast<int32_t>(scissorX), static_cast<int32_t>(scissorY)},
-		{static_cast<uint32_t>(scissorW), static_cast<uint32_t>(scissorH)}
-	};
-	return scissor;
-}
-
 void Graphics::setScissor(const Rect &rect)
 {
 	flushBatchedDraws();
 
-	VkRect2D scissor = computeScissor(rect, static_cast<double>(swapChainExtent.width), static_cast<double>(swapChainExtent.height), getCurrentDPIScale(), VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR);
-	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
-
 	states.back().scissor = true;
 	states.back().scissorRect = rect;
+
+	if (renderPassState.active)
+	{
+		double dpiScale = getCurrentDPIScale();
+
+		double x = static_cast<double>(rect.x) * dpiScale;
+		double y = static_cast<double>(rect.y) * dpiScale;
+		double w = static_cast<double>(rect.w) * dpiScale;
+		double h = static_cast<double>(rect.h) * dpiScale;
+
+		VkRect2D scissor = {
+			{static_cast<int32_t>(x), static_cast<int32_t>(y)},
+			{static_cast<uint32_t>(w), static_cast<uint32_t>(h)}
+		};
+
+		vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
+	}
 }
 
 void Graphics::setScissor()
@@ -1033,11 +1003,20 @@ void Graphics::setScissor()
 
 	states.back().scissor = false;
 
-	VkRect2D scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent = swapChainExtent;
+	if (renderPassState.active)
+	{
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		if (renderPassState.isWindow)
+			scissor.extent = swapChainExtent;
+		else
+		{
+			scissor.extent.width = renderPassState.width;
+			scissor.extent.height = renderPassState.height;
+		}
 
-	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
+		vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
+	}
 }
 
 void Graphics::setStencilState(const StencilState &s)
@@ -1254,11 +1233,6 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, in
 
 void Graphics::initDynamicState()
 {
-	if (states.back().scissor)
-		setScissor(states.back().scissorRect);
-	else
-		setScissor();
-
 	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.writeMask);
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.readMask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.value);
@@ -2543,6 +2517,11 @@ void Graphics::startRenderPass()
 
 	if (renderPassState.isWindow && renderPassState.windowClearRequested)
 		renderPassState.windowClearRequested = false;
+
+	if (states.back().scissor)
+		setScissor(states.back().scissorRect);
+	else
+		setScissor();
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
