@@ -1063,7 +1063,7 @@ void Graphics::discard(OpenGL::FramebufferTarget target, const std::vector<bool>
 	attachments.reserve(colorbuffers.size());
 
 	// glDiscardFramebuffer uses different attachment enums for the default FBO.
-	if (!isRenderTargetActive() && getInternalBackbufferFBO() == 0)
+	if (gl.getFramebuffer(target) == 0)
 	{
 		if (colorbuffers.size() > 0 && colorbuffers[0])
 			attachments.push_back(GL_COLOR);
