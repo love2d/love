@@ -1011,10 +1011,8 @@ void Graphics::setScissor()
 			scissor.extent = swapChainExtent;
 		else
 		{
-			double dpiScale = getCurrentDPIScale();
-
-			scissor.extent.width = static_cast<double>(renderPassState.width) * dpiScale;
-			scissor.extent.height = static_cast<double>(renderPassState.height) * dpiScale;
+			scissor.extent.width = renderPassState.width;
+			scissor.extent.height = renderPassState.height;
 		}
 
 		vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
