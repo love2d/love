@@ -743,16 +743,22 @@ void Graphics::submitRenderEncoder(SubmitType type)
 		for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)
 		{
 			passDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
-			passDesc.colorAttachments[i].texture = nil;
-			passDesc.colorAttachments[i].resolveTexture = nil;
+			if (type == SUBMIT_DONE)
+			{
+				passDesc.colorAttachments[i].texture = nil;
+				passDesc.colorAttachments[i].resolveTexture = nil;
+			}
 		}
 
 		passDesc.depthAttachment.loadAction = MTLLoadActionLoad;
-		passDesc.depthAttachment.texture = nil;
-		passDesc.depthAttachment.resolveTexture = nil;
 		passDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
-		passDesc.stencilAttachment.texture = nil;
-		passDesc.stencilAttachment.resolveTexture = nil;
+		if (type == SUBMIT_DONE)
+		{
+			passDesc.depthAttachment.texture = nil;
+			passDesc.depthAttachment.resolveTexture = nil;
+			passDesc.stencilAttachment.texture = nil;
+			passDesc.stencilAttachment.resolveTexture = nil;
+		}
 	}
 }
 
