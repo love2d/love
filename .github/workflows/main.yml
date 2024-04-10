@@ -61,7 +61,7 @@ jobs:
     - name: Run Test Suite (opengl)
       run: |
         chmod a+x love-${{ github.sha }}.AppImage
-        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner
+        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner --renderers opengl
     - name: Love Test Report (opengl)
       id: report1
       uses: ellraiser/love-test-report@main
@@ -84,7 +84,7 @@ jobs:
         LOVE_GRAPHICS_DEBUG: 1
       run: |
         export LOVE_GRAPHICS_USE_OPENGLES=1
-        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner
+        ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner --renderers opengl
     - name: Love Test Report (opengles)
       uses: ellraiser/love-test-report@main
       id: report2
@@ -326,7 +326,7 @@ jobs:
       run: |
         echo 'check dir'
         ls
-        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner
+        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner --renderers opengl
     - name: Love Test Report (opengl)
       id: report1
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
@@ -353,7 +353,7 @@ jobs:
         LOVE_GRAPHICS_DEBUG: 1
         LOVE_GRAPHICS_USE_OPENGLES: 1
       run: |
-        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner
+        powershell.exe ./install/lovec.exe ./megasource/libs/love/testing/main.lua --all --isRunner --renderers opengl
     - name: Love Test Report (opengles)
       id: report2
       if: steps.vars.outputs.arch != 'ARM64' && steps.vars.outputs.compatname != '-compat'
@@ -453,7 +453,7 @@ jobs:
         LOVE_GRAPHICS_DEBUG: 1
       run: |
         ls
-        love-macos/love.app/Contents/MacOS/love ./testing/main.lua --all --isRunner
+        love-macos/love.app/Contents/MacOS/love ./testing/main.lua --all --isRunner --renderers opengl
     - name: Love Test Report
       id: report1
       uses: ellraiser/love-test-report@main
