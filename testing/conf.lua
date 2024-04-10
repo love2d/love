@@ -7,7 +7,6 @@ function love.conf(t)
   t.window.resizable = true
   t.window.depth = true
   t.window.stencil = true
-  t.renderers = {"opengl"}
 end
 
 -- custom crash message here to catch anything that might occur with modules 
