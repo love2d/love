@@ -2260,7 +2260,7 @@ void Graphics::createVulkanVertexFormat(
 
 	for (const auto &pair : shader->getVertexAttributeIndices())
 	{
-		int i = pair.second;
+		int i = pair.second.index;
 		uint32 bit = 1u << i;
 
 		VkVertexInputAttributeDescription attribdesc{};
@@ -2295,13 +2295,25 @@ void Graphics::createVulkanVertexFormat(
 			attribdesc.binding = DEFAULT_VERTEX_BUFFER_BINDING;
 
 			// Indices should match the creation parameters for defaultVertexBuffer.
-			// TODO: handle int/uint attributes?
-			if (i == ATTRIB_COLOR)
-				attribdesc.offset = defaultVertexBuffer->getDataMember(2).offset;
-			else
-				attribdesc.offset = defaultVertexBuffer->getDataMember(0).offset;
-
-			attribdesc.format = Vulkan::getVulkanVertexFormat(DATAFORMAT_FLOAT_VEC4);
+			switch (pair.second.baseType)
+			{
+			case DATA_BASETYPE_INT:
+				attribdesc.offset = defaultVertexBuffer->getDataMember(1).offset;
+				attribdesc.format = Vulkan::getVulkanVertexFormat(DATAFORMAT_INT32_VEC4);
+				break;
+			case DATA_BASETYPE_UINT:
+				attribdesc.offset = defaultVertexBuffer->getDataMember(1).offset;
+				attribdesc.format = Vulkan::getVulkanVertexFormat(DATAFORMAT_UINT32_VEC4);
+				break;
+			case DATA_BASETYPE_FLOAT:
+			default:
+				if (i == ATTRIB_COLOR)
+					attribdesc.offset = defaultVertexBuffer->getDataMember(2).offset;
+				else
+					attribdesc.offset = defaultVertexBuffer->getDataMember(0).offset;
+				attribdesc.format = Vulkan::getVulkanVertexFormat(DATAFORMAT_FLOAT_VEC4);
+				break;
+			}
 
 			if (usedBuffers.find(DEFAULT_VERTEX_BUFFER_BINDING) == usedBuffers.end())
 			{

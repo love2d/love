@@ -373,7 +373,7 @@ void Shader::attach()
 int Shader::getVertexAttributeIndex(const std::string &name)
 {
 	auto it = attributes.find(name);
-	return it == attributes.end() ? -1 : it->second;
+	return it == attributes.end() ? -1 : it->second.index;
 }
 
 const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
@@ -716,7 +716,21 @@ void Shader::compileShaders()
 
 				spirv[locationOffset] = (uint32_t)index;
 
-				attributes[r.name] = index;
+				DataBaseType basetype = DATA_BASETYPE_FLOAT;
+
+				switch (comp.get_type(r.base_type_id).basetype)
+				{
+				case spirv_cross::SPIRType::Int:
+					basetype = DATA_BASETYPE_INT;
+					break;
+				case spirv_cross::SPIRType::UInt:
+					basetype = DATA_BASETYPE_UINT;
+					break;
+				default:
+					break;
+				}
+
+				attributes[r.name] = { index, basetype };
 			}
 
 			for (const auto &r : shaderResources.stage_outputs)

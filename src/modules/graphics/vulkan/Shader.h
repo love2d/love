@@ -52,6 +52,13 @@ class Shader final
 	, public Volatile
 {
 public:
+
+	struct AttributeInfo
+	{
+		int index;
+		DataBaseType baseType;
+	};
+
 	Shader(StrongRef<love::graphics::ShaderStage> stages[], const CompileOptions &options);
 	virtual ~Shader();
 
@@ -75,7 +82,7 @@ public:
 	std::string getWarnings() const override { return ""; }
 
 	int getVertexAttributeIndex(const std::string &name) override;
-	const std::unordered_map<std::string, int> getVertexAttributeIndices() const { return attributes; }
+	const std::unordered_map<std::string, AttributeInfo> getVertexAttributeIndices() const { return attributes; }
 
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 
@@ -126,7 +133,7 @@ private:
 	uint32_t localUniformLocation;
 	OptionalInt builtinUniformDataOffset;
 
-	std::unordered_map<std::string, int> attributes;
+	std::unordered_map<std::string, AttributeInfo> attributes;
 
 	uint32_t currentFrame;
 	uint32_t currentDescriptorPool;
