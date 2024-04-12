@@ -950,6 +950,58 @@ love.test.graphics.Shader = function(test)
   local imgdata2 = love.graphics.readbackTexture(canvas3)
   test:compareImg(imgdata2)
 
+  if love.graphics.getSupported().glsl3 then
+    local shader8 = love.graphics.newShader[[
+      #pragma language glsl3
+      #ifdef GL_ES
+        precision highp float;
+      #endif
+
+      varying vec4 VaryingUnused1;
+      varying mat3 VaryingMatrix;
+      flat varying ivec4 VaryingInt;
+
+      #ifdef VERTEX
+      in vec4 VertexPosition;
+      in ivec4 IntAttributeUnused;
+
+      void vertexmain()
+      {
+        VaryingMatrix = mat3(vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1));
+        VaryingInt = ivec4(1, 1, 1, 1);
+        love_Position = TransformProjectionMatrix * VertexPosition;
+      }
+      #endif
+
+      #ifdef PIXEL
+      out ivec4 outData;
+
+      void pixelmain()
+      {
+        outData = ivec4(VaryingMatrix[1][1] > 0.0 ? 1 : 0, 1, VaryingInt.x, 1);
+      }
+      #endif
+    ]]
+
+    local canvas4 = love.graphics.newCanvas(16, 16, {format="rgba32i"})
+      love.graphics.push("all")
+      love.graphics.setCanvas(canvas4)
+      love.graphics.setShader(shader8)
+      love.graphics.rectangle("fill", 0, 0, 16, 16)
+    love.graphics.pop()
+
+    local intimagedata = love.graphics.readbackTexture(canvas4)
+    local imgdata3 = love.image.newImageData(16, 16, "rgba8")
+    for y=0, 15 do
+      for x=0, 15 do
+        local ir, ig, ib, ia = intimagedata:getInt32(4 * 4 * (y * 16 + x), 4)
+        imgdata3:setPixel(x, y, ir, ig, ib, ia)
+      end
+    end
+    test:compareImg(imgdata3)
+  else
+    test:assertTrue(true, "skip shader IO test")
+  end
 end
 
 
