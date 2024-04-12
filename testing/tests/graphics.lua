@@ -983,8 +983,9 @@ love.test.graphics.Shader = function(test)
       #endif
     ]]
 
-    local canvas4 = love.graphics.newCanvas(16, 16, {format="rgba32i"})
+    local canvas4 = love.graphics.newCanvas(16, 16, {format="rgba8i"})
       love.graphics.push("all")
+      love.graphics.setBlendMode("none")
       love.graphics.setCanvas(canvas4)
       love.graphics.setShader(shader8)
       love.graphics.rectangle("fill", 0, 0, 16, 16)
@@ -994,7 +995,7 @@ love.test.graphics.Shader = function(test)
     local imgdata3 = love.image.newImageData(16, 16, "rgba8")
     for y=0, 15 do
       for x=0, 15 do
-        local ir, ig, ib, ia = intimagedata:getInt32(4 * 4 * (y * 16 + x), 4)
+        local ir, ig, ib, ia = intimagedata:getInt32(4 * (y * 16 + x), 4)
         imgdata3:setPixel(x, y, ir, ig, ib, ia)
       end
     end
