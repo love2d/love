@@ -1104,7 +1104,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 			return false;
 	}
 
-	if (usage & PIXELFORMATUSAGE_LINEAR)
+	if (usage & PIXELFORMATUSAGEFLAGS_LINEAR)
 	{
 		if (!(featureFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 			return false;
