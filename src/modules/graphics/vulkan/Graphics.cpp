@@ -2530,11 +2530,6 @@ void Graphics::startRenderPass()
 	if (renderPassState.isWindow && renderPassState.windowClearRequested)
 		renderPassState.windowClearRequested = false;
 
-	if (states.back().scissor)
-		setScissor(states.back().scissorRect);
-	else
-		setScissor();
-
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
@@ -2554,6 +2549,11 @@ void Graphics::startRenderPass()
 		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, imageLayout, renderLayout, rootmip, 1, rootlayer, 1);
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	if (states.back().scissor)
+		setScissor(states.back().scissorRect);
+	else
+		setScissor();
 }
 
 void Graphics::endRenderPass()
