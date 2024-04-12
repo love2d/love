@@ -735,8 +735,10 @@ void Shader::compileShaders()
 
 			for (const auto &r : shaderResources.stage_outputs)
 			{
-				const auto &type = comp.get_type(r.type_id);
+				const auto &type = comp.get_type(r.base_type_id);
 				int count = type.array.empty() ? 1 : type.array[0];
+				if (type.op == spv::OpTypeMatrix)
+					count *= type.columns;
 
 				ioLocationMapper(comp, spirv, r.name, count, r.id);
 			}
@@ -745,8 +747,10 @@ void Shader::compileShaders()
 		{
 			for (const auto &r : shaderResources.stage_inputs)
 			{
-				const auto &type = comp.get_type(r.type_id);
+				const auto &type = comp.get_type(r.base_type_id);
 				int count = type.array.empty() ? 1 : type.array[0];
+				if (type.op == spv::OpTypeMatrix)
+					count *= type.columns;
 
 				ioLocationMapper(comp, spirv, r.name, count, r.id);
 			}
