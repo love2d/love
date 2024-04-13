@@ -2937,9 +2937,6 @@ int w_getTextureFormats(lua_State *L)
 		if (format == PIXELFORMAT_UNKNOWN || !love::getConstant(format, name))
 			continue;
 
-		if (rt && isPixelFormatDepth(format))
-			continue;
-
 		uint32 usage = PIXELFORMATUSAGEFLAGS_NONE;
 		if (rt)
 			usage |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;

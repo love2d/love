@@ -2761,7 +2761,8 @@ love.test.graphics.getTextureFormats = function(test)
     'rg11b10f', 'ASTC10x8', 'ASTC10x10', 'ASTC12x10', 'ASTC12x12', 'normal',
     'srgba8', 'la8', 'ASTC10x6', 'ASTC8x8', 'ASTC6x6', 'ASTC5x5', 'EACrgs',
     'EACrs', 'ETC2rgba1', 'ETC2rgb', 'PVR1rgba4', 'PVR1rgb4', 'BC6h',
-    'BC5', 'BC4', 'DXT3', 'stencil8', 'rgba16ui', 'bgra8srgb'
+    'BC5', 'BC4', 'DXT3', 'rgba16ui', 'bgra8srgb',
+    'depth16', 'depth24', 'depth32f', 'depth24stencil8', 'depth32fstencil8', 'stencil8'
   }
   local supported = love.graphics.getTextureFormats({ canvas = true })
   test:assertNotNil(supported)
