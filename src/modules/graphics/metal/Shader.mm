@@ -476,9 +476,15 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 
 			for (const auto &varying : resources.stage_outputs)
 			{
-//				printf("vertex shader output %s: %d\n", inp.name.c_str(), msl.get_decoration(inp.id, spv::DecorationLocation));
 				varyings[varying.name] = nextVaryingLocation;
-				msl.set_decoration(varying.id, spv::DecorationLocation, nextVaryingLocation++);
+				msl.set_decoration(varying.id, spv::DecorationLocation, nextVaryingLocation);
+
+				const auto &type = msl.get_type(varying.base_type_id);
+				int count = type.array.empty() ? 1 : type.array[0];
+				if (type.op == spv::OpTypeMatrix)
+					count *= type.columns;
+
+				nextVaryingLocation += count;
 			}
 		}
 		else if (stageindex == SHADERSTAGE_PIXEL)
