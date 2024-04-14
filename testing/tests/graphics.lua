@@ -2115,7 +2115,7 @@ end
 love.test.graphics.setCanvas = function(test)
   -- make 2 canvas, set to each, draw one to the other, check output
   local canvas1 = love.graphics.newCanvas(16, 16)
-  local canvas2 = love.graphics.newCanvas(16, 16)
+  local canvas2 = love.graphics.newCanvas(16, 16, {mipmaps = "auto"})
   love.graphics.setCanvas(canvas1)
     test:assertEquals(canvas1, love.graphics.getCanvas(), 'check canvas 1 set')
     love.graphics.clear(1, 0, 0, 1)
@@ -2127,6 +2127,8 @@ love.test.graphics.setCanvas = function(test)
   test:assertEquals(nil, love.graphics.getCanvas(), 'check no canvas set')
   local imgdata = love.graphics.readbackTexture(canvas2)
   test:compareImg(imgdata)
+  local imgdata2 = love.graphics.readbackTexture(canvas2, 1, 2) -- readback mipmap
+  test:compareImg(imgdata2)
 end
 
 
