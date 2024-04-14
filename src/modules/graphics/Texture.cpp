@@ -701,6 +701,10 @@ void Texture::generateMipmaps()
 	if (!supportsGenerateMipmaps(err))
 		throw love::Exception("%s", err);
 
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (gfx != nullptr && gfx->isRenderTargetActive(this))
+		throw love::Exception("generateMipmaps cannot be called on this Texture while it's an active render target.");
+
 	generateMipmapsInternal();
 }
 
