@@ -861,13 +861,6 @@ void Graphics::endPass(bool presenting)
 				glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, mask, GL_NEAREST);
 		}
 	}
-
-	// generateMipmaps can't be used for depth/stencil textures.
-	for (const auto &rt : rts.colors)
-	{
-		if (rt.texture->getMipmapsMode() == Texture::MIPMAPS_AUTO && rt.mipmap == 0)
-			rt.texture->generateMipmaps();
-	}
 }
 
 void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth)

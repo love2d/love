@@ -1528,12 +1528,6 @@ void Graphics::endPass(bool presenting)
 	}
 
 	submitRenderEncoder(SUBMIT_DONE);
-
-	for (const auto &rt : rts.colors)
-	{
-		if (rt.texture->getMipmapsMode() == Texture::MIPMAPS_AUTO && rt.mipmap == 0)
-			rt.texture->generateMipmaps();
-	}
 }
 
 void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth)

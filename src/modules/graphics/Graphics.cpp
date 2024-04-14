@@ -995,30 +995,32 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	if (firsttex == nullptr)
 		return setRenderTarget();
 
-	const auto &prevRTs = state.renderTargets;
+	const auto &prevRTsRef = state.renderTargets;
 
-	if (rtcount == (int) prevRTs.colors.size())
+	if (rtcount == (int) prevRTsRef.colors.size())
 	{
 		bool modified = false;
 
 		for (int i = 0; i < rtcount; i++)
 		{
-			if (rts.colors[i] != prevRTs.colors[i])
+			if (rts.colors[i] != prevRTsRef.colors[i])
 			{
 				modified = true;
 				break;
 			}
 		}
 
-		if (!modified && rts.depthStencil != prevRTs.depthStencil)
+		if (!modified && rts.depthStencil != prevRTsRef.depthStencil)
 			modified = true;
 
-		if (rts.temporaryRTFlags != prevRTs.temporaryRTFlags)
+		if (rts.temporaryRTFlags != prevRTsRef.temporaryRTFlags)
 			modified = true;
 
 		if (!modified)
 			return;
 	}
+
+	const RenderTargetsStrongRef prevRTs = prevRTsRef;
 
 	if (rtcount > capabilities.limits[LIMIT_RENDER_TARGETS])
 		throw love::Exception("This system can't simultaneously render to %d textures.", rtcount);
@@ -1151,6 +1153,13 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 	resetProjection();
 
+	// generateMipmaps can't be used for depth/stencil textures.
+	for (const auto &rt : prevRTs.colors)
+	{
+		if (rt.texture && rt.texture->getMipmapsMode() == Texture::MIPMAPS_AUTO && rt.mipmap == 0)
+			rt.texture->generateMipmaps();
+	}
+
 	// Clear/reset the temporary depth/stencil buffers.
 	// TODO: make this deferred somehow to avoid double clearing if the user
 	// also calls love.graphics.clear after setCanvas.
@@ -1170,6 +1179,8 @@ void Graphics::setRenderTarget()
 	if (state.renderTargets.colors.empty() && state.renderTargets.depthStencil.texture == nullptr)
 		return;
 
+	const RenderTargetsStrongRef prevRTs = state.renderTargets;
+
 	flushBatchedDraws();
 	setRenderTargetsInternal(RenderTargets(), pixelWidth, pixelHeight, isGammaCorrect());
 
@@ -1177,6 +1188,13 @@ void Graphics::setRenderTarget()
 	renderTargetSwitchCount++;
 
 	resetProjection();
+
+	// generateMipmaps can't be used for depth/stencil textures.
+	for (const auto& rt : prevRTs.colors)
+	{
+		if (rt.texture && rt.texture->getMipmapsMode() == Texture::MIPMAPS_AUTO && rt.mipmap == 0)
+			rt.texture->generateMipmaps();
+	}
 }
 
 Graphics::RenderTargets Graphics::getRenderTargets() const
