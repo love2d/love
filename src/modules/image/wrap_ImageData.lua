@@ -342,9 +342,9 @@ local objectcache = setmetatable({}, {
 			width = width,
 			height = height,
 			format = format,
-			pointer = conv == nil and nil or ffi.cast(conv.pointer, imagedata:getFFIPointer()),
-			tolua = conv == nil and nil or conv.tolua,
-			fromlua = conv == nil and nil or conv.fromlua,
+			pointer = conv ~= nil and ffi.cast(conv.pointer, imagedata:getFFIPointer()) or nil,
+			tolua = conv ~= nil and conv.tolua or nil,
+			fromlua = conv ~= nil and conv.fromlua or nil,
 		}
 
 		self[imagedata] = p
