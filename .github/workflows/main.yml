@@ -466,7 +466,7 @@ jobs:
         exit 1
 
   iOS-Simulator:
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -481,7 +481,7 @@ jobs:
         mv apple-dependencies/iOS/libraries platform/xcode/ios
     - name: Build
       run:
-        xcodebuild -project platform/xcode/love.xcodeproj -scheme love-ios -configuration Release -destination 'platform=iOS Simulator,name=iPhone 11'
+        xcodebuild -project platform/xcode/love.xcodeproj -scheme love-ios -configuration Release -destination 'platform=iOS Simulator,name=iPhone 15'
 
   Android:
     runs-on: ubuntu-latest
