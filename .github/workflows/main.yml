@@ -143,6 +143,7 @@ jobs:
         echo "${{ steps.report1.outputs.failed }} opengl tests failed"
         echo "${{ steps.report2.outputs.failed }} opengles tests failed"
         exit 1
+
   Windows:
     runs-on: windows-latest
     permissions:
@@ -154,7 +155,7 @@ jobs:
       VULKAN_SDK: C:/VulkanSDK/1.3.231.1
     strategy:
       matrix:
-        platform: [Win32, x64, ARM64]
+        platform: [x64, ARM64]
     defaults:
       run:
         shell: cmd
@@ -403,6 +404,7 @@ jobs:
 #      with:
 #        name: test-output-windows-${{ steps.vars.outputs.arch }}-vulkan
 #        path: test-output-windows-${{ steps.vars.outputs.arch }}-vulkan.zip
+
   macOS:
     runs-on: macos-latest
     permissions:
@@ -462,6 +464,7 @@ jobs:
       run: |
         echo "${{ steps.report1.outputs.failed }} opengl tests failed"
         exit 1
+
   iOS-Simulator:
     runs-on: macos-latest
     steps:
@@ -479,6 +482,7 @@ jobs:
     - name: Build
       run:
         xcodebuild -project platform/xcode/love.xcodeproj -scheme love-ios -configuration Release -destination 'platform=iOS Simulator,name=iPhone 11'
+
   Android:
     runs-on: ubuntu-latest
     strategy:
