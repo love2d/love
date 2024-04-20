@@ -165,7 +165,7 @@ jobs:
       id: vars
       run: |
         rem JIT Modules
-        if "${{ matrix.platform }}-${{ matrix.install }}" == "x64" (
+        if "${{ matrix.platform }}" == "x64" (
           (echo jitmodules=1)>> "%GITHUB_OUTPUT%"
         ) else (
           (echo jitmodules=0)>> "%GITHUB_OUTPUT%"
