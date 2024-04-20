@@ -98,7 +98,7 @@ endif()
 
 message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
 
-add_library(lovedep::SDL2 INTERFACE IMPORTED)
+add_library(lovedep::SDL INTERFACE IMPORTED)
 add_library(lovedep::Freetype INTERFACE IMPORTED)
 add_library(lovedep::Harfbuzz INTERFACE IMPORTED)
 add_library(lovedep::OpenAL INTERFACE IMPORTED)
@@ -133,6 +133,7 @@ if(MEGA)
 	# action.
 	set(LOVE_MOVE_DLLS
 		${MEGA_SDL2}
+		${MEGA_SDL3}
 		${MEGA_OPENAL}
 	)
 
@@ -143,7 +144,7 @@ if(MEGA)
 		set(LOVE_EXTRA_DLLS)
 	endif()
 
-	target_link_libraries(lovedep::SDL2 INTERFACE ${MEGA_SDL2} ${MEGA_SDL2MAIN})
+	target_link_libraries(lovedep::SDL INTERFACE ${MEGA_SDL2} ${MEGA_SDL2MAIN} ${MEGA_SDL3})
 	target_link_libraries(lovedep::Freetype INTERFACE ${MEGA_FREETYPE})
 	target_link_libraries(lovedep::Harfbuzz INTERFACE ${MEGA_HARFBUZZ})
 	target_link_libraries(lovedep::OpenAL INTERFACE ${MEGA_OPENAL})
@@ -183,8 +184,8 @@ Please see https://github.com/love2d/megasource
 	add_definitions(-D HAS_SOCKLEN_T)
 
 	find_package(SDL2 2.0.9 REQUIRED CONFIG COMPONENTS SDL2main)
-	target_include_directories(lovedep::SDL2 INTERFACE ${SDL2_INCLUDE_DIRS})
-	target_link_libraries(lovedep::SDL2 INTERFACE ${SDL2_LIBRARIES})
+	target_include_directories(lovedep::SDL INTERFACE ${SDL2_INCLUDE_DIRS})
+	target_link_libraries(lovedep::SDL INTERFACE ${SDL2_LIBRARIES})
 
 	find_package(Freetype REQUIRED)
 	target_include_directories(lovedep::Freetype INTERFACE ${FREETYPE_INCLUDE_DIRS})
@@ -299,7 +300,7 @@ add_library(love_common STATIC
 )
 target_link_libraries(love_common PUBLIC
 	lovedep::Lua
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 if (APPLE)
@@ -423,7 +424,7 @@ add_library(love_event_root STATIC
 )
 target_link_libraries(love_event_root PUBLIC
 	lovedep::Lua
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_event_sdl STATIC
@@ -431,7 +432,7 @@ add_library(love_event_sdl STATIC
 	src/modules/event/sdl/Event.h
 )
 target_link_libraries(love_event_sdl PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_event INTERFACE)
@@ -464,7 +465,7 @@ add_library(love_filesystem_root STATIC
 )
 target_link_libraries(love_filesystem_root PUBLIC
 	lovedep::Lua
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_filesystem_physfs STATIC
@@ -477,7 +478,7 @@ add_library(love_filesystem_physfs STATIC
 )
 if(ANDROID)
 	target_link_libraries(love_filesystem_physfs PUBLIC
-		lovedep::SDL2
+		lovedep::SDL
 	)
 endif()
 
@@ -637,7 +638,7 @@ add_library(love_graphics_opengl STATIC
 	src/modules/graphics/opengl/Texture.h
 )
 target_link_libraries(love_graphics_opengl PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_graphics_vulkan STATIC
@@ -660,7 +661,7 @@ add_library(love_graphics_vulkan STATIC
 	src/modules/graphics/vulkan/VulkanWrapper.h
 )
 target_link_libraries(love_graphics_vulkan PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_graphics INTERFACE)
@@ -753,7 +754,7 @@ add_library(love_joystick_sdl STATIC
 	src/modules/joystick/sdl/JoystickModule.h
 )
 target_link_libraries(love_joystick_sdl PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_joystick INTERFACE)
@@ -774,7 +775,7 @@ add_library(love_keyboard_root STATIC
 )
 target_link_libraries(love_keyboard_root PUBLIC
 	lovedep::Lua
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_keyboard_sdl STATIC
@@ -782,7 +783,7 @@ add_library(love_keyboard_sdl STATIC
 	src/modules/keyboard/sdl/Keyboard.h
 )
 target_link_libraries(love_keyboard_sdl PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_keyboard INTERFACE)
@@ -834,7 +835,7 @@ add_library(love_mouse_root STATIC
 )
 target_link_libraries(love_mouse_root PUBLIC
 	lovedep::Lua
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_mouse_sdl STATIC
@@ -844,7 +845,7 @@ add_library(love_mouse_sdl STATIC
 	src/modules/mouse/sdl/Mouse.h
 )
 target_link_libraries(love_mouse_sdl PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_mouse INTERFACE)
@@ -974,7 +975,7 @@ add_library(love_sensor_root STATIC
 )
 target_link_libraries(love_sensor_root PUBLIC
 	lovedep::Lua
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_sensor_sdl STATIC
@@ -982,7 +983,7 @@ add_library(love_sensor_sdl STATIC
 	src/modules/sensor/sdl/Sensor.h
 )
 target_link_libraries(love_sensor_sdl PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_sensor INTERFACE)
@@ -1052,7 +1053,7 @@ add_library(love_system_root STATIC
 )
 target_link_libraries(love_system_root PUBLIC
 	lovedep::Lua
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_system_sdl STATIC
@@ -1060,7 +1061,7 @@ add_library(love_system_sdl STATIC
 	src/modules/system/sdl/System.h
 )
 target_link_libraries(love_system_sdl PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_system INTERFACE)
@@ -1101,7 +1102,7 @@ add_library(love_thread_sdl STATIC
 	src/modules/thread/sdl/threads.h
 )
 target_link_libraries(love_thread_sdl PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_thread INTERFACE)
@@ -1135,7 +1136,7 @@ add_library(love_touch_root STATIC
 )
 target_link_libraries(love_touch_root PUBLIC
 	lovedep::Lua
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_touch_sdl STATIC
@@ -1143,7 +1144,7 @@ add_library(love_touch_sdl STATIC
 	src/modules/touch/sdl/Touch.h
 )
 target_link_libraries(love_touch_sdl PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_touch INTERFACE)
@@ -1201,7 +1202,7 @@ add_library(love_window_root STATIC
 )
 target_link_libraries(love_window_root PUBLIC
 	lovedep::Lua
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_window_sdl STATIC
@@ -1209,7 +1210,7 @@ add_library(love_window_sdl STATIC
 	src/modules/window/sdl/Window.h
 )
 target_link_libraries(love_window_sdl PUBLIC
-	lovedep::SDL2
+	lovedep::SDL
 )
 
 add_library(love_window INTERFACE)
