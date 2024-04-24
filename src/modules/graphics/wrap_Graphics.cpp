@@ -41,6 +41,8 @@
 
 #include <algorithm>
 
+#include "tracy/tracy/Tracy.hpp"
+
 // Shove the wrap_Graphics.lua code directly into a raw string literal.
 static const char graphics_lua[] =
 #include "wrap_Graphics.lua"
@@ -176,7 +178,9 @@ int w_discard(lua_State *L)
 
 int w_present(lua_State *L)
 {
+	ZoneScopedN("graphics::present");
 	luax_catchexcept(L, [&]() { instance()->present(L); });
+	FrameMark;
 	return 0;
 }
 
@@ -1244,6 +1248,7 @@ int w_newVolumeTexture(lua_State *L)
 
 int w_newImage(lua_State *L)
 {
+	ZoneScopedN("love.graphics.newImage");
 	//luax_markdeprecated(L, 1, "love.graphics.newImage", API_FUNCTION, DEPRECATED_RENAMED, "love.graphics.newTexture");
 	return w_newTexture(L);
 }
@@ -3133,6 +3138,7 @@ int w_getStats(lua_State *L)
 
 int w_draw(lua_State *L)
 {
+	ZoneScopedN("love.graphics.draw");
 	Drawable *drawable = nullptr;
 	Texture *texture = nullptr;
 	Quad *quad = luax_totype<Quad>(L, 2);
@@ -3298,6 +3304,7 @@ int w_drawFromShaderIndirect(lua_State *L)
 
 int w_print(lua_State *L)
 {
+	ZoneScopedN("love.graphics.print");
 	std::vector<love::font::ColoredString> str;
 	luax_checkcoloredstring(L, 1, str);
 

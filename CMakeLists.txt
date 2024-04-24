@@ -245,6 +245,15 @@ function(love_disable_warnings ARG_TARGET)
 endfunction()
 
 #
+# tracy
+#
+
+add_definitions(-DTRACY_ENABLE -DTRACY_IMPORTS -DTRACY_ON_DEMAND)
+add_library(tracy SHARED
+	src/libraries/tracy/TracyClient.cpp
+)
+
+#
 # common
 #
 
@@ -639,6 +648,7 @@ add_library(love_graphics_opengl STATIC
 )
 target_link_libraries(love_graphics_opengl PUBLIC
 	lovedep::SDL
+	tracy
 )
 
 add_library(love_graphics_vulkan STATIC
@@ -662,6 +672,7 @@ add_library(love_graphics_vulkan STATIC
 )
 target_link_libraries(love_graphics_vulkan PUBLIC
 	lovedep::SDL
+	tracy
 )
 
 add_library(love_graphics INTERFACE)
@@ -1906,6 +1917,7 @@ target_link_libraries(liblove
 	love_3p_spirv_cross
 	love_3p_wuff
 	love_3p_xxhash
+	tracy
 )
 
 if(LOVE_EXTRA_DEPENDECIES)

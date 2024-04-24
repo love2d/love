@@ -23,6 +23,8 @@
 #include "common/Variant.h"
 #include "modules/love/love.h"
 #include <SDL.h>
+#include "tracy/tracy/Tracy.hpp"
+#include "tracy/tracy/TracyLua.hpp"
 
 #ifdef LOVE_BUILD_EXE
 
@@ -168,6 +170,7 @@ static void print_usage()
 
 static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &restartvalue)
 {
+	ZoneScoped;
 	// Oh, you just want the version? Okay!
 	if (argc > 1 && strcmp(argv[1], "--version") == 0)
 	{
@@ -190,6 +193,9 @@ static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &res
 	// Create the virtual machine.
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
+
+	// Add Tracy instrumentation
+	tracy::LuaRegister(L);
 
 	// LuaJIT-specific setup needs to be done as early as possible - before
 	// get_app_arguments because that loads external library code. This is also

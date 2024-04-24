@@ -20,6 +20,8 @@
 
 #include "common/config.h"
 
+#include "tracy/tracy/Tracy.hpp"
+
 // LOVE
 #include "wrap_Timer.h"
 
@@ -56,6 +58,7 @@ int w_getAverageDelta(lua_State *L)
 
 int w_sleep(lua_State *L)
 {
+	ZoneScopedN("love.timer.sleep");
 	instance()->sleep(luaL_checknumber(L, 1));
 	return 0;
 }
