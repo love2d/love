@@ -24,6 +24,7 @@
 #ifdef LOVE_ANDROID
 
 #include <cerrno>
+#include <set>
 #include <unordered_map>
 
 #include <SDL.h>
@@ -184,19 +185,74 @@ bool mkdir(const char *path)
 	return true;
 }
 
+inline bool tryCreateDirectory(const char *path)
+{
+	SDL_Log("Trying to create directory '%s'", path);
+
+	if (directoryExists(path))
+		return true;
+	else if (mkdir(path))
+		return true;
+	return false;
+}
+
 bool createStorageDirectories()
 {
-	std::string internal_storage_path = SDL_AndroidGetInternalStoragePath();
+	std::string internalStoragePath = SDL_AndroidGetInternalStoragePath();
+	std::string externalStoragePath = SDL_AndroidGetExternalStoragePath();
 
-	std::string save_directory = internal_storage_path + "/save";
-	if (!directoryExists(save_directory.c_str()) && !mkdir(save_directory.c_str()))
+	std::string saveDirectoryInternal = internalStoragePath + "/save";
+	if (!tryCreateDirectory(saveDirectoryInternal.c_str()))
 		return false;
 
-	std::string game_directory = internal_storage_path + "/game";
-	if (!directoryExists (game_directory.c_str()) && !mkdir(game_directory.c_str()))
+	std::string saveDirectoryExternal = externalStoragePath + "/save";
+	if (!tryCreateDirectory(saveDirectoryExternal.c_str()))
+		return false;
+
+	std::string game_directory = externalStoragePath + "/game";
+	if (!tryCreateDirectory (game_directory.c_str()))
 		return false;
 
 	return true;
+}
+
+void fixupPermissionSingleFile(const std::string &savedir, const std::string &path)
+{
+    std::string fixedSavedir = savedir.back() == '/' ? savedir : (savedir + "/");
+    std::string target = fixedSavedir + path;
+    ::chmod(target.c_str(), 0660);
+}
+
+void fixupExternalStoragePermission(const std::string &savedir, const std::string &path)
+{
+	std::set<std::string> pathsToFix;
+	size_t start = 0;
+
+	while (true)
+	{
+		size_t pos = path.find('/', start);
+		if (pos == std::string::npos)
+		{
+			pathsToFix.insert(path);
+			break;
+		}
+
+		pathsToFix.insert(path.substr(0, pos));
+		start = pos + 1;
+	}
+
+	std::string fixedSavedir = savedir.back() == '/' ? savedir : (savedir + "/");
+    ::chmod(savedir.c_str(), 0770);
+
+	for (const std::string &dir: pathsToFix)
+	{
+        const char *realPath = PHYSFS_getRealDir(dir.c_str());
+		if (!dir.empty() && strcmp(realPath, savedir.c_str()) == 0)
+		{
+			std::string target = fixedSavedir + dir;
+			::chmod(target.c_str(), 0770);
+		}
+	}
 }
 
 bool hasBackgroundMusic()

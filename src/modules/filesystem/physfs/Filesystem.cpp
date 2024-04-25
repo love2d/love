@@ -796,6 +796,16 @@ bool Filesystem::createDirectory(const char *dir)
 	if (!PHYSFS_mkdir(dir))
 		return false;
 
+#ifdef LOVE_ANDROID
+	// In Android with t.externalstorage = true, make sure the directory
+    // created in the save directory has permissions of ug+rwx (0770) so that
+    // it's accessible through MTP.
+	if (isAndroidSaveExternal())
+		love::android::fixupExternalStoragePermission(
+			getFullCommonPath(CommonPath::COMMONPATH_APP_SAVEDIR),
+			dir
+		);
+#endif
 	return true;
 }
 
