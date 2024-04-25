@@ -190,6 +190,11 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 	// These will be re-populated by getFullCommonPath.
 	for (CommonPath p : appCommonPaths)
 		fullPaths[p].clear();
+#ifdef LOVE_ANDROID
+	// Ensure COMMONPATH_USER_APPDATA is also cleared in Android to ensure
+	// `t.externalstorage` works as expected.
+	fullPaths[COMMONPATH_USER_APPDATA].clear();
+#endif
 
 	// Store the save directory. getFullCommonPath(COMMONPATH_APP_*) uses this.
 	saveIdentity = std::string(ident);
