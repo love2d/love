@@ -67,8 +67,8 @@ File::File(const std::string &filename, Mode mode)
 
 		if (realdir != nullptr && strcmp(realdir, savedir.c_str()) == 0)
 			love::android::fixupPermissionSingleFile(savedir, filename);
-#endif
 	}
+#endif
 }
 
 File::File(const File &other)
