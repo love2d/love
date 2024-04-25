@@ -145,10 +145,10 @@ Audio::Audio()
 		context = alcCreateContext(device, attribs.data());
 
 		if (context == nullptr)
-			throw love::Exception("Could not create context.");
+			throw love::Exception("Could not create context: %s", alcGetString(device, alcGetError(device)));
 
-		if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
-			throw love::Exception("Could not make context current.");
+		if (!alcMakeContextCurrent(context))
+			throw love::Exception("Could not make context current: %s", alcGetString(device, alcGetError(device)));
 	}
 
 #ifdef ALC_EXT_EFX
