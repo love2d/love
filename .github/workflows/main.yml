@@ -418,7 +418,7 @@ jobs:
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
-        ref: 12.x
+        ref: main
     - name: Move Dependencies
       run:
         mv apple-dependencies/macOS/Frameworks platform/xcode/macosx
@@ -475,7 +475,7 @@ jobs:
       with:
         path: apple-dependencies
         repository: love2d/love-apple-dependencies
-        ref: 12.x
+        ref: main
     - name: Move Dependencies
       run: |
         mv apple-dependencies/iOS/libraries platform/xcode/ios
