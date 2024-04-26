@@ -460,24 +460,16 @@ end
 love.test.audio.setPlaybackDevice = function(test)
   -- check method
   test:assertNotNil(love.audio.setPlaybackDevice)
+
   -- check blank string name
-  local success1, msg1 = love.audio.setPlaybackDevice('')
+  test:assertTrue(love.audio.setPlaybackDevice(''), 'check blank device is fine')
+
   -- check invalid name
-  local success2, msg2 = love.audio.setPlaybackDevice('loveFM')
+  test:assertFalse(love.audio.setPlaybackDevice('loveFM'), 'check invalid device fails')
+
   -- check setting already set
-  local success3, msg3 = love.audio.setPlaybackDevice(love.audio.getPlaybackDevice()) -- current name
-  -- rn on macos all 3 return false
-  -- whereas linux/windows return true for blank/current, which is expected
-  -- as openalsoft treats blank as current
-  if test:isOS('OS X') then
-    test:assertFalse(success1, 'check blank device fails')
-    test:assertFalse(success2, 'check invalid device fails')
-    test:assertFalse(success3, 'check existing device fails')
-  else
-    test:assertTrue(success1, 'check blank device is fine')
-    test:assertFalse(success2, 'check invalid device fails')
-    test:assertTrue(success3, 'check existing device is fine')
-  end
+  test:assertTrue(love.audio.setPlaybackDevice(love.audio.getPlaybackDevice()), 'check existing device is fine')
+  
   -- if other devices to play with lets set a different one
   local devices = love.audio.getPlaybackDevices()
   if #devices > 1 then
