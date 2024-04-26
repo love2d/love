@@ -438,33 +438,61 @@ jobs:
       with:
         name: love-macos
         path: love-macos.zip
-    # macos opengl tests (metal not supported on runners)
-    - name: Run Test Suite
+    # macos opengl tests
+    - name: Run Test Suite (OpenGL)
       env:
         LOVE_GRAPHICS_DEBUG: 1
       run: |
         ls
         love-macos/love.app/Contents/MacOS/love ./testing/main.lua --all --isRunner --renderers opengl
-    - name: Love Test Report
+    - name: Love Test Report (OpenGL)
       id: report1
       uses: ellraiser/love-test-report@main
       with:
         name: Love Testsuite MacOS
-        title: test-report-macos
+        title: test-report-macos-opengl
         path: testing/output/lovetest_all.md
         token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Zip Test Output
+    - name: Zip Test Output (OpenGL)
       run: |
         7z a -tzip test-output-macos-opengl.zip ./testing/output/
-    - name: Artifact Test Output
+    - name: Artifact Test Output (OpenGL)
       uses: actions/upload-artifact@v4
       with:
         name: test-output-macos-opengl-${{ steps.report1.outputs.conclusion }}
         path: test-output-macos-opengl.zip
-    - name: Check Tests Passing
+    - name: Check Tests Passing (OpenGL)
       if: steps.report1.outputs.conclusion == 'failure'
       run: |
         echo "${{ steps.report1.outputs.failed }} opengl tests failed"
+        exit 1
+    # macos metal tests
+    - name: Run Test Suite (Metal)
+      env:
+        LOVE_GRAPHICS_DEBUG: 1
+      run: |
+        ls
+        love-macos/love.app/Contents/MacOS/love ./testing/main.lua --all --isRunner --renderers metal
+    - name: Love Test Report (Metal)
+      id: report2
+      uses: ellraiser/love-test-report@main
+      with:
+        name: Love Testsuite MacOS (Metal)
+        title: test-report-macos-metal
+        path: testing/output/lovetest_all.md
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Zip Test Output (Metal)
+      run: |
+        7z a -tzip test-output-macos-metal.zip ./testing/output/
+    - name: Artifact Test Output (Metal)
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-output-macos-metal-${{ steps.report2.outputs.conclusion }}
+        path: test-output-macos-metal.zip
+    - name: Check Tests Passing (Metal)
+      if: steps.report2.outputs.conclusion == 'failure'
+      run: |
+        echo "${{ steps.report2.outputs.failed }} metal tests failed"
         exit 1
 
   iOS-Simulator:
