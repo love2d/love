@@ -283,6 +283,7 @@ Graphics::Graphics()
 	, uniformBufferGPUStart(0)
 	, defaultAttributesBuffer(nullptr)
 	, families()
+	, isVMDevice(false)
 { @autoreleasepool {
 	if (@available(macOS 10.15, iOS 13.0, *))
 	{
@@ -295,6 +296,8 @@ Graphics::Graphics()
 	{
 		throw love::Exception("LOVE's Metal graphics backend requires macOS 10.15+ or iOS 13+.");
 	}
+
+	isVMDevice = [device.name containsString:@("Apple Paravirtual device")];
 
 #ifdef LOVE_MACOS
 	// On multi-GPU macOS systems with a low and high power GPU (e.g. a 2016
@@ -1940,8 +1943,13 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 			// Requires texture swizzle support.
 			if (@available(macOS 10.15, iOS 13, *))
 			{
-				if (families.apple[1] || families.mac[2] || families.macCatalyst[2])
-					flags |= commonsample;
+				// As of early 2024, the VM device doesn't properly support texture swizzles
+				// (observed on GitHub's runners) which is required for LA8 support.
+				if (!isVMDevice)
+				{
+					if (families.apple[1] || families.mac[2] || families.macCatalyst[2])
+						flags |= commonsample;
+				}
 			}
 			break;
 		case PIXELFORMAT_RG16_UNORM:

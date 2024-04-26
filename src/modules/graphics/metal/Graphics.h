@@ -251,6 +251,8 @@ private:
 
 	DeviceFamilies families;
 
+	bool isVMDevice;
+
 }; // Graphics
 
 } // metal
