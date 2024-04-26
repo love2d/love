@@ -410,6 +410,8 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
+    env:
+      ALSOFT_CONF: testing/resources/alsoft.conf
     steps:
     - name: Checkout
       uses: actions/checkout@v4
