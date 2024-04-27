@@ -803,7 +803,7 @@ bool Filesystem::createDirectory(const char *dir)
 
 #ifdef LOVE_ANDROID
 	// In Android with t.externalstorage = true, make sure the directory
-    // created in the save directory has permissions of ug+rwx (0770) so that
+    // created in the save directory has permissions of ugo+rwx (0777) so that
     // it's accessible through MTP.
 	if (isAndroidSaveExternal())
 		love::android::fixupExternalStoragePermission(

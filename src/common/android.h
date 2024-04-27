@@ -65,7 +65,7 @@ bool mkdir(const char *path);
 
 bool createStorageDirectories();
 
-void fixupPermissionSingleFile(const std::string &savedir, const std::string &path);
+void fixupPermissionSingleFile(const std::string &savedir, const std::string &path, int mode = 0666);
 
 void fixupExternalStoragePermission(const std::string &savedir, const std::string &path);
 

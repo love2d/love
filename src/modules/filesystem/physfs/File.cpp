@@ -57,7 +57,7 @@ File::File(const std::string &filename, Mode mode)
 
 #ifdef LOVE_ANDROID
 	// In Android with t.externalstorage = true, make sure the file opened or
-	// created in the save directory has permissions of ug+rw (0660) so that
+	// created in the save directory has permissions of ugo+rw (0666) so that
 	// it's accessible through MTP.
 	auto fs = Module::getInstance<love::filesystem::Filesystem>(Module::M_FILESYSTEM);
 	if (fs != nullptr && fs->isAndroidSaveExternal())

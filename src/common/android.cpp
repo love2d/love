@@ -175,10 +175,24 @@ bool directoryExists(const char *path)
 
 bool mkdir(const char *path)
 {
-	int err = ::mkdir(path, 0770);
+	int err = ::mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO | S_ISGID);
 	if (err == -1)
 	{
-		SDL_Log("Error: Could not create directory %s", path);
+		const char *error = strerror(errno);
+		SDL_Log("Error: Could not create directory '%s': %s", path, error);
+		return false;
+	}
+
+	return true;
+}
+
+bool chmod(const char *path, int mode)
+{
+	int err = ::chmod(path, mode);
+	if (err == -1)
+	{
+		const char *error = strerror(errno);
+		SDL_Log("Error: Could not change mode '%s': %s", path, error);
 		return false;
 	}
 
@@ -216,11 +230,11 @@ bool createStorageDirectories()
 	return true;
 }
 
-void fixupPermissionSingleFile(const std::string &savedir, const std::string &path)
+void fixupPermissionSingleFile(const std::string &savedir, const std::string &path, int mode)
 {
     std::string fixedSavedir = savedir.back() == '/' ? savedir : (savedir + "/");
     std::string target = fixedSavedir + path;
-    ::chmod(target.c_str(), 0660);
+    ::chmod(target.c_str(), mode);
 }
 
 void fixupExternalStoragePermission(const std::string &savedir, const std::string &path)
@@ -242,7 +256,7 @@ void fixupExternalStoragePermission(const std::string &savedir, const std::strin
 	}
 
 	std::string fixedSavedir = savedir.back() == '/' ? savedir : (savedir + "/");
-    ::chmod(savedir.c_str(), 0770);
+	chmod(savedir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO | S_ISGID);
 
 	for (const std::string &dir: pathsToFix)
 	{
@@ -250,7 +264,7 @@ void fixupExternalStoragePermission(const std::string &savedir, const std::strin
 		if (!dir.empty() && strcmp(realPath, savedir.c_str()) == 0)
 		{
 			std::string target = fixedSavedir + dir;
-			::chmod(target.c_str(), 0770);
+			chmod(target.c_str(), S_IRWXU | S_IRWXG | S_IRWXO | S_ISGID);
 		}
 	}
 }
