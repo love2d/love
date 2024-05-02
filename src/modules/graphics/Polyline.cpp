@@ -471,13 +471,19 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 
 void Polyline::fill_color_array(Color32 constant_color, STf_RGBAub *attributes, int count)
 {
+	// Note: assigning each element individually seems to be needed to avoid
+	// performance issues in OpenGL + Windows. VS' compiler is likely doing
+	// something that doesn't play nice with write-combined memory from the
+	// graphics driver, when assigning a whole struct after modifying it, or
+	// when using memcpy.
 	for (int i = 0; i < count; ++i)
 	{
-		Color32 c = constant_color;
-		c.a *= (i+1) % 2; // avoids branching. equiv to if (i%2 == 1) c.a = 0;
 		attributes[i].s = 0.0f;
 		attributes[i].t = 0.0f;
-		attributes[i].color = c;
+		attributes[i].color.r = constant_color.r;
+		attributes[i].color.g = constant_color.g;
+		attributes[i].color.b = constant_color.b;
+		attributes[i].color.a = constant_color.a * ((i + 1) % 2); // avoids branching. equiv to if (i%2 == 1) c.a = 0;
 	}
 }
 
@@ -485,11 +491,12 @@ void NoneJoinPolyline::fill_color_array(Color32 constant_color, STf_RGBAub *attr
 {
 	for (int i = 0; i < count; ++i)
 	{
-		Color32 c = constant_color;
-		c.a *= (i & 3) < 2; // if (i % 4 == 2 || i % 4 == 3) c.a = 0
 		attributes[i].s = 0.0f;
 		attributes[i].t = 0.0f;
-		attributes[i].color = c;
+		attributes[i].color.r = constant_color.r;
+		attributes[i].color.g = constant_color.g;
+		attributes[i].color.b = constant_color.b;
+		attributes[i].color.a = constant_color.a * ((i & 3) < 2); // if (i % 4 == 2 || i % 4 == 3) c.a = 0
 	}
 }
 
