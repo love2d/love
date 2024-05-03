@@ -538,9 +538,10 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 	return Shader::validate(stages, err);
 }
 
-Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType)
+Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType, bool depthSample)
 {
-	Texture *tex = defaultTextures[type][dataType];
+	uint32 depthsampleindex = depthSample ? 1 : 0;
+	Texture *tex = defaultTextures[type][dataType][depthsampleindex];
 	if (tex != nullptr)
 		return tex;
 
@@ -561,6 +562,18 @@ Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType)
 		break;
 	}
 
+	if (depthSample)
+	{
+		if (isPixelFormatSupported(PIXELFORMAT_DEPTH16_UNORM, PIXELFORMATUSAGE_SAMPLE))
+			settings.format = PIXELFORMAT_DEPTH16_UNORM;
+		else if (isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, PIXELFORMATUSAGE_SAMPLE))
+			settings.format = PIXELFORMAT_DEPTH24_UNORM;
+		else if (isPixelFormatSupported(PIXELFORMAT_DEPTH32_FLOAT, PIXELFORMATUSAGE_SAMPLE))
+			settings.format = PIXELFORMAT_DEPTH32_FLOAT;
+		else // TODO?
+			settings.format = PIXELFORMAT_DEPTH24_UNORM;
+	}
+
 	std::string name = "default_";
 
 	const char *tname = "unknown";
@@ -578,6 +591,10 @@ Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType)
 	SamplerState s;
 	s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
 	s.wrapU = s.wrapV = s.wrapW = SamplerState::WRAP_CLAMP;
+
+	if (depthSample)
+		s.depthSampleMode.set(COMPARE_ALWAYS);
+
 	tex->setSamplerState(s);
 
 	uint8 pixel[] = {255, 255, 255, 255};
@@ -587,7 +604,7 @@ Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType)
 	for (int slice = 0; slice < (type == TEXTURE_CUBE ? 6 : 1); slice++)
 		tex->replacePixels(pixel, sizeof(pixel), slice, 0, {0, 0, 1, 1}, false);
 
-	defaultTextures[type][dataType] = tex;
+	defaultTextures[type][dataType][depthsampleindex] = tex;
 
 	return tex;
 }
@@ -647,9 +664,12 @@ void Graphics::releaseDefaultResources()
 	{
 		for (int dataType = 0; dataType < DATA_BASETYPE_MAX_ENUM; dataType++)
 		{
-			if (defaultTextures[type][dataType])
-				defaultTextures[type][dataType]->release();
-			defaultTextures[type][dataType] = nullptr;
+			for (int depthsample = 0; depthsample < 2; depthsample++)
+			{
+				if (defaultTextures[type][dataType][depthsample])
+					defaultTextures[type][dataType][depthsample]->release();
+				defaultTextures[type][dataType][depthsample] = nullptr;
+			}
 		}
 	}
 
@@ -676,10 +696,10 @@ Texture *Graphics::getTextureOrDefaultForActiveShader(Texture *tex)
 	{
 		auto texinfo = shader->getMainTextureInfo();
 		if (texinfo != nullptr && texinfo->textureType != TEXTURE_MAX_ENUM)
-			return getDefaultTexture(texinfo->textureType, texinfo->dataBaseType);
+			return getDefaultTexture(texinfo->textureType, texinfo->dataBaseType, texinfo->isDepthSampler);
 	}
 
-	return getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT);
+	return getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT, false);
 }
 
 void Graphics::validateStencilState(const StencilState &s) const

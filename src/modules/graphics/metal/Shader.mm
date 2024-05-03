@@ -743,7 +743,7 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 		else
 		{
 			auto gfx = Graphics::getInstance();
-			tex = gfx->getDefaultTexture(info->textureType, info->dataBaseType);
+			tex = gfx->getDefaultTexture(info->textureType, info->dataBaseType, info->isDepthSampler);
 		}
 
 		tex->retain();

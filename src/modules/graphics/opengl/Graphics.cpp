@@ -1720,7 +1720,7 @@ uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 		// this is required on ES2 but I'm not positive.
 		if (isPixelFormatDepthStencil(format))
 		{
-			love::graphics::Texture *tex = getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT);
+			love::graphics::Texture *tex = getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT, false);
 			gl.framebufferTexture(GL_COLOR_ATTACHMENT0, TEXTURE_2D, (GLuint) tex->getHandle(), 0, 0, 0);
 		}
 

@@ -485,7 +485,7 @@ public:
 
 	bool validateShader(bool gles, const std::vector<std::string> &stages, const Shader::CompileOptions &options, std::string &err);
 
-	Texture *getDefaultTexture(TextureType type, DataBaseType dataType);
+	Texture *getDefaultTexture(TextureType type, DataBaseType dataType, bool depthSample);
 	Buffer *getDefaultTexelBuffer(DataBaseType dataType);
 	Buffer *getDefaultStorageBuffer();
 	Texture *getTextureOrDefaultForActiveShader(Texture *tex);
@@ -1100,7 +1100,7 @@ private:
 	void checkSetDefaultFont();
 	int calculateEllipsePoints(float rx, float ry) const;
 
-	Texture *defaultTextures[TEXTURE_MAX_ENUM][DATA_BASETYPE_MAX_ENUM];
+	Texture *defaultTextures[TEXTURE_MAX_ENUM][DATA_BASETYPE_MAX_ENUM][2];
 	Buffer *defaultTexelBuffers[DATA_BASETYPE_MAX_ENUM];
 	Buffer *defaultStorageBuffer;
 

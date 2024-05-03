@@ -725,7 +725,7 @@ Shader::Shader(StrongRef<ShaderStage> _stages[], const CompileOptions &options)
 
 		if (u.baseType == UNIFORM_SAMPLER || u.baseType == UNIFORM_STORAGETEXTURE)
 		{
-			auto tex = gfx->getDefaultTexture(u.textureType, u.dataBaseType);
+			auto tex = gfx->getDefaultTexture(u.textureType, u.dataBaseType, u.isDepthSampler);
 			for (int i = 0; i < u.count; i++)
 			{
 				tex->retain();
