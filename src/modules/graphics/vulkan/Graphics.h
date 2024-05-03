@@ -378,6 +378,7 @@ private:
 	void setDefaultRenderPass();
 	void startRenderPass();
 	void endRenderPass();
+	void applyScissor();
 	VkSampler createSampler(const SamplerState &sampler);
 	void cleanupUnusedObjects();
 	void requestSwapchainRecreation();

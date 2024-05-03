@@ -972,6 +972,33 @@ void Graphics::setColor(Colorf c)
 	states.back().color = c;
 }
 
+void Graphics::applyScissor()
+{
+	VkRect2D scissor{};
+
+	if (renderPassState.isWindow)
+		scissor.extent = swapChainExtent;
+	else
+	{
+		scissor.extent.width = renderPassState.width;
+		scissor.extent.height = renderPassState.height;
+	}
+
+	if (states.back().scissor)
+	{
+		const Rect &rect = states.back().scissorRect;
+		double dpiScale = getCurrentDPIScale();
+
+		// TODO: clamp this to the above viewport size.
+		scissor.offset.x = (int)(rect.x * dpiScale);
+		scissor.offset.y = (int)(rect.y * dpiScale);
+		scissor.extent.width = (uint32)(rect.w * dpiScale);
+		scissor.extent.height = (uint32)(rect.h * dpiScale);
+	}
+
+	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
+}
+
 void Graphics::setScissor(const Rect &rect)
 {
 	flushBatchedDraws();
@@ -980,21 +1007,7 @@ void Graphics::setScissor(const Rect &rect)
 	states.back().scissorRect = rect;
 
 	if (renderPassState.active)
-	{
-		double dpiScale = getCurrentDPIScale();
-
-		double x = static_cast<double>(rect.x) * dpiScale;
-		double y = static_cast<double>(rect.y) * dpiScale;
-		double w = static_cast<double>(rect.w) * dpiScale;
-		double h = static_cast<double>(rect.h) * dpiScale;
-
-		VkRect2D scissor = {
-			{static_cast<int32_t>(x), static_cast<int32_t>(y)},
-			{static_cast<uint32_t>(w), static_cast<uint32_t>(h)}
-		};
-
-		vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
-	}
+		applyScissor();
 }
 
 void Graphics::setScissor()
@@ -1004,19 +1017,7 @@ void Graphics::setScissor()
 	states.back().scissor = false;
 
 	if (renderPassState.active)
-	{
-		VkRect2D scissor{};
-		scissor.offset = { 0, 0 };
-		if (renderPassState.isWindow)
-			scissor.extent = swapChainExtent;
-		else
-		{
-			scissor.extent.width = renderPassState.width;
-			scissor.extent.height = renderPassState.height;
-		}
-
-		vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
-	}
+		applyScissor();
 }
 
 void Graphics::setStencilState(const StencilState &s)
@@ -2550,10 +2551,7 @@ void Graphics::startRenderPass()
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	if (states.back().scissor)
-		setScissor(states.back().scissorRect);
-	else
-		setScissor();
+	applyScissor();
 }
 
 void Graphics::endRenderPass()
