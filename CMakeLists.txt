@@ -1606,6 +1606,7 @@ if (APPLE)
 		src/libraries/luahttps/src/apple/NSURLClient.mm
 		src/libraries/luahttps/src/apple/NSURLClient.h
 	)
+	target_compile_options(love_3p_luahttps PRIVATE -fobjc-arc)
 endif()
 
 if(MSVC)
