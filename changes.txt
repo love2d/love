@@ -82,7 +82,6 @@ Released: N/A
 * Added love.joysticksensorupdated callback.
 * Added variant for enet peer:send and host:broadcast which accepts a pointer (light userdata) and a size.
 
-* Changed love.filesystem.exists to no longer be deprecated.
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed TrueType and OpenType font handling to have improved kerning and character combining support.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
