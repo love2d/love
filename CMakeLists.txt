@@ -641,35 +641,66 @@ target_link_libraries(love_graphics_opengl PUBLIC
 	lovedep::SDL
 )
 
-add_library(love_graphics_vulkan STATIC
-	src/modules/graphics/vulkan/Graphics.h
-	src/modules/graphics/vulkan/Graphics.cpp
-	src/modules/graphics/vulkan/GraphicsReadback.h
-	src/modules/graphics/vulkan/GraphicsReadback.cpp
-	src/modules/graphics/vulkan/Shader.h
-	src/modules/graphics/vulkan/Shader.cpp
-	src/modules/graphics/vulkan/ShaderStage.h
-	src/modules/graphics/vulkan/ShaderStage.cpp
-	src/modules/graphics/vulkan/StreamBuffer.h
-	src/modules/graphics/vulkan/StreamBuffer.cpp
-	src/modules/graphics/vulkan/Buffer.h
-	src/modules/graphics/vulkan/Buffer.cpp
-	src/modules/graphics/vulkan/Texture.h
-	src/modules/graphics/vulkan/Texture.cpp
-	src/modules/graphics/vulkan/Vulkan.h
-	src/modules/graphics/vulkan/Vulkan.cpp
-	src/modules/graphics/vulkan/VulkanWrapper.h
-)
-target_link_libraries(love_graphics_vulkan PUBLIC
-	lovedep::SDL
-)
-
 add_library(love_graphics INTERFACE)
 target_link_libraries(love_graphics INTERFACE
 	love_graphics_root
 	love_graphics_opengl
-	love_graphics_vulkan
 )
+
+if(APPLE)
+	add_library(love_graphics_metal STATIC
+		src/modules/graphics/metal/Buffer.h
+		src/modules/graphics/metal/Buffer.mm
+		src/modules/graphics/metal/Graphics.h
+		src/modules/graphics/metal/Graphics.mm
+		src/modules/graphics/metal/GraphicsReadback.h
+		src/modules/graphics/metal/GraphicsReadback.mm
+		src/modules/graphics/metal/Metal.h
+		src/modules/graphics/metal/Metal.mm
+		src/modules/graphics/metal/Shader.h
+		src/modules/graphics/metal/Shader.mm
+		src/modules/graphics/metal/ShaderStage.h
+		src/modules/graphics/metal/ShaderStage.mm
+		src/modules/graphics/metal/StreamBuffer.h
+		src/modules/graphics/metal/StreamBuffer.mm
+		src/modules/graphics/metal/Texture.h
+		src/modules/graphics/metal/Texture.mm
+	)
+	target_link_libraries(love_graphics_metal PUBLIC
+		objc
+		"-framework Metal"
+		"-framework QuartzCore"
+	)
+	target_link_libraries(love_graphics INTERFACE
+		love_graphics_metal
+	)
+else()
+	add_library(love_graphics_vulkan STATIC
+		src/modules/graphics/vulkan/Graphics.h
+		src/modules/graphics/vulkan/Graphics.cpp
+		src/modules/graphics/vulkan/GraphicsReadback.h
+		src/modules/graphics/vulkan/GraphicsReadback.cpp
+		src/modules/graphics/vulkan/Shader.h
+		src/modules/graphics/vulkan/Shader.cpp
+		src/modules/graphics/vulkan/ShaderStage.h
+		src/modules/graphics/vulkan/ShaderStage.cpp
+		src/modules/graphics/vulkan/StreamBuffer.h
+		src/modules/graphics/vulkan/StreamBuffer.cpp
+		src/modules/graphics/vulkan/Buffer.h
+		src/modules/graphics/vulkan/Buffer.cpp
+		src/modules/graphics/vulkan/Texture.h
+		src/modules/graphics/vulkan/Texture.cpp
+		src/modules/graphics/vulkan/Vulkan.h
+		src/modules/graphics/vulkan/Vulkan.cpp
+		src/modules/graphics/vulkan/VulkanWrapper.h
+	)
+	target_link_libraries(love_graphics_vulkan PUBLIC
+		lovedep::SDL
+	)
+	target_link_libraries(love_graphics INTERFACE
+		love_graphics_vulkan
+	)
+endif()
 
 #
 # love.image
