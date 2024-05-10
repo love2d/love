@@ -305,13 +305,27 @@ target_link_libraries(love_common PUBLIC
 
 if (APPLE)
 	target_sources(love_common PRIVATE
-		src/common/macos.mm
+		src/common/apple.mm
 	)
 	target_link_libraries(love_common PUBLIC
 		objc
 		"-framework CoreFoundation"
-		"-framework AppKit"
 	)
+	if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+		target_sources(love_common PRIVATE
+			src/common/macos.mm
+		)
+		target_link_libraries(love_common PUBLIC
+			"-framework AppKit"
+		)
+	else()
+		target_sources(love_common PRIVATE
+			src/common/ios.mm
+		)
+		target_link_libraries(love_common PUBLIC
+			"-framework UIKit"
+		)
+	endif()
 endif()
 
 #
