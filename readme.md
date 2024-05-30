@@ -54,13 +54,13 @@ Compilation
 Follow the instructions at the [megasource][megasource] repository page.
 
 ### *nix
-Run `platform/unix/automagic` from the repository root, then run ./configure and make.
+Because in-tree builds are not allowed, the Makefiles needs to be generated in a separate build directory. In this example, folder named `build` is used:
 
-	$ platform/unix/automagic
-	$ ./configure
-	$ make
+	$ cmake -B build -S. --install-prefix $PWD/prefix # this will create the directory `build/`.
+	$ cmake --build build --target install -j$(nproc) # this will build with all cores and put the files in `prefix/`.
 
-When using a source release, automagic has already been run, and the first step can be skipped.
+> [!NOTE]  
+> CMake 3.15 and earlier doesn't support `--install-prefix`. In that case, use `-DCMAKE_INSTALL_PREFIX=` instead.
 
 ### macOS
 Download or clone [this repository][dependencies-apple] and copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder.
