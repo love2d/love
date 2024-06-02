@@ -28,6 +28,8 @@
 // SDL
 #include <SDL_keyboard.h>
 
+#include <map>
+
 namespace love
 {
 namespace keyboard
@@ -55,6 +57,9 @@ public:
 	bool hasTextInput() const;
 	bool hasScreenKeyboard() const;
 
+	static bool getConstant(Key in, SDL_Keycode &out);
+	static bool getConstant(SDL_Keycode in, Key &out);
+
 	static bool getConstant(Scancode in, SDL_Scancode &out);
 	static bool getConstant(SDL_Scancode in, Scancode &out);
 
@@ -64,8 +69,8 @@ private:
 	// The real implementation is in love::event::sdl::Event::Convert.
 	bool key_repeat;
 
-	static const SDL_Keycode *createKeyMap();
-	static const SDL_Keycode *keymap;
+	static std::map<Key, SDL_Keycode> keyToSDLKey;
+	static std::map<SDL_Keycode, Key> sdlKeyToKey;
 
 	static EnumMap<Scancode, SDL_Scancode, SDL_NUM_SCANCODES>::Entry scancodeEntries[];
 	static EnumMap<Scancode, SDL_Scancode, SDL_NUM_SCANCODES> scancodes;

@@ -28,9 +28,6 @@
 // SDL
 #include <SDL_events.h>
 
-// STL
-#include <map>
-
 namespace love
 {
 namespace event
@@ -71,9 +68,6 @@ private:
 	Message *convert(const SDL_Event &e);
 	Message *convertJoystickEvent(const SDL_Event &e) const;
 	Message *convertWindowEvent(const SDL_Event &e);
-
-	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> createKeyMap();
-	static std::map<SDL_Keycode, love::keyboard::Keyboard::Key> keys;
 
 }; // Event
 
