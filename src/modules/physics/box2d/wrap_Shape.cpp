@@ -361,6 +361,7 @@ const luaL_Reg w_Shape_functions[] =
 	{ "getRestitution", w_Shape_getRestitution },
 	{ "getDensity", w_Shape_getDensity },
 	{ "getBody", w_Shape_getBody },
+	{ "getShape", w_Shape_getShape },
 	{ "isSensor", w_Shape_isSensor },
 	{ "testPoint", w_Shape_testPoint },
 	{ "rayCast", w_Shape_rayCast },
