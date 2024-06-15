@@ -290,7 +290,7 @@ void Shader::buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv
 			case SPIRType::Struct:
 				if (membertype.op == spv::OpTypeArray)
 				{
-					size_t arraystride = comp.type_struct_member_array_stride(type, uindex);
+					size_t arraystride = msl.type_struct_member_array_stride(type, uindex);
 					for (uint32 i = 0; i < membertype.array[0]; i++)
 					{
 						std::string structname = name + "[" + std::to_string(i) + "].";
