@@ -494,13 +494,14 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format)
 	return textureFormat;
 }
 
-// values taken from https://pcisig.com/membership/member-companies
+// values taken from https://pcisig.com/membership/member-companies and https://vulkan.gpuinfo.org/displaycoreproperty.php?name=vendorid&platform=all
 // as specified at https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkPhysicalDeviceProperties.html
 std::string Vulkan::getVendorName(uint32_t vendorId)
 {
 	switch (vendorId)
 	{
 	case 4130:
+	case 4098:
 		return "AMD";
 	case 4318:
 		return "Nvidia";
@@ -516,6 +517,8 @@ std::string Vulkan::getVendorName(uint32_t vendorId)
 		return "Qualcomm";
 	case 5348:
 		return "Broadcom";
+	case 65541:
+		return "Mesa";
 	default:
 		return "unknown";
 	}
