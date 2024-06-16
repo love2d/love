@@ -26,6 +26,7 @@
 #include "Texture.h"
 #include "ShaderStage.h"
 #include "Resource.h"
+#include "Buffer.h"
 
 // STL
 #include <string>
@@ -266,6 +267,8 @@ public:
 
 	void getLocalThreadgroupSize(int *x, int *y, int *z);
 
+	const std::vector<Buffer::DataDeclaration> *getBufferFormat(const std::string &name) const;
+
 	static SourceInfo getSourceInfo(const std::string &src);
 	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const CompileOptions &options, const SourceInfo &info, bool gles, bool checksystemfeatures);
 
@@ -295,6 +298,8 @@ protected:
 		std::map<std::string, UniformInfo *> allUniforms;
 
 		std::map<std::string, std::vector<LocalUniformValue>> localUniformInitializerValues;
+
+		std::map<std::string, std::vector<Buffer::DataDeclaration>> bufferFormats;
 
 		int textureCount;
 		int bufferCount;

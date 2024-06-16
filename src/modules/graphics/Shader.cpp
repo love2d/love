@@ -928,6 +928,14 @@ void Shader::getLocalThreadgroupSize(int *x, int *y, int *z)
 	*z = reflection.localThreadgroupSize[2];
 }
 
+const std::vector<Buffer::DataDeclaration> *Shader::getBufferFormat(const std::string &name) const
+{
+	auto it = reflection.bufferFormats.find(name);
+	if (it != reflection.bufferFormats.end())
+		return &it->second;
+	return nullptr;
+}
+
 bool Shader::validate(StrongRef<ShaderStage> stages[], std::string& err)
 {
 	Reflection reflection;
@@ -944,6 +952,71 @@ static DataBaseType getBaseType(glslang::TBasicType basictype)
 		case glslang::EbtBool: return DATA_BASETYPE_BOOL;
 		default: return DATA_BASETYPE_FLOAT;
 	}
+}
+
+static DataFormat getDataFormat(glslang::TBasicType basictype, int components, int rows, int columns, bool matrix)
+{
+	if (matrix)
+	{
+		if (basictype != glslang::EbtFloat)
+			return DATAFORMAT_MAX_ENUM;
+
+		if (rows == 2 && columns == 2)
+			return DATAFORMAT_FLOAT_MAT2X2;
+		else if (rows == 2 && columns == 3)
+			return DATAFORMAT_FLOAT_MAT2X3;
+		else if (rows == 2 && columns == 4)
+			return DATAFORMAT_FLOAT_MAT2X4;
+		else if (rows == 3 && columns == 2)
+			return DATAFORMAT_FLOAT_MAT3X2;
+		else if (rows == 3 && columns == 3)
+			return DATAFORMAT_FLOAT_MAT3X3;
+		else if (rows == 3 && columns == 4)
+			return DATAFORMAT_FLOAT_MAT3X4;
+		else if (rows == 4 && columns == 2)
+			return DATAFORMAT_FLOAT_MAT4X2;
+		else if (rows == 4 && columns == 3)
+			return DATAFORMAT_FLOAT_MAT4X3;
+		else if (rows == 4 && columns == 4)
+			return DATAFORMAT_FLOAT_MAT4X4;
+		else
+			return DATAFORMAT_MAX_ENUM;
+	}
+	else if (basictype == glslang::EbtFloat)
+	{
+		if (components == 1)
+			return DATAFORMAT_FLOAT;
+		else if (components == 2)
+			return DATAFORMAT_FLOAT_VEC2;
+		else if (components == 3)
+			return DATAFORMAT_FLOAT_VEC2;
+		else if (components == 4)
+			return DATAFORMAT_FLOAT_VEC2;
+	}
+	else if (basictype == glslang::EbtInt)
+	{
+		if (components == 1)
+			return DATAFORMAT_INT32;
+		else if (components == 2)
+			return DATAFORMAT_INT32_VEC2;
+		else if (components == 3)
+			return DATAFORMAT_INT32_VEC2;
+		else if (components == 4)
+			return DATAFORMAT_INT32_VEC2;
+	}
+	else if (basictype == glslang::EbtUint)
+	{
+		if (components == 1)
+			return DATAFORMAT_UINT32;
+		else if (components == 2)
+			return DATAFORMAT_UINT32_VEC2;
+		else if (components == 3)
+			return DATAFORMAT_UINT32_VEC2;
+		else if (components == 4)
+			return DATAFORMAT_UINT32_VEC2;
+	}
+
+	return DATAFORMAT_MAX_ENUM;
 }
 
 static PixelFormat getPixelFormat(glslang::TLayoutFormat format)
@@ -1035,6 +1108,48 @@ static T convertData(const glslang::TConstUnion &data)
 		case glslang::EbtUint64: return (T) data.getU64Const();
 		default: return 0;
 	}
+}
+
+static bool AddFieldsToFormat(std::vector<Buffer::DataDeclaration> &format, int level, const glslang::TType *type, int arraylength, const std::string &basename, std::string &err)
+{
+	if (type->isStruct())
+	{
+		auto fields = type->getStruct();
+
+		for (int i = 0; i < std::max(arraylength, 1); i++)
+		{
+			std::string name = basename;
+			if (level > 0)
+			{
+				name += type->getFieldName().c_str();
+				if (arraylength > 0)
+					name += "[" + std::to_string(i) + "]";
+				name += ".";
+			}
+			for (size_t fieldi = 0; fieldi < fields->size(); fieldi++)
+			{
+				const glslang::TType *fieldtype = (*fields)[fieldi].type;
+				int fieldlength = fieldtype->isSizedArray() ? fieldtype->getCumulativeArraySize() : 0;
+
+				if (!AddFieldsToFormat(format, level + 1, fieldtype, fieldlength, name, err))
+					return false;
+			}
+		}
+	}
+	else
+	{
+		DataFormat dataformat = getDataFormat(type->getBasicType(), type->getVectorSize(), type->getMatrixRows(), type->getMatrixCols(), type->isMatrix());
+		if (dataformat == DATAFORMAT_MAX_ENUM)
+		{
+			err = "Shader validation error:\n";
+			return false;
+		}
+
+		std::string name = basename.empty() ? type->getFieldName().c_str() : basename + type->getFieldName().c_str();
+		format.emplace_back(name.c_str(), dataformat, arraylength);
+	}
+
+	return true;
 }
 
 bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, Reflection &reflection)
@@ -1295,6 +1410,12 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				u.access = (Access)(ACCESS_READ | ACCESS_WRITE);
 
 			reflection.storageBuffers[u.name] = u;
+
+			std::vector<Buffer::DataDeclaration> format;
+			if (!AddFieldsToFormat(format, 0, elementtype, 0, "", err))
+				return false;
+
+			reflection.bufferFormats[u.name] = format;
 		}
 		else
 		{

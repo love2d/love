@@ -514,6 +514,41 @@ int w_Shader_getLocalThreadgroupSize(lua_State* L)
 	return 3;
 }
 
+int w_Shader_getBufferFormat(lua_State *L)
+{
+	Shader *shader = luax_checkshader(L, 1);
+	const char *name = luaL_checkstring(L, 2);
+	const std::vector<Buffer::DataDeclaration> *format = shader->getBufferFormat(name);
+	if (name != nullptr)
+	{
+		lua_createtable(L, (int)format->size(), 0);
+
+		for (size_t i = 0; i < format->size(); i++)
+		{
+			const Buffer::DataDeclaration &member = (*format)[i];
+
+			lua_createtable(L, 0, 3);
+
+			lua_pushstring(L, member.name.c_str());
+			lua_setfield(L, -2, "name");
+
+			const char* formatstr = "unknown";
+			getConstant(member.format, formatstr);
+			lua_pushstring(L, formatstr);
+			lua_setfield(L, -2, "format");
+
+			lua_pushinteger(L, member.arrayLength);
+			lua_setfield(L, -2, "arraylength");
+
+			lua_rawseti(L, -2, i + 1);
+		}
+
+		return 1;
+	}
+
+	return luaL_error(L, "Buffer '%s' does not exist in the Shader.", name);
+}
+
 int w_Shader_getDebugName(lua_State *L)
 {
 	Shader *shader = luax_checkshader(L, 1);
@@ -533,6 +568,7 @@ static const luaL_Reg w_Shader_functions[] =
 	{ "hasUniform",              w_Shader_hasUniform },
 	{ "hasStage",                w_Shader_hasStage },
 	{ "getLocalThreadgroupSize", w_Shader_getLocalThreadgroupSize },
+	{ "getBufferFormat",         w_Shader_getBufferFormat },
 	{ "getDebugName",            w_Shader_getDebugName },
 	{ 0, 0 }
 };
