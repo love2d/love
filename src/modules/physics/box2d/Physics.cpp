@@ -93,12 +93,22 @@ Body *Physics::newPolygonBody(World *world, Body::Type type, const Vector2 *coor
 	return body.get();
 }
 
-Body *Physics::newEdgeBody(World *world, Body::Type type, float x1, float y1, float x2, float y2, bool oneSided)
+Body *Physics::newEdgeBody(World *world, Body::Type type, float x1, float y1, float x2, float y2)
 {
 	float wx = (x2 - x1) / 2.0f;
 	float wy = (y2 - y1) / 2.0f;
 	StrongRef<Body> body(newBody(world, wx, wy, type), Acquire::NORETAIN);
-	StrongRef<EdgeShape> shape(newEdgeShape(body, x1 - wx, y1 - wy, x2 - wx, y2 - wy, oneSided), Acquire::NORETAIN);
+	StrongRef<EdgeShape> shape(newEdgeShape(body, x1 - wx, y1 - wy, x2 - wx, y2 - wy), Acquire::NORETAIN);
+	body->retain();
+	return body.get();
+}
+
+Body *Physics::newEdgeBody(World *world, Body::Type type, float x1, float y1, float x2, float y2, float prevx, float prevy, float nextx, float nexty)
+{
+	float wx = (x2 - x1) / 2.0f;
+	float wy = (y2 - y1) / 2.0f;
+	StrongRef<Body> body(newBody(world, wx, wy, type), Acquire::NORETAIN);
+	StrongRef<EdgeShape> shape(newEdgeShape(body, x1 - wx, y1 - wy, x2 - wx, y2 - wy, prevx - wx, prevy - wy, nextx - wx, nexty - wy), Acquire::NORETAIN);
 	body->retain();
 	return body.get();
 }
@@ -167,19 +177,21 @@ PolygonShape *Physics::newRectangleShape(Body *body, float x, float y, float w, 
 	return new PolygonShape(body, s);
 }
 
-EdgeShape *Physics::newEdgeShape(Body *body, float x1, float y1, float x2, float y2, bool oneSided)
+EdgeShape *Physics::newEdgeShape(Body *body, float x1, float y1, float x2, float y2)
 {
 	b2EdgeShape s;
-	if (oneSided)
-	{
-		b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
-		b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
-		s.SetOneSided(v1, v1, v2, v2);
-	}
-	else
-	{
-		s.SetTwoSided(Physics::scaleDown(b2Vec2(x1, y1)), Physics::scaleDown(b2Vec2(x2, y2)));
-	}
+	s.SetTwoSided(Physics::scaleDown(b2Vec2(x1, y1)), Physics::scaleDown(b2Vec2(x2, y2)));
+	return new EdgeShape(body, s);
+}
+
+EdgeShape *Physics::newEdgeShape(Body *body, float x1, float y1, float x2, float y2, float prevx, float prevy, float nextx, float nexty)
+{
+	b2EdgeShape s;
+	b2Vec2 v0 = Physics::scaleDown(b2Vec2(prevx, prevy));
+	b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
+	b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
+	b2Vec2 v3 = Physics::scaleDown(b2Vec2(nextx, nexty));
+	s.SetOneSided(v0, v1, v2, v3);
 	return new EdgeShape(body, s);
 }
 

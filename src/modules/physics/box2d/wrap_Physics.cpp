@@ -190,10 +190,21 @@ int w_newEdgeBody(lua_State *L)
 	float y1 = (float)luaL_checknumber(L, 4);
 	float x2 = (float)luaL_checknumber(L, 5);
 	float y2 = (float)luaL_checknumber(L, 6);
-	bool oneSided = luax_optboolean(L, 7, false);
 
 	Body *body = nullptr;
-	luax_catchexcept(L, [&]() { body = instance()->newEdgeBody(world, btype, x1, y1, x2, y2, oneSided); });
+
+	if (lua_isnoneornil(L, 7))
+	{
+		luax_catchexcept(L, [&]() { body = instance()->newEdgeBody(world, btype, x1, y1, x2, y2); });
+	}
+	else
+	{
+		float prevx = (float)luaL_checknumber(L, 7);
+		float prevy = (float)luaL_checknumber(L, 8);
+		float nextx = (float)luaL_checknumber(L, 9);
+		float nexty = (float)luaL_checknumber(L, 10);
+		luax_catchexcept(L, [&]() { body = instance()->newEdgeBody(world, btype, x1, y1, x2, y2, prevx, prevy, nextx, nexty); });
+	}
 
 	luax_pushtype(L, body);
 	body->release();
@@ -352,9 +363,19 @@ int w_newEdgeShape(lua_State *L)
 	float y1 = (float)luaL_checknumber(L, bodyidx + 2);
 	float x2 = (float)luaL_checknumber(L, bodyidx + 3);
 	float y2 = (float)luaL_checknumber(L, bodyidx + 4);
-	bool oneSided = luax_optboolean(L, bodyidx + 5, false);
 	EdgeShape *shape;
-	luax_catchexcept(L, [&](){ shape = instance()->newEdgeShape(body, x1, y1, x2, y2, oneSided); });
+	if (lua_isnoneornil(L, bodyidx + 5))
+	{
+		luax_catchexcept(L, [&](){ shape = instance()->newEdgeShape(body, x1, y1, x2, y2); });
+	}
+	else
+	{
+		float prevx = (float)luaL_checknumber(L, bodyidx + 5);
+		float prevy = (float)luaL_checknumber(L, bodyidx + 6);
+		float nextx = (float)luaL_checknumber(L, bodyidx + 7);
+		float nexty = (float)luaL_checknumber(L, bodyidx + 8);
+		luax_catchexcept(L, [&]() { shape = instance()->newEdgeShape(body, x1, y1, x2, y2, prevx, prevy, nextx, nexty); });
+	}
 	luax_pushtype(L, shape);
 	shape->release();
 	return 1;
