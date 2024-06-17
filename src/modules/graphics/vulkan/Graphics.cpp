@@ -935,7 +935,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
 
-	prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_BACK);
+	prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_NONE);
 
 	vkCmdBindIndexBuffer(
 		commandBuffers.at(currentFrame),
