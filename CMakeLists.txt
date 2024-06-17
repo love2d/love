@@ -198,6 +198,8 @@ Please see https://github.com/love2d/megasource
 	find_package(OpenAL REQUIRED)
 	target_include_directories(lovedep::OpenAL INTERFACE ${OPENAL_INCLUDE_DIR})
 	target_link_libraries(lovedep::OpenAL INTERFACE ${OPENAL_LIBRARY})
+  include(CheckIncludeFileCXX)
+  check_include_file_cxx("alext.h" HAVE_OPENAL_ALEXT_H)
 
 	find_package(ModPlug REQUIRED)
 	target_include_directories(lovedep::Modplug INTERFACE ${MODPLUG_INCLUDE_DIR})

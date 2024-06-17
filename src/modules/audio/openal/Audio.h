@@ -52,7 +52,9 @@
 #else
 #include <alc.h>
 #include <al.h>
+#if defined(HAVE_OPENAL_ALEXT_H)
 #include <alext.h>
+#endif
 #endif
 
 namespace love
