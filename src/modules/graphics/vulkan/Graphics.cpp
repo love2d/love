@@ -1409,25 +1409,8 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	data.transformMatrix = getTransform();
 	data.projectionMatrix = getDeviceProjection();
 
-	// The normal matrix is the transpose of the inverse of the rotation portion
-	// (top-left 3x3) of the transform matrix.
-	{
-		Matrix3 normalmatrix = Matrix3(data.transformMatrix).transposedInverse();
-		const float *e = normalmatrix.getElements();
-		for (int i = 0; i < 3; i++)
-		{
-			data.normalMatrix[i].x = e[i * 3 + 0];
-			data.normalMatrix[i].y = e[i * 3 + 1];
-			data.normalMatrix[i].z = e[i * 3 + 2];
-			data.normalMatrix[i].w = 0.0f;
-		}
-	}
-
-	// Store DPI scale in an unused component of another vector.
-	data.normalMatrix[0].w = (float)getCurrentDPIScale();
-
-	// Same with point size.
-	data.normalMatrix[1].w = getPointSize();
+	data.scaleParams.x = (float) getCurrentDPIScale();
+	data.scaleParams.y = getPointSize();;
 
 	// Flip y to convert input y-up [-1, 1] to vulkan's y-down [-1, 1].
 	// Convert input z [-1, 1] to vulkan [0, 1].

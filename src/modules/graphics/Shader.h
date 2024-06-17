@@ -185,7 +185,7 @@ public:
  	{
  		Matrix4 transformMatrix;
  		Matrix4 projectionMatrix;
- 		Vector4 normalMatrix[3]; // 3x3 matrix padded to an array of 3 vector4s.
+		Vector4 scaleParams;
 		Vector4 clipSpaceParams;
  		Colorf constantColor;
 

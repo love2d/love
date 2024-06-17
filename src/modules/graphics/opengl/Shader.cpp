@@ -774,25 +774,8 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 	data.transformMatrix = gfx->getTransform();
 	data.projectionMatrix = gfx->getDeviceProjection();
 
-	// The normal matrix is the transpose of the inverse of the rotation portion
-	// (top-left 3x3) of the transform matrix.
-	{
-		Matrix3 normalmatrix = Matrix3(data.transformMatrix).transposedInverse();
-		const float *e = normalmatrix.getElements();
-		for (int i = 0; i < 3; i++)
-		{
-			data.normalMatrix[i].x = e[i * 3 + 0];
-			data.normalMatrix[i].y = e[i * 3 + 1];
-			data.normalMatrix[i].z = e[i * 3 + 2];
-			data.normalMatrix[i].w = 0.0f;
-		}
-	}
-
-	// Store DPI scale in an unused component of another vector.
-	data.normalMatrix[0].w = (float) gfx->getCurrentDPIScale();
-
-	// Same with point size.
-	data.normalMatrix[1].w = gfx->getPointSize();
+	data.scaleParams.x = (float) gfx->getCurrentDPIScale();
+	data.scaleParams.y = gfx->getPointSize();
 
 	// Users expect to work with y-up NDC, y-down pixel coordinates and textures
 	// (see graphics/Shader.h).
@@ -840,7 +823,7 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 	{
 		GLint location = builtinUniforms[BUILTIN_UNIFORMS_PER_DRAW];
 		if (location >= 0)
-			glUniform4fv(location, 13, (const GLfloat *) &data);
+			glUniform4fv(location, 11, (const GLfloat *) &data);
 		GLint location2 = builtinUniforms[BUILTIN_UNIFORMS_PER_DRAW_2];
 		if (location2 >= 0)
 			glUniform4fv(location2, 1, (const GLfloat *) &data.screenSizeParams);
@@ -849,7 +832,7 @@ void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW,
 	{
 		GLint location = builtinUniforms[BUILTIN_UNIFORMS_PER_DRAW];
 		if (location >= 0)
-			glUniform4fv(location, 14, (const GLfloat *) &data);
+			glUniform4fv(location, 12, (const GLfloat *) &data);
 	}
 }
 

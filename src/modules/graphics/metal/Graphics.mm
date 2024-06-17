@@ -1116,25 +1116,8 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	builtins->transformMatrix = getTransform();
 	builtins->projectionMatrix = getDeviceProjection();
 
-	// The normal matrix is the transpose of the inverse of the rotation portion
-	// (top-left 3x3) of the transform matrix.
-	{
-		Matrix3 normalmatrix = Matrix3(builtins->transformMatrix).transposedInverse();
-		const float *e = normalmatrix.getElements();
-		for (int i = 0; i < 3; i++)
-		{
-			builtins->normalMatrix[i].x = e[i * 3 + 0];
-			builtins->normalMatrix[i].y = e[i * 3 + 1];
-			builtins->normalMatrix[i].z = e[i * 3 + 2];
-			builtins->normalMatrix[i].w = 0.0f;
-		}
-	}
-
-	// Store DPI scale in an unused component of another vector.
-	builtins->normalMatrix[0].w = (float) getCurrentDPIScale();
-
-	// Same with point size.
-	builtins->normalMatrix[1].w = getPointSize();
+	builtins->scaleParams.x = = (float) getCurrentDPIScale();
+	builtins->scaleParams.y = getPointSize();
 
 	uint32 flags = Shader::CLIP_TRANSFORM_Z_NEG1_1_TO_0_1;
 	builtins->clipSpaceParams = Shader::computeClipSpaceParams(flags);
