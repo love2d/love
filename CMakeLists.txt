@@ -2138,7 +2138,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 	")
 
 	include(CPack)
-elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+else()
 	include(GNUInstallDirs)
 
 	string(TIMESTAMP LOVE_CONFIGURE_TIMESTAMP "%a, %d %b %Y %H:%M:%S +0000" UTC)
