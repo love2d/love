@@ -1116,7 +1116,7 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	builtins->transformMatrix = getTransform();
 	builtins->projectionMatrix = getDeviceProjection();
 
-	builtins->scaleParams.x = = (float) getCurrentDPIScale();
+	builtins->scaleParams.x = (float) getCurrentDPIScale();
 	builtins->scaleParams.y = getPointSize();
 
 	uint32 flags = Shader::CLIP_TRANSFORM_Z_NEG1_1_TO_0_1;
