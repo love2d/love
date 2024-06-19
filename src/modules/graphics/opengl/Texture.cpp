@@ -45,18 +45,14 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 
 	if (texture != 0)
 	{
-		if (isPixelFormatDepthStencil(format) && (GLAD_ES_VERSION_3_0 || !GLAD_ES_VERSION_2_0))
+		if (isPixelFormatDepthStencil(format))
 		{
-			// glDrawBuffers is an ext in GL2. glDrawBuffer doesn't exist in ES3.
 			GLenum none = GL_NONE;
-			if (GLAD_ES_VERSION_3_0)
-				glDrawBuffers(1, &none);
-			else
-				glDrawBuffer(GL_NONE);
+			glDrawBuffers(1, &none);
 			glReadBuffer(GL_NONE);
 		}
 
-		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false);
+		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format);
 
 		int faces = texType == TEXTURE_CUBE ? 6 : 1;
 
@@ -124,7 +120,7 @@ static GLenum createFBO(GLuint &framebuffer, TextureType texType, PixelFormat fo
 
 static GLenum newRenderbuffer(int width, int height, int &samples, PixelFormat pixelformat, GLuint &buffer)
 {
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat, true);
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(pixelformat);
 
 	GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 
@@ -133,14 +129,10 @@ static GLenum newRenderbuffer(int width, int height, int &samples, PixelFormat p
 	glGenFramebuffers(1, &fbo);
 	gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, fbo);
 
-	if (isPixelFormatDepthStencil(pixelformat) && (GLAD_ES_VERSION_3_0 || !GLAD_ES_VERSION_2_0))
+	if (isPixelFormatDepthStencil(pixelformat))
 	{
-		// glDrawBuffers is an ext in GL2. glDrawBuffer doesn't exist in ES3.
 		GLenum none = GL_NONE;
-		if (GLAD_ES_VERSION_3_0)
-			glDrawBuffers(1, &none);
-		else
-			glDrawBuffer(GL_NONE);
+		glDrawBuffers(1, &none);
 		glReadBuffer(GL_NONE);
 	}
 
@@ -278,7 +270,7 @@ void Texture::createTexture()
 
 	if (parentView.texture != this)
 	{
-		OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false);
+		OpenGL::TextureFormat fmt = gl.convertPixelFormat(format);
 		Texture *basetex = (Texture *) parentView.texture;
 		int layers = texType == TEXTURE_CUBE ? 6 : getLayerCount();
 
@@ -317,14 +309,14 @@ void Texture::createTexture()
 		gl.rawTexStorage(texType, mipcount, format, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
 
 	// rawTexStorage handles this for uncompressed textures.
-	if (isCompressed() && (GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0))
+	if (isCompressed())
 		glTexParameteri(gltype, GL_TEXTURE_MAX_LEVEL, mipcount - 1);
 
 	int w = pixelWidth;
 	int h = pixelHeight;
 	int d = depth;
 
-	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false);
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format);
 
 	for (int mip = 0; mip < mipcount; mip++)
 	{
@@ -412,14 +404,6 @@ bool Texture::loadVolatile()
 	}
 
 	OpenGL::TempDebugGroup debuggroup("Texture load");
-
-	// NPOT textures don't support mipmapping without full NPOT support.
-	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
-		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight)))
-	{
-		mipmapCount = 1;
-		samplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_NONE;
-	}
 
 	actualSamples = std::max(1, std::min(getRequestedMSAA(), gl.getMaxSamples()));
 
@@ -512,7 +496,7 @@ void Texture::uploadByteData(const void *data, size_t size, int level, int slice
 
 	gl.bindTextureToUnit(this, 0, false);
 
-	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, false);
+	OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format);
 	GLenum gltarget = OpenGL::getGLTextureType(texType);
 
 	if (texType == TEXTURE_CUBE)
@@ -555,12 +539,12 @@ void Texture::generateMipmapsInternal()
 void Texture::readbackInternal(int slice, int mipmap, const Rect &rect, int destwidth, size_t size, void *dest)
 {
 	// Not supported in GL with compressed textures...
-	if ((GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0) && !isCompressed())
+	if (!isCompressed())
 		glPixelStorei(GL_PACK_ROW_LENGTH, destwidth);
 
 	gl.bindTextureToUnit(this, 0, false);
 
-	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format, false);
+	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format);
 
 	if (gl.isCopyTextureToBufferSupported())
 	{
@@ -589,7 +573,7 @@ void Texture::readbackInternal(int slice, int mipmap, const Rect &rect, int dest
 		gl.bindFramebuffer(OpenGL::FRAMEBUFFER_ALL, current_fbo);
 	}
 
-	if ((GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0) && !isCompressed())
+	if (!isCompressed())
 		glPixelStorei(GL_PACK_ROW_LENGTH, 0);
 }
 
@@ -630,17 +614,7 @@ void Texture::copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, 
 
 void Texture::setSamplerState(const SamplerState &s)
 {
-	if (s.depthSampleMode.hasValue && !gl.isDepthCompareSampleSupported())
-		throw love::Exception("Depth comparison sampling in shaders is not supported on this system.");
-
 	samplerState = validateSamplerState(s);
-
-	// If we only have limited NPOT support then the wrap mode must be CLAMP.
-	if ((GLAD_ES_VERSION_2_0 && !(GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot))
-		&& (pixelWidth != nextP2(pixelWidth) || pixelHeight != nextP2(pixelHeight) || depth != nextP2(depth)))
-	{
-		samplerState.wrapU = samplerState.wrapV = samplerState.wrapW = SamplerState::WRAP_CLAMP;
-	}
 
 	gl.bindTextureToUnit(this, 0, false);
 	gl.setSamplerState(texType, samplerState);

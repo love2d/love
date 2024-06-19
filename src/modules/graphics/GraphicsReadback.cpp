@@ -40,9 +40,6 @@ GraphicsReadback::GraphicsReadback(Graphics *gfx, ReadbackMethod method, Buffer 
 {
 	const auto &caps = gfx->getCapabilities();
 
-	if (!caps.features[Graphics::FEATURE_COPY_BUFFER])
-		throw love::Exception("readbackBuffer is not supported on this system (buffer copy support is required).");
-
 	if (offset + size > buffer->getSize())
 		throw love::Exception("Invalid offset or size for the given Buffer.");
 
@@ -94,9 +91,7 @@ GraphicsReadback::GraphicsReadback(Graphics *gfx, ReadbackMethod method, Texture
 
 	if (method == READBACK_ASYNC)
 	{
-		if (isRT && !caps.features[Graphics::FEATURE_COPY_RENDER_TARGET_TO_BUFFER])
-			throw love::Exception("readbackTextureAsync is not supported on this system.");
-		else if (!isRT && !caps.features[Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER])
+		if (!isRT && !caps.features[Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER])
 			throw love::Exception("readbackTextureAsync with a non-render-target texture is not supported on this system.");
 	}
 	else

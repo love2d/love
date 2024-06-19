@@ -225,14 +225,6 @@ void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixe
 	if (msaa > 1)
 		useinternalbackbuffer = true;
 
-	// Our internal backbuffer code needs glBlitFramebuffer.
-	if (!(GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_object || GLAD_ES_VERSION_3_0
-		  || GLAD_EXT_framebuffer_blit || GLAD_ANGLE_framebuffer_blit || GLAD_NV_framebuffer_blit))
-	{
-		if (!(msaa > 1 && GLAD_APPLE_framebuffer_multisample))
-			useinternalbackbuffer = false;
-	}
-
 	GLuint prevFBO = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 	bool restoreFBO = prevFBO != getInternalBackbufferFBO();
 
@@ -350,8 +342,7 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	// Set whether drawing converts input from linear -> sRGB colorspace.
-	if (!gl.bugs.brokenSRGB && (GLAD_VERSION_3_0 || GLAD_ARB_framebuffer_sRGB
-		|| GLAD_EXT_framebuffer_sRGB || GLAD_ES_VERSION_3_0))
+	if (!gl.bugs.brokenSRGB)
 	{
 		if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
 			gl.setEnableState(OpenGL::ENABLE_FRAMEBUFFER_SRGB, isGammaCorrect());
@@ -947,7 +938,6 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 	flushBatchedDraws();
 
-	bool drawbuffersmodified = false;
 	ncolors = std::min(ncolors, ncolorRTs);
 
 	for (int i = 0; i < ncolors; i++)
@@ -961,49 +951,23 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 		ColorD c = colors[i].value;
 
-		if (GLAD_ES_VERSION_3_0 || GLAD_VERSION_3_0)
+		if (datatype == PIXELFORMATTYPE_SINT)
 		{
-			if (datatype == PIXELFORMATTYPE_SINT)
-			{
-				const GLint carray[] = {(GLint)c.r, (GLint)c.g, (GLint)c.b, (GLint)c.a};
-				glClearBufferiv(GL_COLOR, i, carray);
-			}
-			else if (datatype == PIXELFORMATTYPE_UINT)
-			{
-				const GLuint carray[] = {(GLuint)c.r, (GLuint)c.g, (GLuint)c.b, (GLuint)c.a};
-				glClearBufferuiv(GL_COLOR, i, carray);
-			}
-			else
-			{
-				Colorf cf((float)c.r, (float)c.g, (float)c.b, (float)c.a);
-				gammaCorrectColor(cf);
-				const GLfloat carray[] = {cf.r, cf.g, cf.b, cf.a};
-				glClearBufferfv(GL_COLOR, i, carray);
-			}
+			const GLint carray[] = {(GLint)c.r, (GLint)c.g, (GLint)c.b, (GLint)c.a};
+			glClearBufferiv(GL_COLOR, i, carray);
+		}
+		else if (datatype == PIXELFORMATTYPE_UINT)
+		{
+			const GLuint carray[] = {(GLuint)c.r, (GLuint)c.g, (GLuint)c.b, (GLuint)c.a};
+			glClearBufferuiv(GL_COLOR, i, carray);
 		}
 		else
 		{
 			Colorf cf((float)c.r, (float)c.g, (float)c.b, (float)c.a);
 			gammaCorrectColor(cf);
-
-			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
-			glClearColor(cf.r, cf.g, cf.b, cf.a);
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			drawbuffersmodified = true;
+			const GLfloat carray[] = {cf.r, cf.g, cf.b, cf.a};
+			glClearBufferfv(GL_COLOR, i, carray);
 		}
-	}
-
-	// Revert to the expected draw buffers once we're done, if glClearBuffer
-	// wasn't supported.
-	if (drawbuffersmodified)
-	{
-		GLenum bufs[MAX_COLOR_RENDER_TARGETS];
-
-		for (int i = 0; i < ncolorRTs; i++)
-			bufs[i] = GL_COLOR_ATTACHMENT0 + i;
-
-		glDrawBuffers(ncolorRTs, bufs);
 	}
 
 	GLbitfield flags = 0;
@@ -1145,7 +1109,7 @@ GLuint Graphics::bindCachedFBO(const RenderTargets &targets)
 		auto attachRT = [&](const RenderTarget &rt)
 		{
 			bool renderbuffer = msaa > 1 || !rt.texture->isReadable();
-			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.texture->getPixelFormat(), renderbuffer);
+			OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(rt.texture->getPixelFormat());
 
 			if (fmt.framebufferAttachments[0] == GL_COLOR_ATTACHMENT0)
 			{
@@ -1183,14 +1147,10 @@ GLuint Graphics::bindCachedFBO(const RenderTargets &targets)
 
 		if (ncolortargets > 1)
 			glDrawBuffers(ncolortargets, drawbuffers);
-		else if (ncolortargets == 0 && hasDS && (GLAD_ES_VERSION_3_0 || !GLAD_ES_VERSION_2_0))
+		else if (ncolortargets == 0 && hasDS)
 		{
-			// glDrawBuffers is an ext in GL2. glDrawBuffer doesn't exist in ES3.
 			GLenum none = GL_NONE;
-			if (GLAD_ES_VERSION_3_0)
-				glDrawBuffers(1, &none);
-			else
-				glDrawBuffer(GL_NONE);
+			glDrawBuffers(1, &none);
 			glReadBuffer(GL_NONE);
 		}
 
@@ -1521,13 +1481,6 @@ void Graphics::setBlendState(const BlendState &blend)
 	if (!(blend == states.back().blend))
 		flushBatchedDraws();
 
-	if (blend.operationRGB == BLENDOP_MAX || blend.operationA == BLENDOP_MAX
-		|| blend.operationRGB == BLENDOP_MIN || blend.operationA == BLENDOP_MIN)
-	{
-		if (!capabilities.features[FEATURE_BLEND_MINMAX])
-			throw love::Exception("The 'min' and 'max' blend operations are not supported on this system.");
-	}
-
 	if (blend.enable != gl.isStateEnabled(OpenGL::ENABLE_BLEND))
 		gl.setEnableState(OpenGL::ENABLE_BLEND, blend.enable);
 
@@ -1629,26 +1582,20 @@ void Graphics::getAPIStats(int &shaderswitches) const
 
 void Graphics::initCapabilities()
 {
-	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = gl.isMultiFormatMRTSupported();
+	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = gl.isClampZeroOneTextureWrapSupported();
 	capabilities.features[FEATURE_CLAMP_ONE] = gl.isClampZeroOneTextureWrapSupported();
-	capabilities.features[FEATURE_BLEND_MINMAX] = GLAD_VERSION_1_4 || GLAD_ES_VERSION_3_0 || GLAD_EXT_blend_minmax;
-	capabilities.features[FEATURE_LIGHTEN] = capabilities.features[FEATURE_BLEND_MINMAX];
-	capabilities.features[FEATURE_FULL_NPOT] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_texture_npot;
-	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = gl.isPixelShaderHighpSupported();
-	capabilities.features[FEATURE_SHADER_DERIVATIVES] = GLAD_VERSION_2_0 || GLAD_ES_VERSION_3_0 || GLAD_OES_standard_derivatives;
-	capabilities.features[FEATURE_GLSL3] = GLAD_ES_VERSION_3_0 || gl.isCoreProfile();
+	capabilities.features[FEATURE_LIGHTEN] = true;
+	capabilities.features[FEATURE_FULL_NPOT] = true;
+	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
+	capabilities.features[FEATURE_SHADER_DERIVATIVES] = true;
+	capabilities.features[FEATURE_GLSL3] = true;
 	capabilities.features[FEATURE_GLSL4] = GLAD_ES_VERSION_3_1 || (gl.isCoreProfile() && GLAD_VERSION_4_3);
-	capabilities.features[FEATURE_INSTANCING] = gl.isInstancingSupported();
+	capabilities.features[FEATURE_INSTANCING] = true;
 	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_TEXEL);
-	capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = GLAD_VERSION_1_1 || GLAD_ES_VERSION_3_0 || GLAD_OES_element_index_uint;
-	capabilities.features[FEATURE_COPY_BUFFER] = gl.isCopyBufferSupported();
-	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = gl.isCopyBufferToTextureSupported();
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = gl.isCopyTextureToBufferSupported();
-	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = gl.isCopyRenderTargetToBufferSupported();
-	capabilities.features[FEATURE_MIPMAP_RANGE] = GLAD_VERSION_1_2 || GLAD_ES_VERSION_3_0;
 	capabilities.features[FEATURE_INDIRECT_DRAW] = capabilities.features[FEATURE_GLSL4];
-	static_assert(FEATURE_MAX_ENUM == 19, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();
@@ -1666,7 +1613,7 @@ void Graphics::initCapabilities()
 	static_assert(LIMIT_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
 	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
-		capabilities.textureTypes[i] = gl.isTextureTypeSupported((TextureType) i);
+		capabilities.textureTypes[i] = true;
 
 	for (int i = 0; i < PIXELFORMAT_MAX_ENUM; i++)
 	{
@@ -1708,7 +1655,7 @@ uint32 Graphics::computePixelFormatUsage(PixelFormat format, bool readable)
 		GLuint texture = 0;
 		GLuint renderbuffer = 0;
 
-		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format, !readable);
+		OpenGL::TextureFormat fmt = OpenGL::convertPixelFormat(format);
 
 		GLuint current_fbo = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
 

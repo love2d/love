@@ -201,13 +201,6 @@ public:
 		bool brokenSRGB;
 
 		/**
-		 * Some Android graphics drivers claim to support GLES3.0 but have bugs
-		 * with certain aspects that users expect to work. For example:
-		 * https://github.com/love2d/love-android/issues/204
-		 **/
-		bool brokenGLES3;
-
-		/**
 		 * Other bugs which have workarounds that don't use conditional code at
 		 * the moment:
 		 *
@@ -369,19 +362,11 @@ public:
 	 **/
 	bool rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, int width, int height, int depth = 1);
 
-	bool isTextureTypeSupported(TextureType type) const;
 	bool isBufferUsageSupported(BufferUsage usage) const;
 	bool isClampZeroOneTextureWrapSupported() const;
-	bool isPixelShaderHighpSupported() const;
-	bool isInstancingSupported() const;
-	bool isDepthCompareSampleSupported() const;
 	bool isSamplerLODBiasSupported() const;
 	bool isBaseVertexSupported() const;
-	bool isMultiFormatMRTSupported() const;
-	bool isCopyBufferSupported() const;
-	bool isCopyBufferToTextureSupported() const;
 	bool isCopyTextureToBufferSupported() const;
-	bool isCopyRenderTargetToBufferSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -461,7 +446,7 @@ public:
 	static GLint getGLWrapMode(SamplerState::WrapMode wmode);
 	static GLint getGLCompareMode(CompareMode mode);
 
-	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer);
+	static TextureFormat convertPixelFormat(PixelFormat pixelformat);
 	static bool isTexStorageSupported();
 	static uint32 getPixelFormatUsageFlags(PixelFormat pixelformat);
 
@@ -481,7 +466,6 @@ private:
 
 	bool contextInitialized;
 
-	bool pixelShaderHighpSupported;
 	bool baseVertexSupported;
 
 	float maxAnisotropy;

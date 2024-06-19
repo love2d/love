@@ -51,11 +51,7 @@ static const char global_syntax[] = R"(
 	#define mediump
 	#define highp
 #endif
-#if defined(VERTEX) || __VERSION__ > 100 || defined(GL_FRAGMENT_PRECISION_HIGH)
-	#define LOVE_HIGHP_OR_MEDIUMP highp
-#else
-	#define LOVE_HIGHP_OR_MEDIUMP mediump
-#endif
+#define LOVE_HIGHP_OR_MEDIUMP highp
 #if __VERSION__ >= 300
 #define LOVE_IO_LOCATION(x) layout (location = x)
 #else
@@ -88,15 +84,7 @@ static const char global_syntax[] = R"(
 )";
 
 static const char render_uniforms[] = R"(
-// According to the GLSL ES 1.0 spec, uniform precision must match between stages,
-// but we can't guarantee that highp is always supported in fragment shaders...
-// We *really* don't want to use mediump for these in vertex shaders though.
-#ifdef LOVE_SPLIT_UNIFORMS_PER_DRAW
-uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[11];
-uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw2[1];
-#else
-uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[12];
-#endif
+uniform highp vec4 love_UniformsPerDraw[12];
 
 // Older GLSL doesn't support preprocessor line continuations...
 #define TransformMatrix mat4(love_UniformsPerDraw[0], love_UniformsPerDraw[1], love_UniformsPerDraw[2], love_UniformsPerDraw[3])
@@ -105,16 +93,9 @@ uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[12];
 
 #define CurrentDPIScale (love_UniformsPerDraw[8].x)
 #define ConstantPointSize (love_UniformsPerDraw[8].y)
-
 #define love_ClipSpaceParams (love_UniformsPerDraw[9])
-
 #define ConstantColor (love_UniformsPerDraw[10])
-
-#ifdef LOVE_SPLIT_UNIFORMS_PER_DRAW
-#define love_ScreenSize (love_UniformsPerDraw2[0])
-#else
 #define love_ScreenSize (love_UniformsPerDraw[11])
-#endif
 
 // Alternate names
 #define ViewSpaceFromLocal TransformMatrix
@@ -666,11 +647,6 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 		ss << "#define LOVE_GAMMA_CORRECT 1\n";
 	if (info.usesMRT)
 		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
-
-	// Note: backends are expected to handle this situation if highp is ever
-	// conditional in that backend.
-	if (!gfx->getCapabilities().features[Graphics::FEATURE_PIXEL_SHADER_HIGHP])
-		ss << "#define LOVE_SPLIT_UNIFORMS_PER_DRAW 1\n";
 
 	for (const auto &def : options.defines)
 		ss << "#define " + def.first + " " + def.second + "\n";

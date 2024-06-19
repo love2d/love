@@ -259,9 +259,6 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 	// Do we want a debug context?
 	bool debug = love::graphics::isDebugEnabled();
 
-	const char *preferGL2hint = SDL_GetHint("LOVE_GRAPHICS_USE_GL2");
-	bool preferGL2 = (preferGL2hint != nullptr && preferGL2hint[0] != '0');
-
 	const char *preferGL3hint = SDL_GetHint("LOVE_GRAPHICS_USE_GL3");
 	bool preferGL3 = (preferGL3hint != nullptr && preferGL3hint[0] != '0');
 
@@ -269,22 +266,15 @@ std::vector<Window::ContextAttribs> Window::getContextAttribsList() const
 	{
 		{4, 3, false, debug},
 		{3, 3, false, debug},
-		{2, 1, false, debug},
 	};
 
 	std::vector<ContextAttribs> glescontexts =
 	{
 		{3, 2, true, debug},
 		{3, 0, true, debug},
-		{2, 0, true, debug}
 	};
 
-	if (preferGL2)
-	{
-		std::swap(glcontexts[0], glcontexts[2]);
-		std::swap(glescontexts[0], glescontexts[2]);
-	}
-	else if (preferGL3)
+	if (preferGL3)
 	{
 		std::swap(glcontexts[0], glcontexts[1]);
 		std::swap(glescontexts[0], glescontexts[1]);
@@ -458,7 +448,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 	if (failed)
 	{
 		std::string title = "Unable to create renderer";
-		std::string message = "This program requires a graphics card and video drivers which support OpenGL 2.1 or OpenGL ES 2.";
+		std::string message = "This program requires a graphics card and video drivers which support OpenGL 3.3 or OpenGL ES 3.0.";
 
 		if (!glversion.empty())
 			message += "\n\nDetected OpenGL version:\n" + glversion;

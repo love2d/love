@@ -2805,10 +2805,9 @@ love.test.graphics.getSupported = function(test)
   -- table match what the documentation lists
   local gfs = {
     'clampzero', 'lighten', 'glsl3', 'instancing', 'fullnpot', 
-    'pixelshaderhighp', 'shaderderivatives', 'indirectdraw', 'mipmaprange',
-    'copyrendertargettobuffer', 'copytexturetobuffer', 'copybuffer',
-    'copybuffertotexture', 'indexbuffer32bit', 'multirendertargetformats', 
-    'clampone', 'blendminmax', 'glsl4'
+    'pixelshaderhighp', 'shaderderivatives', 'indirectdraw',
+    'copytexturetobuffer', 'multirendertargetformats', 
+    'clampone', 'glsl4'
   }
   local features = love.graphics.getSupported()
   for g=1,#gfs do

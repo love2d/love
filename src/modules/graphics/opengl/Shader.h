@@ -106,8 +106,6 @@ private:
 	// volatile
 	GLuint program;
 
-	bool splitUniformsPerDraw;
-
 	// Location values for any built-in uniform variables.
 	GLint builtinUniforms[BUILTIN_MAX_ENUM];
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];

@@ -196,11 +196,7 @@ void *Buffer::map(MapType map, size_t offset, size_t size)
 	if (map == MAP_READ_ONLY)
 	{
 		gl.bindBuffer(mapUsage, buffer);
-
-		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0)
-			data = (char *) glMapBufferRange(target, offset, size, GL_MAP_READ_BIT);
-		else if (GLAD_VERSION_1_1)
-			data = (char *) glMapBuffer(target, GL_READ_ONLY) + offset;
+		data = (char *) glMapBufferRange(target, offset, size, GL_MAP_READ_BIT);
 	}
 	else if (ownsMemoryMap)
 	{

@@ -739,7 +739,6 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = true;
 	capabilities.features[FEATURE_CLAMP_ONE] = true;
-	capabilities.features[FEATURE_BLEND_MINMAX] = true;
 	capabilities.features[FEATURE_LIGHTEN] = true;
 	capabilities.features[FEATURE_FULL_NPOT] = true;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
@@ -748,14 +747,9 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL4] = true;
 	capabilities.features[FEATURE_INSTANCING] = true;
 	capabilities.features[FEATURE_TEXEL_BUFFER] = true;
-	capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = true;
-	capabilities.features[FEATURE_COPY_BUFFER] = true;
-	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = true;
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
-	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = true;
-	capabilities.features[FEATURE_MIPMAP_RANGE] = true;
 	capabilities.features[FEATURE_INDIRECT_DRAW] = true;
-	static_assert(FEATURE_MAX_ENUM == 19, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -1410,7 +1404,7 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	data.projectionMatrix = getDeviceProjection();
 
 	data.scaleParams.x = (float) getCurrentDPIScale();
-	data.scaleParams.y = getPointSize();;
+	data.scaleParams.y = getPointSize();
 
 	// Flip y to convert input y-up [-1, 1] to vulkan's y-down [-1, 1].
 	// Convert input z [-1, 1] to vulkan [0, 1].
@@ -2809,7 +2803,8 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	return graphicsPipeline;
 }
 
-void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration) {
+void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration)
+{
 	auto it = graphicsPipelines.find(configuration);
 	if (it != graphicsPipelines.end())
 	{

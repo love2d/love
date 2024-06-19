@@ -2227,7 +2227,6 @@ void Graphics::initCapabilities()
 		if (families.mac[1] || families.macCatalyst[1] || families.apple[7])
 			capabilities.features[FEATURE_CLAMP_ONE] = true;
 	}
-	capabilities.features[FEATURE_BLEND_MINMAX] = true;
 	capabilities.features[FEATURE_LIGHTEN] = true;
 	capabilities.features[FEATURE_FULL_NPOT] = true;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
@@ -2236,19 +2235,14 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL4] = true;
 	capabilities.features[FEATURE_INSTANCING] = true;
 	capabilities.features[FEATURE_TEXEL_BUFFER] = true;
-	capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = true;
-	capabilities.features[FEATURE_COPY_BUFFER] = true;
-	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = true;
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
-	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = true;
-	capabilities.features[FEATURE_MIPMAP_RANGE] = true;
 
 	if (families.mac[1] || families.macCatalyst[1] || families.apple[3])
 		capabilities.features[FEATURE_INDIRECT_DRAW] = true;
 	else
 		capabilities.features[FEATURE_INDIRECT_DRAW] = false;
 	
-	static_assert(FEATURE_MAX_ENUM == 19, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;

@@ -1604,9 +1604,6 @@ void Graphics::captureScreenshot(const ScreenshotInfo &info)
 
 void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)
 {
-	if (!capabilities.features[FEATURE_COPY_BUFFER])
-		throw love::Exception("Buffer copying is not supported on this system.");
-
 	Range sourcerange(sourceoffset, size);
 	Range destrange(destoffset, size);
 
@@ -1640,9 +1637,6 @@ void Graphics::copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int
 	{
 		if (!source->isRenderTarget())
 			throw love::Exception("Copying a non-render target Texture to a Buffer is not supported on this system.");
-
-		if (!capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER])
-			throw love::Exception("Copying a render target Texture to a Buffer is not supported on this system.");
 	}
 
 	PixelFormat format = source->getPixelFormat();
@@ -1728,9 +1722,6 @@ void Graphics::copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int
 
 void Graphics::copyBufferToTexture(Buffer *source, Texture *dest, size_t sourceoffset, int sourcewidth, int slice, int mipmap, const Rect &rect)
 {
-	if (!capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE])
-		throw love::Exception("Copying a Buffer to a Texture is not supported on this system.");
-
 	if (source->getDataUsage() == BUFFERDATAUSAGE_READBACK)
 		throw love::Exception("Buffers created with 'readback' data usage cannot be used as a copy source.");
 
@@ -2914,7 +2905,6 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "multirendertargetformats", Graphics::FEATURE_MULTI_RENDER_TARGET_FORMATS },
 	{ "clampzero",                Graphics::FEATURE_CLAMP_ZERO           },
 	{ "clampone",                 Graphics::FEATURE_CLAMP_ONE            },
-	{ "blendminmax",              Graphics::FEATURE_BLEND_MINMAX         },
 	{ "lighten",                  Graphics::FEATURE_LIGHTEN              },
 	{ "fullnpot",                 Graphics::FEATURE_FULL_NPOT            },
 	{ "pixelshaderhighp",         Graphics::FEATURE_PIXEL_SHADER_HIGHP   },
@@ -2923,12 +2913,7 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "glsl4",                    Graphics::FEATURE_GLSL4                },
 	{ "instancing",               Graphics::FEATURE_INSTANCING           },
 	{ "texelbuffer",              Graphics::FEATURE_TEXEL_BUFFER         },
-	{ "indexbuffer32bit",         Graphics::FEATURE_INDEX_BUFFER_32BIT   },
-	{ "copybuffer",               Graphics::FEATURE_COPY_BUFFER          },
-	{ "copybuffertotexture",      Graphics::FEATURE_COPY_BUFFER_TO_TEXTURE },
 	{ "copytexturetobuffer",      Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER },
-	{ "copyrendertargettobuffer", Graphics::FEATURE_COPY_RENDER_TARGET_TO_BUFFER },
-	{ "mipmaprange",              Graphics::FEATURE_MIPMAP_RANGE         },
 	{ "indirectdraw",             Graphics::FEATURE_INDIRECT_DRAW        },
 }
 STRINGMAP_CLASS_END(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)

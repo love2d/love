@@ -86,9 +86,6 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 		if (indexbuffer)
 		{
-			if (!caps.features[Graphics::FEATURE_INDEX_BUFFER_32BIT] && format == DATAFORMAT_UINT32)
-				throw love::Exception("32 bit index buffer formats are not supported on this system.");
-
 			if (format != DATAFORMAT_UINT16 && format != DATAFORMAT_UINT32)
 				throw love::Exception("Index buffers only support uint16 and uint32 data types.");
 
