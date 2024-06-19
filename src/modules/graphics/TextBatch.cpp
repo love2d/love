@@ -36,7 +36,7 @@ TextBatch::TextBatch(Font *font, const std::vector<love::font::ColoredString> &t
 	, vertexData(nullptr)
 	, modifiedVertices()
 	, vertOffset(0)
-	, textureCacheID((uint32) -1)
+	, textureCacheID(font->getTextureCacheID())
 {
 	set(text);
 }
