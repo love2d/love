@@ -2163,9 +2163,6 @@ void Graphics::drawFromShader(PrimitiveType primtype, int vertexcount, int insta
 
 	flushBatchedDraws();
 
-	if (!capabilities.features[FEATURE_GLSL3])
-		throw love::Exception("drawFromShader is not supported on this system (GLSL3 support is required.)");
-
 	if (Shader::isDefaultActive() || !Shader::current)
 		throw love::Exception("drawFromShader can only be used with a custom shader.");
 
@@ -2190,9 +2187,6 @@ void Graphics::drawFromShader(PrimitiveType primtype, int vertexcount, int insta
 void Graphics::drawFromShader(Buffer *indexbuffer, int indexcount, int instancecount, int startindex, Texture *maintexture)
 {
 	flushBatchedDraws();
-
-	if (!capabilities.features[FEATURE_GLSL3])
-		throw love::Exception("drawFromShader is not supported on this system (GLSL3 support is required.)");
 
 	if (!(indexbuffer->getUsageFlags() & BUFFERUSAGEFLAG_INDEX))
 		throw love::Exception("The buffer passed to drawFromShader must be an index buffer.");
