@@ -1595,6 +1595,10 @@ int w_newShader(lua_State *L)
 	try
 	{
 		Shader *shader = instance()->newShader(stages, options);
+		if (shader->isUsingDeprecatedTextureFunctions())
+			luax_markdeprecated(L, 1, "texture2D() or textureCube() function calls in shader code", API_CUSTOM, DEPRECATED_REPLACED, "texture() function calls");
+		if (shader->isUsingDeprecatedTextureUniform())
+			luax_markdeprecated(L, 1, "'texture' uniform variable name in shader code", API_CUSTOM, DEPRECATED_NO_REPLACEMENT, "");
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -1624,6 +1628,10 @@ int w_newComputeShader(lua_State* L)
 	try
 	{
 		Shader *shader = instance()->newComputeShader(stages[0], options);
+		if (shader->isUsingDeprecatedTextureFunctions())
+			luax_markdeprecated(L, 1, "texture2D() or textureCube() function calls in shader code", API_CUSTOM, DEPRECATED_REPLACED, "texture() function calls");
+		if (shader->isUsingDeprecatedTextureUniform())
+			luax_markdeprecated(L, 1, "'texture' uniform variable name in shader code", API_CUSTOM, DEPRECATED_NO_REPLACEMENT, "");
 		luax_pushtype(L, shader);
 		shader->release();
 	}

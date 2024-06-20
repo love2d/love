@@ -48,19 +48,15 @@ ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string
 
 	auto glslangShader = new glslang::TShader(glslangStage);
 
-	bool supportsGLSL3 = gfx->getCapabilities().features[Graphics::FEATURE_GLSL3];
-	int defaultversion = gles ? 100 : 120;
-	EProfile defaultprofile = ENoProfile;
+	int defaultversion = gles ? 300 : 330;
+	EProfile defaultprofile = gles ? EEsProfile : ECoreProfile;
 
 	const char *csrc = glsl.c_str();
 	int srclen = (int) glsl.length();
 	glslangShader->setStringsWithLengths(&csrc, &srclen, 1);
 
 	bool forcedefault = false;
-	if (source.find("#define LOVE_GLSL1_ON_GLSL3") != std::string::npos)
-		forcedefault = true;
-
-	bool forwardcompat = supportsGLSL3 && !forcedefault;
+	bool forwardcompat = true;
 
 	if (!glslangShader->parse(GetResources(), defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
 	{

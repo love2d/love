@@ -51,7 +51,6 @@ public:
 
 	enum Language
 	{
-		LANGUAGE_GLSL1,
 		LANGUAGE_GLSL3,
 		LANGUAGE_GLSL4,
 		LANGUAGE_MAX_ENUM
@@ -268,6 +267,9 @@ public:
 	void getLocalThreadgroupSize(int *x, int *y, int *z);
 
 	const std::vector<Buffer::DataDeclaration> *getBufferFormat(const std::string &name) const;
+
+	bool isUsingDeprecatedTextureFunctions() const;
+	bool isUsingDeprecatedTextureUniform() const;
 
 	static SourceInfo getSourceInfo(const std::string &src);
 	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const CompileOptions &options, const SourceInfo &info, bool gles, bool checksystemfeatures);
