@@ -377,28 +377,13 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 	{
 		auto stype = (Shader::StandardShader) i;
 
-		if (i == Shader::STANDARD_ARRAY && !capabilities.textureTypes[TEXTURE_2D_ARRAY])
-			continue;
-
-		// Apparently some intel GMA drivers on windows fail to compile shaders
-		// which use array textures despite claiming support for the extension.
-		try
+		if (!Shader::standardShaders[i])
 		{
-			if (!Shader::standardShaders[i])
-			{
-				std::vector<std::string> stages;
-				Shader::CompileOptions opts;
-				stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
-				stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
-				Shader::standardShaders[i] = newShader(stages, opts);
-			}
-		}
-		catch (love::Exception &)
-		{
-			if (i == Shader::STANDARD_ARRAY)
-				capabilities.textureTypes[TEXTURE_2D_ARRAY] = false;
-			else
-				throw;
+			std::vector<std::string> stages;
+			Shader::CompileOptions opts;
+			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
+			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
+			Shader::standardShaders[i] = newShader(stages, opts);
 		}
 	}
 
