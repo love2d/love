@@ -511,8 +511,6 @@ private:
 		Rect viewport;
 		Rect scissor;
 
-		float pointSize;
-
 		bool depthWritesEnabled = true;
 		uint32 stencilWriteMask = LOVE_UINT32_MAX;
 		uint32 colorWriteMask = LOVE_UINT32_MAX;

@@ -163,9 +163,6 @@ void Mesh::finalizeAttribute(Graphics *gfx, BufferAttribute &attrib) const
 	if ((attrib.buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
 		throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
 
-	if (attrib.step == STEP_PER_INSTANCE && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
-		throw love::Exception("Vertex attribute instancing is not supported on this system.");
-
 	if (attrib.startArrayIndex < 0 || attrib.startArrayIndex >= (int)attrib.buffer->getArrayLength())
 		throw love::Exception("Invalid start array index %d.", attrib.startArrayIndex + 1);
 
@@ -561,9 +558,6 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 {
 	if (vertexCount <= 0 || (instancecount <= 0 && indirectargs == nullptr))
 		return;
-
-	if (instancecount > 1 && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
-		throw love::Exception("Instancing is not supported on this system.");
 
 	if (indirectargs != nullptr)
 	{

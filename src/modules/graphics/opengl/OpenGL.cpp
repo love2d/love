@@ -248,11 +248,6 @@ void OpenGL::setupContext()
 	glGetIntegerv(GL_SCISSOR_BOX, (GLint *) &state.scissor.x);
 	state.scissor.y = state.viewport.h - (state.scissor.y + state.scissor.h);
 
-	if (GLAD_VERSION_1_0)
-		glGetFloatv(GL_POINT_SIZE, &state.pointSize);
-	else
-		state.pointSize = 1.0f;
-
 	for (int i = 0; i < 2; i++)
 		state.boundFramebuffers[i] = std::numeric_limits<GLuint>::max();
 	bindFramebuffer(FRAMEBUFFER_ALL, getDefaultFBO());

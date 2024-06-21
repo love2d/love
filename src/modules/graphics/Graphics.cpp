@@ -1045,8 +1045,6 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	if (rtcount > capabilities.limits[LIMIT_RENDER_TARGETS])
 		throw love::Exception("This system can't simultaneously render to %d textures.", rtcount);
 
-	bool multiformatsupported = capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS];
-
 	PixelFormat firstcolorformat = PIXELFORMAT_UNKNOWN;
 	if (!rts.colors.empty())
 		firstcolorformat = rts.colors[0].texture->getPixelFormat();
@@ -1086,9 +1084,6 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 		if (c->getPixelWidth(mip) != pixelw || c->getPixelHeight(mip) != pixelh)
 			throw love::Exception("All textures must have the same pixel dimensions.");
-
-		if (!multiformatsupported && format != firstcolorformat)
-			throw love::Exception("This system doesn't support multi-render-target rendering with different texture formats.");
 
 		if (c->getRequestedMSAA() != reqmsaa)
 			throw love::Exception("All textures must have the same MSAA value.");
