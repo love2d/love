@@ -122,19 +122,7 @@ bool getSafeArea(int &top, int &left, int &bottom, int &right)
 
 bool openURL(const std::string &url)
 {
-	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-	jobject activity = (jobject) SDL_AndroidGetActivity();
-	jclass clazz = env->GetObjectClass(activity);
-
-	static jmethodID openURL = env->GetMethodID(clazz, "openURLFromLOVE", "(Ljava/lang/String;)Z");
-
-	jstring jstringURL = env->NewStringUTF(url.c_str());
-	jboolean result = env->CallBooleanMethod(clazz, openURL, jstringURL);
-
-	env->DeleteLocalRef(jstringURL);
-	env->DeleteLocalRef(clazz);
-	env->DeleteLocalRef(activity);
-	return (bool) result;
+	return SDL_OpenURL(url.c_str()) == 0;
 }
 
 void vibrate(double seconds)
