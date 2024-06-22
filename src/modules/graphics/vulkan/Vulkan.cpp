@@ -772,7 +772,7 @@ VkDescriptorType Vulkan::getDescriptorType(graphics::Shader::UniformType type)
 	case graphics::Shader::UniformType::UNIFORM_INT:
 	case graphics::Shader::UniformType::UNIFORM_UINT:
 	case graphics::Shader::UniformType::UNIFORM_BOOL:
-		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 	case graphics::Shader::UniformType::UNIFORM_SAMPLER:
 		return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	case graphics::Shader::UniformType::UNIFORM_STORAGETEXTURE:
