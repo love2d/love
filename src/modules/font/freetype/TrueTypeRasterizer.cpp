@@ -123,14 +123,11 @@ GlyphData *TrueTypeRasterizer::getGlyphDataForIndex(int index) const
 	FT_Render_Mode rendermode = FT_RENDER_MODE_NORMAL;
 	if (hinting == HINTING_MONO)
 		rendermode = FT_RENDER_MODE_MONO;
-<<<<<<< Updated upstream
-	else if (hinting == HINTING_SDF)
-=======
 	else if (sdf == true)
->>>>>>> Stashed changes
 		rendermode = FT_RENDER_MODE_SDF;
 
 	err = FT_Glyph_To_Bitmap(&ftglyph, rendermode, 0, 1);
+
 	if (err != FT_Err_Ok)
 	{
 		if (rendermode == FT_RENDER_MODE_SDF)
@@ -144,10 +141,7 @@ GlyphData *TrueTypeRasterizer::getGlyphDataForIndex(int index) const
 			throw love::Exception("TrueType Font glyph error: FT_Glyph_To_Bitmap failed (0x%x)", err);
 		}
 	}
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
 	FT_BitmapGlyph bitmap_glyph = (FT_BitmapGlyph) ftglyph;
 	const FT_Bitmap &bitmap = bitmap_glyph->bitmap; //just to make things easier
 
@@ -257,7 +251,6 @@ FT_UInt TrueTypeRasterizer::hintingToLoadOption(Hinting hint)
 		return FT_LOAD_TARGET_LIGHT;
 	case HINTING_MONO:
 		return FT_LOAD_TARGET_MONO;
-	case HINTING_SDF:
 	case HINTING_NONE:
 		return FT_LOAD_NO_HINTING;
 	}
