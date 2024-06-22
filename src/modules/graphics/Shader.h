@@ -160,6 +160,7 @@ public:
 		std::string name;
 
 		int resourceIndex;
+		int bindingStartIndex;
 
 		union
 		{

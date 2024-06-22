@@ -104,6 +104,9 @@ private:
 	void createDescriptorPool();
 	VkDescriptorSet allocateDescriptorSet();
 
+	void setTextureDescriptor(const UniformInfo *info, love::graphics::Texture *texture, int index);
+	void setBufferDescriptor(const UniformInfo *info, love::graphics::Buffer *buffer, int index);
+
 	VkPipeline computePipeline;
 
 	VkDescriptorSetLayout descriptorSetLayout;
@@ -124,6 +127,8 @@ private:
 	VkDevice device;
 
 	bool isCompute = false;
+	bool resourceDescriptorsDirty = false;
+	VkDescriptorSet currentDescriptorSet = VK_NULL_HANDLE;
 
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
 
