@@ -64,7 +64,6 @@ public:
 		BUILTIN_TEXTURE_VIDEO_CB,
 		BUILTIN_TEXTURE_VIDEO_CR,
 		BUILTIN_UNIFORMS_PER_DRAW,
-		BUILTIN_UNIFORMS_PER_DRAW_2,
 		BUILTIN_MAX_ENUM
 	};
 
@@ -188,8 +187,6 @@ public:
 		Vector4 scaleParams;
 		Vector4 clipSpaceParams;
  		Colorf constantColor;
-
-		// Pixel shader-centric variables past this point.
 		Vector4 screenSizeParams;
  	};
 

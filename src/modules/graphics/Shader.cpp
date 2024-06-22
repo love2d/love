@@ -1678,12 +1678,11 @@ static StringMap<Shader::Language, Shader::LANGUAGE_MAX_ENUM> languages(language
 
 static StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM>::Entry builtinNameEntries[] =
 {
-	{ "MainTex",               Shader::BUILTIN_TEXTURE_MAIN        },
-	{ "love_VideoYChannel",    Shader::BUILTIN_TEXTURE_VIDEO_Y     },
-	{ "love_VideoCbChannel",   Shader::BUILTIN_TEXTURE_VIDEO_CB    },
-	{ "love_VideoCrChannel",   Shader::BUILTIN_TEXTURE_VIDEO_CR    },
-	{ "love_UniformsPerDraw",  Shader::BUILTIN_UNIFORMS_PER_DRAW   },
-	{ "love_UniformsPerDraw2", Shader::BUILTIN_UNIFORMS_PER_DRAW_2 },
+	{ "MainTex",               Shader::BUILTIN_TEXTURE_MAIN      },
+	{ "love_VideoYChannel",    Shader::BUILTIN_TEXTURE_VIDEO_Y   },
+	{ "love_VideoCbChannel",   Shader::BUILTIN_TEXTURE_VIDEO_CB  },
+	{ "love_VideoCrChannel",   Shader::BUILTIN_TEXTURE_VIDEO_CR  },
+	{ "love_UniformsPerDraw",  Shader::BUILTIN_UNIFORMS_PER_DRAW },
 };
 
 static StringMap<Shader::BuiltinUniform, Shader::BUILTIN_MAX_ENUM> builtinNames(builtinNameEntries, sizeof(builtinNameEntries));
