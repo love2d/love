@@ -71,6 +71,7 @@ static luaL_Reg tcp_methods[] = {
 
 /* socket option handlers */
 static t_opt optget[] = {
+    {"bindtodevice", opt_get_bindtodevice},
     {"keepalive",   opt_get_keepalive},
     {"reuseaddr",   opt_get_reuseaddr},
     {"reuseport",   opt_get_reuseport},
@@ -92,6 +93,7 @@ static t_opt optget[] = {
 };
 
 static t_opt optset[] = {
+    {"bindtodevice", opt_set_bindtodevice},
     {"keepalive",   opt_set_keepalive},
     {"reuseaddr",   opt_set_reuseaddr},
     {"reuseport",   opt_set_reuseport},

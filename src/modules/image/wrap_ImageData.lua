@@ -3,7 +3,7 @@ R"luastring"--(
 -- There is a matching delimiter at the bottom of the file.
 
 --[[
-Copyright (c) 2006-2023 LOVE Development Team
+Copyright (c) 2006-2024 LOVE Development Team
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -38,29 +38,6 @@ local function clamp01(x)
 	return min(max(x, 0), 1)
 end
 
--- Implement thread-safe ImageData:mapPixel regardless of whether the FFI is
--- used or not.
-function ImageData:mapPixel(func, ix, iy, iw, ih)
-	local idw, idh = self:getDimensions()
-
-	ix = ix or 0
-	iy = iy or 0
-	iw = iw or idw
-	ih = ih or idh
-
-	if type(ix) ~= "number" then error("bad argument #2 to ImageData:mapPixel (expected number)", 2) end
-	if type(iy) ~= "number" then error("bad argument #3 to ImageData:mapPixel (expected number)", 2) end
-	if type(iw) ~= "number" then error("bad argument #4 to ImageData:mapPixel (expected number)", 2) end
-	if type(ih) ~= "number" then error("bad argument #5 to ImageData:mapPixel (expected number)", 2) end
-
-	if type(func) ~= "function" then error("bad argument #1 to ImageData:mapPixel (expected function)", 2) end
-	if not (inside(ix, iy, idw, idh) and inside(ix+iw-1, iy+ih-1, idw, idh)) then error("Invalid rectangle dimensions", 2) end
-
-	-- performAtomic and mapPixelUnsafe have Lua-C API and FFI versions.
-	self:_performAtomic(self._mapPixelUnsafe, self, func, ix, iy, iw, ih)
-end
-
-
 -- Everything below this point is efficient FFI replacements for existing
 -- ImageData functionality.
 
@@ -84,9 +61,6 @@ typedef uint16_t float10;
 
 typedef struct FFI_ImageData
 {
-	void (*lockMutex)(Proxy *p);
-	void (*unlockMutex)(Proxy *p);
-
 	float (*float16to32)(float16 f);
 	float16 (*float32to16)(float f);
 
@@ -368,9 +342,9 @@ local objectcache = setmetatable({}, {
 			width = width,
 			height = height,
 			format = format,
-			pointer = conv == nil and nil or ffi.cast(conv.pointer, imagedata:getFFIPointer()),
-			tolua = conv == nil and nil or conv.tolua,
-			fromlua = conv == nil and nil or conv.fromlua,
+			pointer = conv ~= nil and ffi.cast(conv.pointer, imagedata:getFFIPointer()) or nil,
+			tolua = conv ~= nil and conv.tolua or nil,
+			fromlua = conv ~= nil and conv.fromlua or nil,
 		}
 
 		self[imagedata] = p
@@ -381,19 +355,22 @@ local objectcache = setmetatable({}, {
 
 -- Overwrite existing functions with new FFI versions.
 
-function ImageData:_performAtomic(...)
-	ffifuncs.lockMutex(self)
-	local success, err = pcall(...)
-	ffifuncs.unlockMutex(self)
-
-	if not success then
-		error(err, 3)
-	end
-end
-
-function ImageData:_mapPixelUnsafe(func, ix, iy, iw, ih)
+function ImageData:mapPixel(func, ix, iy, iw, ih)
 	local p = objectcache[self]
 	local idw, idh = p.width, p.height
+
+	ix = ix or 0
+	iy = iy or 0
+	iw = iw or idw
+	ih = ih or idh
+
+	if type(ix) ~= "number" then error("bad argument #2 to ImageData:mapPixel (expected number)", 2) end
+	if type(iy) ~= "number" then error("bad argument #3 to ImageData:mapPixel (expected number)", 2) end
+	if type(iw) ~= "number" then error("bad argument #4 to ImageData:mapPixel (expected number)", 2) end
+	if type(ih) ~= "number" then error("bad argument #5 to ImageData:mapPixel (expected number)", 2) end
+
+	if type(func) ~= "function" then error("bad argument #1 to ImageData:mapPixel (expected function)", 2) end
+	if not (inside(ix, iy, idw, idh) and inside(ix+iw-1, iy+ih-1, idw, idh)) then error("Invalid rectangle dimensions", 2) end
 
 	if p.pointer == nil then error("ImageData:mapPixel does not currently support the "..p.format.." pixel format.", 2) end
 
@@ -427,12 +404,8 @@ function ImageData:getPixel(x, y)
 
 	if p.pointer == nil then error("ImageData:getPixel does not currently support the "..p.format.." pixel format.", 2) end
 
-	ffifuncs.lockMutex(self)
 	local pixel = p.pointer[y * p.width + x]
-	local r, g, b, a = p.tolua(pixel)
-	ffifuncs.unlockMutex(self)
-
-	return r, g, b, a
+	return p.tolua(pixel)
 end
 
 function ImageData:setPixel(x, y, r, g, b, a)
@@ -457,9 +430,7 @@ function ImageData:setPixel(x, y, r, g, b, a)
 
 	if p.pointer == nil then error("ImageData:setPixel does not currently support the "..p.format.." pixel format.", 2) end
 
-	ffifuncs.lockMutex(self)
 	p.fromlua(p.pointer[y * p.width + x], r, g, b, a)
-	ffifuncs.unlockMutex(self)
 end
 
 function ImageData:getWidth()

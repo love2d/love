@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -90,7 +90,7 @@ GlyphData *ImageRasterizer::getGlyphDataForIndex(int index) const
 	if (gm.width == 0)
 		return g;
 
-	// We don't want another thread modifying our ImageData mid-copy.
+	// Always lock the mutex since the user can't know when to do it.
 	love::thread::Lock lock(imageData->getMutex());
 
 	Color32 *gdpixels = (Color32 *) g->getData();
@@ -117,9 +117,6 @@ void ImageRasterizer::load(const uint32 *glyphs, int glyphcount)
 
 	int imgw = imageData->getWidth();
 	int imgh = imageData->getHeight();
-
-	// We don't want another thread modifying our ImageData mid-parse.
-	love::thread::Lock lock(imageData->getMutex());
 
 	// Set the only metric that matters
 	metrics.height = imgh;

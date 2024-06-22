@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -45,16 +45,16 @@ Contact::~Contact()
 
 void Contact::invalidate()
 {
-	if (contact != NULL)
+	if (contact != nullptr)
 	{
 		world->unregisterObject(contact);
-		contact = NULL;
+		contact = nullptr;
 	}
 }
 
 bool Contact::isValid()
 {
-	return contact != NULL;
+	return contact != nullptr;
 }
 
 int Contact::getPositions(lua_State *L)
@@ -143,13 +143,13 @@ void Contact::getChildren(int &childA, int &childB)
 	childB = contact->GetChildIndexB();
 }
 
-void Contact::getFixtures(Fixture *&fixtureA, Fixture *&fixtureB)
+void Contact::getShapes(Shape *&shapeA, Shape *&shapeB)
 {
-	fixtureA = (Fixture *) world->findObject(contact->GetFixtureA());
-	fixtureB = (Fixture *) world->findObject(contact->GetFixtureB());
+	shapeA = (Shape *) (contact->GetFixtureA()->GetUserData().pointer);
+	shapeB = (Shape *) (contact->GetFixtureB()->GetUserData().pointer);
 
-	if (!fixtureA || !fixtureB)
-		throw love::Exception("A fixture has escaped Memoizer!");
+	if (!shapeA || !shapeB)
+		throw love::Exception("A Shape has escaped Memoizer!");
 }
 
 } // box2d

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -62,13 +62,13 @@ public:
 		M_MAX_ENUM
 	};
 
-	Module();
+	Module(ModuleType moduleType, const char *name);
 	virtual ~Module();
 
     /**
      * Gets the base type of the module.
      **/
-	virtual ModuleType getModuleType() const = 0;
+	ModuleType getModuleType() const { return moduleType; }
 
 	/**
 	 * Gets the name of the module. This is used in case of errors
@@ -76,14 +76,7 @@ public:
 	 *
 	 * @return The full name of the module, eg. love.graphics.opengl.
 	 **/
-	virtual const char *getName() const = 0;
-
-	/**
-	 * Add module to internal registry. To be used /only/ in
-	 * runtime.cpp:luax_register_module()
-	 * @param instance The module instance.
-	 */
-	static void registerInstance(Module *instance);
+	const char *getName() const { return name.c_str(); }
 
 	/**
 	 * Retrieve module instance from internal registry. May return NULL
@@ -105,6 +98,11 @@ public:
 	}
 
 private:
+
+	static void registerInstance(Module *instance);
+
+	ModuleType moduleType;
+	std::string name;
 
 	static Module *instances[M_MAX_ENUM];
 

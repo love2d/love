@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,8 @@ namespace font
 // Default TrueType font, gzip-compressed.
 #include "NotoSans-Regular.ttf.gzip.h"
 
-Font::Font()
+Font::Font(const char *name)
+	: Module(M_FONT, name)
 {
 	auto compressedbytes = (const char *) NotoSans_Regular_ttf_gzip;
 	size_t compressedsize = NotoSans_Regular_ttf_gzip_len;
@@ -45,14 +46,9 @@ Font::Font()
 	defaultFontData.set(new data::ByteData(fontdata, rawsize, true), Acquire::NORETAIN);
 }
 
-Rasterizer *Font::newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hinting)
+Rasterizer *Font::newTrueTypeRasterizer(int size, const TrueTypeRasterizer::Settings &settings)
 {
-	return newTrueTypeRasterizer(defaultFontData.get(), size, hinting);
-}
-
-Rasterizer *Font::newTrueTypeRasterizer(int size, float dpiscale, TrueTypeRasterizer::Hinting hinting)
-{
-	return newTrueTypeRasterizer(defaultFontData.get(), size, dpiscale, hinting);
+	return newTrueTypeRasterizer(defaultFontData.get(), size, settings);
 }
 
 Rasterizer *Font::newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images, float dpiscale)
@@ -78,12 +74,7 @@ Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, const std::st
 		throw love::Exception("UTF-8 decoding error: %s", e.what());
 	}
 
-	return newImageRasterizer(data, &glyphs[0], (int) glyphs.size(), extraspacing, dpiscale);
-}
-
-Rasterizer *Font::newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int numglyphs, int extraspacing, float dpiscale)
-{
-	return new ImageRasterizer(data, glyphs, numglyphs, extraspacing, dpiscale);
+	return new ImageRasterizer(data, glyphs.data(), (int) glyphs.size(), extraspacing, dpiscale);
 }
 
 GlyphData *Font::newGlyphData(Rasterizer *r, const std::string &text)

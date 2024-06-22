@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -94,6 +94,11 @@ StreamBuffer::~StreamBuffer()
 ptrdiff_t StreamBuffer::getHandle() const
 {
 	return (ptrdiff_t) buffer;
+}
+
+size_t StreamBuffer::getGPUReadOffset() const
+{
+	return (frameIndex * bufferSize) + frameGPUReadOffset;
 }
 
 love::graphics::StreamBuffer::MapInfo StreamBuffer::map(size_t /*minsize*/)

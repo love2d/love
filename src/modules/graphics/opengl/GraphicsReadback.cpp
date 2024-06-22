@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -67,8 +67,6 @@ GraphicsReadback::GraphicsReadback(love::graphics::Graphics *gfx, ReadbackMethod
 	if (method == READBACK_IMMEDIATE)
 	{
 		void *dest = prepareReadbackDest(size);
-
-		love::thread::Lock lock(imageData->getMutex());
 
 		// Direct readback without copying avoids the need for a staging buffer,
 		// and lowers the system requirements of immediate RT readback.

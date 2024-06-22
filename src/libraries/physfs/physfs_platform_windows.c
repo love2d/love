@@ -123,7 +123,7 @@ static inline HANDLE winCreateFileW(const WCHAR *wfname, const DWORD mode,
                                     const DWORD creation)
 {
     const DWORD share = FILE_SHARE_READ | FILE_SHARE_WRITE;
-    #if defined(PHYSFS_PLATFORM_WINRT) || (_WIN32_WINNT >= 0x0602) // Windows 8+
+    #if defined(PHYSFS_PLATFORM_WINRT) /*|| (_WIN32_WINNT >= 0x0602)*/ // Windows 8+
     return CreateFile2(wfname, mode, share, creation, NULL);
     #else
     return CreateFileW(wfname, mode, share, NULL, creation,

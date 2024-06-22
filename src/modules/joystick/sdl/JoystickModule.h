@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -44,11 +44,8 @@ public:
 	JoystickModule();
 	virtual ~JoystickModule();
 
-	// Implements Module.
-	const char *getName() const override;
-
 	// Implements JoystickModule.
-	love::joystick::Joystick *addJoystick(int deviceindex) override;
+	love::joystick::Joystick *addJoystick(int64 deviceid) override;
 	void removeJoystick(love::joystick::Joystick *joystick) override;
 	love::joystick::Joystick *getJoystickFromID(int instanceid) override;
 	love::joystick::Joystick *getJoystick(int joyindex) override;
@@ -69,7 +66,7 @@ private:
 	void checkGamepads(const std::string &guid) const;
 
 	// SDL2's GUIDs identify *classes* of devices, instead of unique devices.
-	std::string getDeviceGUID(int deviceindex) const;
+	std::string getDeviceGUID(int64 deviceid) const;
 
 	// Lists of currently connected Joysticks.
 	std::vector<Joystick *> activeSticks;

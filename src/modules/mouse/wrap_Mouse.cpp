@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -100,13 +100,17 @@ int w_isCursorSupported(lua_State *L)
 
 int w_getX(lua_State *L)
 {
-	lua_pushnumber(L, instance()->getX());
+	double x, y;
+	instance()->getPosition(x, y);
+	lua_pushnumber(L, x);
 	return 1;
 }
 
 int w_getY(lua_State *L)
 {
-	lua_pushnumber(L, instance()->getY());
+	double x, y;
+	instance()->getPosition(x, y);
+	lua_pushnumber(L, y);
 	return 1;
 }
 
@@ -121,15 +125,19 @@ int w_getPosition(lua_State *L)
 
 int w_setX(lua_State *L)
 {
-	double x = luaL_checknumber(L, 1);
-	instance()->setX(x);
+	double x, y;
+	instance()->getPosition(x, y);
+	x = luaL_checknumber(L, 1);
+	instance()->setPosition(x, y);
 	return 0;
 }
 
 int w_setY(lua_State *L)
 {
-	double y = luaL_checknumber(L, 1);
-	instance()->setY(y);
+	double x, y;
+	instance()->getPosition(x, y);
+	y = luaL_checknumber(L, 1);
+	instance()->setPosition(x, y);
 	return 0;
 }
 
@@ -139,6 +147,17 @@ int w_setPosition(lua_State *L)
 	double y = luaL_checknumber(L, 2);
 	instance()->setPosition(x, y);
 	return 0;
+}
+
+int w_getGlobalPosition(lua_State *L)
+{
+	double x, y;
+	int displayindex;
+	instance()->getGlobalPosition(x, y, displayindex);
+	lua_pushnumber(L, x);
+	lua_pushnumber(L, y);
+	lua_pushinteger(L, displayindex + 1);
+	return 3;
 }
 
 int w_isDown(lua_State *L)
@@ -220,6 +239,7 @@ static const luaL_Reg functions[] =
 	{ "setX", w_setX },
 	{ "setY", w_setY },
 	{ "setPosition", w_setPosition },
+	{ "getGlobalPosition", w_getGlobalPosition },
 	{ "isDown", w_isDown },
 	{ "setVisible", w_setVisible },
 	{ "isVisible", w_isVisible },

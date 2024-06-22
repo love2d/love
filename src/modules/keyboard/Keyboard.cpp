@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -19,6 +19,7 @@
  **/
 
 #include "common/config.h"
+#include "libraries/utf8/utf8.h"
 
 #include "Keyboard.h"
 
@@ -27,14 +28,77 @@ namespace love
 namespace keyboard
 {
 
+Keyboard::Keyboard(const char *name)
+	: Module(M_KEYBOARD, name)
+{
+}
+
 bool Keyboard::getConstant(const char *in, Key &out)
 {
-	return keys.find(in, out);
+	auto it = stringToKey.find(in);
+	if (it != stringToKey.end())
+	{
+		out = (Key)it->second;
+		return true;
+	}
+
+	std::string text(in);
+	uint32 codepoint = 0;
+
+	try
+	{
+		codepoint = utf8::peek_next(text.begin(), text.end());
+	}
+	catch (utf8::exception &)
+	{
+		return false;
+	}
+
+	if (codepoint > 0)
+	{
+		stringToKey[text] = codepoint;
+		out = (Key)codepoint;
+	}
+
+	return false;
 }
 
 bool Keyboard::getConstant(Key in, const char *&out)
 {
-	return keys.find(in, out);
+	if (keyToString.empty())
+	{
+		for (const auto &kvp : stringToKey)
+			keyToString[kvp.second] = kvp.first;
+	}
+
+	auto it = keyToString.find(in);
+	if (it != keyToString.end())
+	{
+		out = it->second.c_str();
+		return true;
+	}
+
+	char u[5] = { 0, 0, 0, 0, 0 };
+	ptrdiff_t length = 0;
+
+	try
+	{
+		char *end = utf8::unchecked::append(in, u);
+		length = end - u;
+	}
+	catch (utf8::exception &)
+	{
+		return false;
+	}
+
+	if (length > 0)
+	{
+		keyToString[in] = std::string(u, length);
+		out = keyToString[in].c_str();
+		return true;
+	}
+
+	return false;
 }
 
 bool Keyboard::getConstant(const char *in, Scancode &out)
@@ -57,7 +121,7 @@ bool Keyboard::getConstant(ModifierKey in, const char *&out)
 	return modifiers.find(in, out);
 }
 
-StringMap<Keyboard::Key, Keyboard::KEY_MAX_ENUM>::Entry Keyboard::keyEntries[] =
+std::map<std::string, uint32> Keyboard::stringToKey =
 {
 	{"unknown", Keyboard::KEY_UNKNOWN},
 
@@ -265,7 +329,7 @@ StringMap<Keyboard::Key, Keyboard::KEY_MAX_ENUM>::Entry Keyboard::keyEntries[] =
 	{"sleep", Keyboard::KEY_SLEEP},
 };
 
-StringMap<Keyboard::Key, Keyboard::KEY_MAX_ENUM> Keyboard::keys(Keyboard::keyEntries, sizeof(Keyboard::keyEntries));
+std::map<uint32, std::string> Keyboard::keyToString;
 
 StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM>::Entry Keyboard::scancodeEntries[] =
 {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -38,6 +38,7 @@ class Texture final : public love::graphics::Texture
 public:
 
 	Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, const Settings &settings, const Slices *data);
+	Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, love::graphics::Texture *base, const Texture::ViewSettings &viewsettings);
 	virtual ~Texture();
 
 	void copyFromBuffer(love::graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect) override;
@@ -55,14 +56,14 @@ public:
 
 private:
 
-	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
+	void uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r) override;
 	void generateMipmapsInternal() override;
 
-	id<MTLTexture> texture;
-	id<MTLTexture> msaaTexture;
-	id<MTLSamplerState> sampler;
+	id<MTLTexture> texture = nil;
+	id<MTLTexture> msaaTexture = nil;
+	id<MTLSamplerState> sampler = nil;
 
-	int actualMSAASamples;
+	int actualMSAASamples = 1;
 
 }; // Texture
 

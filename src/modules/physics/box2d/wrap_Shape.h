@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,7 @@ namespace box2d
 {
 
 Shape *luax_checkshape(lua_State *L, int idx);
+void luax_pushshape(lua_State *L, Shape *shape);
 extern "C" int luaopen_shape(lua_State *L);
 
 extern const luaL_Reg w_Shape_functions[];

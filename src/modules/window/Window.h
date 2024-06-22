@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -131,9 +131,6 @@ public:
 
 	virtual ~Window();
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_WINDOW; }
-
 	virtual void setGraphics(graphics::Graphics *graphics) = 0;
 
 	virtual bool setWindow(int width = 800, int height = 600, WindowSettings *settings = nullptr) = 0;
@@ -217,7 +214,7 @@ public:
 	virtual double fromPixels(double x) const = 0;
 	virtual void fromPixels(double px, double py, double &wx, double &wy) const = 0;
 
-	virtual const void *getHandle() const = 0;
+	virtual void *getHandle() const = 0;
 
 	virtual bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) = 0;
 	virtual int showMessageBox(const MessageBoxData &data) = 0;
@@ -238,6 +235,10 @@ public:
 	static bool getConstant(const char *in, DisplayOrientation &out);
 	static bool getConstant(DisplayOrientation in, const char *&out);
 	static std::vector<std::string> getConstants(DisplayOrientation);
+
+protected:
+
+	Window(const char *name);
 
 private:
 
@@ -262,7 +263,7 @@ struct WindowSettings
 	int vsync = 1;
 	int msaa = 0;
 	bool stencil = true;
-	int depth = 0;
+	bool depth = false;
 	bool resizable = false;
 	int minwidth = 1;
 	int minheight = 1;

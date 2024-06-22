@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -107,15 +107,18 @@ Mesh::Mesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType d
 		throw love::Exception("At least one buffer attribute must be specified in this constructor.");
 
 	attachedAttributes = attributes;
-
 	vertexCount = attachedAttributes.size() > 0 ? LOVE_UINT32_MAX : 0;
 
-	for (const auto &attrib : attachedAttributes)
-	{
-		if ((attrib.buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
-			throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 
-		if (getAttachedAttributeIndex(attrib.name) != -1)
+	for (int i = 0; i < (int) attachedAttributes.size(); i++)
+	{
+		auto &attrib = attachedAttributes[i];
+
+		finalizeAttribute(gfx, attrib);
+
+		int attributeIndex = getAttachedAttributeIndex(attrib.name);
+		if (attributeIndex != i && attributeIndex != -1)
 			throw love::Exception("Duplicate vertex attribute name: %s", attrib.name.c_str());
 
 		vertexCount = std::min(vertexCount, attrib.buffer->getArrayLength());
@@ -140,7 +143,7 @@ void Mesh::setupAttachedAttributes()
 		if (getAttachedAttributeIndex(name) != -1)
 			throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
 
-		attachedAttributes.push_back({name, vertexBuffer, nullptr, (int) i, 0, STEP_PER_VERTEX, true});
+		attachedAttributes.push_back({name, vertexBuffer, nullptr, name, (int) i, 0, STEP_PER_VERTEX, true});
 	}
 }
 
@@ -153,6 +156,21 @@ int Mesh::getAttachedAttributeIndex(const std::string &name) const
 	}
 
 	return -1;
+}
+
+void Mesh::finalizeAttribute(Graphics *gfx, BufferAttribute &attrib) const
+{
+	if ((attrib.buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
+		throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
+
+	if (attrib.startArrayIndex < 0 || attrib.startArrayIndex >= (int)attrib.buffer->getArrayLength())
+		throw love::Exception("Invalid start array index %d.", attrib.startArrayIndex + 1);
+
+	int indexInBuffer = attrib.buffer->getDataMemberIndex(attrib.nameInBuffer);
+	if (indexInBuffer < 0)
+		throw love::Exception("Buffer does not have a vertex attribute with name '%s'.", attrib.nameInBuffer.c_str());
+
+	attrib.indexInBuffer = indexInBuffer;
 }
 
 void *Mesh::checkVertexDataOffset(size_t vertindex, size_t *byteoffset)
@@ -210,15 +228,7 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 
 void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, int startindex, AttributeStep step)
 {
-	if ((buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
-		throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
-
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-	if (step == STEP_PER_INSTANCE && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
-		throw love::Exception("Vertex attribute instancing is not supported on this system.");
-
-	if (startindex < 0 || startindex >= (int) buffer->getArrayLength())
-		throw love::Exception("Invalid start array index %d.", startindex + 1);
 
 	BufferAttribute oldattrib = {};
 	BufferAttribute newattrib = {};
@@ -233,9 +243,12 @@ void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, 
 	newattrib.buffer = buffer;
 	newattrib.mesh = mesh;
 	newattrib.enabled = oldattrib.buffer.get() ? oldattrib.enabled : true;
-	newattrib.indexInBuffer = buffer->getDataMemberIndex(attachname);
+	newattrib.nameInBuffer = attachname;
+	newattrib.indexInBuffer = -1;
 	newattrib.startArrayIndex = startindex;
 	newattrib.step = step;
+
+	finalizeAttribute(gfx, newattrib);
 
 	if (newattrib.indexInBuffer < 0)
 		throw love::Exception("The specified vertex buffer does not have a vertex attribute named '%s'", attachname.c_str());
@@ -320,6 +333,9 @@ static void copyToIndexBuffer(const std::vector<uint32> &indices, void *data, si
 
 void Mesh::setVertexMap(const std::vector<uint32> &map)
 {
+	if (map.empty())
+		throw love::Exception("Vertex map array must not be empty.");
+
 	size_t maxval = getVertexCount();
 
 	IndexDataType datatype = getIndexDataTypeFromMax(maxval);
@@ -543,9 +559,6 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 	if (vertexCount <= 0 || (instancecount <= 0 && indirectargs == nullptr))
 		return;
 
-	if (instancecount > 1 && !gfx->getCapabilities().features[Graphics::FEATURE_INSTANCING])
-		throw love::Exception("Instancing is not supported on this system.");
-
 	if (indirectargs != nullptr)
 	{
 		if (primitiveType == PRIMITIVE_TRIANGLE_FAN)
@@ -615,8 +628,8 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 	}
 
 	// Not supported on all platforms or GL versions, I believe.
-	if (!attributes.isEnabled(ATTRIB_POS))
-		throw love::Exception("Mesh must have an enabled VertexPosition attribute to be drawn.");
+	if ((attributes.enableBits & ~(ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR)) == 0)
+		throw love::Exception("Mesh must have an enabled VertexPosition or custom attribute to be drawn.");
 
 	Graphics::TempTransform transform(gfx, m);
 
@@ -648,7 +661,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 		cmd.primitiveType = primitiveType;
 		cmd.indexType = indexDataType;
 		cmd.instanceCount = instancecount;
-		cmd.texture = texture;
+		cmd.texture = gfx->getTextureOrDefaultForActiveShader(texture);
 		cmd.cullMode = gfx->getMeshCullMode();
 
 		cmd.indexBufferOffset = r.getOffset() * indexbuffer->getArrayStride();
@@ -672,7 +685,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 		cmd.vertexStart = (int) r.getOffset();
 		cmd.vertexCount = (int) r.getSize();
 		cmd.instanceCount = instancecount;
-		cmd.texture = texture;
+		cmd.texture = gfx->getTextureOrDefaultForActiveShader(texture);
 		cmd.cullMode = gfx->getMeshCullMode();
 
 		cmd.indirectBuffer = indirectargs;

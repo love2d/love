@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -473,9 +473,6 @@ int luax_register_module(lua_State *L, const WrappedModule &m)
 	lua_setfield(L, -3, m.name); // love.graphics = table
 	lua_remove(L, -2); // love
 
-	// Register module instance
-	Module::registerInstance(m.module);
-
 	return 1;
 }
 
@@ -549,6 +546,10 @@ int luax_register_type(lua_State *L, love::Type *type, ...)
 	// Add release
 	lua_pushcfunction(L, w__release);
 	lua_setfield(L, -2, "release");
+
+	// Add __close for lua 5.4 (just calls release)
+	lua_pushcfunction(L, w__release);
+	lua_setfield(L, -2, "__close");
 
 	va_list fs;
 	va_start(fs, type);

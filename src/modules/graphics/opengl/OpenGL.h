@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -124,6 +124,21 @@ public:
 		~TempDebugGroup();
 	};
 
+	// glClear() is affected by various OpenGL state...
+	class CleanClearState
+	{
+	public:
+		CleanClearState(GLbitfield clearFlags);
+		~CleanClearState();
+
+	private:
+		GLenum clearFlags;
+		uint32 colorWriteMask;
+		uint32 stencilWriteMask;
+		bool depthWrites;
+		bool scissor;
+	};
+
 	struct Stats
 	{
 		int shaderSwitches;
@@ -184,13 +199,6 @@ public:
 		 * https://github.com/love2d/love/issues/1592
 		 **/
 		bool brokenSRGB;
-
-		/**
-		 * Some Android graphics drivers claim to support GLES3.0 but have bugs
-		 * with certain aspects that users expect to work. For example:
-		 * https://github.com/love2d/love-android/issues/204
-		 **/
-		bool brokenGLES3;
 
 		/**
 		 * Other bugs which have workarounds that don't use conditional code at
@@ -301,6 +309,9 @@ public:
 	void setStencilWriteMask(uint32 mask);
 	uint32 getStencilWriteMask() const;
 
+	void setColorWriteMask(uint32 mask);
+	uint32 getColorWriteMask() const;
+
 	/**
 	 * Calls glUseProgram.
 	 **/
@@ -311,20 +322,6 @@ public:
 	 * non-zero FBO for rendering.
 	 **/
 	GLuint getDefaultFBO() const;
-
-	/**
-	 * Gets the ID for love's default texture (used for "untextured" primitives.)
-	 **/
-	GLuint getDefaultTexture(TextureType type, DataBaseType datatype) const;
-
-	/**
-	 * Gets the texture ID for love's default texel buffer.
-	 **/
-	GLuint getDefaultTexelBuffer() const { return state.defaultTexelBuffer; }
-	void setDefaultTexelBuffer(GLuint tex) { state.defaultTexelBuffer = tex; }
-
-	GLuint getDefaultStorageBuffer() const { return state.defaultStorageBuffer; }
-	void setDefaultStorageBuffer(GLuint buf) { state.defaultStorageBuffer = buf; }
 
 	/**
 	 * Helper for setting the active texture unit.
@@ -363,21 +360,13 @@ public:
 	 * to glTexImage2D/3D for all levels and slices of a texture otherwise.
 	 * NOTE: this does not handle compressed texture formats.
 	 **/
-	bool rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, bool &isSRGB, int width, int height, int depth = 1);
+	bool rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, int width, int height, int depth = 1);
 
-	bool isTextureTypeSupported(TextureType type) const;
 	bool isBufferUsageSupported(BufferUsage usage) const;
 	bool isClampZeroOneTextureWrapSupported() const;
-	bool isPixelShaderHighpSupported() const;
-	bool isInstancingSupported() const;
-	bool isDepthCompareSampleSupported() const;
 	bool isSamplerLODBiasSupported() const;
 	bool isBaseVertexSupported() const;
-	bool isMultiFormatMRTSupported() const;
-	bool isCopyBufferSupported() const;
-	bool isCopyBufferToTextureSupported() const;
 	bool isCopyTextureToBufferSupported() const;
-	bool isCopyRenderTargetToBufferSupported() const;
 
 	/**
 	 * Returns the maximum supported width or height of a texture.
@@ -457,7 +446,7 @@ public:
 	static GLint getGLWrapMode(SamplerState::WrapMode wmode);
 	static GLint getGLCompareMode(CompareMode mode);
 
-	static TextureFormat convertPixelFormat(PixelFormat pixelformat, bool renderbuffer, bool &isSRGB);
+	static TextureFormat convertPixelFormat(PixelFormat pixelformat);
 	static bool isTexStorageSupported();
 	static uint32 getPixelFormatUsageFlags(PixelFormat pixelformat);
 
@@ -474,11 +463,9 @@ private:
 	void initVendor();
 	void initOpenGLFunctions();
 	void initMaxValues();
-	void createDefaultTexture();
 
 	bool contextInitialized;
 
-	bool pixelShaderHighpSupported;
 	bool baseVertexSupported;
 
 	float maxAnisotropy;
@@ -524,16 +511,11 @@ private:
 		Rect viewport;
 		Rect scissor;
 
-		float pointSize;
-
 		bool depthWritesEnabled = true;
 		uint32 stencilWriteMask = LOVE_UINT32_MAX;
+		uint32 colorWriteMask = LOVE_UINT32_MAX;
 
 		GLuint boundFramebuffers[2];
-
-		GLuint defaultTexture[TEXTURE_MAX_ENUM][DATA_BASETYPE_MAX_ENUM];
-		GLuint defaultTexelBuffer;
-		GLuint defaultStorageBuffer;
 
 	} state;
 

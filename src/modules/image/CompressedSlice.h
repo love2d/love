@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -46,7 +46,6 @@ public:
 	CompressedSlice *clone() const override;
 	void *getData() const override { return (uint8 *) memory->getData() + offset; }
 	size_t getSize() const override { return dataSize; }
-	bool isSRGB() const override { return sRGB; }
 	size_t getOffset() const { return offset; }
 
 private:
@@ -54,7 +53,6 @@ private:
 	StrongRef<ByteData> memory;
 	size_t offset;
 	size_t dataSize;
-	bool sRGB;
 
 }; // CompressedSlice
 

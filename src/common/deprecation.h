@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,9 @@ namespace love
 enum APIType
 {
 	API_FUNCTION,
+	API_FUNCTION_VARIANT,
 	API_METHOD,
+	API_METHOD_VARIANT,
 	API_CALLBACK,
 	API_FIELD,
 	API_CONSTANT,

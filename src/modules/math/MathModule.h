@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -102,7 +102,7 @@ public:
 
 	RandomGenerator *getRandomGenerator()
 	{
-		return &rng;
+		return rng.get();
 	}
 
 	/**
@@ -118,20 +118,11 @@ public:
 	Transform *newTransform();
 	Transform *newTransform(float x, float y, float a, float sx, float sy, float ox, float oy, float kx, float ky);
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const
-	{
-		return M_MATH;
-	}
-
-	virtual const char *getName() const
-	{
-		return "love.math";
-	}
-
 private:
 
-	RandomGenerator rng;
+	// All love objects accessible in Lua should be heap-allocated,
+	// to guarantee a minimum pointer alignment.
+	StrongRef<RandomGenerator> rng;
 
 }; // Math
 

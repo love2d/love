@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -63,6 +63,11 @@ public:
 		delete[] data;
 	}
 
+	size_t getGPUReadOffset() const override
+	{
+		return (size_t) data;
+	}
+
 	MapInfo map(size_t /*minsize*/) override
 	{
 		return MapInfo(data, bufferSize);
@@ -109,6 +114,11 @@ public:
 	{
 		unloadVolatile();
 		delete[] data;
+	}
+
+	size_t getGPUReadOffset() const override
+	{
+		return frameGPUReadOffset;
 	}
 
 	MapInfo map(size_t /*minsize*/) override
@@ -191,6 +201,11 @@ public:
 	{}
 
 	virtual ~StreamBufferSync() {}
+
+	size_t getGPUReadOffset() const override
+	{
+		return (frameIndex * bufferSize) + frameGPUReadOffset;
+	}
 
 	void nextFrame() override
 	{

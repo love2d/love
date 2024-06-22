@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -106,7 +106,8 @@ static const char *getDeviceSpecifier(ALCdevice *device)
 }
 
 Audio::Audio()
-	: device(nullptr)
+	: love::audio::Audio("love.audio.openal")
+	, device(nullptr)
 	, context(nullptr)
 	, pool(nullptr)
 	, poolThread(nullptr)
@@ -144,10 +145,10 @@ Audio::Audio()
 		context = alcCreateContext(device, attribs.data());
 
 		if (context == nullptr)
-			throw love::Exception("Could not create context.");
+			throw love::Exception("Could not create context: %s", alcGetString(device, alcGetError(device)));
 
-		if (!alcMakeContextCurrent(context) || alcGetError(device) != ALC_NO_ERROR)
-			throw love::Exception("Could not make context current.");
+		if (!alcMakeContextCurrent(context))
+			throw love::Exception("Could not make context current: %s", alcGetString(device, alcGetError(device)));
 	}
 
 #ifdef ALC_EXT_EFX
@@ -254,11 +255,6 @@ Audio::~Audio()
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
 	alcCloseDevice(device);
-}
-
-const char *Audio::getName() const
-{
-	return "love.audio.openal";
 }
 
 love::audio::Source *Audio::newSource(love::sound::Decoder *decoder)

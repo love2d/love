@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -164,6 +164,9 @@ bool Buffer::load(const void *initialdata)
 		glTexBuffer(target, glformat, buffer);
 	}
 
+	if (!debugName.empty() && (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_2))
+		glObjectLabel(GL_BUFFER, buffer, -1, debugName.c_str());
+
 	return (glGetError() == GL_NO_ERROR);
 }
 
@@ -193,11 +196,7 @@ void *Buffer::map(MapType map, size_t offset, size_t size)
 	if (map == MAP_READ_ONLY)
 	{
 		gl.bindBuffer(mapUsage, buffer);
-
-		if (GLAD_VERSION_3_0 || GLAD_ES_VERSION_3_0)
-			data = (char *) glMapBufferRange(target, offset, size, GL_MAP_READ_BIT);
-		else if (GLAD_VERSION_1_1)
-			data = (char *) glMapBuffer(target, GL_READ_ONLY) + offset;
+		data = (char *) glMapBufferRange(target, offset, size, GL_MAP_READ_BIT);
 	}
 	else if (ownsMemoryMap)
 	{
@@ -296,17 +295,8 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 	return true;
 }
 
-void Buffer::clear(size_t offset, size_t size)
+void Buffer::clearInternal(size_t offset, size_t size)
 {
-	if (isImmutable())
-		throw love::Exception("Cannot clear an immutable Buffer.");
-	else if (isMapped())
-		throw love::Exception("Cannot clear a mapped Buffer.");
-	else if (offset + size > getSize())
-		throw love::Exception("The given offset and size parameters to clear() are not within the Buffer's size.");
-	else if (offset % 4 != 0 || size % 4 != 0)
-		throw love::Exception("clear() must be used with offset and size parameters that are multiples of 4 bytes.");
-
 	if (GLAD_VERSION_4_3)
 	{
 		gl.bindBuffer(mapUsage, buffer);

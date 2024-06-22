@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,10 @@
 #include "Filesystem.h"
 #include "filesystem/FileData.h"
 
+#ifdef LOVE_ANDROID
+#include "common/android.h"
+#endif
+
 namespace love
 {
 namespace filesystem
@@ -50,6 +54,21 @@ File::File(const std::string &filename, Mode mode)
 {
 	if (!open(mode))
 		throw love::Exception("Could not open file at path %s", filename.c_str());
+
+#ifdef LOVE_ANDROID
+	// In Android with t.externalstorage = true, make sure the file opened or
+	// created in the save directory has permissions of ugo+rw (0666) so that
+	// it's accessible through MTP.
+	auto fs = Module::getInstance<love::filesystem::Filesystem>(Module::M_FILESYSTEM);
+	if (fs != nullptr && fs->isAndroidSaveExternal())
+	{
+		const char *realdir = PHYSFS_getRealDir(filename.c_str());
+		const std::string &savedir = fs->getFullCommonPath(Filesystem::COMMONPATH_APP_SAVEDIR);
+
+		if (realdir != nullptr && strcmp(realdir, savedir.c_str()) == 0)
+			love::android::fixupPermissionSingleFile(savedir, filename);
+	}
+#endif
 }
 
 File::File(const File &other)

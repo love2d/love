@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,7 +36,7 @@ TextBatch::TextBatch(Font *font, const std::vector<love::font::ColoredString> &t
 	, vertexData(nullptr)
 	, modifiedVertices()
 	, vertOffset(0)
-	, textureCacheID((uint32) -1)
+	, textureCacheID(font->getTextureCacheID())
 {
 	set(text);
 }
@@ -290,7 +290,10 @@ void TextBatch::draw(Graphics *gfx, const Matrix4 &m)
 	Graphics::TempTransform transform(gfx, m);
 
 	for (const Font::DrawCommand &cmd : drawCommands)
-		gfx->drawQuads(cmd.startvertex / 4, cmd.vertexcount / 4, vertexAttributes, vertexBuffers, cmd.texture);
+	{
+		Texture *tex = gfx->getTextureOrDefaultForActiveShader(cmd.texture);
+		gfx->drawQuads(cmd.startvertex / 4, cmd.vertexcount / 4, vertexAttributes, vertexBuffers, tex);
+	}
 }
 
 } // graphics

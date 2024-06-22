@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,11 +21,11 @@
 #ifndef LOVE_FILESYSTEM_PHYSFS_PHYSFSIO_H
 #define LOVE_FILESYSTEM_PHYSFS_PHYSFSIO_H
 
-#include <cstdint>
-#include <cstdio>
-#include <string>
-
 #include "libraries/physfs/physfs.h"
+#include "common/int.h"
+#include "filesystem/NativeFile.h"
+
+#include <string>
 
 namespace love
 {
@@ -61,54 +61,54 @@ protected:
 private:
 
 	// Returns: number of bytes read, 0 on EOF, -1 on failure
-	static PHYSFS_sint64 staticRead(struct PHYSFS_Io* io, void* buf, PHYSFS_uint64 len)
+	static PHYSFS_sint64 staticRead(struct PHYSFS_Io *io, void *buf, PHYSFS_uint64 len)
 	{
 		return derived(io)->read(buf, len);
 	}
 
 	// Returns: number of bytes written, -1 on failure
-	static PHYSFS_sint64 staticWrite(struct PHYSFS_Io* io, const void* buf, PHYSFS_uint64 len)
+	static PHYSFS_sint64 staticWrite(struct PHYSFS_Io *io, const void *buf, PHYSFS_uint64 len)
 	{
 		return derived(io)->write(buf, len);
 	}
 
 	// Returns: non-zero on success, zero on error
-	static int staticSeek(struct PHYSFS_Io* io, PHYSFS_uint64 offset)
+	static int staticSeek(struct PHYSFS_Io *io, PHYSFS_uint64 offset)
 	{
 		return derived(io)->seek(offset);
 	}
 
 	// Returns: current offset from start, -1 on error
-	static PHYSFS_sint64 staticTell(struct PHYSFS_Io* io)
+	static PHYSFS_sint64 staticTell(struct PHYSFS_Io *io)
 	{
 		return derived(io)->tell();
 	}
 
 	// Returns: total size in bytes, -1 on error
-	static PHYSFS_sint64 staticLength(struct PHYSFS_Io* io)
+	static PHYSFS_sint64 staticLength(struct PHYSFS_Io *io)
 	{
 		return derived(io)->length();
 	}
 
-	static struct PHYSFS_Io* staticDuplicate(struct PHYSFS_Io* io)
+	static struct PHYSFS_Io *staticDuplicate(struct PHYSFS_Io *io)
 	{
 		// Just use copy constructor
 		return new Derived(*derived(io));
 	}
 
 	// Returns: non-zero on success, zero on error
-	static int staticFlush(struct PHYSFS_Io* io)
+	static int staticFlush(struct PHYSFS_Io *io)
 	{
 		return derived(io)->flush();
 	}
 
-	static void staticDestroy(struct PHYSFS_Io* io)
+	static void staticDestroy(struct PHYSFS_Io *io)
 	{
 		// Just use destructor
 		delete derived(io);
 	}
 
-	static Derived* derived(PHYSFS_Io* io)
+	static Derived* derived(PHYSFS_Io *io)
 	{
 		return static_cast<Derived*>(reinterpret_cast<PhysfsIo*>(io->opaque));
 	}
@@ -116,46 +116,51 @@ private:
 
 struct StripSuffixIo : public PhysfsIo<StripSuffixIo>
 {
-	static const uint32_t version = 0;
+	static const uint32 version = 0;
 
 	std::string filename;
-	FILE* file = nullptr;
+	NativeFile *file = nullptr;
 
 	// The constructor is private in favor of this function to prevent stack allocation
 	// because Physfs will take ownership of this object and call destroy on it later.
-	static StripSuffixIo* create(std::string f) { return new StripSuffixIo(f); }
+	static StripSuffixIo *create(const std::string &f) { return new StripSuffixIo(f); }
 
 	virtual ~StripSuffixIo()
 	{
 		if (file)
 		{
-			std::fclose(file);
+			file->release();
 		}
 	}
 
-	StripSuffixIo(const StripSuffixIo& other)
+	StripSuffixIo(const StripSuffixIo &other)
 		: StripSuffixIo(other.filename)
 	{
 	}
 
 	bool determineStrippedLength();
 
-	int64_t read(void* buf, uint64_t len);
-	int64_t write(const void* buf, uint64_t len);
-	int64_t seek(uint64_t offset);
-	int64_t tell();
-	int64_t length();
-	int64_t flush();
+	int64 read(void *buf, uint64 len);
+	int64 write(const void *buf, uint64 len);
+	int64 seek(uint64 offset);
+	int64 tell();
+	int64 length();
+	int64 flush();
 
 private:
 
-	StripSuffixIo(std::string f)
-		: filename(std::move(f))
-		, file(std::fopen(filename.c_str(), "rb"))
+	StripSuffixIo(const std::string &f)
+		: filename(f)
+		, file(nullptr)
 	{
+		try
+		{
+			file = new NativeFile(f, File::MODE_READ);
+		}
+		catch (love::Exception &)
+		{
+		}
 	}
-
-	int64_t fullLength();
 
 	int64_t strippedLength_ = -1;
 };

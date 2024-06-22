@@ -290,7 +290,7 @@ int inet_meth_getsockname(lua_State *L, p_socket ps, int family)
         return 2;
     }
     lua_pushstring(L, name);
-    lua_pushstring(L, port);
+    lua_pushinteger(L, (int) strtol(port, (char **) NULL, 10));
     switch (family) {
         case AF_INET: lua_pushliteral(L, "inet"); break;
         case AF_INET6: lua_pushliteral(L, "inet6"); break;

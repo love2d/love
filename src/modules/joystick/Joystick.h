@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 // LOVE
 #include "common/Object.h"
 #include "common/StringMap.h"
+#include "common/int.h"
 #include "sensor/Sensor.h"
 
 // stdlib
@@ -172,7 +173,7 @@ public:
 
 	virtual ~Joystick() {}
 
-	virtual bool open(int deviceindex) = 0;
+	virtual bool open(int64 deviceid) = 0;
 	virtual void close() = 0;
 
 	virtual bool isConnected() const = 0;
@@ -194,7 +195,7 @@ public:
 	virtual void setPlayerIndex(int index) = 0;
 	virtual int getPlayerIndex() const = 0;
 
-	virtual bool openGamepad(int deviceindex) = 0;
+	virtual bool openGamepad(int64 deviceid) = 0;
 	virtual bool isGamepad() const = 0;
 
 	virtual GamepadType getGamepadType() const = 0;

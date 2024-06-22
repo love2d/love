@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -47,6 +47,7 @@ public:
 
 	virtual void unloadVolatile() override;
 
+	size_t getGPUReadOffset() const override;
 	MapInfo map(size_t minsize) override;
 	size_t unmap(size_t usedSize) override;
 	void markUsed(size_t usedSize) override;

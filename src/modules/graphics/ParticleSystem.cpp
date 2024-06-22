@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -1086,7 +1086,8 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 	BufferBindings vertexbuffers;
 	vertexbuffers.set(0, buffer, 0);
 
-	gfx->drawQuads(0, pCount, vertexAttributes, vertexbuffers, texture);
+	Texture *tex = gfx->getTextureOrDefaultForActiveShader(texture);
+	gfx->drawQuads(0, pCount, vertexAttributes, vertexbuffers, tex);
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)

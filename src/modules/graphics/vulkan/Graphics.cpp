@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,7 @@
 #include "common/Exception.h"
 #include "common/pixelformat.h"
 #include "common/version.h"
+#include "common/memory.h"
 #include "window/Window.h"
 #include "Buffer.h"
 #include "Graphics.h"
@@ -28,6 +29,7 @@
 #include "Shader.h"
 #include "Vulkan.h"
 
+#include <SDL_version.h>
 #include <SDL_vulkan.h>
 
 #include <algorithm>
@@ -60,33 +62,116 @@ static const std::vector<const char*> deviceExtensions = {
 
 constexpr uint32_t USAGES_POLL_INTERVAL = 5000;
 
-const char *Graphics::getName() const
-{
-	return "love.graphics.vulkan";
-}
+constexpr int DEFAULT_VERTEX_BUFFER_BINDING = 0;
+constexpr int VERTEX_BUFFER_BINDING_START = 1;
 
-const VkDevice Graphics::getDevice() const
+VkDevice Graphics::getDevice() const
 {
 	return device;
 }
 
-const VmaAllocator Graphics::getVmaAllocator() const
+VmaAllocator Graphics::getVmaAllocator() const
 {
 	return vmaAllocator;
 }
 
+static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext)
+{
+	uint32_t count;
+
+	vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
+
+	std::vector<VkExtensionProperties> extensions(count);
+
+	vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data());
+
+	for (const auto& extension : extensions)
+	{
+		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
+			ext.physicalDeviceProperties2 = true;
+		if (strcmp(extension.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
+			ext.debugInfo = true;
+	}
+}
+
 Graphics::Graphics()
+	: love::graphics::Graphics("love.graphics.vulkan")
 {
 	if (SDL_Vulkan_LoadLibrary(nullptr))
 		throw love::Exception("could not find vulkan");
 
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
+
+	if (isDebugEnabled() && !checkValidationSupport())
+		throw love::Exception("validation layers requested, but not available");
+
+	VkApplicationInfo appInfo{};
+	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	appInfo.pApplicationName = "LOVE";
+	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	// get this version from somewhere else?
+	appInfo.pEngineName = "LOVE Game Framework";
+	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
+	appInfo.apiVersion = VK_API_VERSION_1_3;
+
+	VkInstanceCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	createInfo.pApplicationInfo = &appInfo;
+	createInfo.pNext = nullptr;
+
+	// GetInstanceExtensions works with a null window parameter as long as
+	// SDL_Vulkan_LoadLibrary has been called (which we do earlier).
+	unsigned int count;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	char const* const* extensions_string = SDL_Vulkan_GetInstanceExtensions(&count);
+	if (extensions_string == nullptr)
+		throw love::Exception("couldn't retrieve sdl vulkan extensions");
+
+	std::vector<const char*> extensions(extensions_string, extensions_string + count);
+#else
+	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, nullptr) != SDL_TRUE)
+		throw love::Exception("couldn't retrieve sdl vulkan extensions");
+
+	std::vector<const char*> extensions = {};
+#endif
+
+	checkOptionalInstanceExtensions(optionalInstanceExtensions);
+
+	if (optionalInstanceExtensions.physicalDeviceProperties2)
+		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+	if (optionalInstanceExtensions.debugInfo)
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+	size_t additional_extension_count = extensions.size();
+	extensions.resize(additional_extension_count + count);
+
+	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, extensions.data() + additional_extension_count) != SDL_TRUE)
+		throw love::Exception("couldn't retrieve sdl vulkan extensions");
+#endif
+
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+	createInfo.ppEnabledExtensionNames = extensions.data();
+
+	if (isDebugEnabled())
+	{
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
+	}
+
+	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+		throw love::Exception("couldn't create vulkan instance");
+
+	volkLoadInstance(instance);
 }
 
 Graphics::~Graphics()
 {
-	defaultConstantColor.set(nullptr);
-	defaultTexture.set(nullptr);
+	defaultVertexBuffer.set(nullptr);
+	localUniformBuffer.set(nullptr);
+
+	Volatile::unloadAll();
+	cleanup();
+	vkDestroyInstance(instance, nullptr);
 
 	SDL_Vulkan_UnloadLibrary();
 }
@@ -96,6 +181,11 @@ Graphics::~Graphics()
 love::graphics::Texture *Graphics::newTexture(const love::graphics::Texture::Settings &settings, const love::graphics::Texture::Slices *data)
 {
 	return new Texture(this, settings, data);
+}
+
+love::graphics::Texture *Graphics::newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings)
+{
+	return new Texture(this, base, viewsettings);
 }
 
 love::graphics::Buffer *Graphics::newBuffer(const love::graphics::Buffer::Settings &settings, const std::vector<love::graphics::Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
@@ -108,89 +198,12 @@ void Graphics::clear(OptionalColorD color, OptionalInt stencil, OptionalDouble d
 	if (!color.hasValue && !stencil.hasValue && !depth.hasValue)
 		return;
 
-	flushBatchedDraws();
+	std::vector<OptionalColorD> colors;
 
-	if (renderPassState.active)
-	{
-		VkClearAttachment attachment{};
+	if (color.hasValue)
+		colors.resize(std::max(1, (int)states.back().renderTargets.colors.size()), color);
 
-		if (color.hasValue)
-		{
-			Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
-			gammaCorrectColor(cf);
-
-			attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			attachment.clearValue.color.float32[0] = static_cast<float>(cf.r);
-			attachment.clearValue.color.float32[1] = static_cast<float>(cf.g);
-			attachment.clearValue.color.float32[2] = static_cast<float>(cf.b);
-			attachment.clearValue.color.float32[3] = static_cast<float>(cf.a);
-		}
-
-		VkClearAttachment depthStencilAttachment{};
-
-		if (stencil.hasValue)
-		{
-			depthStencilAttachment.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-			depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
-		}
-		if (depth.hasValue)
-		{
-			depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
-			depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
-		}
-
-		std::array<VkClearAttachment, 2> attachments = {
-			attachment,
-			depthStencilAttachment
-		};
-
-		VkClearRect rect{};
-		rect.layerCount = 1;
-		rect.rect.extent.width = static_cast<uint32_t>(renderPassState.width);
-		rect.rect.extent.height = static_cast<uint32_t>(renderPassState.height);
-
-		vkCmdClearAttachments(
-			commandBuffers[currentFrame], 
-			static_cast<uint32_t>(attachments.size()), attachments.data(),
-			1, &rect);
-	}
-	else
-	{
-		if (color.hasValue)
-		{
-			renderPassState.renderPassConfiguration.colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-
-			Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
-			gammaCorrectColor(cf);
-
-			renderPassState.clearColors[0].color.float32[0] = static_cast<float>(cf.r);
-			renderPassState.clearColors[0].color.float32[1] = static_cast<float>(cf.g);
-			renderPassState.clearColors[0].color.float32[2] = static_cast<float>(cf.b);
-			renderPassState.clearColors[0].color.float32[3] = static_cast<float>(cf.a);
-		}
-
-		if (depth.hasValue)
-		{
-			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[1].depthStencil.depth = static_cast<float>(depth.value);
-		}
-
-		if (stencil.hasValue)
-		{
-			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[1].depthStencil.stencil = static_cast<uint32_t>(stencil.value);
-		}
-
-		if (renderPassState.isWindow)
-		{
-			renderPassState.windowClearRequested = true;
-			renderPassState.mainWindowClearColorValue = color;
-			renderPassState.mainWindowClearDepthValue = depth;
-			renderPassState.mainWindowClearStencilValue = stencil;
-		}
-		else
-			startRenderPass();
-	}
+	clear(colors, stencil, depth);
 }
 
 void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
@@ -200,40 +213,52 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 	flushBatchedDraws();
 
+	const auto &rts = states.back().renderTargets;
+	bool rtactive = isRenderTargetActive();
+	size_t ncolorbuffers = rtactive ? rts.colors.size() : 1;
+	size_t ncolors = std::min(ncolorbuffers, colors.size());
+
 	if (renderPassState.active)
 	{
 		std::vector<VkClearAttachment> attachments;
-		for (const auto &color : colors)
+		for (size_t i = 0; i < ncolors; i++)
 		{
+			const OptionalColorD &color = colors[i];
 			VkClearAttachment attachment{};
 			if (color.hasValue)
 			{
-				Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
-				gammaCorrectColor(cf);
-
+				auto texture = i < rts.colors.size() ? rts.colors[i].texture.get() : nullptr;
 				attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				attachment.clearValue.color.float32[0] = static_cast<float>(cf.r);
-				attachment.clearValue.color.float32[1] = static_cast<float>(cf.g);
-				attachment.clearValue.color.float32[2] = static_cast<float>(cf.b);
-				attachment.clearValue.color.float32[3] = static_cast<float>(cf.a);
+				attachment.clearValue.color = Texture::getClearColor(texture, color.value);
 			}
 			attachments.push_back(attachment);
 		}
 
 		VkClearAttachment depthStencilAttachment{};
 
+		auto dstexture = rts.depthStencil.texture.get();
+
 		if (stencil.hasValue)
 		{
-			depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-			depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+			if ((!rtactive && backbufferHasStencil)
+				|| (dstexture && isPixelFormatStencil(dstexture->getPixelFormat())) || (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) != 0)
+			{
+				depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+				depthStencilAttachment.clearValue.depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+			}
 		}
 		if (depth.hasValue)
 		{
-			depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
-			depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
+			if ((!rtactive && backbufferHasDepth)
+				|| (dstexture && isPixelFormatDepth(dstexture->getPixelFormat())) || (rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) != 0)
+			{
+				depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+				depthStencilAttachment.clearValue.depthStencil.depth = static_cast<float>(depth.value);
+			}
 		}
 
-		attachments.push_back(depthStencilAttachment);
+		if (depthStencilAttachment.aspectMask != 0)
+			attachments.push_back(depthStencilAttachment);
 
 		VkClearRect rect{};
 		rect.layerCount = 1;
@@ -247,36 +272,38 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 	}
 	else
 	{
-		for (size_t i = 0; i < colors.size(); i++)
+		for (size_t i = 0; i < ncolors; i++)
 		{
 			if (colors[i].hasValue)
 			{
 				renderPassState.renderPassConfiguration.colorAttachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 
-				auto &color = colors[i];
-				Colorf cf((float)color.value.r, (float)color.value.g, (float)color.value.b, (float)color.value.a);
-				gammaCorrectColor(cf);
-
-				renderPassState.clearColors[i].color.float32[0] = static_cast<float>(cf.r);
-				renderPassState.clearColors[i].color.float32[1] = static_cast<float>(cf.g);
-				renderPassState.clearColors[i].color.float32[2] = static_cast<float>(cf.b);
-				renderPassState.clearColors[i].color.float32[3] = static_cast<float>(cf.a);
+				auto texture = i < rts.colors.size() ? rts.colors[i].texture.get() : nullptr;
+				renderPassState.clearColors[i].color = Texture::getClearColor(texture, colors[i].value);
 			}
 		}
 
 		if (depth.hasValue)
 		{
 			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[colors.size()].depthStencil.depth = static_cast<float>(depth.value);
+			renderPassState.clearColors[ncolorbuffers].depthStencil.depth = static_cast<float>(depth.value);
 		}
 
 		if (stencil.hasValue)
 		{
 			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			renderPassState.clearColors[colors.size()].depthStencil.stencil = static_cast<uint32_t>(stencil.value);
+			renderPassState.clearColors[ncolorbuffers].depthStencil.stencil = static_cast<uint32_t>(stencil.value);
 		}
 
-		startRenderPass();
+		if (renderPassState.isWindow)
+		{
+			renderPassState.windowClearRequested = true;
+			renderPassState.mainWindowClearColorValue = colors.empty() ? OptionalColorD() : colors[0];
+			renderPassState.mainWindowClearDepthValue = depth;
+			renderPassState.mainWindowClearStencilValue = stencil;
+		}
+		else
+			startRenderPass();
 	}
 }
 
@@ -302,68 +329,61 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 	startRenderPass();
 }
 
-void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
+void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallbackData)
 {
 	flushBatchedDraws();
 
 	if (renderPassState.active)
 		endRenderPass();
 
-	if (present)
+	VkBuffer screenshotBuffer = VK_NULL_HANDLE;
+	VmaAllocation screenshotAllocation = VK_NULL_HANDLE;
+	VmaAllocationInfo screenshotAllocationInfo = {};
+
+	VkImage backbufferImage = fakeBackbuffer != nullptr ? (VkImage)fakeBackbuffer->getHandle() : swapChainImages.at(imageIndex);
+
+	if (submitMode == SUBMIT_PRESENT)
 	{
 		if (pendingScreenshotCallbacks.empty())
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex),
-				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		{
+			if (fakeBackbuffer == nullptr)
+			{
+				Vulkan::cmdTransitionImageLayout(
+					commandBuffers.at(currentFrame),
+					backbufferImage,
+					swapChainPixelFormat,
+					VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+			}
+		}
 		else
 		{
+			VkBufferCreateInfo bufferInfo{};
+			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			bufferInfo.size = 4ll * swapChainExtent.width * swapChainExtent.height;
+			bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+			VmaAllocationCreateInfo allocCreateInfo{};
+			allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+			allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+			auto result = vmaCreateBuffer(
+				vmaAllocator,
+				&bufferInfo,
+				&allocCreateInfo,
+				&screenshotBuffer,
+				&screenshotAllocation,
+				&screenshotAllocationInfo);
+
+			if (result != VK_SUCCESS)
+				throw love::Exception("failed to create screenshot readback buffer");
+
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex),
+				backbufferImage,
+				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				screenshotReadbackBuffers.at(currentFrame).image,
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-			VkImageBlit blit{};
-			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			blit.srcSubresource.layerCount = 1;
-			blit.srcOffsets[1] = {
-				static_cast<int>(swapChainExtent.width),
-				static_cast<int>(swapChainExtent.height),
-				1
-			};
-			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			blit.dstSubresource.layerCount = 1;
-			blit.dstOffsets[1] = {
-				static_cast<int>(swapChainExtent.width),
-				static_cast<int>(swapChainExtent.height),
-				1
-			};
-
-			vkCmdBlitImage(
-				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				screenshotReadbackBuffers.at(currentFrame).image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-				1, &blit,
-				VK_FILTER_NEAREST);
-
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				swapChainImages.at(imageIndex),
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-
-			Vulkan::cmdTransitionImageLayout(
-				commandBuffers.at(currentFrame),
-				screenshotReadbackBuffers.at(currentFrame).image,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
 			VkBufferImageCopy region{};
@@ -377,40 +397,28 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 
 			vkCmdCopyImageToBuffer(
 				commandBuffers.at(currentFrame),
-				screenshotReadbackBuffers.at(currentFrame).image,
+				backbufferImage,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				screenshotReadbackBuffers.at(currentFrame).buffer,
+				screenshotBuffer,
 				1, &region);
 
-			addReadbackCallback([
-				w = swapChainExtent.width,
-				h = swapChainExtent.height,
-				pendingScreenshotCallbacks = pendingScreenshotCallbacks,
-				screenShotReadbackBuffer = screenshotReadbackBuffers.at(currentFrame),
-				screenshotCallbackData = screenshotCallbackData]() {
-				auto imageModule = Module::getInstance<love::image::Image>(M_IMAGE);
-
-				for (const auto &info : pendingScreenshotCallbacks)
-				{
-					image::ImageData *img = imageModule->newImageData(
-						w,
-						h,
-						PIXELFORMAT_RGBA8_UNORM,
-						screenShotReadbackBuffer.allocationInfo.pMappedData);
-					info.callback(&info, img, screenshotCallbackData);
-					img->release();
-				}
-			});
-
-			pendingScreenshotCallbacks.clear();
+			Vulkan::cmdTransitionImageLayout(
+				commandBuffers.at(currentFrame),
+				backbufferImage,
+				swapChainPixelFormat,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				fakeBackbuffer == nullptr ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		}
 	}
 
 	endRecordingGraphicsCommands();
 
-	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
-		vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
-	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+	if (!imagesInFlight.empty())
+	{
+		if (imagesInFlight[imageIndex] != VK_NULL_HANDLE)
+			vkWaitForFences(device, 1, &imagesInFlight.at(imageIndex), VK_TRUE, UINT64_MAX);
+		imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+	}
 
 	std::array<VkCommandBuffer, 1> submitCommandbuffers = { commandBuffers.at(currentFrame) };
 
@@ -435,10 +443,13 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 
 	VkFence fence = VK_NULL_HANDLE;
 
-	if (present)
+	if (submitMode == SUBMIT_PRESENT)
 	{
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
+		if (!swapChainImages.empty())
+		{
+			submitInfo.signalSemaphoreCount = 1;
+			submitInfo.pSignalSemaphores = signalSemaphores;
+		}
 
 		vkResetFences(device, 1, &inFlightFences[currentFrame]);
 		fence = inFlightFences[currentFrame];
@@ -447,7 +458,7 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
 		throw love::Exception("failed to submit draw command buffer");
 	
-	if (!present)
+	if (submitMode == SUBMIT_NOPRESENT || submitMode == SUBMIT_RESTART || screenshotBuffer != VK_NULL_HANDLE)
 	{
 		vkQueueWaitIdle(graphicsQueue);
 
@@ -458,7 +469,66 @@ void Graphics::submitGpuCommands(bool present, void *screenshotCallbackData)
 			callbacks.clear();
 		}
 
-		startRecordingGraphicsCommands();
+		if (screenshotBuffer != VK_NULL_HANDLE)
+		{
+			auto imageModule = Module::getInstance<love::image::Image>(M_IMAGE);
+
+			for (int i = 0; i < (int)pendingScreenshotCallbacks.size(); i++)
+			{
+				const auto &info = pendingScreenshotCallbacks[i];
+				image::ImageData *img = nullptr;
+
+				try
+				{
+					img = imageModule->newImageData(
+						swapChainExtent.width,
+						swapChainExtent.height,
+						PIXELFORMAT_RGBA8_UNORM,
+						screenshotAllocationInfo.pMappedData);
+				}
+				catch (love::Exception &)
+				{
+					info.callback(&info, nullptr, nullptr);
+					for (int j = i + 1; j < (int)pendingScreenshotCallbacks.size(); j++)
+					{
+						const auto& ninfo = pendingScreenshotCallbacks[j];
+						ninfo.callback(&ninfo, nullptr, nullptr);
+					}
+					vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
+					pendingScreenshotCallbacks.clear();
+					throw;
+				}
+
+				uint8 *screenshot = (uint8*)img->getData();
+
+				if (swapChainImageFormat == VK_FORMAT_B8G8R8A8_UNORM || swapChainImageFormat == VK_FORMAT_B8G8R8A8_SRGB)
+				{
+					// Convert from BGRA to RGBA and replace alpha with full opacity.
+					for (size_t i = 0; i < img->getSize(); i += 4)
+					{
+						uint8 r = screenshot[i + 2];
+						screenshot[i + 2] = screenshot[i + 0];
+						screenshot[i + 0] = r;
+						screenshot[i + 3] = 255;
+					}
+				}
+				else
+				{
+					// Replace alpha with full opacity.
+					for (size_t i = 0; i < img->getSize(); i += 4)
+						screenshot[i + 3] = 255;
+				}
+
+				info.callback(&info, img, screenshotCallbackData);
+				img->release();
+			}
+
+			vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
+			pendingScreenshotCallbacks.clear();
+		}
+
+		if (submitMode == SUBMIT_RESTART)
+			startRecordingGraphicsCommands();
 	}
 }
 
@@ -475,17 +545,34 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	deprecations.draw(this);
 
-	submitGpuCommands(true, screenshotCallbackdata);
+	submitGpuCommands(SUBMIT_PRESENT, screenshotCallbackdata);
 
-	VkPresentInfoKHR presentInfo{};
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &renderFinishedSemaphores.at(currentFrame);
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &swapChain;
-	presentInfo.pImageIndices = &imageIndex;
+	VkResult result = VK_SUCCESS;
 
-	VkResult result = vkQueuePresentKHR(presentQueue, &presentInfo);
+	if (!swapChainImages.empty())
+	{
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = &renderFinishedSemaphores.at(currentFrame);
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &swapChain;
+		presentInfo.pImageIndices = &imageIndex;
+
+		result = vkQueuePresentKHR(presentQueue, &presentInfo);
+	}
+	else
+	{
+		// Presenting without a real swap chain can happen if the window is minimized.
+		// Check every frame to see if a proper one can be created, in this situation.
+		VkSurfaceCapabilitiesKHR capabilities = {};
+		if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &capabilities) == VK_SUCCESS)
+		{
+			VkExtent2D extent = chooseSwapExtent(capabilities);
+			if (extent.width > 0 && extent.height > 0)
+				swapChainRecreationRequested = true;
+		}
+	}
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || swapChainRecreationRequested)
 	{
@@ -512,9 +599,10 @@ void Graphics::present(void *screenshotCallbackdata)
 	beginFrame();
 }
 
-void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
+void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 {
-	if (swapChain != VK_NULL_HANDLE && (pixelwidth != this->pixelWidth || pixelheight != this->pixelHeight || width != this->width || height != this->height))
+	if (swapChain != VK_NULL_HANDLE && (pixelwidth != this->pixelWidth || pixelheight != this->pixelHeight || width != this->width || height != this->height
+		|| backbufferstencil != this->backbufferHasStencil || backbufferdepth != this->backbufferHasDepth || msaa != requestedMsaa))
 		requestSwapchainRecreation();
 
 	this->width = width;
@@ -522,17 +610,21 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
 
+	this->backbufferHasStencil = backbufferstencil;
+	this->backbufferHasDepth = backbufferdepth;
+	this->requestedMsaa = msaa;
+
 	if (!isRenderTargetActive())
 		resetProjection();
+
+	if (swapChain != VK_NULL_HANDLE)
+		msaaSamples = getMsaaCount(requestedMsaa);
 }
 
-bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
+bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 {
-	requestedMsaa = msaa;
-	windowHasStencil = windowhasstencil;
-
 	// Must be called before the swapchain is created.
-	setViewportSize(width, height, pixelwidth, pixelheight);
+	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferstencil, backbufferdepth, msaa);
 
 	cleanUpFunctions.clear();
 	cleanUpFunctions.resize(MAX_FRAMES_IN_FLIGHT);
@@ -540,64 +632,101 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	readbackCallbacks.clear();
 	readbackCallbacks.resize(MAX_FRAMES_IN_FLIGHT);
 
-	createVulkanInstance();
+	bool createBaseObjects = physicalDevice == VK_NULL_HANDLE;
+
 	createSurface();
-	pickPhysicalDevice();
-	createLogicalDevice();
-	createPipelineCache();
-	initVMA();
-	initCapabilities();
+
+	if (createBaseObjects)
+	{
+		pickPhysicalDevice();
+		createLogicalDevice();
+		createPipelineCache();
+		initVMA();
+		initCapabilities();
+	}
+
+	msaaSamples = getMsaaCount(requestedMsaa);
+
 	createSwapChain();
 	createImageViews();
-	createScreenshotCallbackBuffers();
-	createSyncObjects();
 	createColorResources();
 	createDepthResources();
 	transitionColorDepthLayouts = true;
-	createCommandPool();
-	createCommandBuffers();
+
+	if (createBaseObjects)
+	{
+		createCommandPool();
+		createCommandBuffers();
+		createSyncObjects();
+	}
+
+	if (localUniformBuffer == nullptr)
+		localUniformBuffer.set(new StreamBuffer(this, BUFFERUSAGE_UNIFORM, 1024 * 512 * 1), Acquire::NORETAIN);
 
 	beginFrame();
 
-	if (batchedDrawState.vb[0] == nullptr)
+	if (createBaseObjects)
 	{
-		// Initial sizes that should be good enough for most cases. It will
-		// resize to fit if needed, later.
-		batchedDrawState.vb[0] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
-		batchedDrawState.vb[1] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
-		batchedDrawState.indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
-	}
+		if (batchedDrawState.vb[0] == nullptr)
+		{
+			// Initial sizes that should be good enough for most cases. It will
+			// resize to fit if needed, later.
+			batchedDrawState.vb[0] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+			batchedDrawState.vb[1] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
+			batchedDrawState.indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+		}
 
-	// sometimes the VertexTexCoord is not set, so we manually adjust it to (0, 0)
-	if (defaultConstantTexCoord == nullptr)
-	{
-		float zeroTexCoord[2] = { 0.0f, 0.0f };
-		Buffer::DataDeclaration format("ConstantTexCoord", DATAFORMAT_FLOAT_VEC2);
-		Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
-		defaultConstantTexCoord = newBuffer(settings, { format }, zeroTexCoord, sizeof(zeroTexCoord), 1);
-	}
+		if (defaultVertexBuffer == nullptr)
+		{
+			struct DefaultData
+			{
+				float floats[4];
+				int ints[4];
+				float color[4];
+			} data;
 
-	// sometimes the VertexColor is not set, so we manually adjust it to white color
-	if (defaultConstantColor == nullptr)
-	{
-		uint8 whiteColor[] = { 255, 255, 255, 255 };
-		Buffer::DataDeclaration format("ConstantColor", DATAFORMAT_UNORM8_VEC4);
-		Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
-		defaultConstantColor = newBuffer(settings, { format }, whiteColor, sizeof(whiteColor), 1);
-	}
+			data.floats[0] = 0.0f;
+			data.floats[1] = 0.0f;
+			data.floats[2] = 0.0f;
+			data.floats[3] = 1.0f;
 
-	createDefaultTexture();
-	createDefaultShaders();
-	Shader::current = Shader::standardShaders[Shader::StandardShader::STANDARD_DEFAULT];
-	createQuadIndexBuffer();
-	createFanIndexBuffer();
+			data.ints[0] = 0;
+			data.ints[1] = 0;
+			data.ints[2] = 0;
+			data.ints[3] = 1;
+
+			data.color[0] = 1.0f;
+			data.color[1] = 1.0f;
+			data.color[2] = 1.0f;
+			data.color[3] = 1.0f;
+
+			std::vector<Buffer::DataDeclaration> format = {
+				Buffer::DataDeclaration("Floats", DATAFORMAT_FLOAT_VEC4),
+				Buffer::DataDeclaration("Ints", DATAFORMAT_INT32_VEC4),
+				Buffer::DataDeclaration("Color", DATAFORMAT_FLOAT_VEC4)
+			};
+
+			Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
+			defaultVertexBuffer.set(newBuffer(settings, format, &data, sizeof(DefaultData), 1), Acquire::NORETAIN);
+
+			VkBuffer buffer = (VkBuffer)defaultVertexBuffer->getHandle();
+			VkDeviceSize offset = 0;
+			vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), DEFAULT_VERTEX_BUFFER_BINDING, 1, &buffer, &offset);
+		}
+
+		createDefaultShaders();
+		Shader::current = Shader::standardShaders[Shader::StandardShader::STANDARD_DEFAULT];
+		createQuadIndexBuffer();
+		createFanIndexBuffer();
+
+		frameCounter = 0;
+		currentFrame = 0;
+	}
 
 	restoreState(states.back());
 
 	Vulkan::resetShaderSwitches();
 
-	frameCounter = 0;
-	currentFrame = 0;
 	created = true;
 	drawCalls = 0;
 	drawCallsBatched = 0;
@@ -610,7 +739,6 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = true;
 	capabilities.features[FEATURE_CLAMP_ONE] = true;
-	capabilities.features[FEATURE_BLEND_MINMAX] = true;
 	capabilities.features[FEATURE_LIGHTEN] = true;
 	capabilities.features[FEATURE_FULL_NPOT] = true;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
@@ -619,14 +747,9 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL4] = true;
 	capabilities.features[FEATURE_INSTANCING] = true;
 	capabilities.features[FEATURE_TEXEL_BUFFER] = true;
-	capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = true;
-	capabilities.features[FEATURE_COPY_BUFFER] = true;
-	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = true;
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
-	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = true;
-	capabilities.features[FEATURE_MIPMAP_RANGE] = true;
 	capabilities.features[FEATURE_INDIRECT_DRAW] = true;
-	static_assert(FEATURE_MAX_ENUM == 19, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -659,14 +782,12 @@ void Graphics::getAPIStats(int &shaderswitches) const
 
 void Graphics::unSetMode()
 {
-	renderPassUsages.clear();
-	framebufferUsages.clear();
-	pipelineUsages.clear();
-	
+	submitGpuCommands(SUBMIT_NOPRESENT);
+
 	created = false;
-	vkDeviceWaitIdle(device);
-	Volatile::unloadAll();
-	cleanup();
+
+	cleanupSwapChain();
+	vkDestroySurfaceKHR(instance, surface, nullptr);
 }
 
 void Graphics::setActive(bool enable)
@@ -808,7 +929,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
 
-	prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_BACK);
+	prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_NONE);
 
 	vkCmdBindIndexBuffer(
 		commandBuffers.at(currentFrame),
@@ -845,59 +966,42 @@ void Graphics::setColor(Colorf c)
 	states.back().color = c;
 }
 
-static VkRect2D computeScissor(const Rect &r, double bufferWidth, double bufferHeight, double dpiScale, VkSurfaceTransformFlagBitsKHR preTransform)
+void Graphics::applyScissor()
 {
-	double x = static_cast<double>(r.x) * dpiScale;
-	double y = static_cast<double>(r.y) * dpiScale;
-	double w = static_cast<double>(r.w) * dpiScale;
-	double h = static_cast<double>(r.h) * dpiScale;
+	VkRect2D scissor{};
 
-	double scissorX, scissorY, scissorW, scissorH;
-
-	switch (preTransform)
+	if (renderPassState.isWindow)
+		scissor.extent = swapChainExtent;
+	else
 	{
-	case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
-		scissorX = bufferWidth - h - y;
-		scissorY = x;
-		scissorW = h;
-		scissorH = w;
-		break;
-	case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
-		scissorX = bufferWidth - w - x;
-		scissorY = bufferHeight - h - y;
-		scissorW = w;
-		scissorH = h;
-		break;
-	case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
-		scissorX = y;
-		scissorY = bufferHeight - w - x;
-		scissorW = h;
-		scissorH = w;
-		break;
-	default:
-		scissorX = x;
-		scissorY = y;
-		scissorW = w;
-		scissorH = h;
-		break;
+		scissor.extent.width = renderPassState.width;
+		scissor.extent.height = renderPassState.height;
 	}
 
-	VkRect2D scissor = { 
-		{static_cast<int32_t>(scissorX), static_cast<int32_t>(scissorY)},
-		{static_cast<uint32_t>(scissorW), static_cast<uint32_t>(scissorH)}
-	};
-	return scissor;
+	if (states.back().scissor)
+	{
+		const Rect &rect = states.back().scissorRect;
+		double dpiScale = getCurrentDPIScale();
+
+		// TODO: clamp this to the above viewport size.
+		scissor.offset.x = (int)(rect.x * dpiScale);
+		scissor.offset.y = (int)(rect.y * dpiScale);
+		scissor.extent.width = (uint32)(rect.w * dpiScale);
+		scissor.extent.height = (uint32)(rect.h * dpiScale);
+	}
+
+	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 }
 
 void Graphics::setScissor(const Rect &rect)
 {
 	flushBatchedDraws();
 
-	VkRect2D scissor = computeScissor(rect, static_cast<double>(swapChainExtent.width), static_cast<double>(swapChainExtent.height), getCurrentDPIScale(), preTransform);
-	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
-
 	states.back().scissor = true;
 	states.back().scissorRect = rect;
+
+	if (renderPassState.active)
+		applyScissor();
 }
 
 void Graphics::setScissor()
@@ -906,49 +1010,35 @@ void Graphics::setScissor()
 
 	states.back().scissor = false;
 
-	VkRect2D scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent = swapChainExtent;
-
-	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
+	if (renderPassState.active)
+		applyScissor();
 }
 
-void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, love::uint32 readmask, love::uint32 writemask)
+void Graphics::setStencilState(const StencilState &s)
 {
-	if (action != STENCIL_KEEP)
-	{
-		const auto& rts = states.back().renderTargets;
-		auto dsTexture = rts.depthStencil.texture.get();
-
-		if (!isRenderTargetActive() && !windowHasStencil)
-			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer");
-		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dsTexture == nullptr || !isPixelFormatStencil(dsTexture->getPixelFormat())))
-			throw love::Exception("drawing to the stencil buffer with a render target active requires either stencil=true or a custom stencil-type to be used, in setRenderTarget");
-	}
+	validateStencilState(s);
 
 	flushBatchedDraws();
 
-	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, writemask);
+	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, s.writeMask);
 	
-	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, readmask);
-	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, value);
+	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, s.readMask);
+	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, s.value);
 
 	if (optionalDeviceExtensions.extendedDynamicState)
 		vkCmdSetStencilOpEXT(
 			commandBuffers.at(currentFrame),
 			VK_STENCIL_FRONT_AND_BACK,
-			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(action),
-			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(getReversedCompareMode(compare)));
+			VK_STENCIL_OP_KEEP, Vulkan::getStencilOp(s.action),
+			VK_STENCIL_OP_KEEP, Vulkan::getCompareOp(getReversedCompareMode(s.compare)));
 
-	states.back().stencil.action = action;
-	states.back().stencil.compare = compare;
-	states.back().stencil.value = value;
-	states.back().stencil.readMask = readmask;
-	states.back().stencil.writeMask = writemask;
+	states.back().stencil = s;
 }
 
 void Graphics::setDepthMode(CompareMode compare, bool write)
 {
+	validateDepthState(write);
+
 	flushBatchedDraws();
 
 	if (optionalDeviceExtensions.extendedDynamicState)
@@ -971,30 +1061,27 @@ void Graphics::setWireframe(bool enable)
 	states.back().wireframe = enable;
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const
+bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 {
+	format = getSizedFormat(format);
+
 	switch (format)
 	{
-	case PIXELFORMAT_NORMAL:
-		if (isGammaCorrect())
-			return PIXELFORMAT_RGBA8_UNORM_sRGB;
-		else
-			return PIXELFORMAT_RGBA8_UNORM;
-	case PIXELFORMAT_HDR:
-		return PIXELFORMAT_RGBA16_FLOAT;
+	case PIXELFORMAT_PVR1_RGB2_UNORM:
+	case PIXELFORMAT_PVR1_RGB2_sRGB:
+	case PIXELFORMAT_PVR1_RGB4_UNORM:
+	case PIXELFORMAT_PVR1_RGB4_sRGB:
+	case PIXELFORMAT_PVR1_RGBA2_UNORM:
+	case PIXELFORMAT_PVR1_RGBA2_sRGB:
+	case PIXELFORMAT_PVR1_RGBA4_UNORM:
+	case PIXELFORMAT_PVR1_RGBA4_sRGB:
+		// Lets not support these in Vulkan - they're deprecated.
+		return false;
 	default:
-		return format;
+		break;
 	}
-}
 
-bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
-{
-	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
-	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
-
-	format = getSizedFormat(format, rendertarget, readable);
-
-	auto vulkanFormat = Vulkan::getTextureFormat(format, sRGB);
+	auto vulkanFormat = Vulkan::getTextureFormat(format);
 
 	VkFormatProperties formatProperties;
 	vkGetPhysicalDeviceFormatProperties(physicalDevice, vulkanFormat.internalFormat, &formatProperties);
@@ -1012,7 +1099,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 			return false;
 	}
 
-	if (usage & PIXELFORMATUSAGE_LINEAR)
+	if (usage & PIXELFORMATUSAGEFLAGS_LINEAR)
 	{
 		if (!(featureFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 			return false;
@@ -1081,9 +1168,9 @@ graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, c
 	return new ShaderStage(this, stage, source, gles, cachekey);
 }
 
-graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
+graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const Shader::CompileOptions &options)
 {
-	return new Shader(stages);
+	return new Shader(stages, options);
 }
 
 graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
@@ -1125,12 +1212,6 @@ bool Graphics::dispatch(love::graphics::Shader *shader, love::graphics::Buffer *
 	return true;
 }
 
-Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const
-{
-	uint32 flags = DEVICE_PROJECTION_DEFAULT;
-	return calculateDeviceProjection(projection, flags);
-}
-
 void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
 {
 	if (renderPassState.active)
@@ -1147,11 +1228,6 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, in
 
 void Graphics::initDynamicState()
 {
-	if (states.back().scissor)
-		setScissor(states.back().scissorRect);
-	else
-		setScissor();
-
 	vkCmdSetStencilWriteMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.writeMask);
 	vkCmdSetStencilCompareMask(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.readMask);
 	vkCmdSetStencilReference(commandBuffers.at(currentFrame), VK_STENCIL_FRONT_AND_BACK, states.back().stencil.value);
@@ -1185,21 +1261,28 @@ void Graphics::beginFrame()
 		frameCounter = 0;
 	}
 
-	while (true)
+	if (swapChain != VK_NULL_HANDLE)
 	{
-		VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		while (true)
 		{
-			recreateSwapChain();
-			continue;
+			VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+			if (result == VK_ERROR_OUT_OF_DATE_KHR)
+			{
+				recreateSwapChain();
+				continue;
+			}
+			else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+				throw love::Exception("failed to acquire swap chain image");
+
+			break;
 		}
-		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-			throw love::Exception("failed to acquire swap chain image");
 
-		break;
+		imageRequested = true;
 	}
-
-	imageRequested = true;
+	else
+	{
+		imageRequested = false;
+	}
 
 	for (auto &readbackCallback : readbackCallbacks.at(currentFrame))
 		readbackCallback();
@@ -1211,24 +1294,31 @@ void Graphics::beginFrame()
 
 	startRecordingGraphicsCommands();
 
-	Vulkan::cmdTransitionImageLayout(
-		commandBuffers.at(currentFrame),
-		swapChainImages[imageIndex],
-		VK_IMAGE_LAYOUT_UNDEFINED,
-		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-	if (transitionColorDepthLayouts)
+	if (!swapChainImages.empty())
 	{
 		Vulkan::cmdTransitionImageLayout(
 			commandBuffers.at(currentFrame),
-			depthImage,
+			swapChainImages[imageIndex],
+			swapChainPixelFormat,
 			VK_IMAGE_LAYOUT_UNDEFINED,
-			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	}
+
+	if (transitionColorDepthLayouts)
+	{
+		if (depthImage)
+			Vulkan::cmdTransitionImageLayout(
+				commandBuffers.at(currentFrame),
+				depthImage,
+				depthStencilPixelFormat,
+				VK_IMAGE_LAYOUT_UNDEFINED,
+				VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
 		if (colorImage)
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				colorImage,
+				swapChainPixelFormat,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -1237,9 +1327,11 @@ void Graphics::beginFrame()
 
 	Vulkan::resetShaderSwitches();
 
-	for (const auto shader : usedShadersInFrame)
+	for (const auto &shader : usedShadersInFrame)
 		shader->newFrame();
 	usedShadersInFrame.clear();
+
+	localUniformBuffer->nextFrame();
 }
 
 void Graphics::startRecordingGraphicsCommands()
@@ -1254,7 +1346,28 @@ void Graphics::startRecordingGraphicsCommands()
 
 	initDynamicState();
 
+	// This must be done after vkBeginCommandBuffer (since newTexture needs an
+	// active command buffer for layout transitions), and before setDefaultRenderPass
+	// (since that tries to use fakeBackbuffer).
+	if (swapChainImages.empty() && fakeBackbuffer == nullptr)
+	{
+		Texture::Settings settings;
+		settings.format = swapChainPixelFormat;
+		settings.width = swapChainExtent.width;
+		settings.height = swapChainExtent.height;
+		settings.renderTarget = true;
+		settings.readable.set(false);
+		fakeBackbuffer.set((Texture*)newTexture(settings, nullptr), Acquire::NORETAIN);
+	}
+
 	setDefaultRenderPass();
+
+	if (defaultVertexBuffer)
+	{
+		VkBuffer buffer = (VkBuffer)defaultVertexBuffer->getHandle();
+		VkDeviceSize offset = 0;
+		vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), DEFAULT_VERTEX_BUFFER_BINDING, 1, &buffer, &offset);
+	}
 }
 
 void Graphics::endRecordingGraphicsCommands() {
@@ -1263,11 +1376,6 @@ void Graphics::endRecordingGraphicsCommands() {
 
 	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS)
 		throw love::Exception("failed to record command buffer");
-}
-
-const VkDeviceSize Graphics::getMinUniformBufferOffsetAlignment() const
-{
-	return minUniformBufferOffsetAlignment;
 }
 
 VkCommandBuffer Graphics::getCommandBufferForDataTransfer()
@@ -1293,30 +1401,27 @@ graphics::Shader::BuiltinUniformData Graphics::getCurrentBuiltinUniformData()
 	love::graphics::Shader::BuiltinUniformData data;
 
 	data.transformMatrix = getTransform();
-	data.projectionMatrix = displayRotation * getDeviceProjection();
+	data.projectionMatrix = getDeviceProjection();
 
-	// The normal matrix is the transpose of the inverse of the rotation portion
-	// (top-left 3x3) of the transform matrix.
+	data.scaleParams.x = (float) getCurrentDPIScale();
+	data.scaleParams.y = getPointSize();
+
+	// Flip y to convert input y-up [-1, 1] to vulkan's y-down [-1, 1].
+	// Convert input z [-1, 1] to vulkan [0, 1].
+	uint32 flags = Shader::CLIP_TRANSFORM_FLIP_Y | Shader::CLIP_TRANSFORM_Z_NEG1_1_TO_0_1;
+	data.clipSpaceParams = Shader::computeClipSpaceParams(flags);
+
+	const auto &rt = states.back().renderTargets.getFirstTarget();
+	if (rt.texture != nullptr)
 	{
-		Matrix3 normalmatrix = Matrix3(data.transformMatrix).transposedInverse();
-		const float *e = normalmatrix.getElements();
-		for (int i = 0; i < 3; i++)
-		{
-			data.normalMatrix[i].x = e[i * 3 + 0];
-			data.normalMatrix[i].y = e[i * 3 + 1];
-			data.normalMatrix[i].z = e[i * 3 + 2];
-			data.normalMatrix[i].w = 0.0f;
-		}
+		data.screenSizeParams.x = rt.texture->getPixelWidth(rt.mipmap);
+		data.screenSizeParams.y = rt.texture->getPixelHeight(rt.mipmap);
 	}
-
-	// Store DPI scale in an unused component of another vector.
-	data.normalMatrix[0].w = (float)getCurrentDPIScale();
-
-	// Same with point size.
-	data.normalMatrix[1].w = getPointSize();
-
-	data.screenSizeParams.x = static_cast<float>(swapChainExtent.width);
-	data.screenSizeParams.y = static_cast<float>(swapChainExtent.height);
+	else
+	{
+		data.screenSizeParams.x = getPixelWidth();
+		data.screenSizeParams.y = getPixelHeight();
+	}
 
 	data.screenSizeParams.z = 1.0f;
 	data.screenSizeParams.w = 0.0f;
@@ -1332,73 +1437,9 @@ const OptionalDeviceExtensions &Graphics::getEnabledOptionalDeviceExtensions() c
 	return optionalDeviceExtensions;
 }
 
-static void checkOptionalInstanceExtensions(OptionalInstanceExtensions &ext)
+const OptionalInstanceExtensions &Graphics::getEnabledOptionalInstanceExtensions() const
 {
-	uint32_t count;
-
-	vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
-
-	std::vector<VkExtensionProperties> extensions(count);
-
-	vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data());
-
-	for (const auto &extension : extensions)
-	{
-		if (strcmp(extension.extensionName, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == 0)
-			ext.physicalDeviceProperties2 = true;
-	}
-}
-
-void Graphics::createVulkanInstance()
-{
-	if (isDebugEnabled() && !checkValidationSupport())
-		throw love::Exception("validation layers requested, but not available");
-
-	VkApplicationInfo appInfo{};
-	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName = "LOVE";
-	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);	// get this version from somewhere else?
-	appInfo.pEngineName = "LOVE Game Framework";
-	appInfo.engineVersion = VK_MAKE_API_VERSION(0, VERSION_MAJOR, VERSION_MINOR, VERSION_REV);
-	appInfo.apiVersion = VK_API_VERSION_1_3;
-
-	VkInstanceCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	createInfo.pApplicationInfo = &appInfo;
-	createInfo.pNext = nullptr;
-
-	// GetInstanceExtensions works with a null window parameter as long as
-	// SDL_Vulkan_LoadLibrary has been called (which we do earlier).
-	unsigned int count;
-	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, nullptr) != SDL_TRUE)
-		throw love::Exception("couldn't retrieve sdl vulkan extensions");
-
-	std::vector<const char*> extensions = {};
-
-	checkOptionalInstanceExtensions(optionalInstanceExtensions);
-
-	if (optionalInstanceExtensions.physicalDeviceProperties2)
-		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-
-	size_t additional_extension_count = extensions.size();
-	extensions.resize(additional_extension_count + count);
-
-	if (SDL_Vulkan_GetInstanceExtensions(nullptr, &count, extensions.data() + additional_extension_count) != SDL_TRUE)
-		throw love::Exception("couldn't retrieve sdl vulkan extensions");
-
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-	createInfo.ppEnabledExtensionNames = extensions.data();
-
-	if (isDebugEnabled())
-	{
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
-	}
-
-	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
-		throw love::Exception("couldn't create vulkan instance");
-
-	volkLoadInstance(instance);
+	return optionalInstanceExtensions;
 }
 
 bool Graphics::checkValidationSupport()
@@ -1458,8 +1499,19 @@ void Graphics::pickPhysicalDevice()
 	minUniformBufferOffsetAlignment = properties.limits.minUniformBufferOffsetAlignment;
 	deviceApiVersion = properties.apiVersion;
 
-	msaaSamples = getMsaaCount(requestedMsaa);
 	depthStencilFormat = findDepthFormat();
+	switch (depthStencilFormat)
+	{
+	case VK_FORMAT_D32_SFLOAT_S8_UINT:
+		depthStencilPixelFormat = PIXELFORMAT_DEPTH32_FLOAT_STENCIL8;
+		break;
+	case VK_FORMAT_D24_UNORM_S8_UINT:
+		depthStencilPixelFormat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+		break;
+	default:
+		throw love::Exception("Failed to convert vulkan depth/stencil swapchain pixel format %d to love PixelFormat.", depthStencilFormat);
+		break;
+	}
 }
 
 bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device)
@@ -1573,7 +1625,7 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 			optionalDeviceExtensions.memoryRequirements2 = true;
 		if (strcmp(extension.extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.dedicatedAllocation = true;
-		if (strcmp(extension.extensionName, VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME) == 0)
+		if (strcmp(extension.extensionName, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.memoryBudget = true;
 		if (strcmp(extension.extensionName, VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.shaderFloatControls = true;
@@ -1733,8 +1785,13 @@ void Graphics::createSurface()
 {
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 	const void *handle = window->getHandle();
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, nullptr, &surface) != SDL_TRUE)
+		throw love::Exception("failed to create window surface");
+#else
 	if (SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, &surface) != SDL_TRUE)
 		throw love::Exception("failed to create window surface");
+#endif
 }
 
 SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device)
@@ -1772,83 +1829,88 @@ void Graphics::createSwapChain()
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
 	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
-	if ((swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR) ||
-		(swapChainSupport.capabilities.currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR))
+	if (extent.width > 0 && extent.height > 0)
 	{
-		uint32_t width, height;
-		width = extent.width;
-		height = extent.height;
-		extent.width = height;
-		extent.height = width;
-	}
+		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+		if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
+			imageCount = swapChainSupport.capabilities.maxImageCount;
 
-	auto currentTransform = swapChainSupport.capabilities.currentTransform;
-	constexpr float PI = 3.14159265358979323846f;
-	float angle = 0.0f;
-	if (currentTransform & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
-		angle = 0.0f;
-	else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR)
-		angle = -PI / 2.0f;
-	else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR)
-		angle = -PI;
-	else if (currentTransform & VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR)
-		angle = -3.0f * PI / 2.0f;
+		VkSwapchainCreateInfoKHR createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		createInfo.surface = surface;
 
-	float data[] = {
-		cosf(angle), -sinf(angle), 0.0f, 0.0f,
-		sinf(angle), cosf(angle), 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f,
-	};
-	displayRotation = Matrix4(data);
+		createInfo.minImageCount = imageCount;
+		createInfo.imageFormat = surfaceFormat.format;
+		createInfo.imageColorSpace = surfaceFormat.colorSpace;
+		createInfo.imageExtent = extent;
+		createInfo.imageArrayLayers = 1;
+		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
-		imageCount = swapChainSupport.capabilities.maxImageCount;
+		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+		uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value, indices.presentFamily.value };
 
-	VkSwapchainCreateInfoKHR createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	createInfo.surface = surface;
+		if (indices.graphicsFamily.value != indices.presentFamily.value)
+		{
+			createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+			createInfo.queueFamilyIndexCount = 2;
+			createInfo.pQueueFamilyIndices = queueFamilyIndices;
+		}
+		else
+		{
+			createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			createInfo.queueFamilyIndexCount = 0;
+			createInfo.pQueueFamilyIndices = nullptr;
+		}
 
-	createInfo.minImageCount = imageCount;
-	createInfo.imageFormat = surfaceFormat.format;
-	createInfo.imageColorSpace = surfaceFormat.colorSpace;
-	createInfo.imageExtent = extent;
-	createInfo.imageArrayLayers = 1;
-	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		createInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+		createInfo.compositeAlpha = chooseCompositeAlpha(swapChainSupport.capabilities);
+		createInfo.presentMode = presentMode;
+		createInfo.clipped = VK_TRUE;
+		createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value, indices.presentFamily.value };
+		if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
+			throw love::Exception("failed to create swap chain");
 
-	if (indices.graphicsFamily.value != indices.presentFamily.value)
-	{
-		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		createInfo.queueFamilyIndexCount = 2;
-		createInfo.pQueueFamilyIndices = queueFamilyIndices;
+		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+		swapChainImages.resize(imageCount);
+		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
 	}
 	else
 	{
-		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		createInfo.queueFamilyIndexCount = 0;
-		createInfo.pQueueFamilyIndices = nullptr;
+		// Use a fake backbuffer. Creation is deferred until startRecordingGraphicsCommands
+		// because newTexture needs an active command buffer to do its initial
+		// layout transitions.
+		swapChainImages.clear();
+		extent.width = std::max(1, pixelWidth);
+		extent.height = std::max(1, pixelHeight);
+
+		if (isGammaCorrect())
+			surfaceFormat.format = VK_FORMAT_R8G8B8A8_SRGB;
+		else
+			surfaceFormat.format = VK_FORMAT_R8G8B8A8_UNORM;
 	}
-
-	createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-	createInfo.compositeAlpha = chooseCompositeAlpha(swapChainSupport.capabilities);
-	createInfo.presentMode = presentMode;
-	createInfo.clipped = VK_TRUE;
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-	if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
-		throw love::Exception("failed to create swap chain");
-
-	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
-	swapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
-	preTransform = swapChainSupport.capabilities.currentTransform;
+
+	switch (swapChainImageFormat)
+	{
+	case VK_FORMAT_B8G8R8A8_SRGB:
+		swapChainPixelFormat = PIXELFORMAT_BGRA8_sRGB;
+		break;
+	case VK_FORMAT_B8G8R8A8_UNORM:
+		swapChainPixelFormat = PIXELFORMAT_BGRA8_UNORM;
+		break;
+	case VK_FORMAT_R8G8B8A8_SRGB:
+		swapChainPixelFormat = PIXELFORMAT_RGBA8_sRGB;
+		break;
+	case VK_FORMAT_R8G8B8A8_UNORM:
+		swapChainPixelFormat = PIXELFORMAT_RGBA8_UNORM;
+		break;
+	default:
+		throw love::Exception("Failed to convert vulkan depth/stencil swapchain image format %d to love PixelFormat.", swapChainImageFormat);
+		break;
+	}
 }
 
 VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
@@ -1860,15 +1922,15 @@ VkSurfaceFormatKHR Graphics::chooseSwapSurfaceFormat(const std::vector<VkSurface
 	if (isGammaCorrect())
 	{
 		formatOrder = {
-				VK_FORMAT_B8G8R8A8_SRGB,
-				VK_FORMAT_R8G8B8A8_SRGB,
+			VK_FORMAT_B8G8R8A8_SRGB,
+			VK_FORMAT_R8G8B8A8_SRGB,
 		};
 	}
 	else
 	{
 		formatOrder = {
-				VK_FORMAT_B8G8R8A8_UNORM,
-				VK_FORMAT_R8G8B8A8_SNORM,
+			VK_FORMAT_B8G8R8A8_UNORM,
+			VK_FORMAT_R8G8B8A8_SNORM,
 		};
 	}
 
@@ -1981,65 +2043,6 @@ void Graphics::createImageViews()
 
 		if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews.at(i)) != VK_SUCCESS)
 			throw love::Exception("failed to create image views");
-	}
-}
-
-void Graphics::createScreenshotCallbackBuffers()
-{
-	screenshotReadbackBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-
-	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		VkBufferCreateInfo bufferInfo{};
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = 4ll * swapChainExtent.width * swapChainExtent.height;
-		bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-		VmaAllocationCreateInfo allocCreateInfo{};
-		allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
-		allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-		auto result = vmaCreateBuffer(
-			vmaAllocator,
-			&bufferInfo,
-			&allocCreateInfo,
-			&screenshotReadbackBuffers.at(i).buffer,
-			&screenshotReadbackBuffers.at(i).allocation,
-			&screenshotReadbackBuffers.at(i).allocationInfo);
-
-		if (result != VK_SUCCESS)
-			throw love::Exception("failed to create screenshot readback buffer");
-
-		VkImageCreateInfo imageInfo{};
-		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		imageInfo.imageType = VK_IMAGE_TYPE_2D;
-		imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-		imageInfo.extent = {
-			swapChainExtent.width,
-			swapChainExtent.height,
-			1
-		};
-		imageInfo.mipLevels = 1;
-		imageInfo.arrayLayers = 1;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-		imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-		VmaAllocationCreateInfo imageAllocCreateInfo{};
-
-		result = vmaCreateImage(
-			vmaAllocator, 
-			&imageInfo, 
-			&imageAllocCreateInfo, 
-			&screenshotReadbackBuffers.at(i).image, 
-			&screenshotReadbackBuffers.at(i).imageAllocation, 
-			nullptr);
-
-		if (result != VK_SUCCESS)
-			throw love::Exception("failed to create screenshot readback image");
 	}
 }
 
@@ -2226,100 +2229,83 @@ VkRenderPass Graphics::getRenderPass(RenderPassConfiguration &configuration)
 }
 
 void Graphics::createVulkanVertexFormat(
-	VertexAttributes vertexAttributes,
+	Shader *shader,
+	const VertexAttributes &attributes,
 	std::vector<VkVertexInputBindingDescription> &bindingDescriptions,
 	std::vector<VkVertexInputAttributeDescription> &attributeDescriptions)
 {
 	std::set<uint32_t> usedBuffers;
 
-	auto enableBits = vertexAttributes.enableBits;
-	auto allBits = enableBits;
-
-	bool usesColor = false;
-	bool usesTexCoord = false;
-
-	uint8_t highestBufferBinding = 0;
-
-	uint32_t i = 0;
-	while (allBits)
+	for (const auto &pair : shader->getVertexAttributeIndices())
 	{
+		int i = pair.second.index;
 		uint32 bit = 1u << i;
-		if (enableBits & bit)
+
+		VkVertexInputAttributeDescription attribdesc{};
+		attribdesc.location = i;
+
+		if (attributes.enableBits & bit)
 		{
-			if (i == ATTRIB_TEXCOORD)
-				usesTexCoord = true;
-			if (i == ATTRIB_COLOR)
-				usesColor = true;
+			const auto &attrib = attributes.attribs[i];
 
-			auto attrib = vertexAttributes.attribs[i];
-			auto bufferBinding = attrib.bufferIndex;
-			if (usedBuffers.find(bufferBinding) == usedBuffers.end())
+			int bufferbinding = VERTEX_BUFFER_BINDING_START + attrib.bufferIndex;
+
+			attribdesc.binding = bufferbinding;
+			attribdesc.offset = attrib.offsetFromVertex;
+			attribdesc.format = Vulkan::getVulkanVertexFormat(attrib.getFormat());
+
+			if (usedBuffers.find(bufferbinding) == usedBuffers.end())
 			{
-				usedBuffers.insert(bufferBinding);
+				usedBuffers.insert(bufferbinding);
 
-				VkVertexInputBindingDescription bindingDescription{};
-				bindingDescription.binding = bufferBinding;
-				if (vertexAttributes.instanceBits & (1u << bufferBinding))
-					bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+				VkVertexInputBindingDescription bindingdesc{};
+				bindingdesc.binding = bufferbinding;
+				if (attributes.instanceBits & (1u << attrib.bufferIndex))
+					bindingdesc.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 				else
-					bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-				bindingDescription.stride = vertexAttributes.bufferLayouts[bufferBinding].stride;
-				bindingDescriptions.push_back(bindingDescription);
+					bindingdesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+				bindingdesc.stride = attributes.bufferLayouts[attrib.bufferIndex].stride;
+				bindingDescriptions.push_back(bindingdesc);
+			}
+		}
+		else
+		{
+			attribdesc.binding = DEFAULT_VERTEX_BUFFER_BINDING;
 
-				highestBufferBinding = std::max(highestBufferBinding, bufferBinding);
+			// Indices should match the creation parameters for defaultVertexBuffer.
+			switch (pair.second.baseType)
+			{
+			case DATA_BASETYPE_INT:
+				attribdesc.offset = defaultVertexBuffer->getDataMember(1).offset;
+				attribdesc.format = Vulkan::getVulkanVertexFormat(DATAFORMAT_INT32_VEC4);
+				break;
+			case DATA_BASETYPE_UINT:
+				attribdesc.offset = defaultVertexBuffer->getDataMember(1).offset;
+				attribdesc.format = Vulkan::getVulkanVertexFormat(DATAFORMAT_UINT32_VEC4);
+				break;
+			case DATA_BASETYPE_FLOAT:
+			default:
+				if (i == ATTRIB_COLOR)
+					attribdesc.offset = defaultVertexBuffer->getDataMember(2).offset;
+				else
+					attribdesc.offset = defaultVertexBuffer->getDataMember(0).offset;
+				attribdesc.format = Vulkan::getVulkanVertexFormat(DATAFORMAT_FLOAT_VEC4);
+				break;
 			}
 
-			VkVertexInputAttributeDescription attributeDescription{};
-			attributeDescription.location = i;
-			attributeDescription.binding = bufferBinding;
-			attributeDescription.offset = attrib.offsetFromVertex;
-			attributeDescription.format = Vulkan::getVulkanVertexFormat(attrib.format);
+			if (usedBuffers.find(DEFAULT_VERTEX_BUFFER_BINDING) == usedBuffers.end())
+			{
+				usedBuffers.insert(DEFAULT_VERTEX_BUFFER_BINDING);
 
-			attributeDescriptions.push_back(attributeDescription);
+				VkVertexInputBindingDescription bindingdesc{};
+				bindingdesc.binding = DEFAULT_VERTEX_BUFFER_BINDING;
+				bindingdesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+				bindingdesc.stride = 0; // no stride, will always read the same coord multiple times.
+				bindingDescriptions.push_back(bindingdesc);
+			}
 		}
 
-		i++;
-		allBits >>= 1;
-	}
-
-	if (!usesTexCoord)
-	{
-		// FIXME: is there a case where gaps happen between buffer bindings?
-		// then this doesn't work. We might need to enable null buffers again.
-		const auto constantTexCoordBufferBinding = ++highestBufferBinding;
-
-		VkVertexInputBindingDescription bindingDescription{};
-		bindingDescription.binding = constantTexCoordBufferBinding;
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-		bindingDescription.stride = 0;	// no stride, will always read the same coord multiple times.
-		bindingDescriptions.push_back(bindingDescription);
-
-		VkVertexInputAttributeDescription attributeDescription{};
-		attributeDescription.binding = constantTexCoordBufferBinding;
-		attributeDescription.location = ATTRIB_TEXCOORD;
-		attributeDescription.offset = 0;
-		attributeDescription.format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions.push_back(attributeDescription);
-	}
-
-	if (!usesColor)
-	{
-		// FIXME: is there a case where gaps happen between buffer bindings?
-		// then this doesn't work. We might need to enable null buffers again.
-		const auto constantColorBufferBinding = ++highestBufferBinding;
-
-		VkVertexInputBindingDescription bindingDescription{};
-		bindingDescription.binding = constantColorBufferBinding;
-		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-		bindingDescription.stride = 0;	// no stride, will always read the same color multiple times.
-		bindingDescriptions.push_back(bindingDescription);
-
-		VkVertexInputAttributeDescription attributeDescription{};
-		attributeDescription.binding = constantColorBufferBinding;
-		attributeDescription.location = ATTRIB_COLOR;
-		attributeDescription.offset = 0;
-		attributeDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-		attributeDescriptions.push_back(attributeDescription);
+		attributeDescriptions.push_back(attribdesc);
 	}
 }
 
@@ -2354,39 +2340,36 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		configuration.dynamicState.cullmode = cullmode;
 	}
 
-	std::vector<VkBuffer> bufferVector;
-	std::vector<VkDeviceSize> offsets;
-
-	for (uint32_t i = 0; i < VertexAttributes::MAX; i++)
-	{
-		if (buffers.useBits & (1u << i))
-		{
-			bufferVector.push_back((VkBuffer)buffers.info[i].buffer->getHandle());
-			offsets.push_back((VkDeviceSize)buffers.info[i].offset);
-		}
-	}
-
-	if (!(attributes.enableBits & (1u << ATTRIB_TEXCOORD)))
-	{
-		bufferVector.push_back((VkBuffer)defaultConstantTexCoord->getHandle());
-		offsets.push_back((VkDeviceSize)0);
-	}
-
-	if (!(attributes.enableBits & (1u << ATTRIB_COLOR)))
-	{
-		bufferVector.push_back((VkBuffer)defaultConstantColor->getHandle());
-		offsets.push_back((VkDeviceSize)0);
-	}
-
-	if (texture == nullptr)
-		configuration.shader->setMainTex(defaultTexture);
-	else
-		configuration.shader->setMainTex(texture);
+	configuration.shader->setMainTex(texture);
 
 	ensureGraphicsPipelineConfiguration(configuration);
 
 	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS);
-	vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), 0, static_cast<uint32_t>(bufferVector.size()), bufferVector.data(), offsets.data());
+
+	VkBuffer vkbuffers[BufferBindings::MAX];
+	VkDeviceSize vkoffsets[BufferBindings::MAX];
+	uint32 buffercount = 0;
+
+	uint32 allbits = buffers.useBits;
+	uint32 i = 0;
+	while (allbits)
+	{
+		uint32 bit = 1u << i;
+
+		// TODO: handle split ranges.
+		if (buffers.useBits & bit)
+		{
+			vkbuffers[buffercount] = (VkBuffer)buffers.info[i].buffer->getHandle();
+			vkoffsets[buffercount] = (VkDeviceSize)buffers.info[i].offset;
+			buffercount++;
+		}
+
+		i++;
+		allbits >>= 1;
+	}
+
+	if (buffercount > 0)
+		vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), VERTEX_BUFFER_BINDING_START, buffercount, vkbuffers, vkoffsets);
 }
 
 void Graphics::setDefaultRenderPass()
@@ -2425,13 +2408,19 @@ void Graphics::setDefaultRenderPass()
 
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
 	{
-		framebufferConfiguration.colorViews.push_back(swapChainImageViews.at(imageIndex));
+		if (!swapChainImageViews.empty())
+			framebufferConfiguration.colorViews.push_back(swapChainImageViews.at(imageIndex));
+		else
+			framebufferConfiguration.colorViews.push_back(fakeBackbuffer->getRenderTargetView(0, 0));
 		framebufferConfiguration.staticData.resolveView = VK_NULL_HANDLE;
 	}
 	else
 	{
 		framebufferConfiguration.colorViews.push_back(colorImageView);
-		framebufferConfiguration.staticData.resolveView = swapChainImageViews.at(imageIndex);
+		if (!swapChainImageViews.empty())
+			framebufferConfiguration.staticData.resolveView = swapChainImageViews.at(imageIndex);
+		else
+			framebufferConfiguration.staticData.resolveView = fakeBackbuffer->getRenderTargetView(0, 0);
 	}
 
 	renderPassState.renderPassConfiguration = std::move(renderPassConfiguration);
@@ -2447,27 +2436,44 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	RenderPassConfiguration renderPassConfiguration{};
 	for (const auto &color : rts.colors)
 		renderPassConfiguration.colorAttachments.push_back({ 
-			Vulkan::getTextureFormat(color.texture->getPixelFormat(), isPixelFormatSRGB(color.texture->getPixelFormat())).internalFormat,
+			Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat,
 			VK_ATTACHMENT_LOAD_OP_LOAD,
 			dynamic_cast<Texture*>(color.texture)->getMsaaSamples() });
 	if (rts.depthStencil.texture != nullptr)
 		renderPassConfiguration.staticData.depthStencilAttachment = {
-			Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat(), false).internalFormat,
+			Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat,
 			VK_ATTACHMENT_LOAD_OP_LOAD,
 			VK_ATTACHMENT_LOAD_OP_LOAD,
 			dynamic_cast<Texture*>(rts.depthStencil.texture)->getMsaaSamples() };
 
 	FramebufferConfiguration configuration{};
 
-	std::vector<VkImage> transitionImages;
+	std::vector<std::tuple<VkImage, PixelFormat, VkImageLayout, VkImageLayout, int, int>> transitionImages;
 
 	for (const auto &color : rts.colors)
 	{
-		configuration.colorViews.push_back(dynamic_cast<Texture*>(color.texture)->getRenderTargetView(color.mipmap, color.slice));
-		transitionImages.push_back((VkImage) color.texture->getHandle());
+		auto tex = (Texture*)color.texture;
+		configuration.colorViews.push_back(tex->getRenderTargetView(color.mipmap, color.slice));
+		const Texture::ViewInfo &viewinfo = tex->getRootViewInfo();
+		VkImageLayout imagelayout = tex->getImageLayout();
+		if (imagelayout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+		{
+			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), imagelayout, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+				viewinfo.startMipmap + color.mipmap, viewinfo.startLayer + color.slice });
+		}
 	}
 	if (rts.depthStencil.texture != nullptr)
-		configuration.staticData.depthView = dynamic_cast<Texture*>(rts.depthStencil.texture)->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
+	{
+		auto tex = (Texture*)rts.depthStencil.texture;
+		configuration.staticData.depthView = tex->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
+		const Texture::ViewInfo &viewinfo = tex->getRootViewInfo();
+		VkImageLayout imagelayout = tex->getImageLayout();
+		if (imagelayout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+		{
+			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), imagelayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+				viewinfo.startMipmap + rts.depthStencil.mipmap, viewinfo.startLayer + rts.depthStencil.slice });
+		}
+	}
 
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
 	configuration.staticData.height = static_cast<uint32_t>(pixelh);
@@ -2517,10 +2523,12 @@ void Graphics::startRenderPass()
 	renderPassState.framebufferConfiguration.staticData.renderPass = renderPassState.beginInfo.renderPass;
 	renderPassState.beginInfo.framebuffer = getFramebuffer(renderPassState.framebufferConfiguration);
 
-	for (const auto &image : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	for (const auto &[image, format, imageLayout, renderLayout, rootmip, rootlayer] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, imageLayout, renderLayout, rootmip, 1, rootlayer, 1);
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	applyScissor();
 }
 
 void Graphics::endRenderPass()
@@ -2529,8 +2537,8 @@ void Graphics::endRenderPass()
 
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 
-	for (const auto &image : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	for (const auto &[image, format, imageLayout, renderLayout, rootmip, rootlayer] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, renderLayout, imageLayout, rootmip, 1, rootlayer, 1);
 
 	for (auto &colorAttachment : renderPassState.renderPassConfiguration.colorAttachments)
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -2651,7 +2659,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	std::vector<VkVertexInputBindingDescription> bindingDescriptions;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-	createVulkanVertexFormat(configuration.vertexAttributes, bindingDescriptions, attributeDescriptions);
+	createVulkanVertexFormat(configuration.shader, configuration.vertexAttributes, bindingDescriptions, attributeDescriptions);
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -2795,7 +2803,8 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	return graphicsPipeline;
 }
 
-void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration) {
+void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration)
+{
 	auto it = graphicsPipelines.find(configuration);
 	if (it != graphicsPipelines.end())
 	{
@@ -2857,6 +2866,23 @@ void Graphics::setVsync(int vsync)
 int Graphics::getVsync() const
 {
 	return vsync;
+}
+
+void Graphics::mapLocalUniformData(void *data, size_t size, VkDescriptorBufferInfo &bufferInfo)
+{
+	size_t alignedSize = alignUp(size, minUniformBufferOffsetAlignment);
+
+	if (localUniformBuffer->getUsableSize() < alignedSize)
+		localUniformBuffer.set(new StreamBuffer(this, BUFFERUSAGE_UNIFORM, localUniformBuffer->getSize() * 2), Acquire::NORETAIN);
+
+	auto mapInfo = localUniformBuffer->map(size);
+	memcpy(mapInfo.data, data, size);
+
+	bufferInfo.buffer = (VkBuffer)localUniformBuffer->getHandle();
+	bufferInfo.offset = localUniformBuffer->unmap(size);
+	bufferInfo.range = size;
+
+	localUniformBuffer->markUsed(alignedSize);
 }
 
 void Graphics::createColorResources()
@@ -2938,6 +2964,13 @@ VkFormat Graphics::findDepthFormat()
 
 void Graphics::createDepthResources()
 {
+	if (!backbufferHasDepth && !backbufferHasStencil)
+	{
+		depthImage = VK_NULL_HANDLE;
+		depthImageView = VK_NULL_HANDLE;
+		return;
+	}
+
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -2969,8 +3002,9 @@ void Graphics::createDepthResources()
 	imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-	imageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	if (windowHasStencil)
+	if (backbufferHasDepth)
+		imageViewInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+	if (backbufferHasStencil)
 		imageViewInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 	imageViewInfo.subresourceRange.baseMipLevel = 0;
 	imageViewInfo.subresourceRange.levelCount = 1;
@@ -3029,19 +3063,8 @@ void Graphics::createSyncObjects()
 			throw love::Exception("failed to create synchronization objects for a frame!");
 }
 
-void Graphics::createDefaultTexture()
-{
-	Texture::Settings settings;
-	defaultTexture.set(newTexture(settings, nullptr), Acquire::NORETAIN);
-
-	uint8_t whitePixels[] = {255, 255, 255, 255};
-	defaultTexture->replacePixels(whitePixels, sizeof(whitePixels), 0, 0, { 0, 0, 1, 1 }, false);
-}
-
 void Graphics::cleanup()
 {
-	cleanupSwapChain();
-
 	for (auto &cleanUpFns : cleanUpFunctions)
 		for (auto &cleanUpFn : cleanUpFns)
 			cleanUpFn();
@@ -3076,25 +3099,26 @@ void Graphics::cleanup()
 	vkDestroyCommandPool(device, commandPool, nullptr);
 	vkDestroyPipelineCache(device, pipelineCache, nullptr);
 	vkDestroyDevice(device, nullptr);
-	vkDestroySurfaceKHR(instance, surface, nullptr);
-	vkDestroyInstance(instance, nullptr);
 }
 
 void Graphics::cleanupSwapChain()
 {
-	for (const auto &readbackBuffer : screenshotReadbackBuffers)
+	if (colorImage)
 	{
-		vmaDestroyBuffer(vmaAllocator, readbackBuffer.buffer, readbackBuffer.allocation);
-		vmaDestroyImage(vmaAllocator, readbackBuffer.image, readbackBuffer.imageAllocation);
+		vkDestroyImageView(device, colorImageView, nullptr);
+		vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
 	}
-	vkDestroyImageView(device, colorImageView, nullptr);
-	vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
-	vkDestroyImageView(device, depthImageView, nullptr);
-	vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
+	if (depthImage)
+	{
+		vkDestroyImageView(device, depthImageView, nullptr);
+		vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
+	}
 	for (const auto &swapChainImageView : swapChainImageViews)
 		vkDestroyImageView(device, swapChainImageView, nullptr);
 	swapChainImageViews.clear();
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
+	swapChainImages.clear();
+	fakeBackbuffer.set(nullptr);
 
 	swapChain = VK_NULL_HANDLE;
 }
@@ -3107,7 +3131,6 @@ void Graphics::recreateSwapChain()
 
 	createSwapChain();
 	createImageViews();
-	createScreenshotCallbackBuffers();
 	createColorResources();
 	createDepthResources();
 

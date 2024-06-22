@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -108,11 +108,7 @@ public:
 
 	static love::Type type;
 
-	Filesystem();
 	virtual ~Filesystem();
-
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_FILESYSTEM; }
 
 	virtual void init(const char *arg0) = 0;
 
@@ -316,6 +312,10 @@ public:
 	STRINGMAP_CLASS_DECLARE(CommonPath);
 	STRINGMAP_CLASS_DECLARE(MountPermissions);
 	STRINGMAP_CLASS_DECLARE(LoadMode);
+
+protected:
+
+	Filesystem(const char *name);
 
 private:
 

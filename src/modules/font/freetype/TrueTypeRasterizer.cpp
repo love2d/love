@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -33,12 +33,12 @@ namespace font
 namespace freetype
 {
 
-TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size, float dpiscale, Hinting hinting)
+TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int size, const Settings &settings, float defaultdpiscale)
 	: data(data)
-	, hinting(hinting)
+	, hinting(settings.hinting)
 {
-	this->dpiScale = dpiscale;
-	size = floorf(size * dpiscale + 0.5f);
+	dpiScale = settings.dpiScale.get(defaultdpiscale);
+	size = floorf(size * dpiScale + 0.5f);
 
 	if (size <= 0)
 		throw love::Exception("Invalid TrueType font size: %d", size);

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,11 +24,13 @@
 
 // glslang
 #include "libraries/glslang/glslang/Public/ShaderLang.h"
+#include "libraries/glslang/glslang/Public/ResourceLimits.h"
 #include "libraries/glslang/SPIRV/GlslangToSpv.h"
 #include "libraries/spirv_cross/spirv_msl.hpp"
 #include "libraries/spirv_cross/spirv_reflect.hpp"
 
 #include <algorithm>
+#include <memory>
 
 namespace love
 {
@@ -38,114 +40,6 @@ namespace metal
 {
 
 static_assert(MAX_COLOR_RENDER_TARGETS <= 8, "Metal pipeline cache key only stores 8 render target pixel formats.");
-
-// TODO: Use love.graphics to determine actual limits?
-static const TBuiltInResource defaultTBuiltInResource = {
-	/* .MaxLights = */ 32,
-	/* .MaxClipPlanes = */ 6,
-	/* .MaxTextureUnits = */ 32,
-	/* .MaxTextureCoords = */ 32,
-	/* .MaxVertexAttribs = */ 64,
-	/* .MaxVertexUniformComponents = */ 16384,
-	/* .MaxVaryingFloats = */ 128,
-	/* .MaxVertexTextureImageUnits = */ 32,
-	/* .MaxCombinedTextureImageUnits = */ 80,
-	/* .MaxTextureImageUnits = */ 32,
-	/* .MaxFragmentUniformComponents = */ 16384,
-	/* .MaxDrawBuffers = */ 8,
-	/* .MaxVertexUniformVectors = */ 4096,
-	/* .MaxVaryingVectors = */ 32,
-	/* .MaxFragmentUniformVectors = */ 4096,
-	/* .MaxVertexOutputVectors = */ 32,
-	/* .MaxFragmentInputVectors = */ 31,
-	/* .MinProgramTexelOffset = */ -8,
-	/* .MaxProgramTexelOffset = */ 7,
-	/* .MaxClipDistances = */ 8,
-	/* .MaxComputeWorkGroupCountX = */ 65535,
-	/* .MaxComputeWorkGroupCountY = */ 65535,
-	/* .MaxComputeWorkGroupCountZ = */ 65535,
-	/* .MaxComputeWorkGroupSizeX = */ 1024,
-	/* .MaxComputeWorkGroupSizeY = */ 1024,
-	/* .MaxComputeWorkGroupSizeZ = */ 64,
-	/* .MaxComputeUniformComponents = */ 1024,
-	/* .MaxComputeTextureImageUnits = */ 32,
-	/* .MaxComputeImageUniforms = */ 16,
-	/* .MaxComputeAtomicCounters = */ 4096,
-	/* .MaxComputeAtomicCounterBuffers = */ 8,
-	/* .MaxVaryingComponents = */ 128,
-	/* .MaxVertexOutputComponents = */ 128,
-	/* .MaxGeometryInputComponents = */ 128,
-	/* .MaxGeometryOutputComponents = */ 128,
-	/* .MaxFragmentInputComponents = */ 128,
-	/* .MaxImageUnits = */ 192,
-	/* .MaxCombinedImageUnitsAndFragmentOutputs = */ 144,
-	/* .MaxCombinedShaderOutputResources = */ 144,
-	/* .MaxImageSamples = */ 32,
-	/* .MaxVertexImageUniforms = */ 16,
-	/* .MaxTessControlImageUniforms = */ 16,
-	/* .MaxTessEvaluationImageUniforms = */ 16,
-	/* .MaxGeometryImageUniforms = */ 16,
-	/* .MaxFragmentImageUniforms = */ 16,
-	/* .MaxCombinedImageUniforms = */ 80,
-	/* .MaxGeometryTextureImageUnits = */ 16,
-	/* .MaxGeometryOutputVertices = */ 256,
-	/* .MaxGeometryTotalOutputComponents = */ 1024,
-	/* .MaxGeometryUniformComponents = */ 1024,
-	/* .MaxGeometryVaryingComponents = */ 64,
-	/* .MaxTessControlInputComponents = */ 128,
-	/* .MaxTessControlOutputComponents = */ 128,
-	/* .MaxTessControlTextureImageUnits = */ 16,
-	/* .MaxTessControlUniformComponents = */ 1024,
-	/* .MaxTessControlTotalOutputComponents = */ 4096,
-	/* .MaxTessEvaluationInputComponents = */ 128,
-	/* .MaxTessEvaluationOutputComponents = */ 128,
-	/* .MaxTessEvaluationTextureImageUnits = */ 16,
-	/* .MaxTessEvaluationUniformComponents = */ 1024,
-	/* .MaxTessPatchComponents = */ 120,
-	/* .MaxPatchVertices = */ 32,
-	/* .MaxTessGenLevel = */ 64,
-	/* .MaxViewports = */ 16,
-	/* .MaxVertexAtomicCounters = */ 4096,
-	/* .MaxTessControlAtomicCounters = */ 4096,
-	/* .MaxTessEvaluationAtomicCounters = */ 4096,
-	/* .MaxGeometryAtomicCounters = */ 4096,
-	/* .MaxFragmentAtomicCounters = */ 4096,
-	/* .MaxCombinedAtomicCounters = */ 4096,
-	/* .MaxAtomicCounterBindings = */ 8,
-	/* .MaxVertexAtomicCounterBuffers = */ 8,
-	/* .MaxTessControlAtomicCounterBuffers = */ 8,
-	/* .MaxTessEvaluationAtomicCounterBuffers = */ 8,
-	/* .MaxGeometryAtomicCounterBuffers = */ 8,
-	/* .MaxFragmentAtomicCounterBuffers = */ 8,
-	/* .MaxCombinedAtomicCounterBuffers = */ 8,
-	/* .MaxAtomicCounterBufferSize = */ 16384,
-	/* .MaxTransformFeedbackBuffers = */ 4,
-	/* .MaxTransformFeedbackInterleavedComponents = */ 64,
-	/* .MaxCullDistances = */ 8,
-	/* .MaxCombinedClipAndCullDistances = */ 8,
-	/* .MaxSamples = */ 32,
-	/* .maxMeshOutputVerticesNV = */ 256,
-	/* .maxMeshOutputPrimitivesNV = */ 512,
-	/* .maxMeshWorkGroupSizeX_NV = */ 32,
-	/* .maxMeshWorkGroupSizeY_NV = */ 1,
-	/* .maxMeshWorkGroupSizeZ_NV = */ 1,
-	/* .maxTaskWorkGroupSizeX_NV = */ 32,
-	/* .maxTaskWorkGroupSizeY_NV = */ 1,
-	/* .maxTaskWorkGroupSizeZ_NV = */ 1,
-	/* .maxMeshViewCountNV = */ 4,
-	/* .maxDualSourceDrawBuffersEXT = */ 1,
-	/* .limits = */ {
-		/* .nonInductiveForLoops = */ 1,
-		/* .whileLoops = */ 1,
-		/* .doWhileLoops = */ 1,
-		/* .generalUniformIndexing = */ 1,
-		/* .generalAttributeMatrixVectorIndexing = */ 1,
-		/* .generalVaryingIndexing = */ 1,
-		/* .generalSamplerIndexing = */ 1,
-		/* .generalVariableIndexing = */ 1,
-		/* .generalConstantMatrixVectorIndexing = */ 1,
-	}
-};
 
 static MTLVertexFormat getMTLVertexFormat(DataFormat format)
 {
@@ -249,8 +143,8 @@ static EShLanguage getGLSLangStage(ShaderStageType stage)
 	return EShLangCount;
 }
 
-Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
-	: love::graphics::Shader(stages)
+Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const CompileOptions &options)
+	: love::graphics::Shader(stages, options)
 	, functions()
 	, builtinUniformInfo()
 	, localUniformStagingData(nullptr)
@@ -314,7 +208,7 @@ Shader::Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stag
 		forcedefault = true;
 #endif
 
-		if (!tshader->parse(&defaultTBuiltInResource, defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
+		if (!tshader->parse(GetResources(), defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
 		{
 			const char *stagename = "unknown";
 			ShaderStage::getConstant(stage, stagename);
@@ -394,8 +288,20 @@ void Shader::buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv
 		switch (membertype.basetype)
 		{
 			case SPIRType::Struct:
-				name += ".";
-				buildLocalUniforms(msl, membertype, offset, name);
+				if (membertype.op == spv::OpTypeArray)
+				{
+					size_t arraystride = msl.type_struct_member_array_stride(type, uindex);
+					for (uint32 i = 0; i < membertype.array[0]; i++)
+					{
+						std::string structname = name + "[" + std::to_string(i) + "].";
+						buildLocalUniforms(msl, membertype, offset + i * arraystride, structname);
+					}
+				}
+				else
+				{
+					std::string structname = name + ".";
+					buildLocalUniforms(msl, membertype, offset, structname);
+				}
 				continue;
 			case SPIRType::Int:
 			case SPIRType::UInt:
@@ -405,148 +311,45 @@ void Shader::buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv
 				continue;
 		}
 
+		name = canonicaliizeUniformName(name);
+
 		if (offset + membersize > localUniformBufferSize)
 			throw love::Exception("Invalid uniform offset + size for '%s' (offset=%d, size=%d, buffer size=%d)", name.c_str(), (int)offset, (int)membersize, (int)localUniformBufferSize);
 
-		UniformInfo u = {};
-		u.name = name;
+		auto uniformit = reflection.allUniforms.find(name);
+		if (uniformit == reflection.allUniforms.end())
+		{
+			handleUnknownUniformName(name.c_str());
+			continue;
+		}
+
+		UniformInfo &u = *(uniformit->second);
+		u.active = true;
+
+		if (u.dataSize > 0)
+			continue;
+
 		u.dataSize = membersize;
-		u.count = membertype.array.empty() ? 1 : membertype.array[0];
-		u.components = 1;
-
 		u.data = localUniformStagingData + offset;
-		if (membertype.columns == 1)
-		{
-			if (membertype.basetype == SPIRType::Int)
-				u.baseType = UNIFORM_INT;
-			else if (membertype.basetype == SPIRType::UInt)
-				u.baseType = UNIFORM_UINT;
-			else
-				u.baseType = UNIFORM_FLOAT;
-			u.components = membertype.vecsize;
-		}
-		else
-		{
-			u.baseType = UNIFORM_MATRIX;
-			u.matrix.rows = membertype.vecsize;
-			u.matrix.columns = membertype.columns;
-		}
 
-		const auto &reflectionit = validationReflection.localUniforms.find(u.name);
-		if (reflectionit != validationReflection.localUniforms.end())
+		const auto &reflectionit = reflection.localUniformInitializerValues.find(u.name);
+		if (reflectionit != reflection.localUniformInitializerValues.end())
 		{
-			const auto &localuniform = reflectionit->second;
-			const auto &values = localuniform.initializerValues;
+			const auto &values = reflectionit->second;
 			if (!values.empty())
 				memcpy(u.data, values.data(), std::min(u.dataSize, values.size() * sizeof(LocalUniformValue)));
 		}
-
-		uniforms[u.name] = u;
 
 		BuiltinUniform builtin = BUILTIN_MAX_ENUM;
 		if (getConstant(u.name.c_str(), builtin))
 		{
 			if (builtin == BUILTIN_UNIFORMS_PER_DRAW)
 				builtinUniformDataOffset = offset;
-			builtinUniformInfo[builtin] = &uniforms[u.name];
+			builtinUniformInfo[builtin] = &u;
 		}
 
 		updateUniform(&u, u.count);
 	}
-}
-
-void Shader::addImage(const spirv_cross::CompilerMSL &msl, const spirv_cross::Resource &resource, UniformType baseType)
-{
-	using namespace spirv_cross;
-
-	const SPIRType &basetype = msl.get_type(resource.base_type_id);
-	const SPIRType &type = msl.get_type(resource.type_id);
-	const SPIRType &imagetype = msl.get_type(basetype.image.type);
-
-	UniformInfo u = {};
-	u.baseType = baseType;
-	u.name = resource.name;
-	u.count = type.array.empty() ? 1 : type.array[0];
-	u.isDepthSampler = type.image.depth;
-	u.components = 1;
-
-	auto it = uniforms.find(u.name);
-	if (it != uniforms.end())
-		return;
-
-	if (!fillUniformReflectionData(u))
-		return;
-
-	switch (imagetype.basetype)
-	{
-	case SPIRType::Float:
-		u.dataBaseType = DATA_BASETYPE_FLOAT;
-		break;
-	case SPIRType::Int:
-		u.dataBaseType = DATA_BASETYPE_INT;
-		break;
-	case SPIRType::UInt:
-		u.dataBaseType = DATA_BASETYPE_UINT;
-		break;
-	default:
-		break;
-	}
-
-	switch (basetype.image.dim)
-	{
-	case spv::Dim2D:
-		u.textureType = basetype.image.arrayed ? TEXTURE_2D_ARRAY : TEXTURE_2D;
-		u.textures = new love::graphics::Texture*[u.count];
-		break;
-	case spv::Dim3D:
-		u.textureType = TEXTURE_VOLUME;
-		u.textures = new love::graphics::Texture*[u.count];
-		break;
-	case spv::DimCube:
-		if (basetype.image.arrayed)
-			throw love::Exception("Cubemap Arrays are not currently supported.");
-		u.textureType = TEXTURE_CUBE;
-		u.textures = new love::graphics::Texture*[u.count];
-		break;
-	case spv::DimBuffer:
-		u.baseType = UNIFORM_TEXELBUFFER;
-		u.buffers = new love::graphics::Buffer*[u.count];
-		break;
-	default:
-		// TODO: error? continue?
-		break;
-	}
-
-	u.dataSize = sizeof(int) * u.count;
-	u.data = malloc(u.dataSize);
-	for (int i = 0; i < u.count; i++)
-		u.ints[i] = -1; // Initialized below, after compiling.
-
-	if (u.baseType == UNIFORM_SAMPLER)
-	{
-		auto tex = Graphics::getInstance()->getDefaultTexture(u.textureType);
-		for (int i = 0; i < u.count; i++)
-		{
-			tex->retain();
-			u.textures[i] = tex;
-		}
-	}
-	else if (u.baseType == UNIFORM_TEXELBUFFER)
-	{
-		for (int i = 0; i < u.count; i++)
-			u.buffers[i] = nullptr; // TODO
-	}
-	else if (u.baseType == UNIFORM_STORAGETEXTURE)
-	{
-		for (int i = 0; i < u.count; i++)
-			u.textures[i] = nullptr;
-	}
-
-	uniforms[u.name] = u;
-
-	BuiltinUniform builtin;
-	if (getConstant(resource.name.c_str(), builtin))
-		builtinUniformInfo[builtin] = &uniforms[u.name];
 }
 
 void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program)
@@ -579,272 +382,287 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 		std::string msgs = logger.getAllMessages();
 //		printf("spirv length: %ld, messages:\n%s\n", spirv.size(), msgs.c_str());
 
+//		printf("GLSL INPUT SOURCE:\n\n%s\n\n", pixel->getSource().c_str());
+
+		std::unique_ptr<CompilerMSL> mslpointer;
+
 		try
 		{
-//			printf("GLSL INPUT SOURCE:\n\n%s\n\n", pixel->getSource().c_str());
-
-			CompilerMSL msl(std::move(spirv));
-
-			auto interfacevars = msl.get_active_interface_variables();
-
-			msl.set_enabled_interface_variables(interfacevars);
-
-			ShaderResources resources = msl.get_shader_resources();
-
-			for (const auto &resource : resources.storage_images)
-			{
-				addImage(msl, resource, UNIFORM_STORAGETEXTURE);
-			}
-
-			for (const auto &resource : resources.sampled_images)
-			{
-				addImage(msl, resource, UNIFORM_SAMPLER);
-			}
-
-			for (const auto &resource : resources.uniform_buffers)
-			{
-				MSLResourceBinding binding;
-				binding.stage = msl.get_execution_model();
-				binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
-				binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
-
-				if (resource.name == "gl_DefaultUniformBlock")
-				{
-					binding.msl_buffer = getUniformBufferBinding();
-					msl.add_msl_resource_binding(binding);
-
-					const SPIRType &type = msl.get_type(resource.base_type_id);
-					size_t size = msl.get_declared_struct_size(type);
-
-					if (localUniformBufferSize != 0)
-					{
-						if (localUniformBufferSize != size)
-							throw love::Exception("Local uniform buffer size mismatch");
-						continue;
-					}
-
-					localUniformStagingData = new uint8[size];
-					localUniformBufferData = new uint8[size];
-					localUniformBufferSize = size;
-
-					memset(localUniformStagingData, 0, size);
-					memset(localUniformBufferData, 0, size);
-
-					std::string basename("");
-					buildLocalUniforms(msl, type, 0, basename);
-				}
-				else
-				{
-					binding.msl_buffer = metalBufferIndices[stageindex]++;
-					msl.add_msl_resource_binding(binding);
-				}
-			}
-
-			for (const auto &resource : resources.storage_buffers)
-			{
-				MSLResourceBinding binding;
-				binding.stage = msl.get_execution_model();
-				binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
-				binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
-				binding.msl_buffer = metalBufferIndices[stageindex]++;
-				msl.add_msl_resource_binding(binding);
-
-				auto it = uniforms.find(resource.name);
-				if (it != uniforms.end())
-					continue;
-
-				const SPIRType &type = msl.get_type(resource.type_id);
-
-				UniformInfo u = {};
-				u.baseType = UNIFORM_STORAGEBUFFER;
-				u.components = 1;
-				u.name = resource.name;
-				u.count = type.array.empty() ? 1 : type.array[0];
-
-				if (!fillUniformReflectionData(u))
-					continue;
-
-				u.buffers = new love::graphics::Buffer*[u.count];
-				u.dataSize = sizeof(int) * u.count;
-				u.data = malloc(u.dataSize);
-
-				for (int i = 0; i < u.count; i++)
-				{
-					u.ints[i] = -1; // Initialized below, after compiling.
-					u.buffers[i] = nullptr; // TODO
-				}
-
-				uniforms[u.name] = u;
-			}
-
-			if (stageindex == SHADERSTAGE_VERTEX)
-			{
-				int nextattributeindex = ATTRIB_MAX_ENUM;
-
-				for (const auto &var : interfacevars)
-				{
-					spv::StorageClass storage = msl.get_storage_class(var);
-					const std::string &name = msl.get_name(var);
-
-					if (storage == spv::StorageClassInput)
-					{
-						int index = 0;
-
-						BuiltinVertexAttribute builtinattribute;
-						if (graphics::getConstant(name.c_str(), builtinattribute))
-							index = (int) builtinattribute;
-						else
-							index = nextattributeindex++;
-
-						msl.set_decoration(var, spv::DecorationLocation, index);
-						attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
-					}
-				}
-
-				for (const auto &varying : resources.stage_outputs)
-				{
-//					printf("vertex shader output %s: %d\n", inp.name.c_str(), msl.get_decoration(inp.id, spv::DecorationLocation));
-					varyings[varying.name] = nextVaryingLocation;
-					msl.set_decoration(varying.id, spv::DecorationLocation, nextVaryingLocation++);
-				}
-			}
-			else if (stageindex == SHADERSTAGE_PIXEL)
-			{
-				for (const auto &varying : resources.stage_inputs)
-				{
-					const auto it = varyings.find(varying.name);
-					if (it != varyings.end())
-						msl.set_decoration(varying.id, spv::DecorationLocation, it->second);
-				}
-			}
-
-			CompilerMSL::Options options;
-			options.set_msl_version(2, 1);
-			options.texture_buffer_native = true;
-#ifdef LOVE_IOS
-			options.platform = CompilerMSL::Options::iOS;
-#else
-			options.platform = CompilerMSL::Options::macOS;
-#endif
-
-			msl.set_msl_options(options);
-
-			std::string source = msl.compile();
-//			printf("// MSL SOURCE for stage %d:\n\n%s\n\n", stageindex, source.c_str());
-
-			NSString *nssource = [[NSString alloc] initWithBytes:source.c_str()
-														  length:source.length()
-														encoding:NSUTF8StringEncoding];
-
-			MTLCompileOptions *opts = [MTLCompileOptions new];
-
-			// Silences warning. We already only use metal on these OS versions.
-			if (@available(macOS 10.14, iOS 12.0, *))
-				opts.languageVersion = MTLLanguageVersion2_1;
-
-			NSError *err = nil;
-			id<MTLLibrary> library = [device newLibraryWithSource:nssource options:opts error:&err];
-			if (library == nil && err != nil)
-			{
-				NSLog(@"errors: %@", err);
-				throw love::Exception("Error compiling converted Metal shader code");
-			}
-
-			functions[stageindex] = [library newFunctionWithName:library.functionNames[0]];
-
-			auto setTextureBinding = [this](CompilerMSL &msl, int stageindex, const spirv_cross::Resource &resource) -> void
-			{
-				auto it = uniforms.find(resource.name);
-				if (it == uniforms.end())
-					return;
-
-				UniformInfo &u = it->second;
-
-				uint32 texturebinding = msl.get_automatic_msl_resource_binding(resource.id);
-				uint32 samplerbinding = msl.get_automatic_msl_resource_binding_secondary(resource.id);
-
-				if (texturebinding == (uint32)-1)
-					return;
-
-				for (int i = 0; i < u.count; i++)
-				{
-					if (u.ints[i] == -1)
-					{
-						u.ints[i] = (int)textureBindings.size();
-						TextureBinding b = {};
-						b.access = u.access;
-
-						if (u.baseType == UNIFORM_TEXELBUFFER)
-						{
-							// TODO
-						}
-						else
-						{
-							b.texture = getMTLTexture(u.textures[i]);
-							b.samplerTexture = u.textures[i];
-
-							BuiltinUniform builtin = BUILTIN_MAX_ENUM;
-							if (getConstant(u.name.c_str(), builtin) && builtin == BUILTIN_TEXTURE_MAIN)
-								b.isMainTexture = true;
-						}
-
-						for (uint8 &stagebinding : b.textureStages)
-							stagebinding = LOVE_UINT8_MAX;
-						for (uint8 &stagebinding : b.samplerStages)
-							stagebinding = LOVE_UINT8_MAX;
-
-						textureBindings.push_back(b);
-					}
-
-					auto &b = textureBindings[u.ints[i]];
-					b.textureStages[stageindex] = (uint8) texturebinding;
-					b.samplerStages[stageindex] = (uint8) samplerbinding;
-				}
-			};
-
-			for (const auto &resource : resources.sampled_images)
-			{
-				setTextureBinding(msl, stageindex, resource);
-			}
-
-			for (const auto &resource : resources.storage_images)
-			{
-				setTextureBinding(msl, stageindex, resource);
-			}
-
-			for (const auto &resource : resources.storage_buffers)
-			{
-				auto it = uniforms.find(resource.name);
-				if (it == uniforms.end())
-					continue;
-
-				UniformInfo &u = it->second;
-
-				uint32 bufferbinding = msl.get_automatic_msl_resource_binding(resource.id);
-				if (bufferbinding == (uint32)-1)
-					continue;
-
-				for (int i = 0; i < u.count; i++)
-				{
-					if (u.ints[i] == -1)
-					{
-						u.ints[i] = (int)bufferBindings.size();
-						BufferBinding b = {};
-						b.access = u.access;
-
-						for (uint8 &stagebinding : b.stages)
-							stagebinding = LOVE_UINT8_MAX;
-
-						bufferBindings.push_back(b);
-					}
-
-					bufferBindings[u.ints[i]].stages[stageindex] = (uint8) bufferbinding;
-				}
-			}
+			mslpointer.reset(new CompilerMSL(std::move(spirv)));
 		}
 		catch (std::exception &e)
 		{
-			printf("Error parsing SPIR-V shader source: %s\n", e.what());
+			throw love::Exception("Error parsing SPIR-V shader source: %s", e.what());
+		}
+
+		auto &msl = *mslpointer;
+
+		auto interfacevars = msl.get_active_interface_variables();
+		ShaderResources resources = msl.get_shader_resources(interfacevars);
+
+		msl.set_enabled_interface_variables(interfacevars);
+
+		for (const auto &resource : resources.uniform_buffers)
+		{
+			MSLResourceBinding binding;
+			binding.stage = msl.get_execution_model();
+			binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+			binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
+			if (resource.name == "gl_DefaultUniformBlock")
+			{
+				binding.msl_buffer = getUniformBufferBinding();
+				msl.add_msl_resource_binding(binding);
+
+				const SPIRType &type = msl.get_type(resource.base_type_id);
+				size_t size = msl.get_declared_struct_size(type);
+
+				if (localUniformBufferSize != 0)
+				{
+					if (localUniformBufferSize != size)
+						throw love::Exception("Local uniform buffer size mismatch");
+					continue;
+				}
+
+				localUniformStagingData = new uint8[size];
+				localUniformBufferData = new uint8[size];
+				localUniformBufferSize = size;
+
+				memset(localUniformStagingData, 0, size);
+				memset(localUniformBufferData, 0, size);
+
+				std::string basename("");
+				buildLocalUniforms(msl, type, 0, basename);
+			}
+			else
+			{
+				binding.msl_buffer = metalBufferIndices[stageindex]++;
+				msl.add_msl_resource_binding(binding);
+			}
+		}
+
+		for (const auto &resource : resources.storage_buffers)
+		{
+			MSLResourceBinding binding;
+			binding.stage = msl.get_execution_model();
+			binding.binding = msl.get_decoration(resource.id, spv::DecorationBinding);
+			binding.desc_set = msl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+			binding.msl_buffer = metalBufferIndices[stageindex]++;
+			msl.add_msl_resource_binding(binding);
+		}
+
+		if (stageindex == SHADERSTAGE_VERTEX)
+		{
+			int nextattributeindex = ATTRIB_MAX_ENUM;
+
+			for (const auto &var : interfacevars)
+			{
+				spv::StorageClass storage = msl.get_storage_class(var);
+				const std::string &name = msl.get_name(var);
+
+				if (storage == spv::StorageClassInput)
+				{
+					int index = 0;
+
+					BuiltinVertexAttribute builtinattribute;
+					if (graphics::getConstant(name.c_str(), builtinattribute))
+						index = (int) builtinattribute;
+					else
+						index = nextattributeindex++;
+
+					msl.set_decoration(var, spv::DecorationLocation, index);
+					attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
+				}
+			}
+
+			for (const auto &varying : resources.stage_outputs)
+			{
+				varyings[varying.name] = nextVaryingLocation;
+				msl.set_decoration(varying.id, spv::DecorationLocation, nextVaryingLocation);
+
+				const auto &type = msl.get_type(varying.base_type_id);
+				int count = type.array.empty() ? 1 : type.array[0];
+				if (type.op == spv::OpTypeMatrix)
+					count *= type.columns;
+
+				nextVaryingLocation += count;
+			}
+		}
+		else if (stageindex == SHADERSTAGE_PIXEL)
+		{
+			for (const auto &varying : resources.stage_inputs)
+			{
+				const auto it = varyings.find(varying.name);
+				if (it != varyings.end())
+					msl.set_decoration(varying.id, spv::DecorationLocation, it->second);
+			}
+		}
+
+		CompilerMSL::Options options;
+		options.set_msl_version(2, 1);
+		options.texture_buffer_native = true;
+#ifdef LOVE_IOS
+		options.platform = CompilerMSL::Options::iOS;
+#else
+		options.platform = CompilerMSL::Options::macOS;
+#endif
+
+		msl.set_msl_options(options);
+
+		std::string source = msl.compile();
+//		printf("// MSL SOURCE for stage %d:\n\n%s\n\n", stageindex, source.c_str());
+
+		NSString *nssource = [[NSString alloc] initWithBytes:source.c_str()
+													  length:source.length()
+													encoding:NSUTF8StringEncoding];
+
+		MTLCompileOptions *opts = [MTLCompileOptions new];
+
+		// Silences warning. We already only use metal on these OS versions.
+		if (@available(macOS 10.14, iOS 12.0, *))
+			opts.languageVersion = MTLLanguageVersion2_1;
+
+		NSError *err = nil;
+		id<MTLLibrary> library = [device newLibraryWithSource:nssource options:opts error:&err];
+		if (library == nil && err != nil)
+		{
+			NSLog(@"errors: %@", err);
+			NSString *errorstr = err.localizedDescription;
+			throw love::Exception("Error compiling converted Metal shader code:\n\n%s", errorstr.UTF8String);
+		}
+
+		functions[stageindex] = [library newFunctionWithName:library.functionNames[0]];
+
+		std::string debugname = getShaderStageDebugName((ShaderStageType)stageindex);
+		if (!debugname.empty())
+			functions[stageindex].label = @(debugname.c_str());
+
+		auto setTextureBinding = [this](CompilerMSL &msl, int stageindex, const spirv_cross::Resource &resource) -> void
+		{
+			std::string name = canonicaliizeUniformName(resource.name);
+			auto it = reflection.allUniforms.find(name);
+			if (it == reflection.allUniforms.end())
+			{
+				handleUnknownUniformName(name.c_str());
+				return;
+			}
+
+			UniformInfo &u = *(it->second);
+
+			uint32 texturebinding = msl.get_automatic_msl_resource_binding(resource.id);
+			uint32 samplerbinding = msl.get_automatic_msl_resource_binding_secondary(resource.id);
+
+			if (texturebinding == (uint32)-1)
+			{
+				// No valid binding, the uniform was likely optimized out because it's not used.
+				return;
+			}
+
+			u.active = true;
+
+			if (u.location < 0)
+			{
+				u.location = (int)textureBindings.size();
+				for (int i = 0; i < u.count; i++)
+				{
+					TextureBinding b = {};
+					b.access = u.access;
+
+					if (u.baseType == UNIFORM_SAMPLER)
+					{
+						BuiltinUniform builtin = BUILTIN_MAX_ENUM;
+						if (getConstant(u.name.c_str(), builtin) && builtin == BUILTIN_TEXTURE_MAIN)
+							b.isMainTexture = true;
+					}
+
+					for (uint8 &stagebinding : b.textureStages)
+						stagebinding = LOVE_UINT8_MAX;
+					for (uint8 &stagebinding : b.samplerStages)
+						stagebinding = LOVE_UINT8_MAX;
+
+					textureBindings.push_back(b);
+				}
+			}
+
+			for (int i = 0; i < u.count; i++)
+			{
+				auto &b = textureBindings[u.location + i];
+				b.textureStages[stageindex] = (uint8) texturebinding;
+				b.samplerStages[stageindex] = (uint8) samplerbinding;
+			}
+
+			BuiltinUniform builtin;
+			if (getConstant(name.c_str(), builtin))
+				builtinUniformInfo[builtin] = &u;
+		};
+
+		for (const auto &resource : resources.sampled_images)
+		{
+			setTextureBinding(msl, stageindex, resource);
+		}
+
+		for (const auto &resource : resources.storage_images)
+		{
+			setTextureBinding(msl, stageindex, resource);
+		}
+
+		for (const auto &resource : resources.storage_buffers)
+		{
+			std::string name = canonicaliizeUniformName(resource.name);
+			auto it = reflection.storageBuffers.find(name);
+			if (it == reflection.storageBuffers.end())
+			{
+				handleUnknownUniformName(name.c_str());
+				continue;
+			}
+
+			UniformInfo &u = it->second;
+
+			uint32 bufferbinding = msl.get_automatic_msl_resource_binding(resource.id);
+			if (bufferbinding == (uint32)-1)
+			{
+				// No valid binding, the uniform was likely optimized out because it's not used.
+				continue;
+			}
+
+			u.active = true;
+
+			if (u.location < 0)
+			{
+				u.location = (int)bufferBindings.size();
+				for (int i = 0; i < u.count; i++)
+				{
+					BufferBinding b = {};
+					b.access = u.access;
+
+					for (uint8 &stagebinding : b.stages)
+						stagebinding = LOVE_UINT8_MAX;
+
+					bufferBindings.push_back(b);
+				}
+			}
+
+			for (int i = 0; i < u.count; i++)
+				bufferBindings[u.location + i].stages[stageindex] = (uint8) bufferbinding;
+		}
+	}
+
+	// Initialize default resource bindings.
+	for (const auto &kvp : reflection.allUniforms)
+	{
+		const UniformInfo *info = kvp.second;
+		switch (info->baseType)
+		{
+		case UNIFORM_SAMPLER:
+		case UNIFORM_STORAGETEXTURE:
+			sendTextures(info, &activeTextures[info->resourceIndex], info->count);
+			break;
+		case UNIFORM_TEXELBUFFER:
+		case UNIFORM_STORAGEBUFFER:
+			sendBuffers(info, &activeBuffers[info->resourceIndex], info->count);
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -860,31 +678,6 @@ Shader::~Shader()
 		CFBridgingRelease(kvp.second);
 
 	cachedRenderPipelines.clear();
-
-	for (const auto &it : uniforms)
-	{
-		const auto &u = it.second;
-		if (u.baseType == UNIFORM_SAMPLER || u.baseType == UNIFORM_STORAGETEXTURE)
-		{
-			free(u.data);
-			for (int i = 0; i < u.count; i++)
-			{
-				if (u.textures[i] != nullptr)
-					u.textures[i]->release();
-			}
-			delete[] u.textures;
-		}
-		else if (u.baseType == UNIFORM_TEXELBUFFER || u.baseType == UNIFORM_STORAGEBUFFER)
-		{
-			free(u.data);
-			for (int i = 0; i < u.count; i++)
-			{
-				if (u.buffers[i] != nullptr)
-					u.buffers[i]->release();
-			}
-			delete[] u.buffers;
-		}
-	}
 
 	delete[] localUniformStagingData;
 	delete[] localUniformBufferData;
@@ -907,12 +700,6 @@ int Shader::getVertexAttributeIndex(const std::string &name)
 	return it != attributes.end() ? it->second : -1;
 }
 
-const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
-{
-	const auto it = uniforms.find(name);
-	return it != uniforms.end() ? &(it->second) : nullptr;
-}
-
 const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
 {
 	return builtinUniformInfo[(int)builtin];
@@ -920,45 +707,18 @@ const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
 
 void Shader::updateUniform(const UniformInfo *info, int count)
 {
+	if (info->dataSize == 0)
+		return;
+
 	if (current == this)
 		Graphics::flushBatchedDrawsGlobal();
 
 	count = std::min(count, info->count);
 
-	// TODO: store some of this in UniformInfo.
-	size_t elementsize = info->components * 4;
-	if (info->baseType == UNIFORM_MATRIX)
-		elementsize = info->matrix.columns * info->matrix.rows * 4;
-
 	size_t offset = (const uint8 *)info->data - localUniformStagingData;
+	uint8 *dst = localUniformBufferData + offset;
 
-	// Assuming std140 packing rules, the source data can only be direct-copied
-	// to the uniform buffer in certain cases because it's tightly packed whereas
-	// the buffer's data isn't.
-	if (elementsize * info->count == info->dataSize || (count == 1 && info->baseType != UNIFORM_MATRIX))
-	{
-		memcpy(localUniformBufferData + offset, info->data, elementsize * count);
-	}
-	else
-	{
-		int veccount = count;
-		int comp = info->components;
-
-		if (info->baseType == UNIFORM_MATRIX)
-		{
-			veccount *= info->matrix.rows;
-			comp = info->matrix.columns;
-		}
-
-		const int *src = info->ints;
-		int *dst = (int *) (localUniformBufferData + offset);
-
-		for (int i = 0; i < veccount; i++)
-		{
-			for (int c = 0; c < comp; c++)
-				dst[i * 4 + c] = src[i * comp + c];
-		}
-	}
+	copyToUniformBuffer(info, info->data, dst, count);
 }
 
 void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)
@@ -974,6 +734,7 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 	for (int i = 0; i < count; i++)
 	{
 		love::graphics::Texture *tex = textures[i];
+		bool isdefault = tex == nullptr;
 
 		if (tex != nullptr)
 		{
@@ -983,18 +744,36 @@ void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **tex
 		else
 		{
 			auto gfx = Graphics::getInstance();
-			tex = gfx->getDefaultTexture(info->textureType);
+			tex = gfx->getDefaultTexture(info->textureType, info->dataBaseType, info->isDepthSampler);
 		}
 
 		tex->retain();
 
-		if (info->textures[i] != nullptr)
-			info->textures[i]->release();
+		int resourceindex = info->resourceIndex + i;
 
-		info->textures[i] = tex;
+		if (activeTextures[resourceindex] != nullptr)
+			activeTextures[resourceindex]->release();
 
-		textureBindings[info->ints[i]].texture = getMTLTexture(tex);
-		textureBindings[info->ints[i]].samplerTexture = tex;
+		activeTextures[resourceindex] = tex;
+
+		if (info->location < 0)
+			continue;
+
+		int bindingindex = info->location + i;
+		if (bindingindex < 0)
+			continue;
+
+		auto &binding = textureBindings[bindingindex];
+		if (isdefault && (binding.access & ACCESS_WRITE) != 0)
+		{
+			binding.texture = nil;
+			binding.samplerTexture = nullptr;
+		}
+		else
+		{
+			binding.texture = getMTLTexture(tex);
+			binding.samplerTexture = tex;
+		}
 	}
 }}
 
@@ -1011,31 +790,49 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 
 	count = std::min(count, info->count);
 
-	// Bind the textures to the texture units.
 	for (int i = 0; i < count; i++)
 	{
 		love::graphics::Buffer *buffer = buffers[i];
+		bool isdefault = buffer == nullptr;
 
 		if (buffer != nullptr)
 		{
 			if (!validateBuffer(info, buffer, false))
 				continue;
-			buffer->retain();
+		}
+		else
+		{
+			auto gfx = Graphics::getInstance();
+			if (texelbinding)
+				buffer = gfx->getDefaultTexelBuffer(info->dataBaseType);
+			else
+				buffer = gfx->getDefaultStorageBuffer();
 		}
 
-		if (info->buffers[i] != nullptr)
-			info->buffers[i]->release();
+		buffer->retain();
 
-		info->buffers[i] = buffer;
+		int resourceindex = info->resourceIndex + i;
 
-		if (texelbinding)
+		if (activeBuffers[resourceindex] != nullptr)
+			activeBuffers[resourceindex]->release();
+
+		activeBuffers[resourceindex] = buffer;
+
+		if (info->location < 0)
+			continue;
+
+		int bindingindex = info->location + i;
+		if (texelbinding && bindingindex >= 0)
 		{
-			textureBindings[info->ints[i]].texture = getMTLTexture(buffer);
+			textureBindings[bindingindex].texture = getMTLTexture(buffer);
 		}
-		else if (storagebinding)
+		else if (storagebinding && bindingindex >= 0)
 		{
-			// TODO
-			bufferBindings[info->ints[i]].buffer = getMTLBuffer(buffer);
+			auto &binding = bufferBindings[bindingindex];
+			if (isdefault && (binding.access & ACCESS_WRITE) != 0)
+				binding.buffer = nil;
+			else
+				binding.buffer = getMTLBuffer(buffer);
 		}
 	}
 }
@@ -1056,11 +853,6 @@ void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics:
 		if (info != nullptr)
 			sendTextures(info, &textures[i], 1);
 	}
-}
-
-bool Shader::hasUniform(const std::string &name) const
-{
-	return uniforms.find(name) != uniforms.end();
 }
 
 id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineKey &key)
@@ -1087,8 +879,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 
 		MTLRenderPipelineColorAttachmentDescriptor *attachment = desc.colorAttachments[i];
 
-		bool isSRGB = false;
-		auto formatdesc = Metal::convertPixelFormat(device, format, isSRGB);
+		auto formatdesc = Metal::convertPixelFormat(device, format);
 		attachment.pixelFormat = formatdesc.format;
 
 		if (key.blend.enable)
@@ -1124,8 +915,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 		{
 			// We already don't really support metal on older systems, this just
 			// silences a compiler warning about it.
-			bool isSRGB = false;
-			auto formatdesc = Metal::convertPixelFormat(device, dsformat, isSRGB);
+			auto formatdesc = Metal::convertPixelFormat(device, dsformat);
 			if (isPixelFormatDepth(dsformat))
 				desc.depthAttachmentPixelFormat = formatdesc.format;
 			if (isPixelFormatStencil(dsformat))
@@ -1146,7 +936,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 			const auto &attrib = attributes.attribs[i];
 			int metalBufferIndex = firstVertexBufferBinding + attrib.bufferIndex;
 
-			vertdesc.attributes[i].format = getMTLVertexFormat(attrib.format);
+			vertdesc.attributes[i].format = getMTLVertexFormat(attrib.getFormat());
 			vertdesc.attributes[i].offset = attrib.offsetFromVertex;
 			vertdesc.attributes[i].bufferIndex = metalBufferIndex;
 

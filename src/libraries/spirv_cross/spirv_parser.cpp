@@ -31,7 +31,7 @@ namespace SPIRV_CROSS_NAMESPACE
 {
 Parser::Parser(vector<uint32_t> spirv)
 {
-	ir.spirv = move(spirv);
+	ir.spirv = std::move(spirv);
 }
 
 Parser::Parser(const uint32_t *spirv_data, size_t word_count)
@@ -68,6 +68,7 @@ static bool is_valid_spirv_version(uint32_t version)
 	case 0x10300: // SPIR-V 1.3
 	case 0x10400: // SPIR-V 1.4
 	case 0x10500: // SPIR-V 1.5
+	case 0x10600: // SPIR-V 1.6
 		return true;
 
 	default:
@@ -182,6 +183,15 @@ void Parser::parse(const Instruction &instruction)
 	auto op = static_cast<Op>(instruction.op);
 	uint32_t length = instruction.length;
 
+	// HACK for glslang that might emit OpEmitMeshTasksEXT followed by return / branch.
+	// Instead of failing hard, just ignore it.
+	if (ignore_trailing_block_opcodes)
+	{
+		ignore_trailing_block_opcodes = false;
+		if (op == OpReturn || op == OpBranch || op == OpUnreachable)
+			return;
+	}
+
 	switch (op)
 	{
 	case OpSourceContinued:
@@ -258,29 +268,37 @@ void Parser::parse(const Instruction &instruction)
 	case OpExtension:
 	{
 		auto ext = extract_string(ir.spirv, instruction.offset);
-		ir.declared_extensions.push_back(move(ext));
+		ir.declared_extensions.push_back(std::move(ext));
 		break;
 	}
 
 	case OpExtInstImport:
 	{
 		uint32_t id = ops[0];
+
+		SPIRExtension::Extension spirv_ext = SPIRExtension::Unsupported;
+
 		auto ext = extract_string(ir.spirv, instruction.offset + 1);
 		if (ext == "GLSL.std.450")
-			set<SPIRExtension>(id, SPIRExtension::GLSL);
+			spirv_ext = SPIRExtension::GLSL;
 		else if (ext == "DebugInfo")
-			set<SPIRExtension>(id, SPIRExtension::SPV_debug_info);
+			spirv_ext = SPIRExtension::SPV_debug_info;
 		else if (ext == "SPV_AMD_shader_ballot")
-			set<SPIRExtension>(id, SPIRExtension::SPV_AMD_shader_ballot);
+			spirv_ext = SPIRExtension::SPV_AMD_shader_ballot;
 		else if (ext == "SPV_AMD_shader_explicit_vertex_parameter")
-			set<SPIRExtension>(id, SPIRExtension::SPV_AMD_shader_explicit_vertex_parameter);
+			spirv_ext = SPIRExtension::SPV_AMD_shader_explicit_vertex_parameter;
 		else if (ext == "SPV_AMD_shader_trinary_minmax")
-			set<SPIRExtension>(id, SPIRExtension::SPV_AMD_shader_trinary_minmax);
+			spirv_ext = SPIRExtension::SPV_AMD_shader_trinary_minmax;
 		else if (ext == "SPV_AMD_gcn_shader")
-			set<SPIRExtension>(id, SPIRExtension::SPV_AMD_gcn_shader);
-		else
-			set<SPIRExtension>(id, SPIRExtension::Unsupported);
+			spirv_ext = SPIRExtension::SPV_AMD_gcn_shader;
+		else if (ext == "NonSemantic.DebugPrintf")
+			spirv_ext = SPIRExtension::NonSemanticDebugPrintf;
+		else if (ext == "NonSemantic.Shader.DebugInfo.100")
+			spirv_ext = SPIRExtension::NonSemanticShaderDebugInfo;
+		else if (ext.find("NonSemantic.") == 0)
+			spirv_ext = SPIRExtension::NonSemanticGeneric;
 
+		set<SPIRExtension>(id, spirv_ext);
 		// Other SPIR-V extensions which have ExtInstrs are currently not supported.
 
 		break;
@@ -290,7 +308,15 @@ void Parser::parse(const Instruction &instruction)
 	{
 		// The SPIR-V debug information extended instructions might come at global scope.
 		if (current_block)
+		{
 			current_block->ops.push_back(instruction);
+			if (length >= 2)
+			{
+				const auto *type = maybe_get<SPIRType>(ops[0]);
+				if (type)
+					ir.load_type_width.insert({ ops[1], type->width });
+			}
+		}
 		break;
 	}
 
@@ -338,9 +364,29 @@ void Parser::parse(const Instruction &instruction)
 			execution.output_vertices = ops[2];
 			break;
 
+		case ExecutionModeOutputPrimitivesEXT:
+			execution.output_primitives = ops[2];
+			break;
+
 		default:
 			break;
 		}
+		break;
+	}
+
+	case OpExecutionModeId:
+	{
+		auto &execution = ir.entry_points[ops[0]];
+		auto mode = static_cast<ExecutionMode>(ops[1]);
+		execution.flags.set(mode);
+
+		if (mode == ExecutionModeLocalSizeId)
+		{
+			execution.workgroup_size.id_x = ops[2];
+			execution.workgroup_size.id_y = ops[3];
+			execution.workgroup_size.id_z = ops[4];
+		}
+
 		break;
 	}
 
@@ -471,7 +517,7 @@ void Parser::parse(const Instruction &instruction)
 	case OpTypeVoid:
 	{
 		uint32_t id = ops[0];
-		auto &type = set<SPIRType>(id);
+		auto &type = set<SPIRType>(id, op);
 		type.basetype = SPIRType::Void;
 		break;
 	}
@@ -479,7 +525,7 @@ void Parser::parse(const Instruction &instruction)
 	case OpTypeBool:
 	{
 		uint32_t id = ops[0];
-		auto &type = set<SPIRType>(id);
+		auto &type = set<SPIRType>(id, op);
 		type.basetype = SPIRType::Boolean;
 		type.width = 1;
 		break;
@@ -489,7 +535,7 @@ void Parser::parse(const Instruction &instruction)
 	{
 		uint32_t id = ops[0];
 		uint32_t width = ops[1];
-		auto &type = set<SPIRType>(id);
+		auto &type = set<SPIRType>(id, op);
 		if (width == 64)
 			type.basetype = SPIRType::Double;
 		else if (width == 32)
@@ -507,7 +553,7 @@ void Parser::parse(const Instruction &instruction)
 		uint32_t id = ops[0];
 		uint32_t width = ops[1];
 		bool signedness = ops[2] != 0;
-		auto &type = set<SPIRType>(id);
+		auto &type = set<SPIRType>(id, op);
 		type.basetype = signedness ? to_signed_basetype(width) : to_unsigned_basetype(width);
 		type.width = width;
 		break;
@@ -522,9 +568,9 @@ void Parser::parse(const Instruction &instruction)
 		uint32_t vecsize = ops[2];
 
 		auto &base = get<SPIRType>(ops[1]);
-		auto &vecbase = set<SPIRType>(id);
+		auto &vecbase = set<SPIRType>(id, base);
 
-		vecbase = base;
+		vecbase.op = op;
 		vecbase.vecsize = vecsize;
 		vecbase.self = id;
 		vecbase.parent_type = ops[1];
@@ -537,9 +583,9 @@ void Parser::parse(const Instruction &instruction)
 		uint32_t colcount = ops[2];
 
 		auto &base = get<SPIRType>(ops[1]);
-		auto &matrixbase = set<SPIRType>(id);
+		auto &matrixbase = set<SPIRType>(id, base);
 
-		matrixbase = base;
+		matrixbase.op = op;
 		matrixbase.columns = colcount;
 		matrixbase.self = id;
 		matrixbase.parent_type = ops[1];
@@ -549,12 +595,11 @@ void Parser::parse(const Instruction &instruction)
 	case OpTypeArray:
 	{
 		uint32_t id = ops[0];
-		auto &arraybase = set<SPIRType>(id);
-
 		uint32_t tid = ops[1];
 		auto &base = get<SPIRType>(tid);
+		auto &arraybase = set<SPIRType>(id, base);
 
-		arraybase = base;
+		arraybase.op = op;
 		arraybase.parent_type = tid;
 
 		uint32_t cid = ops[2];
@@ -569,7 +614,9 @@ void Parser::parse(const Instruction &instruction)
 
 		arraybase.array_size_literal.push_back(literal);
 		arraybase.array.push_back(literal ? c->scalar() : cid);
-		// Do NOT set arraybase.self!
+
+		// .self resolves down to non-array/non-pointer type.
+		arraybase.self = base.self;
 		break;
 	}
 
@@ -578,25 +625,27 @@ void Parser::parse(const Instruction &instruction)
 		uint32_t id = ops[0];
 
 		auto &base = get<SPIRType>(ops[1]);
-		auto &arraybase = set<SPIRType>(id);
+		auto &arraybase = set<SPIRType>(id, base);
 
 		// We're copying type information into Array types, so we'll need a fixup for any physical pointer
 		// references.
 		if (base.forward_pointer)
 			forward_pointer_fixups.push_back({ id, ops[1] });
 
-		arraybase = base;
+		arraybase.op = op;
 		arraybase.array.push_back(0);
 		arraybase.array_size_literal.push_back(true);
 		arraybase.parent_type = ops[1];
-		// Do NOT set arraybase.self!
+
+		// .self resolves down to non-array/non-pointer type.
+		arraybase.self = base.self;
 		break;
 	}
 
 	case OpTypeImage:
 	{
 		uint32_t id = ops[0];
-		auto &type = set<SPIRType>(id);
+		auto &type = set<SPIRType>(id, op);
 		type.basetype = SPIRType::Image;
 		type.image.type = ops[1];
 		type.image.dim = static_cast<Dim>(ops[2]);
@@ -613,7 +662,7 @@ void Parser::parse(const Instruction &instruction)
 	{
 		uint32_t id = ops[0];
 		uint32_t imagetype = ops[1];
-		auto &type = set<SPIRType>(id);
+		auto &type = set<SPIRType>(id, op);
 		type = get<SPIRType>(imagetype);
 		type.basetype = SPIRType::SampledImage;
 		type.self = id;
@@ -623,7 +672,7 @@ void Parser::parse(const Instruction &instruction)
 	case OpTypeSampler:
 	{
 		uint32_t id = ops[0];
-		auto &type = set<SPIRType>(id);
+		auto &type = set<SPIRType>(id, op);
 		type.basetype = SPIRType::Sampler;
 		break;
 	}
@@ -636,10 +685,13 @@ void Parser::parse(const Instruction &instruction)
 		// We won't be able to compile it, but we shouldn't crash when parsing.
 		// We should be able to reflect.
 		auto *base = maybe_get<SPIRType>(ops[2]);
-		auto &ptrbase = set<SPIRType>(id);
+		auto &ptrbase = set<SPIRType>(id, op);
 
 		if (base)
+		{
 			ptrbase = *base;
+			ptrbase.op = op;
+		}
 
 		ptrbase.pointer = true;
 		ptrbase.pointer_depth++;
@@ -660,7 +712,7 @@ void Parser::parse(const Instruction &instruction)
 	case OpTypeForwardPointer:
 	{
 		uint32_t id = ops[0];
-		auto &ptrbase = set<SPIRType>(id);
+		auto &ptrbase = set<SPIRType>(id, op);
 		ptrbase.pointer = true;
 		ptrbase.pointer_depth++;
 		ptrbase.storage = static_cast<StorageClass>(ops[1]);
@@ -675,7 +727,7 @@ void Parser::parse(const Instruction &instruction)
 	case OpTypeStruct:
 	{
 		uint32_t id = ops[0];
-		auto &type = set<SPIRType>(id);
+		auto &type = set<SPIRType>(id, op);
 		type.basetype = SPIRType::Struct;
 		for (uint32_t i = 1; i < length; i++)
 			type.member_types.push_back(ops[i]);
@@ -724,7 +776,7 @@ void Parser::parse(const Instruction &instruction)
 	case OpTypeAccelerationStructureKHR:
 	{
 		uint32_t id = ops[0];
-		auto &type = set<SPIRType>(id);
+		auto &type = set<SPIRType>(id, op);
 		type.basetype = SPIRType::AccelerationStructure;
 		break;
 	}
@@ -732,7 +784,7 @@ void Parser::parse(const Instruction &instruction)
 	case OpTypeRayQueryKHR:
 	{
 		uint32_t id = ops[0];
-		auto &type = set<SPIRType>(id);
+		auto &type = set<SPIRType>(id, op);
 		type.basetype = SPIRType::RayQuery;
 		break;
 	}
@@ -979,10 +1031,9 @@ void Parser::parse(const Instruction &instruction)
 			{
 				uint32_t ids = ir.increase_bound_by(2);
 
-				SPIRType type;
+				auto &type = set<SPIRType>(ids, OpTypeInt);
 				type.basetype = SPIRType::Int;
 				type.width = 32;
-				set<SPIRType>(ids, type);
 				auto &c = set<SPIRConstant>(ids + 1, ids);
 
 				current_block->condition = c.self;
@@ -993,7 +1044,16 @@ void Parser::parse(const Instruction &instruction)
 			}
 			else
 			{
-				ir.block_meta[current_block->next_block] &= ~ParsedIR::BLOCK_META_SELECTION_MERGE_BIT;
+				// Collapse loops if we have to.
+				bool collapsed_loop = current_block->true_block == current_block->merge_block &&
+				                      current_block->merge == SPIRBlock::MergeLoop;
+
+				if (collapsed_loop)
+				{
+					ir.block_meta[current_block->merge_block] &= ~ParsedIR::BLOCK_META_LOOP_MERGE_BIT;
+					ir.block_meta[current_block->continue_block] &= ~ParsedIR::BLOCK_META_CONTINUE_BIT;
+				}
+
 				current_block->next_block = current_block->true_block;
 				current_block->condition = 0;
 				current_block->true_block = 0;
@@ -1042,6 +1102,7 @@ void Parser::parse(const Instruction &instruction)
 	}
 
 	case OpKill:
+	case OpTerminateInvocation:
 	{
 		if (!current_block)
 			SPIRV_CROSS_THROW("Trying to end a non-existing block.");
@@ -1064,6 +1125,18 @@ void Parser::parse(const Instruction &instruction)
 			SPIRV_CROSS_THROW("Trying to end a non-existing block.");
 		current_block->terminator = SPIRBlock::IgnoreIntersection;
 		current_block = nullptr;
+		break;
+
+	case OpEmitMeshTasksEXT:
+		if (!current_block)
+			SPIRV_CROSS_THROW("Trying to end a non-existing block.");
+		current_block->terminator = SPIRBlock::EmitMeshTasks;
+		for (uint32_t i = 0; i < 3; i++)
+			current_block->mesh.groups[i] = ops[i];
+		current_block->mesh.payload = length >= 4 ? ops[3] : 0;
+		current_block = nullptr;
+		// Currently glslang is bugged and does not treat EmitMeshTasksEXT as a terminator.
+		ignore_trailing_block_opcodes = true;
 		break;
 
 	case OpReturn:
@@ -1194,10 +1267,9 @@ void Parser::parse(const Instruction &instruction)
 		{
 			const auto *type = maybe_get<SPIRType>(ops[0]);
 			if (type)
-			{
 				ir.load_type_width.insert({ ops[1], type->width });
-			}
 		}
+
 		if (!current_block)
 			SPIRV_CROSS_THROW("Currently no block to insert opcode.");
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -36,13 +36,17 @@ int w_PolygonShape_getPoints(lua_State *L)
 {
 	PolygonShape *t = luax_checkpolygonshape(L, 1);
 	lua_remove(L, 1);
-	return t->getPoints(L);
+	int ret = 0;
+	luax_catchexcept(L, [&]() { ret = t->getPoints(L); });
+	return ret;
 }
 
 int w_PolygonShape_validate(lua_State *L)
 {
 	PolygonShape *t = luax_checkpolygonshape(L, 1);
-	luax_pushboolean(L, t->validate());
+	bool valid = false;
+	luax_catchexcept(L, [&]() { valid = t->validate(); });
+	luax_pushboolean(L, valid);
 	return 1;
 }
 

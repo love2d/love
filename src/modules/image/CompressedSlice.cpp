@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,6 @@ CompressedSlice::CompressedSlice(PixelFormat format, int width, int height, Byte
 	, memory(memory)
 	, offset(offset)
 	, dataSize(size)
-	, sRGB(false)
 {
 }
 
@@ -40,7 +39,6 @@ CompressedSlice::CompressedSlice(const CompressedSlice &s)
 	, memory(s.memory)
 	, offset(s.offset)
 	, dataSize(s.dataSize)
-	, sRGB(s.sRGB)
 {
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -20,10 +20,27 @@
 
 // LOVE
 #include "Data.h"
+#include "thread/threads.h"
 
 namespace love
 {
 
 love::Type Data::type("Data", &Object::type);
+
+Data::~Data()
+{
+	delete mutex;
+}
+
+static void createMutex(love::thread::Mutex **mutexAddress)
+{
+	*mutexAddress = love::thread::newMutex();
+}
+
+love::thread::Mutex *Data::getMutex()
+{
+	std::call_once(mutexCreated, createMutex, &mutex);
+	return mutex;
+}
 
 } // love

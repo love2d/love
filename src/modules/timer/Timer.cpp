@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -43,7 +43,8 @@ namespace timer
 {
 
 Timer::Timer()
-	: currTime(0)
+	: Module(M_TIMER, "love.timer")
+	, currTime(0)
 	, prevFpsUpdate(0)
 	, fps(0)
 	, averageDelta(0)
@@ -84,7 +85,7 @@ double Timer::step()
 void Timer::sleep(double seconds) const
 {
 	if (seconds >= 0)
-		love::sleep((unsigned int)(seconds*1000));
+		love::sleep(seconds*1000);
 }
 
 double Timer::getDelta() const

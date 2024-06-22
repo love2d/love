@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -43,27 +43,23 @@ class Font : public Module
 
 public:
 
-	Font();
 	virtual ~Font() {}
 
 	virtual Rasterizer *newRasterizer(love::filesystem::FileData *data) = 0;
 
-	virtual Rasterizer *newTrueTypeRasterizer(int size, TrueTypeRasterizer::Hinting hinting);
-	virtual Rasterizer *newTrueTypeRasterizer(int size, float dpiscale, TrueTypeRasterizer::Hinting hinting);
-	virtual Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, TrueTypeRasterizer::Hinting hinting) = 0;
-	virtual Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, float dpiscale, TrueTypeRasterizer::Hinting hinting) = 0;
+	Rasterizer *newTrueTypeRasterizer(int size, const TrueTypeRasterizer::Settings &settings);
+	virtual Rasterizer *newTrueTypeRasterizer(love::Data *data, int size, const TrueTypeRasterizer::Settings &settings) = 0;
 
 	virtual Rasterizer *newBMFontRasterizer(love::filesystem::FileData *fontdef, const std::vector<image::ImageData *> &images, float dpiscale);
 
 	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, const std::string &glyphs, int extraspacing, float dpiscale);
-	virtual Rasterizer *newImageRasterizer(love::image::ImageData *data, uint32 *glyphs, int length, int extraspacing, float dpiscale);
 
 	virtual GlyphData *newGlyphData(Rasterizer *r, const std::string &glyph);
 	virtual GlyphData *newGlyphData(Rasterizer *r, uint32 glyph);
 
-	// Implement Module.
-	virtual ModuleType getModuleType() const { return M_FONT; }
-	virtual const char *getName() const = 0;
+protected:
+
+	Font(const char *name);
 
 private:
 

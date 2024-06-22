@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -32,22 +32,33 @@ namespace graphics
 template <typename T>
 static void luax_checkstandardtransform(lua_State *L, int idx, const T &func)
 {
-	if (luax_istype(L, idx, math::Transform::type))
+	math::Transform *tf = luax_totype<math::Transform>(L, idx);
+	if (tf != nullptr)
 	{
-		math::Transform *tf = luax_totype<math::Transform>(L, idx);
 		func(tf->getMatrix());
 	}
 	else
 	{
+		int nargs = lua_gettop(L);
 		float x  = (float) luaL_optnumber(L, idx + 0, 0.0);
 		float y  = (float) luaL_optnumber(L, idx + 1, 0.0);
 		float a  = (float) luaL_optnumber(L, idx + 2, 0.0);
 		float sx = (float) luaL_optnumber(L, idx + 3, 1.0);
 		float sy = (float) luaL_optnumber(L, idx + 4, sx);
-		float ox = (float) luaL_optnumber(L, idx + 5, 0.0);
-		float oy = (float) luaL_optnumber(L, idx + 6, 0.0);
-		float kx = (float) luaL_optnumber(L, idx + 7, 0.0);
-		float ky = (float) luaL_optnumber(L, idx + 8, 0.0);
+		float ox = 0.0f;
+		float oy = 0.0f;
+		if (nargs >= idx + 5)
+		{
+			ox = (float) luaL_optnumber(L, idx + 5, 0.0);
+			oy = (float) luaL_optnumber(L, idx + 6, 0.0);
+		}
+		float kx = 0.0f;
+		float ky = 0.0f;
+		if (nargs >= idx + 7)
+		{
+			kx = (float) luaL_optnumber(L, idx + 7, 0.0);
+			ky = (float) luaL_optnumber(L, idx + 8, 0.0);
+		}
 		func(Matrix4(x, y, a, sx, sy, ox, oy, kx, ky));
 	}
 }

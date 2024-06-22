@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 #ifdef LOVE_ANDROID
 
 #include <cerrno>
+#include <set>
 #include <unordered_map>
 
 #include <SDL.h>
@@ -121,19 +122,7 @@ bool getSafeArea(int &top, int &left, int &bottom, int &right)
 
 bool openURL(const std::string &url)
 {
-	JNIEnv *env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-	jobject activity = (jobject) SDL_AndroidGetActivity();
-	jclass clazz = env->GetObjectClass(activity);
-
-	static jmethodID openURL = env->GetMethodID(clazz, "openURLFromLOVE", "(Ljava/lang/String;)Z");
-
-	jstring jstringURL = env->NewStringUTF(url.c_str());
-	jboolean result = env->CallBooleanMethod(clazz, openURL, jstringURL);
-
-	env->DeleteLocalRef(jstringURL);
-	env->DeleteLocalRef(clazz);
-	env->DeleteLocalRef(activity);
-	return (bool) result;
+	return SDL_OpenURL(url.c_str()) == 0;
 }
 
 void vibrate(double seconds)
@@ -174,29 +163,98 @@ bool directoryExists(const char *path)
 
 bool mkdir(const char *path)
 {
-	int err = ::mkdir(path, 0770);
+	int err = ::mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO | S_ISGID);
 	if (err == -1)
 	{
-		SDL_Log("Error: Could not create directory %s", path);
+		const char *error = strerror(errno);
+		SDL_Log("Error: Could not create directory '%s': %s", path, error);
 		return false;
 	}
 
 	return true;
 }
 
+bool chmod(const char *path, int mode)
+{
+	int err = ::chmod(path, mode);
+	if (err == -1)
+	{
+		const char *error = strerror(errno);
+		SDL_Log("Error: Could not change mode '%s': %s", path, error);
+		return false;
+	}
+
+	return true;
+}
+
+inline bool tryCreateDirectory(const char *path)
+{
+	SDL_Log("Trying to create directory '%s'", path);
+
+	if (directoryExists(path))
+		return true;
+	else if (mkdir(path))
+		return true;
+	return false;
+}
+
 bool createStorageDirectories()
 {
-	std::string internal_storage_path = SDL_AndroidGetInternalStoragePath();
+	std::string internalStoragePath = SDL_AndroidGetInternalStoragePath();
+	std::string externalStoragePath = SDL_AndroidGetExternalStoragePath();
 
-	std::string save_directory = internal_storage_path + "/save";
-	if (!directoryExists(save_directory.c_str()) && !mkdir(save_directory.c_str()))
+	std::string saveDirectoryInternal = internalStoragePath + "/save";
+	if (!tryCreateDirectory(saveDirectoryInternal.c_str()))
 		return false;
 
-	std::string game_directory = internal_storage_path + "/game";
-	if (!directoryExists (game_directory.c_str()) && !mkdir(game_directory.c_str()))
+	std::string saveDirectoryExternal = externalStoragePath + "/save";
+	if (!tryCreateDirectory(saveDirectoryExternal.c_str()))
+		return false;
+
+	std::string game_directory = externalStoragePath + "/game";
+	if (!tryCreateDirectory (game_directory.c_str()))
 		return false;
 
 	return true;
+}
+
+void fixupPermissionSingleFile(const std::string &savedir, const std::string &path, int mode)
+{
+    std::string fixedSavedir = savedir.back() == '/' ? savedir : (savedir + "/");
+    std::string target = fixedSavedir + path;
+    ::chmod(target.c_str(), mode);
+}
+
+void fixupExternalStoragePermission(const std::string &savedir, const std::string &path)
+{
+	std::set<std::string> pathsToFix;
+	size_t start = 0;
+
+	while (true)
+	{
+		size_t pos = path.find('/', start);
+		if (pos == std::string::npos)
+		{
+			pathsToFix.insert(path);
+			break;
+		}
+
+		pathsToFix.insert(path.substr(0, pos));
+		start = pos + 1;
+	}
+
+	std::string fixedSavedir = savedir.back() == '/' ? savedir : (savedir + "/");
+	chmod(savedir.c_str(), S_IRWXU | S_IRWXG | S_IRWXO | S_ISGID);
+
+	for (const std::string &dir: pathsToFix)
+	{
+        const char *realPath = PHYSFS_getRealDir(dir.c_str());
+		if (!dir.empty() && strcmp(realPath, savedir.c_str()) == 0)
+		{
+			std::string target = fixedSavedir + dir;
+			chmod(target.c_str(), S_IRWXU | S_IRWXG | S_IRWXO | S_ISGID);
+		}
+	}
 }
 
 bool hasBackgroundMusic()
@@ -385,18 +443,20 @@ struct AssetInfo: public love::filesystem::physfs::PhysfsIo<AssetInfo>
 		return 1;
 	}
 
-	AssetInfo *duplicate() const
+	AssetInfo(const AssetInfo &other)
+	: assetManager(other.assetManager)
+	, size(strlen(other.filename) + 1)
 	{
-		AAsset *newAsset = AAssetManager_open(assetManager, filename, AASSET_MODE_RANDOM);
+		asset = AAssetManager_open(assetManager, other.filename, AASSET_MODE_RANDOM);
 
-		if (newAsset == nullptr)
+		if (asset == nullptr)
 		{
 			PHYSFS_setErrorCode(PHYSFS_ERR_OS_ERROR);
-			return nullptr;
+			throw new love::Exception("Unable to duplicate AssetInfo");
 		}
 
-		AAsset_seek64(asset, tell(), SEEK_SET);
-		return fromAAsset(assetManager, filename, asset);
+		filename = new (std::nothrow) char[size];
+		memcpy(filename, other.filename, size);
 	}
 
 	~AssetInfo() override
@@ -867,10 +927,9 @@ void *getIOFromFD(int fd)
 
 const char *getArg0()
 {
-	static PHYSFS_AndroidInit androidInit = {
-		SDL_AndroidGetJNIEnv(),
-		SDL_AndroidGetActivity()
-	};
+	static PHYSFS_AndroidInit androidInit = {nullptr, nullptr};
+	androidInit.jnienv = SDL_AndroidGetJNIEnv();
+	androidInit.context = SDL_AndroidGetActivity();
 	return (const char *) &androidInit;
 }
 

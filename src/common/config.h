@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -102,7 +102,7 @@
 #endif
 
 // DLL-stuff.
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #	define LOVE_EXPORT __declspec(dllexport)
 #elif defined(__GNUC__) || defined(__clang__)
 #	define LOVE_EXPORT __attribute__((visibility("default")))
@@ -114,7 +114,9 @@
 #ifndef LOVE_WINDOWS_UWP
 #	define LOVE_LEGENDARY_CONSOLE_IO_HACK
 #endif // LOVE_WINDOWS_UWP
+#ifndef __MINGW32__
 #	define NOMINMAX
+#endif
 #endif
 
 #if defined(LOVE_MACOS) || defined(LOVE_IOS)

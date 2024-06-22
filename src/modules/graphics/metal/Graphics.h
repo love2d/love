@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -60,16 +60,12 @@ public:
 	Graphics();
 	virtual ~Graphics();
 
-	// Implements Module.
-	const char *getName() const override { return "love.graphics.metal"; }
-
 	love::graphics::Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) override;
+	love::graphics::Texture *newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings) override;
 	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) override;
 
-	Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const override;
-
-	void setViewportSize(int width, int height, int pixelwidth, int pixelheight) override;
-	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) override;
+	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
+	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;
@@ -96,7 +92,7 @@ public:
 	void setScissor(const Rect &rect) override;
 	void setScissor() override;
 
-	void setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) override;
+	void setStencilState(const StencilState &s) override;
 
 	void setDepthMode(CompareMode compare, bool write) override;
 
@@ -110,8 +106,7 @@ public:
 
 	void setWireframe(bool enable) override;
 	
-	PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const override;
-	bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) override;
+	bool isPixelFormatSupported(PixelFormat format, uint32 usage) override;
 	Renderer getRenderer() const override;
 	bool usesGLSLES() const override;
 	RendererInfo getRendererInfo() const override;
@@ -138,9 +133,10 @@ public:
 
 	id<MTLSamplerState> getCachedSampler(const SamplerState &s);
 
+	bool isDepthCompareSamplerSupported() const;
+
 	StreamBuffer *getUniformBuffer() const { return uniformBuffer; }
 	Buffer *getDefaultAttributesBuffer() const { return defaultAttributesBuffer; }
-	Texture *getDefaultTexture(TextureType textype) const { return defaultTextures[textype]; }
 
 	int getClosestMSAASamples(int requestedsamples);
 
@@ -198,7 +194,7 @@ private:
 	};
 
 	love::graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
-	love::graphics::Shader *newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) override;
+	love::graphics::Shader *newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const Shader::CompileOptions &options) override;
 	love::graphics::StreamBuffer *newStreamBuffer(BufferUsage usage, size_t size) override;
 
 	love::graphics::GraphicsReadback *newReadbackInternal(ReadbackMethod method, love::graphics::Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) override;
@@ -231,7 +227,6 @@ private:
 	uint32 dirtyRenderState;
 	CullMode lastCullMode;
 	Shader::RenderPipelineKey lastRenderPipelineKey;
-	bool windowHasStencil;
 	int shaderSwitches;
 
 	StrongRef<love::graphics::Texture> backbufferMSAA;
@@ -245,10 +240,9 @@ private:
 	StreamBuffer *uniformBuffer;
 	StreamBuffer::MapInfo uniformBufferData;
 	size_t uniformBufferOffset;
+	size_t uniformBufferGPUStart;
 
 	Buffer *defaultAttributesBuffer;
-
-	Texture *defaultTextures[TEXTURE_MAX_ENUM];
 
 	std::map<uint64, void *> cachedSamplers;
 	std::unordered_map<uint64, void *> cachedDepthStencilStates;
@@ -256,6 +250,8 @@ private:
 	std::vector<id<MTLCommandBuffer>> activeCommandBuffers;
 
 	DeviceFamilies families;
+
+	bool isVMDevice;
 
 }; // Graphics
 

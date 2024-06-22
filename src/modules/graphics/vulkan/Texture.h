@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -40,11 +40,13 @@ class Texture final
 	, public Volatile
 {
 public:
-	Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data);
-	~Texture();
 
-	virtual bool loadVolatile() override;
-	virtual void unloadVolatile() override;
+	Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data);
+	Texture(love::graphics::Graphics *gfx, love::graphics::Texture *base, const Texture::ViewSettings &viewsettings);
+	virtual ~Texture();
+
+	bool loadVolatile() override;
+	void unloadVolatile() override;
 	 
 	void setSamplerState(const SamplerState &s) override;
 
@@ -59,18 +61,18 @@ public:
 	VkImageView getRenderTargetView(int mip, int layer);
 	VkSampleCountFlagBits getMsaaSamples() const;
 
-	void uploadByteData(PixelFormat pixelformat, const void *data, size_t size, int level, int slice, const Rect &r) override;
+	void uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r) override;
 
-	void generateMipmapsInternal()  override;
+	void generateMipmapsInternal() override;
 
 	int getMSAA() const override;
 	ptrdiff_t getHandle() const override;
 
+	static VkClearColorValue getClearColor(love::graphics::Texture *texture, const ColorD &color);
+
 private:
 	void createTextureImageView();
 	void clear();
-
-	VkClearColorValue getClearValue();
 
 	Graphics *vgfx = nullptr;
 	VkDevice device = VK_NULL_HANDLE;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -81,6 +81,15 @@ enum BlendOperation
 	BLENDOP_MIN,
 	BLENDOP_MAX,
 	BLENDOP_MAX_ENUM
+};
+
+enum StencilMode // High level wrappers.
+{
+	STENCIL_MODE_OFF,
+	STENCIL_MODE_DRAW,
+	STENCIL_MODE_TEST,
+	STENCIL_MODE_CUSTOM,
+	STENCIL_MODE_MAX_ENUM
 };
 
 enum StencilAction
@@ -194,6 +203,9 @@ BlendState computeBlendState(BlendMode mode, BlendAlpha alphamode);
 BlendMode computeBlendMode(BlendState s, BlendAlpha &alphamode);
 bool isAlphaMultiplyBlendSupported(BlendMode mode);
 
+StencilState computeStencilState(StencilMode mode, int value);
+StencilMode computeStencilMode(const StencilState &s);
+
 /**
  * GPU APIs do the comparison in the opposite way of what makes sense for some
  * of love's APIs. For example in OpenGL if the compare function is GL_GREATER,
@@ -208,6 +220,7 @@ STRINGMAP_DECLARE(BlendMode);
 STRINGMAP_DECLARE(BlendAlpha);
 STRINGMAP_DECLARE(BlendFactor);
 STRINGMAP_DECLARE(BlendOperation);
+STRINGMAP_DECLARE(StencilMode);
 STRINGMAP_DECLARE(StencilAction);
 STRINGMAP_DECLARE(CompareMode);
 

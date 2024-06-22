@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -106,13 +106,12 @@ public:
 	 * @param[out] images The list of sub-images generated. Byte data is a
 	 *             pointer to the returned data.
 	 * @param[out] format The format of the Compressed Data.
-	 * @param[out] sRGB Whether the texture is sRGB-encoded.
 	 *
 	 * @return The single block of memory containing the parsed images.
 	 **/
 	virtual StrongRef<ByteData> parseCompressed(Data *filedata,
 	        std::vector<StrongRef<CompressedSlice>> &images,
-	        PixelFormat &format, bool &sRGB);
+	        PixelFormat &format);
 
 	/**
 	 * Frees raw pixel memory allocated by the format handler.

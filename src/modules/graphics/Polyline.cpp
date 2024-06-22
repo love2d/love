@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -424,7 +424,7 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 
 		Graphics::BatchedDrawCommand cmd;
 		cmd.formats[0] = getSinglePositionFormat(is2D);
-		cmd.formats[1] = CommonFormat::RGBAub;
+		cmd.formats[1] = CommonFormat::STf_RGBAub;
 		cmd.indexMode = triangle_mode;
 		cmd.vertexCount = std::min(maxvertices, total_vertex_count - vertex_start);
 
@@ -435,13 +435,19 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 		else
 			t.transformXY0((Vector3 *) data.stream[0], verts, cmd.vertexCount);
 
-		Color32 *colordata = (Color32 *) data.stream[1];
+		STf_RGBAub *attributes = (STf_RGBAub *) data.stream[1];
 
 		int draw_rough_count = std::min(cmd.vertexCount, (int) vertex_count - vertex_start);
 
 		// Constant vertex color up to the overdraw vertices.
+		// Texture coordinates are a constant value, we only have them to keep auto-batching
+		// when drawing filled and line polygons together.
 		for (int i = 0; i < draw_rough_count; i++)
-			colordata[i] = curcolor;
+		{
+			attributes[i].s = 0.0f;
+			attributes[i].t = 0.0f;
+			attributes[i].color = curcolor;
+		}
 
 		if (overdraw)
 		{
@@ -456,30 +462,41 @@ void Polyline::draw(love::graphics::Graphics *gfx)
 
 			if (draw_overdraw_count > 0)
 			{
-				Color32 *colors = colordata + draw_overdraw_begin;
-				fill_color_array(curcolor, colors, draw_overdraw_count);
+				STf_RGBAub *c = attributes + draw_overdraw_begin;
+				fill_color_array(curcolor, c, draw_overdraw_count);
 			}
 		}
 	}
 }
 
-void Polyline::fill_color_array(Color32 constant_color, Color32 *colors, int count)
+void Polyline::fill_color_array(Color32 constant_color, STf_RGBAub *attributes, int count)
 {
+	// Note: assigning each element individually seems to be needed to avoid
+	// performance issues in OpenGL + Windows. VS' compiler is likely doing
+	// something that doesn't play nice with write-combined memory from the
+	// graphics driver, when assigning a whole struct after modifying it, or
+	// when using memcpy.
 	for (int i = 0; i < count; ++i)
 	{
-		Color32 c = constant_color;
-		c.a *= (i+1) % 2; // avoids branching. equiv to if (i%2 == 1) c.a = 0;
-		colors[i] = c;
+		attributes[i].s = 0.0f;
+		attributes[i].t = 0.0f;
+		attributes[i].color.r = constant_color.r;
+		attributes[i].color.g = constant_color.g;
+		attributes[i].color.b = constant_color.b;
+		attributes[i].color.a = constant_color.a * ((i + 1) % 2); // avoids branching. equiv to if (i%2 == 1) c.a = 0;
 	}
 }
 
-void NoneJoinPolyline::fill_color_array(Color32 constant_color, Color32 *colors, int count)
+void NoneJoinPolyline::fill_color_array(Color32 constant_color, STf_RGBAub *attributes, int count)
 {
 	for (int i = 0; i < count; ++i)
 	{
-		Color32 c = constant_color;
-		c.a *= (i & 3) < 2; // if (i % 4 == 2 || i % 4 == 3) c.a = 0
-		colors[i] = c;
+		attributes[i].s = 0.0f;
+		attributes[i].t = 0.0f;
+		attributes[i].color.r = constant_color.r;
+		attributes[i].color.g = constant_color.g;
+		attributes[i].color.b = constant_color.b;
+		attributes[i].color.a = constant_color.a * ((i & 3) < 2); // if (i % 4 == 2 || i % 4 == 3) c.a = 0
 	}
 }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -608,52 +608,78 @@ int w_setStencilMode(lua_State *L)
 {
 	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
 	{
-		luax_catchexcept(L, [&](){ instance()->setStencilMode(); });
+		luax_catchexcept(L, [&]() { instance()->setStencilMode(); });
 		return 0;
 	}
 
-	StencilAction action = STENCIL_KEEP;
-	const char *actionstr = luaL_checkstring(L, 1);
-	if (!getConstant(actionstr, action))
-		return luax_enumerror(L, "stencil draw action", getConstants(action), actionstr);
+	StencilMode mode = STENCIL_MODE_OFF;
+	const char *modestr = luaL_checkstring(L, 1);
+	if (!getConstant(modestr, mode))
+		return luax_enumerror(L, "stencil mode", getConstants(mode), modestr);
 
-	CompareMode compare = COMPARE_ALWAYS;
-	const char *comparestr = luaL_checkstring(L, 2);
-	if (!getConstant(comparestr, compare))
-		return luax_enumerror(L, "compare mode", getConstants(compare), comparestr);
+	int value = (int) luaL_optinteger(L, 3, 1);
 
-	int value = (int) luaL_optinteger(L, 3, 0);
-
-	uint32 readmask = (uint32) luaL_optnumber(L, 4, LOVE_UINT32_MAX);
-	uint32 writemask = (uint32) luaL_optnumber(L, 5, LOVE_UINT32_MAX);
-
-	luax_catchexcept(L, [&](){ instance()->setStencilMode(action, compare, value, readmask, writemask); });
+	luax_catchexcept(L, [&]() { instance()->setStencilMode(mode, value); });
 	return 0;
 }
 
 int w_getStencilMode(lua_State *L)
 {
-	StencilAction action = STENCIL_KEEP;
-	CompareMode compare = COMPARE_ALWAYS;
-	int value = 1;
-	uint32 readmask = LOVE_UINT32_MAX;
-	uint32 writemask = LOVE_UINT32_MAX;
+	int value = 0;
+	StencilMode mode = instance()->getStencilMode(value);
 
-	instance()->getStencilMode(action, compare, value, readmask, writemask);
+	const char *modestr;
+	if (!getConstant(mode, modestr))
+		return luaL_error(L, "Unknown stencil mode.");
+
+	lua_pushstring(L, modestr);
+	lua_pushinteger(L, value);
+	return 2;
+}
+
+int w_setStencilState(lua_State *L)
+{
+	if (lua_gettop(L) <= 1 && lua_isnoneornil(L, 1))
+	{
+		luax_catchexcept(L, [&](){ instance()->setStencilState(); });
+		return 0;
+	}
+
+	StencilState s;
+
+	const char *actionstr = luaL_checkstring(L, 1);
+	if (!getConstant(actionstr, s.action))
+		return luax_enumerror(L, "stencil draw action", getConstants(s.action), actionstr);
+
+	const char *comparestr = luaL_checkstring(L, 2);
+	if (!getConstant(comparestr, s.compare))
+		return luax_enumerror(L, "compare mode", getConstants(s.compare), comparestr);
+
+	s.value = (int) luaL_optinteger(L, 3, 0);
+	s.readMask = (uint32) luaL_optnumber(L, 4, LOVE_UINT32_MAX);
+	s.writeMask = (uint32) luaL_optnumber(L, 5, LOVE_UINT32_MAX);
+
+	luax_catchexcept(L, [&](){ instance()->setStencilState(s); });
+	return 0;
+}
+
+int w_getStencilState(lua_State *L)
+{
+	const StencilState &s = instance()->getStencilState();
 
 	const char *actionstr;
-	if (!getConstant(action, actionstr))
+	if (!getConstant(s.action, actionstr))
 		return luaL_error(L, "Unknown stencil draw action.");
 
 	const char *comparestr;
-	if (!getConstant(compare, comparestr))
+	if (!getConstant(s.compare, comparestr))
 		return luaL_error(L, "Unknown compare mode.");
 
 	lua_pushstring(L, actionstr);
 	lua_pushstring(L, comparestr);
-	lua_pushnumber(L, value);
-	lua_pushnumber(L, readmask);
-	lua_pushnumber(L, writemask);
+	lua_pushinteger(L, s.value);
+	lua_pushnumber(L, s.readMask);
+	lua_pushnumber(L, s.writeMask);
 	return 5;
 }
 
@@ -738,6 +764,13 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 	if (!forceRenderTarget.hasValue)
 		s.renderTarget = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_RENDER_TARGET), s.renderTarget);
 
+	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_DEBUGNAME));
+	if (!lua_isnoneornil(L, -1))
+	{
+		s.debugName = luaL_checkstring(L, -1);
+	}
+	lua_pop(L, 1);
+
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_FORMAT));
 	if (!lua_isnoneornil(L, -1))
 	{
@@ -766,6 +799,13 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 		if (s.type == TEXTURE_2D_ARRAY || s.type == TEXTURE_VOLUME)
 			s.layers = luax_checkintflag(L, idx, Texture::getConstant(Texture::SETTING_LAYERS));
 	}
+	else
+	{
+		s.width = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_WIDTH), s.width);
+		s.height = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_HEIGHT), s.height);
+		if (s.type == TEXTURE_2D_ARRAY || s.type == TEXTURE_VOLUME)
+			s.layers = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_LAYERS), s.layers);
+	}
 
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_MIPMAPS));
 	if (!lua_isnoneornil(L, -1))
@@ -790,6 +830,25 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 	s.msaa = luax_intflag(L, idx, Texture::getConstant(Texture::SETTING_MSAA), s.msaa);
 
 	s.computeWrite = luax_boolflag(L, idx, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), s.computeWrite);
+
+	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_VIEW_FORMATS));
+	if (!lua_isnoneornil(L, -1))
+	{
+		if (lua_type(L, -1) != LUA_TTABLE)
+			luaL_argerror(L, idx, "expected field 'viewformats' to be a table type");
+
+		for (int i = 1; i <= luax_objlen(L, -1); i++)
+		{
+			lua_rawgeti(L, -1, i);
+			const char *str = luaL_checkstring(L, -1);
+			PixelFormat viewformat = PIXELFORMAT_UNKNOWN;
+			if (!getConstant(str, viewformat))
+				luax_enumerror(L, "pixel format", str);
+			s.viewFormats.push_back(viewformat);
+			lua_pop(L, 1);
+		}
+	}
+	lua_pop(L, 1);
 
 	lua_getfield(L, idx, Texture::getConstant(Texture::SETTING_READABLE));
 	if (!lua_isnoneornil(L, -1))
@@ -1207,6 +1266,66 @@ int w_newVolumeImage(lua_State *L)
 	return w_newVolumeTexture(L);
 }
 
+int w_newTextureView(lua_State *L)
+{
+	Texture *base = luax_checktexture(L, 1);
+	luaL_checktype(L, 2, LUA_TTABLE);
+
+	Texture::ViewSettings settings;
+
+	lua_getfield(L, 2, "format");
+	if (!lua_isnoneornil(L, -1))
+	{
+		const char *str = luaL_checkstring(L, -1);
+		if (!getConstant(str, settings.format.value))
+			luax_enumerror(L, "pixel format", str);
+		settings.format.hasValue = true;
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "type");
+	if (!lua_isnoneornil(L, -1))
+	{
+		const char *str = luaL_checkstring(L, -1);
+		if (!Texture::getConstant(str, settings.type.value))
+			luax_enumerror(L, "texture type", Texture::getConstants(settings.type.value), str);
+		settings.type.hasValue = true;
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "mipmapstart");
+	if (!lua_isnoneornil(L, -1))
+		settings.mipmapStart.set(luaL_checkint(L, -1) - 1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "mipmapcount");
+	if (!lua_isnoneornil(L, -1))
+		settings.mipmapCount.set(luaL_checkint(L, -1));
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "layerstart");
+	if (!lua_isnoneornil(L, -1))
+		settings.layerStart.set(luaL_checkint(L, -1) - 1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "layers");
+	if (!lua_isnoneornil(L, -1))
+		settings.layerCount.set(luaL_checkint(L, -1));
+	lua_pop(L, 1);
+
+	lua_getfield(L, 2, "debugname");
+	if (!lua_isnoneornil(L, -1))
+		settings.debugName = luaL_checkstring(L, -1);
+	lua_pop(L, 1);
+
+	Texture *t = nullptr;
+	luax_catchexcept(L, [&]() { t = instance()->newTextureView(base, settings); });
+
+	luax_pushtype(L, t);
+	t->release();
+	return 1;
+}
+
 int w_newQuad(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
@@ -1456,6 +1575,11 @@ static int w_getShaderSource(lua_State *L, int startidx, std::vector<std::string
 			}
 		}
 		lua_pop(L, 1);
+
+		lua_getfield(L, optionsidx, "debugname");
+		if (!lua_isnoneornil(L, -1))
+			options.debugName = luax_checkstring(L, -1);
+		lua_pop(L, 1);
 	}
 
 	return 0;
@@ -1471,6 +1595,10 @@ int w_newShader(lua_State *L)
 	try
 	{
 		Shader *shader = instance()->newShader(stages, options);
+		if (shader->isUsingDeprecatedTextureFunctions())
+			luax_markdeprecated(L, 1, "texture2D() or textureCube() function calls in shader code", API_CUSTOM, DEPRECATED_REPLACED, "texture() function calls");
+		if (shader->isUsingDeprecatedTextureUniform())
+			luax_markdeprecated(L, 1, "'texture' uniform variable name in shader code", API_CUSTOM, DEPRECATED_NO_REPLACEMENT, "");
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -1500,6 +1628,10 @@ int w_newComputeShader(lua_State* L)
 	try
 	{
 		Shader *shader = instance()->newComputeShader(stages[0], options);
+		if (shader->isUsingDeprecatedTextureFunctions())
+			luax_markdeprecated(L, 1, "texture2D() or textureCube() function calls in shader code", API_CUSTOM, DEPRECATED_REPLACED, "texture() function calls");
+		if (shader->isUsingDeprecatedTextureUniform())
+			luax_markdeprecated(L, 1, "'texture' uniform variable name in shader code", API_CUSTOM, DEPRECATED_NO_REPLACEMENT, "");
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -1569,6 +1701,11 @@ static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &sett
 
 	lua_getfield(L, idx, "usage");
 	settings.dataUsage = luax_optdatausage(L, -1, settings.dataUsage);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "debugname");
+	if (!lua_isnoneornil(L, -1))
+		settings.debugName = luax_checkstring(L, -1);
 	lua_pop(L, 1);
 }
 
@@ -1912,7 +2049,7 @@ static Mesh *newCustomMesh(lua_State *L)
 			}
 
 			if (decl.format == DATAFORMAT_MAX_ENUM)
-				luax_enumerror(L, "vertex data format", getConstants(decl.format), tname);
+				luax_enumerror(L, "vertex data type", {"float", "byte", "unorm8", "unorm16"}, tname);
 
 			lua_pop(L, 3);
 
@@ -1990,6 +2127,79 @@ static Mesh *newCustomMesh(lua_State *L)
 	return t;
 }
 
+static bool luax_isbufferattributetable(lua_State* L, int idx)
+{
+	if (lua_type(L, idx) != LUA_TTABLE)
+		return false;
+
+	lua_rawgeti(L, idx, 1);
+	if (lua_type(L, -1) != LUA_TTABLE)
+	{
+		lua_pop(L, 1);
+		return false;
+	}
+
+	lua_getfield(L, -1, "buffer");
+	bool isbuffer = luax_istype(L, -1, Buffer::type);
+	lua_pop(L, 2);
+	return isbuffer;
+}
+
+static Mesh::BufferAttribute luax_checkbufferattributetable(lua_State *L, int idx)
+{
+	Mesh::BufferAttribute attrib = {};
+
+	attrib.step = STEP_PER_VERTEX;
+	attrib.enabled = true;
+
+	lua_getfield(L, idx, "buffer");
+	attrib.buffer = luax_checkbuffer(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "name");
+	attrib.name = luax_checkstring(L, -1);
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "step");
+	if (!lua_isnoneornil(L, -1))
+	{
+		const char *stepstr = luaL_checkstring(L, -1);
+		if (!getConstant(stepstr, attrib.step))
+			luax_enumerror(L, "vertex attribute step", getConstants(attrib.step), stepstr);
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "nameinbuffer");	
+	if (!lua_isnoneornil(L, -1))
+		attrib.nameInBuffer = luax_checkstring(L, -1);
+	else
+		attrib.nameInBuffer = attrib.name;
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "startindex");
+	attrib.startArrayIndex = (int) luaL_optinteger(L, -1, 1) - 1;
+	lua_pop(L, 1);
+
+	return attrib;
+}
+
+static Mesh* newMeshFromBuffers(lua_State *L)
+{
+	std::vector<Mesh::BufferAttribute> attributes;
+	for (size_t i = 1; i <= luax_objlen(L, 1); i++)
+	{
+		lua_rawgeti(L, 1, i);
+		attributes.push_back(luax_checkbufferattributetable(L, -1));
+		lua_pop(L, 1);
+	}
+
+	PrimitiveType drawmode = luax_checkmeshdrawmode(L, 2);
+
+	Mesh *t = nullptr;
+	luax_catchexcept(L, [&]() { t = instance()->newMesh(attributes, drawmode); });
+	return t;
+}
+
 int w_newMesh(lua_State *L)
 {
 	luax_checkgraphicscreated(L);
@@ -2002,7 +2212,9 @@ int w_newMesh(lua_State *L)
 	Mesh *t = nullptr;
 
 	int arg2type = lua_type(L, 2);
-	if (arg1type == LUA_TTABLE && (arg2type == LUA_TTABLE || arg2type == LUA_TNUMBER || arg2type == LUA_TUSERDATA))
+	if (luax_isbufferattributetable(L, 1))
+		t = newMeshFromBuffers(L);
+	else if (arg1type == LUA_TTABLE && (arg2type == LUA_TTABLE || arg2type == LUA_TNUMBER || arg2type == LUA_TUSERDATA))
 		t = newCustomMesh(L);
 	else
 		t = newStandardMesh(L);
@@ -2280,7 +2492,11 @@ int w_setColorMask(lua_State *L)
 {
 	ColorChannelMask mask;
 
-	if (lua_gettop(L) <= 1)
+	if (lua_isnoneornil(L, 1))
+	{
+		mask.r = mask.g = mask.b = mask.a = true;
+	}
+	else if (lua_gettop(L) <= 1)
 	{
 		// Set all color components if a single argument is given.
 		mask.r = mask.g = mask.b = mask.a = luax_checkboolean(L, 1);
@@ -2708,7 +2924,6 @@ int w_getTextureFormats(lua_State *L)
 	luaL_checktype(L, 1, LUA_TTABLE);
 
 	bool rt = luax_checkboolflag(L, 1, Texture::getConstant(Texture::SETTING_RENDER_TARGET));
-	bool linear = luax_boolflag(L, 1, Texture::getConstant(Texture::SETTING_LINEAR), false);
 	bool computewrite = luax_boolflag(L, 1, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), false);
 
 	OptionalBool readable;
@@ -2730,11 +2945,6 @@ int w_getTextureFormats(lua_State *L)
 		if (format == PIXELFORMAT_UNKNOWN || !love::getConstant(format, name))
 			continue;
 
-		if (rt && isPixelFormatDepth(format))
-			continue;
-
-		bool sRGB = isGammaCorrect() && !linear;
-
 		uint32 usage = PIXELFORMATUSAGEFLAGS_NONE;
 		if (rt)
 			usage |= PIXELFORMATUSAGEFLAGS_RENDERTARGET;
@@ -2743,7 +2953,7 @@ int w_getTextureFormats(lua_State *L)
 		if (computewrite)
 			usage |= PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
 
-		luax_pushboolean(L, instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, sRGB));
+		luax_pushboolean(L, instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage));
 		lua_setfield(L, -2, name);
 	}
 
@@ -2787,14 +2997,14 @@ int w_getCanvasFormats(lua_State *L)
 			supported = [](PixelFormat format) -> bool
 			{
 				const uint32 usage = PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
-				return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, false);
+				return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage);
 			};
 		}
 		else
 		{
 			supported = [](PixelFormat format) -> bool
 			{
-				return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_RENDERTARGET, false);
+				return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_RENDERTARGET);
 			};
 		}
 	}
@@ -2806,7 +3016,7 @@ int w_getCanvasFormats(lua_State *L)
 			uint32 usage = PIXELFORMATUSAGEFLAGS_RENDERTARGET;
 			if (readable)
 				usage |= PIXELFORMATUSAGEFLAGS_SAMPLE;
-			return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage, false);
+			return instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage);
 		};
 	}
 
@@ -2819,7 +3029,7 @@ int w_getImageFormats(lua_State *L)
 
 	const auto supported = [](PixelFormat format) -> bool
 	{
-		return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_SAMPLE, false);
+		return instance()->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_SAMPLE);
 	};
 
 	const auto ignore = [](PixelFormat format) -> bool
@@ -2917,8 +3127,14 @@ int w_getStats(lua_State *L)
 	lua_pushinteger(L, stats.fonts);
 	lua_setfield(L, -2, "fonts");
 
-	lua_pushinteger(L, stats.textureMemory);
+	lua_pushinteger(L, stats.buffers);
+	lua_setfield(L, -2, "buffers");
+
+	lua_pushnumber(L, (lua_Number) stats.textureMemory);
 	lua_setfield(L, -2, "texturememory");
+
+	lua_pushnumber(L, (lua_Number) stats.bufferMemory);
+	lua_setfield(L, -2, "buffermemory");
 
 	return 1;
 }
@@ -2927,13 +3143,12 @@ int w_draw(lua_State *L)
 {
 	Drawable *drawable = nullptr;
 	Texture *texture = nullptr;
-	Quad *quad = nullptr;
+	Quad *quad = luax_totype<Quad>(L, 2);
 	int startidx = 2;
 
-	if (luax_istype(L, 2, Quad::type))
+	if (quad != nullptr)
 	{
 		texture = luax_checktexture(L, 1);
-		quad = luax_totype<Quad>(L, 2);
 		startidx = 3;
 	}
 	else if (lua_isnil(L, 2) && !lua_isnoneornil(L, 3))
@@ -2963,14 +3178,14 @@ int w_draw(lua_State *L)
 int w_drawLayer(lua_State *L)
 {
 	Texture *texture = luax_checktexture(L, 1);
-	Quad *quad = nullptr;
 	int layer = (int) luaL_checkinteger(L, 2) - 1;
-	int startidx = 3;
 
-	if (luax_istype(L, startidx, Quad::type))
+	int startidx = 3;
+	Quad *quad = luax_totype<Quad>(L, startidx);
+
+	if (quad != nullptr)
 	{
 		texture = luax_checktexture(L, 1);
-		quad = luax_totype<Quad>(L, startidx);
 		startidx++;
 	}
 	else if (lua_isnil(L, startidx) && !lua_isnoneornil(L, startidx + 1))
@@ -3690,25 +3905,31 @@ int w_inverseTransformPoint(lua_State *L)
 	return 2;
 }
 
-int w_setOrthoProjection(lua_State *L)
+int w_setProjection(lua_State *L)
 {
-	float w = (float) luaL_checknumber(L, 1);
-	float h = (float) luaL_checknumber(L, 2);
-	float near = (float) luaL_optnumber(L, 3, -10.0);
-	float far = (float) luaL_optnumber(L, 4, 10.0);
+	math::Transform *transform = luax_totype<math::Transform>(L, 1);
+	if (transform != nullptr)
+	{
+		instance()->setProjection(transform->getMatrix());
+		return 0;
+	}
 
-	luax_catchexcept(L, [&]() { instance()->setOrthoProjection(w, h, near, far); });
-	return 0;
-}
+	math::Transform::MatrixLayout layout = math::Transform::MATRIX_ROW_MAJOR;
 
-int w_setPerspectiveProjection(lua_State *L)
-{
-	float verticalfov = (float) luaL_checknumber(L, 1);
-	float aspect = (float) luaL_checknumber(L, 2);
-	float near = (float) luaL_checknumber(L, 3);
-	float far = (float) luaL_checknumber(L, 4);
+	int idx = 1;
+	if (lua_type(L, idx) == LUA_TSTRING)
+	{
+		const char* layoutstr = lua_tostring(L, idx);
+		if (!math::Transform::getConstant(layoutstr, layout))
+			return luax_enumerror(L, "matrix layout", math::Transform::getConstants(layout), layoutstr);
 
-	luax_catchexcept(L, [&]() { instance()->setPerspectiveProjection(verticalfov, aspect, near, far); });
+		idx++;
+	}
+
+	float elements[16];
+	love::math::luax_checkmatrix(L, idx, layout, elements);
+
+	instance()->setProjection(Matrix4(elements));
 	return 0;
 }
 
@@ -3732,6 +3953,7 @@ static const luaL_Reg functions[] =
 	{ "newCubeTexture", w_newCubeTexture },
 	{ "newArrayTexture", w_newArrayTexture },
 	{ "newVolumeTexture", w_newVolumeTexture },
+	{ "newTextureView", w_newTextureView },
 	{ "newQuad", w_newQuad },
 	{ "newFont", w_newFont },
 	{ "newImageFont", w_newImageFont },
@@ -3837,6 +4059,8 @@ static const luaL_Reg functions[] =
 
 	{ "setStencilMode", w_setStencilMode },
 	{ "getStencilMode", w_getStencilMode },
+	{ "setStencilState", w_setStencilState },
+	{ "getStencilState", w_getStencilState },
 
 	{ "points", w_points },
 	{ "line", w_line },
@@ -3861,8 +4085,7 @@ static const luaL_Reg functions[] =
 	{ "transformPoint", w_transformPoint },
 	{ "inverseTransformPoint", w_inverseTransformPoint },
 
-	{ "setOrthoProjection", w_setOrthoProjection },
-	{ "setPerspectiveProjection", w_setPerspectiveProjection },
+	{ "setProjection", w_setProjection },
 	{ "resetProjection", w_resetProjection },
 
 	// Deprecated

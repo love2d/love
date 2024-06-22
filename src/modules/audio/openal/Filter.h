@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -34,9 +34,9 @@
 #include <OpenAL-Soft/alext.h>
 #endif
 #else
-#include <AL/alc.h>
-#include <AL/al.h>
-#include <AL/alext.h>
+#include <alc.h>
+#include <al.h>
+#include <alext.h>
 #endif
 
 #include <vector>

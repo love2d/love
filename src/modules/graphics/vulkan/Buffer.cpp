@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -107,6 +107,18 @@ bool Buffer::loadVolatile()
 		coherent = true;
 	else
 		coherent = false;
+
+	if (!debugName.empty() && vgfx->getEnabledOptionalInstanceExtensions().debugInfo)
+	{
+		auto device = vgfx->getDevice();
+
+		VkDebugUtilsObjectNameInfoEXT nameInfo{};
+		nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
+		nameInfo.objectHandle = (uint64_t)buffer;
+		nameInfo.pObjectName = debugName.c_str();
+		vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
+	}
 
 	return true;
 }
@@ -254,17 +266,8 @@ void Buffer::unmap(size_t usedoffset, size_t usedsize)
 	}
 }
 
-void Buffer::clear(size_t offset, size_t size)
+void Buffer::clearInternal(size_t offset, size_t size)
 {
-	if (isImmutable())
-		throw love::Exception("Cannot clear an immutable Buffer.");
-	else if (isMapped())
-		throw love::Exception("Cannot clear a mapped Buffer.");
-	else if (offset + size > getSize())
-		throw love::Exception("The given offset and size parameters to clear() are not within the Buffer's size.");
-	else if (offset % 4 != 0 || size % 4 != 0)
-		throw love::Exception("clear() must be used with offset and size parameters that are multiples of 4 bytes.");
-
 	vkCmdFillBuffer(vgfx->getCommandBufferForDataTransfer(), buffer, offset, size, 0);
 }
 

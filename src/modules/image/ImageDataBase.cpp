@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,7 @@ ImageDataBase::ImageDataBase(PixelFormat format, int width, int height)
 	: format(format)
 	, width(width)
 	, height(height)
+	, linear(false)
 {
 }
 
@@ -45,6 +46,16 @@ int ImageDataBase::getWidth() const
 int ImageDataBase::getHeight() const
 {
 	return height;
+}
+
+void ImageDataBase::setLinear(bool linear)
+{
+	this->linear = linear;
+}
+
+bool ImageDataBase::isLinear() const
+{
+	return linear;
 }
 
 } // image

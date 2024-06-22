@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -263,7 +263,8 @@ struct DefaultVertexAttributes
 Graphics *Graphics::graphicsInstance = nullptr;
 
 Graphics::Graphics()
-	: device(nil)
+	: love::graphics::Graphics("love.graphics.metal")
+	, device(nil)
 	, commandQueue(nil)
 	, commandBuffer(nil)
 	, renderEncoder(nil)
@@ -274,15 +275,15 @@ Graphics::Graphics()
 	, dirtyRenderState(STATEBIT_ALL)
 	, lastCullMode(CULL_MAX_ENUM)
 	, lastRenderPipelineKey()
-	, windowHasStencil(false)
 	, shaderSwitches(0)
 	, requestedBackbufferMSAA(0)
 	, attachmentStoreActions()
 	, renderBindings()
 	, uniformBufferOffset(0)
+	, uniformBufferGPUStart(0)
 	, defaultAttributesBuffer(nullptr)
-	, defaultTextures()
 	, families()
+	, isVMDevice(false)
 { @autoreleasepool {
 	if (@available(macOS 10.15, iOS 13.0, *))
 	{
@@ -295,6 +296,8 @@ Graphics::Graphics()
 	{
 		throw love::Exception("LOVE's Metal graphics backend requires macOS 10.15+ or iOS 13+.");
 	}
+
+	isVMDevice = [device.name containsString:@("Apple Paravirtual device")];
 
 #ifdef LOVE_MACOS
 	// On multi-GPU macOS systems with a low and high power GPU (e.g. a 2016
@@ -328,7 +331,7 @@ Graphics::Graphics()
 
 	initCapabilities();
 
-	uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+	uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, 1024 * 512 * 1);
 
 	{
 		std::vector<Buffer::DataDeclaration> dataformat = {
@@ -342,19 +345,9 @@ Graphics::Graphics()
 		};
 
 		Buffer::Settings attribsettings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
+		attribsettings.debugName = "Default Vertex Attributes";
 
 		defaultAttributesBuffer = newBuffer(attribsettings, dataformat, &defaults, sizeof(DefaultVertexAttributes), 0);
-	}
-
-	uint8 defaultpixel[] = {255, 255, 255, 255};
-	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
-	{
-		Texture::Settings settings;
-		settings.type = (TextureType) i;
-		settings.format = PIXELFORMAT_RGBA8_UNORM;
-		defaultTextures[i] = newTexture(settings);
-		Rect r = {0, 0, 1, 1};
-		defaultTextures[i]->replacePixels(defaultpixel, sizeof(defaultpixel), 0, 0, r, false);
 	}
 
 	if (batchedDrawState.vb[0] == nullptr)
@@ -426,9 +419,6 @@ Graphics::~Graphics()
 	commandQueue = nil;
 	device = nil;
 
-	for (int i = 0; i < TEXTURE_MAX_ENUM; i++)
-		defaultTextures[i]->release();
-
 	for (auto &kvp : cachedSamplers)
 		CFBridgingRelease(kvp.second);
 
@@ -448,14 +438,19 @@ love::graphics::Texture *Graphics::newTexture(const Texture::Settings &settings,
 	return new Texture(this, device, settings, data);
 }
 
+love::graphics::Texture *Graphics::newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings)
+{
+	return new Texture(this, device, base, viewsettings);
+}
+
 love::graphics::ShaderStage *Graphics::newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles)
 {
 	return new ShaderStage(this, stage, source, gles, cachekey);
 }
 
-love::graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM])
+love::graphics::Shader *Graphics::newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const Shader::CompileOptions &options)
 {
-	return new Shader(device, stages);
+	return new Shader(device, stages, options);
 }
 
 love::graphics::Buffer *Graphics::newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength)
@@ -473,18 +468,22 @@ love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod m
 	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
 }
 
-Matrix4 Graphics::computeDeviceProjection(const Matrix4 &projection, bool /*rendertotexture*/) const
+void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 {
-	uint32 flags = DEVICE_PROJECTION_FLIP_Y;
-	return calculateDeviceProjection(projection, flags);
-}
+	bool sizechanged = width != this->width || height != this->height
+		|| pixelwidth != this->pixelWidth || pixelheight != this->pixelHeight;
 
-void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelheight)
-{
+	bool dschanged = backbufferstencil != this->backbufferHasStencil || backbufferdepth != this->backbufferHasDepth;
+	bool msaachanged = msaa != this->requestedBackbufferMSAA;
+
 	this->width = width;
 	this->height = height;
 	this->pixelWidth = pixelwidth;
 	this->pixelHeight = pixelheight;
+
+	this->backbufferHasStencil = backbufferstencil;
+	this->backbufferHasDepth = backbufferdepth;
+	this->requestedBackbufferMSAA = msaa;
 
 	if (!isRenderTargetActive())
 	{
@@ -500,25 +499,37 @@ void Graphics::setViewportSize(int width, int height, int pixelwidth, int pixelh
 	settings.renderTarget = true;
 	settings.readable.set(false);
 
-	backbufferMSAA.set(nullptr);
-	if (settings.msaa > 1)
+	if (sizechanged || msaachanged)
 	{
-		settings.format = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
-		backbufferMSAA.set(newTexture(settings), Acquire::NORETAIN);
+		backbufferMSAA.set(nullptr);
+		if (settings.msaa > 1)
+		{
+			settings.format = isGammaCorrect() ? PIXELFORMAT_BGRA8_sRGB : PIXELFORMAT_BGRA8_UNORM;
+			backbufferMSAA.set(newTexture(settings), Acquire::NORETAIN);
+		}
 	}
 
-	settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-	backbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+	if (sizechanged || msaachanged || dschanged)
+	{
+		backbufferDepthStencil.set(nullptr);
+		if (backbufferstencil || backbufferdepth)
+		{
+			if (backbufferstencil && backbufferdepth)
+				settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+			else if (backbufferstencil)
+				settings.format = PIXELFORMAT_STENCIL8;
+			else if (backbufferdepth)
+				settings.format = PIXELFORMAT_DEPTH24_UNORM;
+			backbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+		}
+	}
 }
 
-bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa)
+bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
 { @autoreleasepool {
 	this->width = width;
 	this->height = height;
 	this->metalLayer = (__bridge CAMetalLayer *) context;
-
-	this->windowHasStencil = windowhasstencil;
-	this->requestedBackbufferMSAA = msaa;
 
 	metalLayer.device = device;
 	metalLayer.pixelFormat = isGammaCorrect() ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
@@ -531,7 +542,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	metalLayer.magnificationFilter = kCAFilterNearest;
 #endif
 
-	setViewportSize(width, height, pixelwidth, pixelheight);
+	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferstencil, backbufferdepth, msaa);
 
 	created = true;
 
@@ -675,13 +686,15 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 			passDesc.colorAttachments[0].depthPlane = 0;
 
 			RenderTarget rt(backbufferDepthStencil);
-			setAttachment(rt, passDesc.depthAttachment, attachmentStoreActions.depth, false);
-			setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil, false);
+			if (rt.texture != nullptr && isPixelFormatDepth(rt.texture->getPixelFormat()))
+				setAttachment(rt, passDesc.depthAttachment, attachmentStoreActions.depth, false);
+			if (rt.texture != nullptr && isPixelFormatStencil(rt.texture->getPixelFormat()))
+				setAttachment(rt, passDesc.stencilAttachment, attachmentStoreActions.stencil, false);
 			attachmentStoreActions.depth = MTLStoreActionDontCare;
 			attachmentStoreActions.stencil = MTLStoreActionDontCare;
 
 			auto &key = lastRenderPipelineKey;
-			key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_UNORM_sRGB : PIXELFORMAT_BGRA8_UNORM;
+			key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_sRGB : PIXELFORMAT_BGRA8_UNORM;
 			key.depthStencilFormat = backbufferDepthStencil->getPixelFormat();
 			key.msaa = backbufferMSAA ? (uint8) backbufferMSAA->getMSAA() : 1;
 		}
@@ -715,11 +728,15 @@ void Graphics::submitRenderEncoder(SubmitType type)
 		for (size_t i = 0; i < rts.colors.size(); i++)
 			[renderEncoder setColorStoreAction:(store ? MTLStoreActionStore : actions.color[i]) atIndex:i];
 
-		if (rts.depthStencil.texture.get() || rts.temporaryRTFlags != 0 || isbackbuffer)
-		{
+		love::graphics::Texture *ds = rts.depthStencil.texture.get();
+		if (isbackbuffer)
+			ds = backbufferDepthStencil;
+
+		if ((rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) != 0 || (ds != nullptr && isPixelFormatDepth(ds->getPixelFormat())))
 			[renderEncoder setDepthStoreAction:store ? MTLStoreActionStore : actions.depth];
+
+		if ((rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) != 0 || (ds != nullptr && isPixelFormatStencil(ds->getPixelFormat())))
 			[renderEncoder setStencilStoreAction:store ? MTLStoreActionStore : actions.stencil];
-		}
 
 		[renderEncoder endEncoding];
 		renderEncoder = nil;
@@ -729,16 +746,22 @@ void Graphics::submitRenderEncoder(SubmitType type)
 		for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)
 		{
 			passDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
-			passDesc.colorAttachments[i].texture = nil;
-			passDesc.colorAttachments[i].resolveTexture = nil;
+			if (type == SUBMIT_DONE)
+			{
+				passDesc.colorAttachments[i].texture = nil;
+				passDesc.colorAttachments[i].resolveTexture = nil;
+			}
 		}
 
 		passDesc.depthAttachment.loadAction = MTLLoadActionLoad;
-		passDesc.depthAttachment.texture = nil;
-		passDesc.depthAttachment.resolveTexture = nil;
 		passDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
-		passDesc.stencilAttachment.texture = nil;
-		passDesc.stencilAttachment.resolveTexture = nil;
+		if (type == SUBMIT_DONE)
+		{
+			passDesc.depthAttachment.texture = nil;
+			passDesc.depthAttachment.resolveTexture = nil;
+			passDesc.stencilAttachment.texture = nil;
+			passDesc.stencilAttachment.resolveTexture = nil;
+		}
 	}
 }
 
@@ -825,7 +848,7 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 	desc.lodMinClamp = s.minLod;
 	desc.lodMaxClamp = s.maxLod;
 
-	// TODO: This isn't supported on some older iOS devices...
+	// This isn't supported on some older iOS devices. Texture code checks for support.
 	if (s.depthSampleMode.hasValue)
 		desc.compareFunction = getMTLCompareFunction(s.depthSampleMode.value);
 
@@ -836,6 +859,11 @@ id<MTLSamplerState> Graphics::getCachedSampler(const SamplerState &s)
 
 	return sampler;
 }}
+
+bool Graphics::isDepthCompareSamplerSupported() const
+{
+	return families.mac[1] || families.macCatalyst[1] || families.apple[3];
+}
 
 id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil)
 {
@@ -856,7 +884,7 @@ id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &
 	 * example, if the compare function is GREATER then the stencil test will
 	 * pass if the reference value is greater than the value in the stencil
 	 * buffer. With our API it's more intuitive to assume that
-	 * setStencilMode(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
+	 * setStencilState(STENCIL_KEEP, COMPARE_GREATER, 4) will make it pass if the
 	 * stencil buffer has a value greater than 4.
 	 **/
 	stencildesc.stencilCompareFunction = getMTLCompareFunction(getReversedCompareMode(stencil.compare));
@@ -896,8 +924,8 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 		const auto &rt = state.renderTargets.getFirstTarget();
 		if (rt.texture.get())
 		{
-			rtw = rt.texture->getPixelWidth();
-			rth = rt.texture->getPixelHeight();
+			rtw = rt.texture->getPixelWidth(rt.mipmap);
+			rth = rt.texture->getPixelHeight(rt.mipmap);
 		}
 		else
 		{
@@ -1011,14 +1039,19 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 	if (uniformBuffer->getSize() < uniformBufferOffset + size)
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
+		if (uniformBufferOffset > 0)
+			uniformBuffer->nextFrame();
 		uniformBuffer->release();
-		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, newsize);
+		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, newsize);
 		uniformBufferData = {};
 		uniformBufferOffset = 0;
 	}
 
 	if (uniformBufferData.data == nullptr)
+	{
 		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+		uniformBufferGPUStart = uniformBuffer->getGPUReadOffset();
+	}
 
 	memcpy(uniformBufferData.data + uniformBufferOffset, bufferdata, size);
 
@@ -1026,7 +1059,7 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 	int uniformindex = Shader::getUniformBufferBinding();
 
 	auto &bindings = renderBindings;
-	setBuffer(encoder, bindings, uniformindex, buffer, uniformBufferOffset);
+	setBuffer(encoder, bindings, uniformindex, buffer, uniformBufferGPUStart + uniformBufferOffset);
 
 	uniformBufferOffset += alignUp(size, alignment);
 
@@ -1046,7 +1079,7 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 			if ((b.access & Shader::ACCESS_WRITE) != 0 && texture == nil)
 				allWritableVariablesSet = false;
 		}
-		
+
 		if (sampindex != LOVE_UINT8_MAX)
 			setSampler(encoder, bindings, sampindex, samplertex);
 	}
@@ -1083,32 +1116,18 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	builtins->transformMatrix = getTransform();
 	builtins->projectionMatrix = getDeviceProjection();
 
-	// The normal matrix is the transpose of the inverse of the rotation portion
-	// (top-left 3x3) of the transform matrix.
-	{
-		Matrix3 normalmatrix = Matrix3(builtins->transformMatrix).transposedInverse();
-		const float *e = normalmatrix.getElements();
-		for (int i = 0; i < 3; i++)
-		{
-			builtins->normalMatrix[i].x = e[i * 3 + 0];
-			builtins->normalMatrix[i].y = e[i * 3 + 1];
-			builtins->normalMatrix[i].z = e[i * 3 + 2];
-			builtins->normalMatrix[i].w = 0.0f;
-		}
-	}
+	builtins->scaleParams.x = (float) getCurrentDPIScale();
+	builtins->scaleParams.y = getPointSize();
 
-	// Store DPI scale in an unused component of another vector.
-	builtins->normalMatrix[0].w = (float) getCurrentDPIScale();
-
-	// Same with point size.
-	builtins->normalMatrix[1].w = getPointSize();
+	uint32 flags = Shader::CLIP_TRANSFORM_Z_NEG1_1_TO_0_1;
+	builtins->clipSpaceParams = Shader::computeClipSpaceParams(flags);
 
 	builtins->screenSizeParams = Vector4(getPixelWidth(), getPixelHeight(), 1.0f, 0.0f);
-	auto rt = states.back().renderTargets.getFirstTarget().texture.get();
-	if (rt != nullptr)
+	auto rt = states.back().renderTargets.getFirstTarget();
+	if (rt.texture.get())
 	{
-		builtins->screenSizeParams.x = rt->getPixelWidth();
-		builtins->screenSizeParams.y = rt->getPixelHeight();
+		builtins->screenSizeParams.x = rt.texture->getPixelWidth(rt.mipmap);
+		builtins->screenSizeParams.y = rt.texture->getPixelHeight(rt.mipmap);
 	}
 
 	builtins->constantColor = getColor();
@@ -1117,14 +1136,19 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	if (uniformBuffer->getSize() < uniformBufferOffset + size)
 	{
 		size_t newsize = uniformBuffer->getSize() * 2;
+		if (uniformBufferOffset > 0)
+			uniformBuffer->nextFrame();
 		uniformBuffer->release();
-		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_VERTEX, newsize);
+		uniformBuffer = CreateStreamBuffer(device, BUFFERUSAGE_UNIFORM, newsize);
 		uniformBufferData = {};
 		uniformBufferOffset = 0;
 	}
 
 	if (uniformBufferData.data == nullptr)
+	{
 		uniformBufferData = uniformBuffer->map(uniformBuffer->getSize());
+		uniformBufferGPUStart = uniformBuffer->getGPUReadOffset();
+	}
 
 	memcpy(uniformBufferData.data + uniformBufferOffset, bufferdata, size);
 
@@ -1132,8 +1156,8 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	int uniformindex = Shader::getUniformBufferBinding();
 
 	auto &bindings = renderBindings;
-	setBuffer(renderEncoder, bindings, SHADERSTAGE_VERTEX, uniformindex, buffer, uniformBufferOffset);
-	setBuffer(renderEncoder, bindings, SHADERSTAGE_PIXEL, uniformindex, buffer, uniformBufferOffset);
+	setBuffer(renderEncoder, bindings, SHADERSTAGE_VERTEX, uniformindex, buffer, uniformBufferGPUStart + uniformBufferOffset);
+	setBuffer(renderEncoder, bindings, SHADERSTAGE_PIXEL, uniformindex, buffer, uniformBufferGPUStart + uniformBufferOffset);
 
 	uniformBufferOffset += alignUp(size, alignment);
 
@@ -1144,13 +1168,6 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 
 		if (b.isMainTexture)
 		{
-			if (maintex == nullptr)
-			{
-				auto texinfo = shader->getMainTextureInfo();
-				if (texinfo != nullptr && texinfo->textureType != TEXTURE_MAX_ENUM)
-					maintex = defaultTextures[texinfo->textureType];
-			}
-
 			texture = getMTLTexture(maintex);
 			samplertex = maintex;
 		}
@@ -1434,10 +1451,15 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*pixelw*/
 	}
 
 	for (size_t i = rts.colors.size(); i < MAX_COLOR_RENDER_TARGETS; i++)
+	{
 		passDesc.colorAttachments[i] = nil;
+		passDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
+	}
 
 	passDesc.depthAttachment = nil;
+	passDesc.depthAttachment.loadAction = MTLLoadActionLoad;
 	passDesc.stencilAttachment = nil;
+	passDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
 
 	auto ds = rts.depthStencil.texture;
 	if (isbackbuffer && ds == nullptr)
@@ -1492,12 +1514,6 @@ void Graphics::endPass(bool presenting)
 	}
 
 	submitRenderEncoder(SUBMIT_DONE);
-
-	for (const auto &rt : rts.colors)
-	{
-		if (rt.texture->getMipmapsMode() == Texture::MIPMAPS_AUTO && rt.mipmap == 0)
-			rt.texture->generateMipmaps();
-	}
 }
 
 void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth)
@@ -1777,34 +1793,20 @@ void Graphics::setScissor()
 	}
 }
 
-void Graphics::setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask)
+void Graphics::setStencilState(const StencilState &s)
 {
-	DisplayState &state = states.back();
-
-	if (action != STENCIL_KEEP)
-	{
-		const auto &rts = state.renderTargets;
-		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
-
-		if (!isRenderTargetActive() && !windowHasStencil)
-			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
-		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
-			throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
-	}
+	validateStencilState(s);
 
 	flushBatchedDraws();
 
-	state.stencil.action = action;
-	state.stencil.compare = compare;
-	state.stencil.value = value;
-	state.stencil.readMask = readmask;
-	state.stencil.writeMask = writemask;
-
+	states.back().stencil = s;
 	dirtyRenderState |= STATEBIT_STENCIL;
 }
 
 void Graphics::setDepthMode(CompareMode compare, bool write)
 {
+	validateDepthState(write);
+
 	DisplayState &state = states.back();
 
 	if (state.depthTest != compare || state.depthWrite != write)
@@ -1864,31 +1866,9 @@ void Graphics::setWireframe(bool enable)
 	}
 }
 
-PixelFormat Graphics::getSizedFormat(PixelFormat format, bool /*rendertarget*/, bool /*readable*/) const
+bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 {
-	switch (format)
-	{
-	case PIXELFORMAT_NORMAL:
-		if (isGammaCorrect())
-			return PIXELFORMAT_RGBA8_UNORM_sRGB;
-		else
-			return PIXELFORMAT_RGBA8_UNORM;
-	case PIXELFORMAT_HDR:
-		return PIXELFORMAT_RGBA16_FLOAT;
-	default:
-		return format;
-	}
-}
-
-bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB)
-{
-	bool rendertarget = (usage & PIXELFORMATUSAGEFLAGS_RENDERTARGET) != 0;
-	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
-
-	format = getSizedFormat(format, rendertarget, readable);
-
-	if (sRGB)
-		format = getSRGBPixelFormat(format);
+	format = getSizedFormat(format);
 
 	const uint32 sample = PIXELFORMATUSAGEFLAGS_SAMPLE;
 	const uint32 filter = PIXELFORMATUSAGEFLAGS_LINEAR;
@@ -1902,7 +1882,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 
 	uint32 flags = PIXELFORMATUSAGEFLAGS_NONE;
 
-	if (isPixelFormatCompressed(format) && rendertarget)
+	if (isPixelFormatCompressed(format) && (usage & rt) != 0)
 		return false;
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
@@ -1946,8 +1926,13 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 			// Requires texture swizzle support.
 			if (@available(macOS 10.15, iOS 13, *))
 			{
-				if (families.apple[1] || families.mac[2] || families.macCatalyst[2])
-					flags |= commonsample;
+				// As of early 2024, the VM device doesn't properly support texture swizzles
+				// (observed on GitHub's runners) which is required for LA8 support.
+				if (!isVMDevice)
+				{
+					if (families.apple[1] || families.mac[2] || families.macCatalyst[2])
+						flags |= commonsample;
+				}
 			}
 			break;
 		case PIXELFORMAT_RG16_UNORM:
@@ -1977,8 +1962,8 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 		case PIXELFORMAT_BGRA8_UNORM:
 			flags |= all;
 			break;
-		case PIXELFORMAT_RGBA8_UNORM_sRGB:
-		case PIXELFORMAT_BGRA8_UNORM_sRGB:
+		case PIXELFORMAT_RGBA8_sRGB:
+		case PIXELFORMAT_BGRA8_sRGB:
 			if (families.apple[1] || families.mac[1] || families.macCatalyst[1])
 				flags |= commonsample | commonrender;
 			if (families.apple[2])
@@ -2027,7 +2012,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 		case PIXELFORMAT_RGBA32_INT:
 		case PIXELFORMAT_RGBA32_UINT:
 			// If MSAA support for int formats is added this should be split up.
-			flags |= rt | computewrite;
+			flags |= sample | rt | computewrite;
 			break;
 
 		case PIXELFORMAT_RGBA4_UNORM:
@@ -2077,8 +2062,11 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 			break;
 
 		case PIXELFORMAT_DXT1_UNORM:
+		case PIXELFORMAT_DXT1_sRGB:
 		case PIXELFORMAT_DXT3_UNORM:
+		case PIXELFORMAT_DXT3_sRGB:
 		case PIXELFORMAT_DXT5_UNORM:
+		case PIXELFORMAT_DXT5_sRGB:
 		case PIXELFORMAT_BC4_UNORM:
 		case PIXELFORMAT_BC4_SNORM:
 		case PIXELFORMAT_BC5_UNORM:
@@ -2086,22 +2074,30 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 		case PIXELFORMAT_BC6H_UFLOAT:
 		case PIXELFORMAT_BC6H_FLOAT:
 		case PIXELFORMAT_BC7_UNORM:
+		case PIXELFORMAT_BC7_sRGB:
 			if (families.mac[1] || families.macCatalyst[1])
 				flags |= commonsample;
 			break;
 
 		case PIXELFORMAT_PVR1_RGB2_UNORM:
+		case PIXELFORMAT_PVR1_RGB2_sRGB:
 		case PIXELFORMAT_PVR1_RGB4_UNORM:
+		case PIXELFORMAT_PVR1_RGB4_sRGB:
 		case PIXELFORMAT_PVR1_RGBA2_UNORM:
+		case PIXELFORMAT_PVR1_RGBA2_sRGB:
 		case PIXELFORMAT_PVR1_RGBA4_UNORM:
+		case PIXELFORMAT_PVR1_RGBA4_sRGB:
 			if (families.apple[1])
 				flags |= commonsample;
 			break;
 
 		case PIXELFORMAT_ETC1_UNORM:
 		case PIXELFORMAT_ETC2_RGB_UNORM:
+		case PIXELFORMAT_ETC2_RGB_sRGB:
 		case PIXELFORMAT_ETC2_RGBA_UNORM:
+		case PIXELFORMAT_ETC2_RGBA_sRGB:
 		case PIXELFORMAT_ETC2_RGBA1_UNORM:
+		case PIXELFORMAT_ETC2_RGBA1_sRGB:
 		case PIXELFORMAT_EAC_R_UNORM:
 		case PIXELFORMAT_EAC_R_SNORM:
 		case PIXELFORMAT_EAC_RG_UNORM:
@@ -2110,20 +2106,34 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRG
 				flags |= commonsample;
 			break;
 
-		case PIXELFORMAT_ASTC_4x4:
-		case PIXELFORMAT_ASTC_5x4:
-		case PIXELFORMAT_ASTC_5x5:
-		case PIXELFORMAT_ASTC_6x5:
-		case PIXELFORMAT_ASTC_6x6:
-		case PIXELFORMAT_ASTC_8x5:
-		case PIXELFORMAT_ASTC_8x6:
-		case PIXELFORMAT_ASTC_8x8:
-		case PIXELFORMAT_ASTC_10x5:
-		case PIXELFORMAT_ASTC_10x6:
-		case PIXELFORMAT_ASTC_10x8:
-		case PIXELFORMAT_ASTC_10x10:
-		case PIXELFORMAT_ASTC_12x10:
-		case PIXELFORMAT_ASTC_12x12:
+		case PIXELFORMAT_ASTC_4x4_UNORM:
+		case PIXELFORMAT_ASTC_5x4_UNORM:
+		case PIXELFORMAT_ASTC_5x5_UNORM:
+		case PIXELFORMAT_ASTC_6x5_UNORM:
+		case PIXELFORMAT_ASTC_6x6_UNORM:
+		case PIXELFORMAT_ASTC_8x5_UNORM:
+		case PIXELFORMAT_ASTC_8x6_UNORM:
+		case PIXELFORMAT_ASTC_8x8_UNORM:
+		case PIXELFORMAT_ASTC_10x5_UNORM:
+		case PIXELFORMAT_ASTC_10x6_UNORM:
+		case PIXELFORMAT_ASTC_10x8_UNORM:
+		case PIXELFORMAT_ASTC_10x10_UNORM:
+		case PIXELFORMAT_ASTC_12x10_UNORM:
+		case PIXELFORMAT_ASTC_12x12_UNORM:
+		case PIXELFORMAT_ASTC_4x4_sRGB:
+		case PIXELFORMAT_ASTC_5x4_sRGB:
+		case PIXELFORMAT_ASTC_5x5_sRGB:
+		case PIXELFORMAT_ASTC_6x5_sRGB:
+		case PIXELFORMAT_ASTC_6x6_sRGB:
+		case PIXELFORMAT_ASTC_8x5_sRGB:
+		case PIXELFORMAT_ASTC_8x6_sRGB:
+		case PIXELFORMAT_ASTC_8x8_sRGB:
+		case PIXELFORMAT_ASTC_10x5_sRGB:
+		case PIXELFORMAT_ASTC_10x6_sRGB:
+		case PIXELFORMAT_ASTC_10x8_sRGB:
+		case PIXELFORMAT_ASTC_10x10_sRGB:
+		case PIXELFORMAT_ASTC_12x10_sRGB:
+		case PIXELFORMAT_ASTC_12x12_sRGB:
 			if (families.apple[2])
 				flags |= commonsample;
 			break;
@@ -2207,10 +2217,6 @@ void Graphics::initCapabilities()
 				families.macCatalyst[1 + i] = true;
 		}
 	}
-	else
-	{
-		// TODO: feature set API
-	}
 
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = true;
@@ -2221,7 +2227,6 @@ void Graphics::initCapabilities()
 		if (families.mac[1] || families.macCatalyst[1] || families.apple[7])
 			capabilities.features[FEATURE_CLAMP_ONE] = true;
 	}
-	capabilities.features[FEATURE_BLEND_MINMAX] = true;
 	capabilities.features[FEATURE_LIGHTEN] = true;
 	capabilities.features[FEATURE_FULL_NPOT] = true;
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
@@ -2230,19 +2235,14 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_GLSL4] = true;
 	capabilities.features[FEATURE_INSTANCING] = true;
 	capabilities.features[FEATURE_TEXEL_BUFFER] = true;
-	capabilities.features[FEATURE_INDEX_BUFFER_32BIT] = true;
-	capabilities.features[FEATURE_COPY_BUFFER] = true;
-	capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE] = true;
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
-	capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER] = true;
-	capabilities.features[FEATURE_MIPMAP_RANGE] = true;
 
 	if (families.mac[1] || families.macCatalyst[1] || families.apple[3])
 		capabilities.features[FEATURE_INDIRECT_DRAW] = true;
 	else
 		capabilities.features[FEATURE_INDIRECT_DRAW] = false;
 	
-	static_assert(FEATURE_MAX_ENUM == 19, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;

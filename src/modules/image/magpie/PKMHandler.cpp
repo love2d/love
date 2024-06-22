@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -114,7 +114,7 @@ bool PKMHandler::canParseCompressed(Data *data)
 	return true;
 }
 
-StrongRef<ByteData> PKMHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format, bool &sRGB)
+StrongRef<ByteData> PKMHandler::parseCompressed(Data *filedata, std::vector<StrongRef<CompressedSlice>> &images, PixelFormat &format)
 {
 	if (!canParseCompressed(filedata))
 		throw love::Exception("Could not decode compressed data (not a PKM file?)");
@@ -148,8 +148,6 @@ StrongRef<ByteData> PKMHandler::parseCompressed(Data *filedata, std::vector<Stro
 	images.emplace_back(new CompressedSlice(cformat, width, height, memory, 0, totalsize), Acquire::NORETAIN);
 
 	format = cformat;
-	sRGB = false;
-
 	return memory;
 }
 

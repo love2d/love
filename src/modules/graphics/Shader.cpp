@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,7 @@
 
 // glslang
 #include "libraries/glslang/glslang/Public/ShaderLang.h"
+#include "libraries/glslang/glslang/Public/ResourceLimits.h"
 
 // Needed for reflection information.
 #include "libraries/glslang/glslang/Include/Types.h"
@@ -45,139 +46,118 @@ namespace glsl
 {
 
 static const char global_syntax[] = R"(
-#if !defined(GL_ES) && __VERSION__ < 140
-	#define lowp
-	#define mediump
-	#define highp
-#endif
-#if defined(VERTEX) || __VERSION__ > 100 || defined(GL_FRAGMENT_PRECISION_HIGH)
-	#define LOVE_HIGHP_OR_MEDIUMP highp
-#else
-	#define LOVE_HIGHP_OR_MEDIUMP mediump
-#endif
-#if __VERSION__ >= 300
-#define LOVE_IO_LOCATION(x) layout (location = x)
-#else
-#define LOVE_IO_LOCATION(x)
-#endif
+#define LOVE_HIGHP_OR_MEDIUMP highp
 #define number float
 #define Image sampler2D
 #define ArrayImage sampler2DArray
 #define CubeImage samplerCube
 #define VolumeImage sampler3D
-#if __VERSION__ >= 300 && !defined(LOVE_GLSL1_ON_GLSL3)
-	#define DepthImage sampler2DShadow
-	#define DepthArrayImage sampler2DArrayShadow
-	#define DepthCubeImage samplerCubeShadow
-#endif
+#define DepthImage sampler2DShadow
+#define DepthArrayImage sampler2DArrayShadow
+#define DepthCubeImage samplerCubeShadow
 #define extern uniform
-#if defined(GL_EXT_texture_array) && (!defined(GL_ES) || __VERSION__ > 100 || defined(GL_OES_gpu_shader5))
-// Only used when !GLSLES1 to work around Ouya driver bug. But we still want it
-// enabled for glslang validation when glsl 1-on-3 is used, so also enable it if
-// OES_gpu_shader5 exists.
-#define LOVE_EXT_TEXTURE_ARRAY_ENABLED
-#extension GL_EXT_texture_array : enable
-#endif
-#ifdef GL_OES_texture_3D
-#extension GL_OES_texture_3D : enable
-#endif
-#ifdef GL_OES_standard_derivatives
-#extension GL_OES_standard_derivatives : enable
+
+#if __VERSION__ >= 430 || (defined(GL_ES) && __VERSION__ >= 310)
+	layout (std430) buffer;
 #endif
 )";
 
 static const char render_uniforms[] = R"(
-// According to the GLSL ES 1.0 spec, uniform precision must match between stages,
-// but we can't guarantee that highp is always supported in fragment shaders...
-// We *really* don't want to use mediump for these in vertex shaders though.
-#ifdef LOVE_SPLIT_UNIFORMS_PER_DRAW
-uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[12];
-uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw2[1];
-#else
-uniform LOVE_HIGHP_OR_MEDIUMP vec4 love_UniformsPerDraw[13];
-#endif
+uniform highp vec4 love_UniformsPerDraw[12];
 
 // Older GLSL doesn't support preprocessor line continuations...
 #define TransformMatrix mat4(love_UniformsPerDraw[0], love_UniformsPerDraw[1], love_UniformsPerDraw[2], love_UniformsPerDraw[3])
 #define ProjectionMatrix mat4(love_UniformsPerDraw[4], love_UniformsPerDraw[5], love_UniformsPerDraw[6], love_UniformsPerDraw[7])
 #define TransformProjectionMatrix (ProjectionMatrix * TransformMatrix)
 
-#define NormalMatrix mat3(love_UniformsPerDraw[8].xyz, love_UniformsPerDraw[9].xyz, love_UniformsPerDraw[10].xyz)
-
-#define CurrentDPIScale (love_UniformsPerDraw[8].w)
-#define ConstantPointSize (love_UniformsPerDraw[9].w)
-#define ConstantColor (love_UniformsPerDraw[11])
-
-#ifdef LOVE_SPLIT_UNIFORMS_PER_DRAW
-#define love_ScreenSize (love_UniformsPerDraw2[0])
-#else
-#define love_ScreenSize (love_UniformsPerDraw[12])
-#endif
+#define CurrentDPIScale (love_UniformsPerDraw[8].x)
+#define ConstantPointSize (love_UniformsPerDraw[8].y)
+#define love_ClipSpaceParams (love_UniformsPerDraw[9])
+#define ConstantColor (love_UniformsPerDraw[10])
+#define love_ScreenSize (love_UniformsPerDraw[11])
 
 // Alternate names
 #define ViewSpaceFromLocal TransformMatrix
 #define ClipSpaceFromView ProjectionMatrix
 #define ClipSpaceFromLocal TransformProjectionMatrix
-#define ViewNormalFromLocal NormalMatrix
 )";
 
 static const char global_functions[] = R"(
 #ifdef GL_ES
-	#if __VERSION__ >= 300 || defined(LOVE_EXT_TEXTURE_ARRAY_ENABLED)
-		precision lowp sampler2DArray;
-	#endif
-	#if __VERSION__ >= 300 || defined(GL_OES_texture_3D)
-		precision lowp sampler3D;
-	#endif
-	#if __VERSION__ >= 300 && !defined(LOVE_GLSL1_ON_GLSL3)
-		precision lowp sampler2DShadow;
-		precision lowp samplerCubeShadow;
-		precision lowp sampler2DArrayShadow;
-	#endif
+	precision mediump sampler2D;
+	precision mediump sampler2DArray;
+	precision mediump sampler3D;
+	precision mediump samplerCube;
+	precision mediump sampler2DShadow;
+	precision mediump samplerCubeShadow;
+	precision mediump sampler2DArrayShadow;
+
+	precision highp isampler2D;
+	precision highp isampler2DArray;
+	precision highp isampler3D;
+	precision highp isamplerCube;
+
+	precision highp usampler2D;
+	precision highp usampler2DArray;
+	precision highp usampler3D;
+	precision highp usamplerCube;
 #endif
 
-#if __VERSION__ >= 430 || (defined(GL_ES) && __VERSION__ >= 310)
-	layout (std430) buffer;
+// Avoid #define so legacy code that uses 'texture' as a variable can work...
+// Unfortunately it means these can't have variable precision.
+vec4 Texel(sampler2D s, highp vec2 c) { return texture(s, c); }
+ivec4 Texel(isampler2D s, highp vec2 c) { return texture(s, c); }
+uvec4 Texel(usampler2D s, highp vec2 c) { return texture(s, c); }
+
+vec4 Texel(sampler3D s, highp vec3 c) { return texture(s, c); }
+ivec4 Texel(isampler3D s, highp vec3 c) { return texture(s, c); }
+uvec4 Texel(usampler3D s, highp vec3 c) { return texture(s, c); }
+
+vec4 Texel(samplerCube s, highp vec3 c) { return texture(s, c); }
+ivec4 Texel(isamplerCube s, highp vec3 c) { return texture(s, c); }
+uvec4 Texel(usamplerCube s, highp vec3 c) { return texture(s, c); }
+
+vec4 Texel(sampler2DArray s, highp vec3 c) { return texture(s, c); }
+ivec4 Texel(isampler2DArray s, highp vec3 c) { return texture(s, c); }
+uvec4 Texel(usampler2DArray s, highp vec3 c) { return texture(s, c); }
+
+float Texel(sampler2DShadow s, highp vec3 c) { return texture(s, c); }
+float Texel(samplerCubeShadow s, highp vec4 c) { return texture(s, c); }
+float Texel(sampler2DArrayShadow s, highp vec4 c) { return texture(s, c); }
+
+#ifdef PIXEL
+	vec4 Texel(sampler2D s, highp vec2 c, float b) { return texture(s, c, b); }
+	ivec4 Texel(isampler2D s, highp vec2 c, float b) { return texture(s, c, b); }
+	uvec4 Texel(usampler2D s, highp vec2 c, float b) { return texture(s, c, b); }
+
+	vec4 Texel(sampler3D s, highp vec3 c, float b) { return texture(s, c, b); }
+	ivec4 Texel(isampler3D s, highp vec3 c, float b) { return texture(s, c, b); }
+	uvec4 Texel(usampler3D s, highp vec3 c, float b) { return texture(s, c, b); }
+
+	vec4 Texel(samplerCube s, highp vec3 c, float b) { return texture(s, c, b); }
+	ivec4 Texel(isamplerCube s, highp vec3 c, float b) { return texture(s, c, b); }
+	uvec4 Texel(usamplerCube s, highp vec3 c, float b) { return texture(s, c, b); }
+
+	vec4 Texel(sampler2DArray s, highp vec3 c, float b) { return texture(s, c, b); }
+	ivec4 Texel(isampler2DArray s, highp vec3 c, float b) { return texture(s, c, b); }
+	uvec4 Texel(usampler2DArray s, highp vec3 c, float b) { return texture(s, c, b); }
+
+	float Texel(sampler2DShadow s, highp vec3 c, float b) { return texture(s, c, b); }
+	float Texel(samplerCubeShadow s, highp vec4 c, float b) { return texture(s, c, b); }
 #endif
 
-#if __VERSION__ >= 130 && !defined(LOVE_GLSL1_ON_GLSL3)
-	#define Texel texture
-#else
-	#if __VERSION__ >= 130
-		#define texture2D Texel
-		#define texture3D Texel
-		#define textureCube Texel
-		#define texture2DArray Texel
-		#define love_texture2D texture
-		#define love_texture3D texture
-		#define love_textureCube texture
-		#define love_texture2DArray texture
-	#else
-		#define love_texture2D texture2D
-		#define love_texture3D texture3D
-		#define love_textureCube textureCube
-		#define love_texture2DArray texture2DArray
-	#endif
-	vec4 Texel(sampler2D s, vec2 c) { return love_texture2D(s, c); }
-	vec4 Texel(samplerCube s, vec3 c) { return love_textureCube(s, c); }
-	#if __VERSION__ > 100 || defined(GL_OES_texture_3D)
-		vec4 Texel(sampler3D s, vec3 c) { return love_texture3D(s, c); }
-	#endif
-	#if __VERSION__ >= 130 || defined(LOVE_EXT_TEXTURE_ARRAY_ENABLED)
-		vec4 Texel(sampler2DArray s, vec3 c) { return love_texture2DArray(s, c); }
-	#endif
-	#ifdef PIXEL
-		vec4 Texel(sampler2D s, vec2 c, float b) { return love_texture2D(s, c, b); }
-		vec4 Texel(samplerCube s, vec3 c, float b) { return love_textureCube(s, c, b); }
-		#if __VERSION__ > 100 || defined(GL_OES_texture_3D)
-			vec4 Texel(sampler3D s, vec3 c, float b) { return love_texture3D(s, c, b); }
-		#endif
-		#if __VERSION__ >= 130 || defined(LOVE_EXT_TEXTURE_ARRAY_ENABLED)
-			vec4 Texel(sampler2DArray s, vec3 c, float b) { return love_texture2DArray(s, c, b); }
-		#endif
-	#endif
-	#define texture love_texture
+uniform mediump float deprecatedTextureCall;
+
+vec4 texture2DDeprecated(sampler2D s, vec2 c) { return texture(s, c) + deprecatedTextureCall; }
+vec4 textureCubeDeprecated(samplerCube s, vec3 c) { return texture(s, c) + deprecatedTextureCall; }
+
+#ifdef PIXEL
+vec4 texture2DDeprecated(sampler2D s, vec2 c, float b) { return texture(s, c, b) + deprecatedTextureCall; }
+vec4 textureCubeDeprecated(samplerCube s, vec3 c, float b) { return texture(s, c, b) + deprecatedTextureCall; }
 #endif
+
+#define texture2D texture2DDeprecated
+#define textureCube textureCubeDeprecated
 
 float gammaToLinearPrecise(float c) {
 	return c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4);
@@ -236,25 +216,27 @@ static const char vertex_header[] = R"(
 #define love_Position gl_Position
 #define love_PointSize gl_PointSize
 
-#if __VERSION__ >= 130
-	#define attribute in
-	#define varying out
-	#ifndef LOVE_GLSL1_ON_GLSL3
-		#define love_VertexID gl_VertexID
-		#define love_InstanceID gl_InstanceID
-	#endif
-#endif
+#define attribute in
+#define varying out
+#define love_VertexID gl_VertexID
+#define love_InstanceID gl_InstanceID
 )";
 
-static const char vertex_functions[] = R"()";
+static const char vertex_functions[] = R"(
+vec4 love_clipSpaceTransform(vec4 clipPosition) {
+	clipPosition.y *= love_ClipSpaceParams.x;
+	clipPosition.z = (love_ClipSpaceParams.y * clipPosition.z + love_ClipSpaceParams.z * clipPosition.w) * love_ClipSpaceParams.w;
+	return clipPosition;
+}
+)";
 
 static const char vertex_main[] = R"(
-LOVE_IO_LOCATION(0) attribute vec4 VertexPosition;
-LOVE_IO_LOCATION(1) attribute vec4 VertexTexCoord;
-LOVE_IO_LOCATION(2) attribute vec4 VertexColor;
+layout (location = 0) in vec4 VertexPosition;
+layout (location = 1) in vec4 VertexTexCoord;
+layout (location = 2) in vec4 VertexColor;
 
-varying vec4 VaryingTexCoord;
-varying vec4 VaryingColor;
+out vec4 VaryingTexCoord;
+out vec4 VaryingColor;
 
 vec4 position(mat4 clipSpaceFromLocal, vec4 localPosition);
 
@@ -262,6 +244,7 @@ void main() {
 	VaryingTexCoord = VertexTexCoord;
 	VaryingColor = gammaCorrectColor(VertexColor) * ConstantColor;
 	love_Position = position(ClipSpaceFromLocal, VertexPosition);
+	love_Position = love_clipSpaceTransform(love_Position);
 }
 )";
 
@@ -270,6 +253,7 @@ void vertexmain();
 
 void main() {
 	vertexmain();
+	love_Position = love_clipSpaceTransform(love_Position);
 }
 )";
 
@@ -280,9 +264,7 @@ static const char pixel_header[] = R"(
 
 #define love_MaxRenderTargets gl_MaxDrawBuffers
 
-#if __VERSION__ >= 130
-	#define varying in
-#endif
+#define varying in
 
 // Legacy
 #define love_MaxCanvases love_MaxRenderTargets
@@ -314,15 +296,11 @@ vec4 VideoTexel(vec2 texcoords) {
 )";
 
 static const char pixel_main[] = R"(
-#if __VERSION__ >= 130
-	LOVE_IO_LOCATION(0) out vec4 love_PixelColor;
-#else
-	#define love_PixelColor gl_FragColor
-#endif
+layout (location = 0) out vec4 love_PixelColor;
 
 uniform sampler2D MainTex;
-varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
-varying mediump vec4 VaryingColor;
+in highp vec4 VaryingTexCoord;
+in mediump vec4 VaryingColor;
 
 vec4 effect(vec4 vcolor, Image tex, vec2 texcoord, vec2 pixcoord);
 
@@ -332,22 +310,15 @@ void main() {
 )";
 
 static const char pixel_main_custom[] = R"(
-#if __VERSION__ >= 130
-	// Some drivers seem to make the pixel shader do more work when multiple
-	// pixel shader outputs are defined, even when only one is actually used.
-	// TODO: We should use reflection or something instead of this, to determine
-	// how many outputs are actually used in the shader code.
-	#ifdef LOVE_MULTI_RENDER_TARGETS
-		LOVE_IO_LOCATION(0) out vec4 love_RenderTargets[love_MaxRenderTargets];
-		#define love_PixelColor love_RenderTargets[0]
-	#else
-		LOVE_IO_LOCATION(0) out vec4 love_PixelColor;
-	#endif
+// Some drivers seem to make the pixel shader do more work when multiple
+// pixel shader outputs are defined, even when only one is actually used.
+// TODO: We should use reflection or something instead of this, to determine
+// how many outputs are actually used in the shader code.
+#ifdef LOVE_MULTI_RENDER_TARGETS
+	layout (location = 0) out vec4 love_RenderTargets[love_MaxRenderTargets];
+	#define love_PixelColor love_RenderTargets[0]
 #else
-	#ifdef LOVE_MULTI_RENDER_TARGETS
-		#define love_RenderTargets gl_FragData
-	#endif
-	#define love_PixelColor gl_FragColor
+	layout (location = 0) out vec4 love_PixelColor;
 #endif
 
 // Legacy
@@ -356,8 +327,8 @@ static const char pixel_main_custom[] = R"(
 #define LOVE_MULTI_CANVASES 1
 #endif
 
-varying LOVE_HIGHP_OR_MEDIUMP vec4 VaryingTexCoord;
-varying mediump vec4 VaryingColor;
+in highp vec4 VaryingTexCoord;
+in mediump vec4 VaryingColor;
 
 void effect();
 
@@ -425,7 +396,6 @@ struct Version
 // Indexed by Shader::Version
 static const Version versions[] =
 {
-	{ "#version 120", "#version 100" },
 	{ "#version 330 core", "#version 300 es" },
 	{ "#version 430 core", "#version 320 es" },
 };
@@ -539,7 +509,7 @@ static Shader::Language getTargetLanguage(const std::string &src)
 {
 	std::regex r("^\\s*#pragma language (\\w+)");
 	std::smatch m;
-	std::string langstr = std::regex_search(src, m, r) && m.size() > 1 ? m[1] : std::string("glsl1");
+	std::string langstr = std::regex_search(src, m, r) && m.size() > 1 ? m[1] : std::string("glsl3");
 	Shader::Language lang = Shader::LANGUAGE_MAX_ENUM;
 	Shader::getConstant(langstr.c_str(), lang);
 	return lang;
@@ -586,7 +556,7 @@ static Shader::EntryPoint getComputeEntryPoint(const std::string &src, const std
 
 } // glsl
 
-static_assert(sizeof(Shader::BuiltinUniformData) == sizeof(float) * 4 * 13, "Update the array in wrap_GraphicsShader.lua if this changes.");
+static_assert(sizeof(Shader::BuiltinUniformData) == sizeof(float) * 4 * 12, "Update the array in wrap_GraphicsShader.lua if this changes.");
 
 love::Type Shader::type("Shader", &Object::type);
 
@@ -616,13 +586,8 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	if (info.stages[stage] == ENTRYPOINT_NONE)
 		throw love::Exception("Cannot find entry point for shader stage.");
 
-	if (info.stages[stage] == ENTRYPOINT_RAW && info.language == LANGUAGE_GLSL1)
-		throw love::Exception("Shaders using a raw entry point (vertexmain or pixelmain) must use GLSL 3 or greater.");
-
 	if (stage == SHADERSTAGE_COMPUTE && info.language != LANGUAGE_GLSL4)
 		throw love::Exception("Compute shaders must use GLSL 4.");
-
-	bool glsl1on3 = info.language == LANGUAGE_GLSL1;
 
 	if (checksystemfeatures)
 	{
@@ -631,36 +596,22 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 		if (stage == SHADERSTAGE_COMPUTE && !features[Graphics::FEATURE_GLSL4])
 			throw love::Exception("Compute shaders require GLSL 4 which is not supported on this system.");
 
-		if (info.language == LANGUAGE_GLSL3 && !features[Graphics::FEATURE_GLSL3])
-			throw love::Exception("GLSL 3 shaders are not supported on this system.");
-
 		if (info.language == LANGUAGE_GLSL4 && !features[Graphics::FEATURE_GLSL4])
 			throw love::Exception("GLSL 4 shaders are not supported on this system.");
-
-		glsl1on3 = info.language == LANGUAGE_GLSL1 && features[Graphics::FEATURE_GLSL3];
 	}
 
 	Language lang = info.language;
-	if (glsl1on3)
-		lang = LANGUAGE_GLSL3;
 
 	glsl::StageInfo stageinfo = glsl::stageInfo[stage];
 
 	std::stringstream ss;
 
 	ss << (gles ? glsl::versions[lang].glsles : glsl::versions[lang].glsl) << "\n";
-	if (glsl1on3)
-		ss << "#define LOVE_GLSL1_ON_GLSL3 1\n";
 
 	if (isGammaCorrect())
 		ss << "#define LOVE_GAMMA_CORRECT 1\n";
 	if (info.usesMRT)
 		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
-
-	// Note: backends are expected to handle this situation if highp is ever
-	// conditional in that backend.
-	if (!gfx->getCapabilities().features[Graphics::FEATURE_PIXEL_SHADER_HIGHP])
-		ss << "#define LOVE_SPLIT_UNIFORMS_PER_DRAW 1\n";
 
 	for (const auto &def : options.defines)
 		ss << "#define " + def.first + " " + def.second + "\n";
@@ -680,18 +631,58 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 		ss << stageinfo.main_raw;
 	else
 		throw love::Exception("Unknown shader entry point %d", info.stages[stage]);
-	ss << ((!gles && (lang == Shader::LANGUAGE_GLSL1 || glsl1on3)) ? "#line 0\n" : "#line 1\n");
+	ss << "#line 1\n";
 	ss << code;
 
 	return ss.str();
 }
 
-Shader::Shader(StrongRef<ShaderStage> _stages[])
+Shader::Shader(StrongRef<ShaderStage> _stages[], const CompileOptions &options)
 	: stages()
+	, debugName(options.debugName)
 {
 	std::string err;
-	if (!validateInternal(_stages, err, validationReflection))
+	if (!validateInternal(_stages, err, reflection))
 		throw love::Exception("%s", err.c_str());
+
+	activeTextures.resize(reflection.textureCount);
+	activeBuffers.resize(reflection.bufferCount);
+
+	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
+
+	// Default bindings for read-only resources.
+	for (const auto &kvp : reflection.allUniforms)
+	{
+		const auto &u = *kvp.second;
+
+		if (u.resourceIndex < 0)
+			continue;
+
+		if ((u.access & ACCESS_WRITE) != 0)
+			continue;
+
+		if (u.baseType == UNIFORM_SAMPLER || u.baseType == UNIFORM_STORAGETEXTURE)
+		{
+			auto tex = gfx->getDefaultTexture(u.textureType, u.dataBaseType, u.isDepthSampler);
+			for (int i = 0; i < u.count; i++)
+			{
+				tex->retain();
+				activeTextures[u.resourceIndex + i] = tex;
+			}
+		}
+		else if (u.baseType == UNIFORM_TEXELBUFFER || u.baseType == UNIFORM_STORAGEBUFFER)
+		{
+			auto buffer = u.baseType == UNIFORM_TEXELBUFFER
+				? gfx->getDefaultTexelBuffer(u.dataBaseType)
+				: gfx->getDefaultStorageBuffer();
+
+			for (int i = 0; i < u.count; i++)
+			{
+				buffer->retain();
+				activeBuffers[u.resourceIndex + i] = buffer;
+			}
+		}
+	}
 
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 		stages[i] = _stages[i];
@@ -707,6 +698,18 @@ Shader::~Shader()
 
 	if (current == this)
 		attachDefault(STANDARD_DEFAULT);
+
+	for (Texture *tex : activeTextures)
+	{
+		if (tex)
+			tex->release();
+	}
+
+	for (Buffer *buffer : activeBuffers)
+	{
+		if (buffer)
+			buffer->release();
+	}
 }
 
 bool Shader::hasStage(ShaderStageType stage)
@@ -737,6 +740,40 @@ bool Shader::isDefaultActive()
 	}
 
 	return false;
+}
+
+Vector4 Shader::computeClipSpaceParams(uint32 clipSpaceTransformFlags)
+{
+	// See the love_clipSpaceTransform vertex shader function.
+	Vector4 params(1.0f, 1.0f, 0.0f, 1.0f);
+
+	if (clipSpaceTransformFlags & CLIP_TRANSFORM_FLIP_Y)
+		params.x = -1.0f;
+
+	if (clipSpaceTransformFlags & CLIP_TRANSFORM_Z_NEG1_1_TO_0_1)
+	{
+		params.z = 1.0f;
+		params.w = 0.5f;
+	}
+	else if (clipSpaceTransformFlags & CLIP_TRANSFORM_Z_0_1_TO_NEG1_1)
+	{
+		params.y = 2.0f;
+		params.z = -1.0f;
+	}
+
+	return params;
+}
+
+const Shader::UniformInfo *Shader::getUniformInfo(const std::string &name) const
+{
+	const auto it = reflection.allUniforms.find(name);
+	return it != reflection.allUniforms.end() ? it->second : nullptr;
+}
+
+bool Shader::hasUniform(const std::string &name) const
+{
+	const auto it = reflection.allUniforms.find(name);
+	return it != reflection.allUniforms.end() && it->second->active;
 }
 
 const Shader::UniformInfo *Shader::getMainTextureInfo() const
@@ -780,9 +817,9 @@ bool Shader::isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b)
 
 void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 {
-	if ((primtype == PRIMITIVE_POINTS) != validationReflection.usesPointSize)
+	if ((primtype == PRIMITIVE_POINTS) != reflection.usesPointSize)
 	{
-		if (validationReflection.usesPointSize)
+		if (reflection.usesPointSize)
 			throw love::Exception("The active shader can only be used to draw points.");
 		else
 			throw love::Exception("The gl_PointSize variable must be set in a vertex shader when drawing points.");
@@ -824,15 +861,112 @@ void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 
 void Shader::getLocalThreadgroupSize(int *x, int *y, int *z)
 {
-	*x = validationReflection.localThreadgroupSize[0];
-	*y = validationReflection.localThreadgroupSize[1];
-	*z = validationReflection.localThreadgroupSize[2];
+	*x = reflection.localThreadgroupSize[0];
+	*y = reflection.localThreadgroupSize[1];
+	*z = reflection.localThreadgroupSize[2];
+}
+
+const std::vector<Buffer::DataDeclaration> *Shader::getBufferFormat(const std::string &name) const
+{
+	auto it = reflection.bufferFormats.find(name);
+	if (it != reflection.bufferFormats.end())
+		return &it->second;
+	return nullptr;
+}
+
+bool Shader::isUsingDeprecatedTextureFunctions() const
+{
+	auto it = reflection.localUniforms.find("deprecatedTextureCall");
+	return it != reflection.localUniforms.end() && it->second.stageMask != 0;
+}
+
+bool Shader::isUsingDeprecatedTextureUniform() const
+{
+	auto it = reflection.allUniforms.find("texture");
+	return it != reflection.allUniforms.end() && it->second->stageMask != 0;
 }
 
 bool Shader::validate(StrongRef<ShaderStage> stages[], std::string& err)
 {
-	ValidationReflection reflection;
+	Reflection reflection;
 	return validateInternal(stages, err, reflection);
+}
+
+static DataBaseType getBaseType(glslang::TBasicType basictype)
+{
+	switch (basictype)
+	{
+		case glslang::EbtInt: return DATA_BASETYPE_INT;
+		case glslang::EbtUint: return DATA_BASETYPE_UINT;
+		case glslang::EbtFloat: return DATA_BASETYPE_FLOAT;
+		case glslang::EbtBool: return DATA_BASETYPE_BOOL;
+		default: return DATA_BASETYPE_FLOAT;
+	}
+}
+
+static DataFormat getDataFormat(glslang::TBasicType basictype, int components, int rows, int columns, bool matrix)
+{
+	if (matrix)
+	{
+		if (basictype != glslang::EbtFloat)
+			return DATAFORMAT_MAX_ENUM;
+
+		if (rows == 2 && columns == 2)
+			return DATAFORMAT_FLOAT_MAT2X2;
+		else if (rows == 2 && columns == 3)
+			return DATAFORMAT_FLOAT_MAT2X3;
+		else if (rows == 2 && columns == 4)
+			return DATAFORMAT_FLOAT_MAT2X4;
+		else if (rows == 3 && columns == 2)
+			return DATAFORMAT_FLOAT_MAT3X2;
+		else if (rows == 3 && columns == 3)
+			return DATAFORMAT_FLOAT_MAT3X3;
+		else if (rows == 3 && columns == 4)
+			return DATAFORMAT_FLOAT_MAT3X4;
+		else if (rows == 4 && columns == 2)
+			return DATAFORMAT_FLOAT_MAT4X2;
+		else if (rows == 4 && columns == 3)
+			return DATAFORMAT_FLOAT_MAT4X3;
+		else if (rows == 4 && columns == 4)
+			return DATAFORMAT_FLOAT_MAT4X4;
+		else
+			return DATAFORMAT_MAX_ENUM;
+	}
+	else if (basictype == glslang::EbtFloat)
+	{
+		if (components == 1)
+			return DATAFORMAT_FLOAT;
+		else if (components == 2)
+			return DATAFORMAT_FLOAT_VEC2;
+		else if (components == 3)
+			return DATAFORMAT_FLOAT_VEC2;
+		else if (components == 4)
+			return DATAFORMAT_FLOAT_VEC2;
+	}
+	else if (basictype == glslang::EbtInt)
+	{
+		if (components == 1)
+			return DATAFORMAT_INT32;
+		else if (components == 2)
+			return DATAFORMAT_INT32_VEC2;
+		else if (components == 3)
+			return DATAFORMAT_INT32_VEC2;
+		else if (components == 4)
+			return DATAFORMAT_INT32_VEC2;
+	}
+	else if (basictype == glslang::EbtUint)
+	{
+		if (components == 1)
+			return DATAFORMAT_UINT32;
+		else if (components == 2)
+			return DATAFORMAT_UINT32_VEC2;
+		else if (components == 3)
+			return DATAFORMAT_UINT32_VEC2;
+		else if (components == 4)
+			return DATAFORMAT_UINT32_VEC2;
+	}
+
+	return DATAFORMAT_MAX_ENUM;
 }
 
 static PixelFormat getPixelFormat(glslang::TLayoutFormat format)
@@ -884,6 +1018,30 @@ static PixelFormat getPixelFormat(glslang::TLayoutFormat format)
 	}
 }
 
+static TextureType getTextureType(const glslang::TSampler &sampler)
+{
+	if (sampler.is2D())
+		return sampler.isArrayed() ? TEXTURE_2D_ARRAY : TEXTURE_2D;
+	else if (sampler.dim == glslang::EsdCube)
+		return sampler.isArrayed() ? TEXTURE_MAX_ENUM : TEXTURE_CUBE;
+	else if (sampler.dim == glslang::Esd3D)
+		return TEXTURE_VOLUME;
+	else
+		return TEXTURE_MAX_ENUM;
+}
+
+static uint32 getStageMask(EShLanguageMask mask)
+{
+	uint32 m = 0;
+	if (mask & EShLangVertexMask)
+		m |= SHADERSTAGEMASK_VERTEX;
+	if (mask & EShLangFragmentMask)
+		m |= SHADERSTAGEMASK_PIXEL;
+	if (mask & EShLangComputeMask)
+		m |= SHADERSTAGEMASK_COMPUTE;
+	return m;
+}
+
 template <typename T>
 static T convertData(const glslang::TConstUnion &data)
 {
@@ -902,7 +1060,49 @@ static T convertData(const glslang::TConstUnion &data)
 	}
 }
 
-bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, ValidationReflection &reflection)
+static bool AddFieldsToFormat(std::vector<Buffer::DataDeclaration> &format, int level, const glslang::TType *type, int arraylength, const std::string &basename, std::string &err)
+{
+	if (type->isStruct())
+	{
+		auto fields = type->getStruct();
+
+		for (int i = 0; i < std::max(arraylength, 1); i++)
+		{
+			std::string name = basename;
+			if (level > 0)
+			{
+				name += type->getFieldName().c_str();
+				if (arraylength > 0)
+					name += "[" + std::to_string(i) + "]";
+				name += ".";
+			}
+			for (size_t fieldi = 0; fieldi < fields->size(); fieldi++)
+			{
+				const glslang::TType *fieldtype = (*fields)[fieldi].type;
+				int fieldlength = fieldtype->isSizedArray() ? fieldtype->getCumulativeArraySize() : 0;
+
+				if (!AddFieldsToFormat(format, level + 1, fieldtype, fieldlength, name, err))
+					return false;
+			}
+		}
+	}
+	else
+	{
+		DataFormat dataformat = getDataFormat(type->getBasicType(), type->getVectorSize(), type->getMatrixRows(), type->getMatrixCols(), type->isMatrix());
+		if (dataformat == DATAFORMAT_MAX_ENUM)
+		{
+			err = "Shader validation error:\n";
+			return false;
+		}
+
+		std::string name = basename.empty() ? type->getFieldName().c_str() : basename + type->getFieldName().c_str();
+		format.emplace_back(name.c_str(), dataformat, arraylength);
+	}
+
+	return true;
+}
+
+bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, Reflection &reflection)
 {
 	glslang::TProgram program;
 
@@ -945,6 +1145,9 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		}
 	}
 
+	reflection.textureCount = 0;
+	reflection.bufferCount = 0;
+
 	for (int i = 0; i < program.getNumUniformVariables(); i++)
 	{
 		const glslang::TObjectReflection &info = program.getUniform(i);
@@ -954,9 +1157,40 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 
 		const glslang::TQualifier &qualifiers = type->getQualifier();
 
-		if (type->isImage())
+		UniformInfo u = {};
+
+		u.name = canonicaliizeUniformName(info.name);
+		u.location = -1;
+		u.access = ACCESS_READ;
+		u.stageMask = getStageMask(info.stages);
+		u.components = 1;
+		u.resourceIndex = -1;
+
+		if (type->isSizedArray())
+			u.count = type->getArraySizes()->getCumulativeSize();
+		else
+			u.count = 1;
+
+		const auto &sampler = type->getSampler();
+
+		if (type->isTexture() && type->getSampler().isCombined() && !sampler.isBuffer())
 		{
-			if ((info.stages & EShLangComputeMask) == 0)
+			u.baseType = UNIFORM_SAMPLER;
+			u.dataBaseType = getBaseType(sampler.getBasicType());
+			u.isDepthSampler = sampler.isShadow();
+			u.textureType = getTextureType(sampler);
+
+			if (u.textureType == TEXTURE_MAX_ENUM)
+				continue;
+
+			u.resourceIndex = reflection.textureCount;
+			reflection.textureCount += u.count;
+
+			reflection.sampledTextures[u.name] = u;
+		}
+		else if (type->isImage())
+		{
+			if ((info.stages & (~EShLangComputeMask)) != 0)
 			{
 				err = "Shader validation error:\nStorage Texture uniform variables (image2D, etc) are only allowed in compute shaders.";
 				return false;
@@ -964,28 +1198,54 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 
 			if (!qualifiers.hasFormat())
 			{
-				err = "Shader validation error:\nStorage Texture '" + info.name + "' must have an explicit format set in its layout declaration.";
+				err = "Shader validation error:\nStorage Texture '" + u.name + "' must have an explicit format set in its layout declaration.";
 				return false;
 			}
 
-			StorageTextureReflection texreflection = {};
+			u.baseType = UNIFORM_STORAGETEXTURE;
+			u.storageTextureFormat = getPixelFormat(qualifiers.getFormat());
+			u.dataBaseType = getDataBaseType(u.storageTextureFormat);
+			u.textureType = getTextureType(sampler);
 
-			texreflection.format = getPixelFormat(qualifiers.getFormat());
+			if (u.textureType == TEXTURE_MAX_ENUM)
+				continue;
+
+			u.resourceIndex = reflection.textureCount;
+			reflection.textureCount += u.count;
 
 			if (qualifiers.isReadOnly())
-				texreflection.access = ACCESS_READ;
+				u.access = ACCESS_READ;
 			else if (qualifiers.isWriteOnly())
-				texreflection.access = ACCESS_WRITE;
+				u.access = ACCESS_WRITE;
 			else
-				texreflection.access = (Access)(ACCESS_READ | ACCESS_WRITE);
+				u.access = (Access)(ACCESS_READ | ACCESS_WRITE);
 
-			reflection.storageTextures[info.name] = texreflection;
+			reflection.storageTextures[u.name] = u;
+		}
+		else if (type->getBasicType() == glslang::EbtSampler && sampler.isBuffer())
+		{
+			u.baseType = UNIFORM_TEXELBUFFER;
+			u.dataBaseType = getBaseType(sampler.getBasicType());
+
+			u.resourceIndex = reflection.bufferCount;
+			reflection.bufferCount += u.count;
+
+			reflection.texelBuffers[u.name] = u;
 		}
 		else if (!type->isOpaque())
 		{
-			LocalUniform u = {};
-			auto &values = u.initializerValues;
+			std::vector<LocalUniformValue> values;
 			const glslang::TConstUnionArray *constarray = info.getConstArray();
+
+			if (type->isMatrix())
+			{
+				u.matrix.rows = type->getMatrixRows();
+				u.matrix.columns = type->getMatrixCols();
+			}
+			else
+			{
+				u.components = type->getVectorSize();
+			}
 
 			// Store initializer values for local uniforms. Some love graphics
 			// backends strip these out of the shader so we need to be able to
@@ -993,7 +1253,8 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 			switch (type->getBasicType())
 			{
 			case glslang::EbtFloat:
-				u.dataType = DATA_BASETYPE_FLOAT;
+				u.baseType = type->isMatrix() ? UNIFORM_MATRIX : UNIFORM_FLOAT;
+				u.dataBaseType = DATA_BASETYPE_FLOAT;
 				if (constarray != nullptr)
 				{
 					values.resize(constarray->size());
@@ -1002,7 +1263,18 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				}
 				break;
 			case glslang::EbtUint:
-				u.dataType = DATA_BASETYPE_UINT;
+				u.baseType = UNIFORM_UINT;
+				u.dataBaseType = DATA_BASETYPE_UINT;
+				if (constarray != nullptr)
+				{
+					values.resize(constarray->size());
+					for (int i = 0; i < constarray->size(); i++)
+						values[i].u = convertData<uint32>((*constarray)[i]);
+				}
+				break;
+			case glslang::EbtBool:
+				u.baseType = UNIFORM_BOOL;
+				u.dataBaseType = DATA_BASETYPE_BOOL;
 				if (constarray != nullptr)
 				{
 					values.resize(constarray->size());
@@ -1011,9 +1283,9 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				}
 				break;
 			case glslang::EbtInt:
-			case glslang::EbtBool:
 			default:
-				u.dataType = DATA_BASETYPE_INT;
+				u.baseType = UNIFORM_INT;
+				u.dataBaseType = DATA_BASETYPE_INT;
 				if (constarray != nullptr)
 				{
 					values.resize(constarray->size());
@@ -1023,7 +1295,8 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				break;
 			}
 
-			reflection.localUniforms[info.name] = u;
+			reflection.localUniforms[u.name] = u;
+			reflection.localUniformInitializerValues[u.name] = values;
 		}
 	}
 
@@ -1035,7 +1308,7 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		{
 			const glslang::TQualifier &qualifiers = type->getQualifier();
 
-			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && (info.stages & EShLangComputeMask) == 0)
+			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && ((info.stages & (~EShLangComputeMask)) != 0))
 			{
 				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must be marked as readonly in vertex and pixel shaders.";
 				return false;
@@ -1061,18 +1334,38 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				return false;
 			}
 
-			BufferReflection bufferReflection = {};
-			bufferReflection.stride = (size_t) info.size;
-			bufferReflection.memberCount = (size_t) info.numMembers;
+			UniformInfo u = {};
+			u.name = canonicaliizeUniformName(info.name);
+			u.location = -1;
+			u.stageMask = getStageMask(info.stages);
+			u.components = 1;
+			u.baseType = UNIFORM_STORAGEBUFFER;
+
+			if (type->isSizedArray())
+				u.count = type->getArraySizes()->getCumulativeSize();
+			else
+				u.count = 1;
+
+			u.bufferStride = (size_t) info.size;
+			u.bufferMemberCount = (size_t) info.numMembers;
+
+			u.resourceIndex = reflection.bufferCount;
+			reflection.bufferCount += u.count;
 
 			if (qualifiers.isReadOnly())
-				bufferReflection.access = ACCESS_READ;
+				u.access = ACCESS_READ;
 			else if (qualifiers.isWriteOnly())
-				bufferReflection.access = ACCESS_WRITE;
+				u.access = ACCESS_WRITE;
 			else
-				bufferReflection.access = (Access)(ACCESS_READ | ACCESS_WRITE);
+				u.access = (Access)(ACCESS_READ | ACCESS_WRITE);
 
-			reflection.storageBuffers[info.name] = bufferReflection;
+			reflection.storageBuffers[u.name] = u;
+
+			std::vector<Buffer::DataDeclaration> format;
+			if (!AddFieldsToFormat(format, 0, elementtype, 0, "", err))
+				return false;
+
+			reflection.bufferFormats[u.name] = format;
 		}
 		else
 		{
@@ -1080,6 +1373,21 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 			return false;
 		}
 	}
+
+	for (auto &kvp : reflection.texelBuffers)
+		reflection.allUniforms[kvp.first] = &kvp.second;
+
+	for (auto &kvp : reflection.storageBuffers)
+		reflection.allUniforms[kvp.first] = &kvp.second;
+
+	for (auto &kvp : reflection.sampledTextures)
+		reflection.allUniforms[kvp.first] = &kvp.second;
+
+	for (auto &kvp : reflection.storageTextures)
+		reflection.allUniforms[kvp.first] = &kvp.second;
+
+	for (auto &kvp : reflection.localUniforms)
+		reflection.allUniforms[kvp.first] = &kvp.second;
 
 	return true;
 }
@@ -1132,7 +1440,7 @@ bool Shader::validateTexture(const UniformInfo *info, Texture *tex, bool interna
 		else
 			throw love::Exception("Texture must be created with the computewrite flag set to true in order to be used with a storage texture (image2D etc) shader uniform variable.");
 	}
-	else if (isstoragetex && info->storageTextureFormat != getLinearPixelFormat(tex->getPixelFormat()))
+	else if (isstoragetex && info->storageTextureFormat != tex->getPixelFormat())
 	{
 		if (internalUpdate)
 			return false;
@@ -1207,44 +1515,91 @@ bool Shader::validateBuffer(const UniformInfo *info, Buffer *buffer, bool intern
 	return true;
 }
 
-bool Shader::fillUniformReflectionData(UniformInfo &u)
+std::string Shader::getShaderStageDebugName(ShaderStageType stage) const
 {
-	const auto &r = validationReflection;
+	std::string name = debugName;
 
-	if (u.baseType == UNIFORM_STORAGETEXTURE)
+	if (!name.empty())
 	{
-		const auto reflectionit = r.storageTextures.find(u.name);
-		if (reflectionit != r.storageTextures.end())
-		{
-			u.storageTextureFormat = reflectionit->second.format;
-			u.access = reflectionit->second.access;
-			return true;
-		}
-
-		// No reflection info - maybe glslang was better at detecting dead code
-		// than the driver's compiler?
-		return false;
-	}
-	else if (u.baseType == UNIFORM_STORAGEBUFFER)
-	{
-		const auto reflectionit = r.storageBuffers.find(u.name);
-		if (reflectionit != r.storageBuffers.end())
-		{
-			u.bufferStride = reflectionit->second.stride;
-			u.bufferMemberCount = reflectionit->second.memberCount;
-			u.access = reflectionit->second.access;
-			return true;
-		}
-
-		return false;
+		const char *stagename = "unknown";
+		ShaderStage::getConstant(stage, stagename);
+		name += " (" + std::string(stagename) + ")";
 	}
 
-	return true;
+	return name;
+}
+
+std::string Shader::canonicaliizeUniformName(const std::string &n)
+{
+	std::string name(n);
+
+	// Some drivers/compilers append "[0]" to the end of array uniform names.
+	if (name.length() > 3)
+	{
+		size_t findpos = name.rfind("[0]");
+		if (findpos != std::string::npos && findpos == name.length() - 3)
+			name.erase(name.length() - 3);
+	}
+
+	return name;
+}
+
+void Shader::handleUnknownUniformName(const char */*name*/)
+{
+	// TODO: do something here?
+}
+
+void Shader::copyToUniformBuffer(const UniformInfo *info, const void *src, void *dst, int count) const
+{
+	count = std::min(count, info->count);
+
+	size_t elementsize = info->components * 4;
+	if (info->baseType == UNIFORM_MATRIX)
+		elementsize = info->matrix.columns * info->matrix.rows * 4;
+
+	// Assuming std140 packing rules, the source data can only be direct-copied
+	// to the uniform buffer in certain cases because it's tightly packed whereas
+	// the buffer's data isn't.
+	if (elementsize * info->count == info->dataSize || (count == 1 && info->baseType != UNIFORM_MATRIX))
+	{
+		memcpy(dst, src, elementsize * count);
+	}
+	else
+	{
+		int veccount = count;
+		int comp = info->components;
+
+		if (info->baseType == UNIFORM_MATRIX)
+		{
+			veccount *= info->matrix.rows;
+			comp = info->matrix.columns;
+		}
+
+		const int *isrc = (const int *) src;
+		int *idst = (int *) dst;
+
+		for (int i = 0; i < veccount; i++)
+		{
+			for (int c = 0; c < comp; c++)
+				idst[i * 4 + c] = isrc[i * comp + c];
+		}
+	}
 }
 
 bool Shader::initialize()
 {
-	return glslang::InitializeProcess();
+	bool success = glslang::InitializeProcess();
+	if (!success)
+		return false;
+
+	TBuiltInResource *resources = GetResources();
+	*resources = *GetDefaultResources();
+
+	// This is 32 in the default resource struct, which is too high for Metal.
+	// TODO: Set this based on what the system actually supports?
+	resources->maxDrawBuffers = 8;
+
+	return true;
 }
 
 void Shader::deinitialize()
@@ -1315,7 +1670,6 @@ const std::string &Shader::getDefaultCode(StandardShader shader, ShaderStageType
 
 static StringMap<Shader::Language, Shader::LANGUAGE_MAX_ENUM>::Entry languageEntries[] =
 {
-	{ "glsl1", Shader::LANGUAGE_GLSL1 },
 	{ "glsl3", Shader::LANGUAGE_GLSL3 },
 	{ "glsl4", Shader::LANGUAGE_GLSL4 },
 };

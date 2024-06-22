@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 #include "common/config.h"
 #include "common/int.h"
 #include "common/Object.h"
+#include "common/Optional.h"
 #include "vertex.h"
 #include "Resource.h"
 
@@ -47,6 +48,9 @@ class Buffer : public love::Object, public Resource
 public:
 
 	static love::Type type;
+
+	static int bufferCount;
+	static int64 totalGraphicsMemory;
 
 	static const size_t SHADER_STORAGE_BUFFER_MAX_STRIDE = 2048;
 
@@ -89,11 +93,13 @@ public:
 		BufferUsageFlags usageFlags;
 		BufferDataUsage dataUsage;
 		bool zeroInitialize;
+		std::string debugName;
 
 		Settings(uint32 usageflags, BufferDataUsage dataUsage)
 			: usageFlags((BufferUsageFlags)usageflags)
 			, dataUsage(dataUsage)
 			, zeroInitialize(false)
+			, debugName()
 		{}
 	};
 
@@ -111,6 +117,7 @@ public:
 	const DataMember &getDataMember(int index) const { return dataMembers[index]; }
 	size_t getMemberOffset(int index) const { return dataMembers[index].offset; }
 	int getDataMemberIndex(const std::string &name) const;
+	const std::string &getDebugName() const { return debugName; }
 
 	void setImmutable(bool immutable) { this->immutable = immutable; };
 	bool isImmutable() const { return immutable; }
@@ -134,7 +141,7 @@ public:
 	/**
 	 * Reset the given portion of this buffer's data to 0.
 	 */
-	virtual void clear(size_t offset, size_t size) = 0;
+	void clear(size_t offset, size_t size);
 
 	/**
 	 * Copy a portion of this Buffer's data to another buffer, using the GPU.
@@ -171,6 +178,8 @@ public:
 
 protected:
 
+	virtual void clearInternal(size_t offset, size_t size) = 0;
+
 	std::vector<DataMember> dataMembers;
 	size_t arrayLength;
 	size_t arrayStride;
@@ -183,6 +192,8 @@ protected:
 
 	// Usage hint. GL_[DYNAMIC, STATIC, STREAM]_DRAW.
 	BufferDataUsage dataUsage;
+
+	std::string debugName;
 
 	bool mapped;
 	MapType mappedType;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -64,6 +64,10 @@ bool directoryExists(const char *path);
 bool mkdir(const char *path);
 
 bool createStorageDirectories();
+
+void fixupPermissionSingleFile(const std::string &savedir, const std::string &path, int mode = 0666);
+
+void fixupExternalStoragePermission(const std::string &savedir, const std::string &path);
 
 bool hasBackgroundMusic();
 

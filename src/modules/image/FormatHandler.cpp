@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -60,7 +60,7 @@ bool FormatHandler::canParseCompressed(Data* /*data*/)
 	return false;
 }
 
-StrongRef<ByteData> FormatHandler::parseCompressed(Data* /*filedata*/, std::vector<StrongRef<CompressedSlice>>& /*images*/, PixelFormat& /*format*/, bool& /*sRGB*/)
+StrongRef<ByteData> FormatHandler::parseCompressed(Data* /*filedata*/, std::vector<StrongRef<CompressedSlice>>& /*images*/, PixelFormat& /*format*/)
 {
 	throw love::Exception("Compressed image parsing is not implemented for this format backend.");
 }

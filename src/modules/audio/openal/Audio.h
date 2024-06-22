@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -50,9 +50,9 @@
 #include <OpenAL-Soft/al.h>
 #endif
 #else
-#include <AL/alc.h>
-#include <AL/al.h>
-#include <AL/alext.h>
+#include <alc.h>
+#include <al.h>
+#include <alext.h>
 #endif
 
 namespace love
@@ -77,9 +77,6 @@ public:
 	 * @return One of AL_FORMAT_*, or AL_NONE if unsupported format.
 	 **/
 	static ALenum getFormat(int bitDepth, int channels);
-
-	// Implements Module.
-	const char *getName() const;
 
 	// Implements Audio.
 	love::audio::Source *newSource(love::sound::Decoder *decoder);

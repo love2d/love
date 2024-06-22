@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -180,11 +180,14 @@ Graphics::DisplayState::DisplayState()
 	defaultSamplerState.mipmapFilter = SamplerState::MIPMAP_FILTER_LINEAR;
 }
 
-Graphics::Graphics()
-	: width(0)
+Graphics::Graphics(const char *name)
+	: Module(M_GRAPHICS, name)
+	, width(0)
 	, height(0)
 	, pixelWidth(0)
 	, pixelHeight(0)
+	, backbufferHasStencil(false)
+	, backbufferHasDepth(false)
 	, created(false)
 	, active(true)
 	, batchedDrawState()
@@ -195,6 +198,9 @@ Graphics::Graphics()
 	, quadIndexBuffer(nullptr)
 	, fanIndexBuffer(nullptr)
 	, capabilities()
+	, defaultTextures()
+	, defaultTexelBuffers()
+	, defaultStorageBuffer(nullptr)
 	, cachedShaderStages()
 {
 	transformStack.reserve(16);
@@ -216,6 +222,8 @@ Graphics::~Graphics()
 		quadIndexBuffer->release();
 	if (fanIndexBuffer != nullptr)
 		fanIndexBuffer->release();
+
+	releaseDefaultResources();
 
 	// Clean up standard shaders before the active shader. If we do it after,
 	// the active shader may try to activate a standard shader when deactivating
@@ -294,13 +302,13 @@ Font *Graphics::newFont(love::font::Rasterizer *data)
 	return new Font(data, states.back().defaultSamplerState);
 }
 
-Font *Graphics::newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting)
+Font *Graphics::newDefaultFont(int size, const font::TrueTypeRasterizer::Settings &settings)
 {
 	auto fontmodule = Module::getInstance<font::Font>(M_FONT);
 	if (!fontmodule)
 		throw love::Exception("Font module has not been loaded.");
 
-	StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(size, hinting), Acquire::NORETAIN);
+	StrongRef<font::Rasterizer> r(fontmodule->newTrueTypeRasterizer(size, settings), Acquire::NORETAIN);
 	return newFont(r.get());
 }
 
@@ -399,7 +407,7 @@ Shader *Graphics::newShader(const std::vector<std::string> &stagessource, const 
 
 	}
 
-	return newShaderInternal(stages);
+	return newShaderInternal(stages, options);
 }
 
 Shader *Graphics::newComputeShader(const std::string &source, const Shader::CompileOptions &options)
@@ -415,7 +423,7 @@ Shader *Graphics::newComputeShader(const std::string &source, const Shader::Comp
 	// shouldn't be much reuse.
 	stages[SHADERSTAGE_COMPUTE].set(newShaderStage(SHADERSTAGE_COMPUTE, source, options, info, false));
 
-	return newShaderInternal(stages);
+	return newShaderInternal(stages, options);
 }
 
 Buffer *Graphics::newBuffer(const Buffer::Settings &settings, DataFormat format, const void *data, size_t size, size_t arraylength)
@@ -530,6 +538,198 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 	return Shader::validate(stages, err);
 }
 
+Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType, bool depthSample)
+{
+	uint32 depthsampleindex = depthSample ? 1 : 0;
+	Texture *tex = defaultTextures[type][dataType][depthsampleindex];
+	if (tex != nullptr)
+		return tex;
+
+	Texture::Settings settings;
+	settings.type = type;
+
+	switch (dataType)
+	{
+	case DATA_BASETYPE_INT:
+		settings.format = PIXELFORMAT_RGBA8_INT;
+		break;
+	case DATA_BASETYPE_UINT:
+		settings.format = PIXELFORMAT_RGBA8_UINT;
+		break;
+	case DATA_BASETYPE_FLOAT:
+	default:
+		settings.format = PIXELFORMAT_RGBA8_UNORM;
+		break;
+	}
+
+	if (depthSample)
+	{
+		if (isPixelFormatSupported(PIXELFORMAT_DEPTH16_UNORM, PIXELFORMATUSAGE_SAMPLE))
+			settings.format = PIXELFORMAT_DEPTH16_UNORM;
+		else if (isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, PIXELFORMATUSAGE_SAMPLE))
+			settings.format = PIXELFORMAT_DEPTH24_UNORM;
+		else if (isPixelFormatSupported(PIXELFORMAT_DEPTH32_FLOAT, PIXELFORMATUSAGE_SAMPLE))
+			settings.format = PIXELFORMAT_DEPTH32_FLOAT;
+		else // TODO?
+			settings.format = PIXELFORMAT_DEPTH24_UNORM;
+	}
+
+	std::string name = "default_";
+
+	const char *tname = "unknown";
+	Texture::getConstant(type, tname);
+	name += tname;
+
+	const char *formatname = "unknown";
+	love::getConstant(settings.format, formatname);
+	name += std::string("_") + formatname;
+
+	settings.debugName = name;
+
+	tex = newTexture(settings);
+
+	SamplerState s;
+	s.minFilter = s.magFilter = SamplerState::FILTER_NEAREST;
+	s.wrapU = s.wrapV = s.wrapW = SamplerState::WRAP_CLAMP;
+
+	if (depthSample)
+		s.depthSampleMode.set(COMPARE_ALWAYS);
+
+	tex->setSamplerState(s);
+
+	uint8 pixel[] = {255, 255, 255, 255};
+	if (isPixelFormatInteger(settings.format))
+		pixel[0] = pixel[1] = pixel[2] = pixel[3] = 1;
+
+	for (int slice = 0; slice < (type == TEXTURE_CUBE ? 6 : 1); slice++)
+		tex->replacePixels(pixel, sizeof(pixel), slice, 0, {0, 0, 1, 1}, false);
+
+	defaultTextures[type][dataType][depthsampleindex] = tex;
+
+	return tex;
+}
+
+Buffer *Graphics::getDefaultTexelBuffer(DataBaseType dataType)
+{
+	Buffer *buffer = defaultTexelBuffers[dataType];
+	if (buffer != nullptr)
+		return buffer;
+
+	Buffer::Settings settings(BUFFERUSAGEFLAG_TEXEL, BUFFERDATAUSAGE_STATIC);
+	settings.zeroInitialize = true;
+	settings.debugName = "default_texelbuffer_";
+
+	DataFormat format = DATAFORMAT_FLOAT;
+	switch (dataType)
+	{
+	case DATA_BASETYPE_FLOAT:
+	default:
+		format = DATAFORMAT_FLOAT;
+		settings.debugName += "float";
+		break;
+	case DATA_BASETYPE_INT:
+		format = DATAFORMAT_INT32;
+		settings.debugName += "int";
+		break;
+	case DATA_BASETYPE_UINT:
+		format = DATAFORMAT_UINT32;
+		settings.debugName += "uint";
+		break;
+	}
+
+	buffer = newBuffer(settings, format, nullptr, sizeof(float), 1);
+
+	defaultTexelBuffers[dataType] = buffer;
+
+	return buffer;
+}
+
+Buffer *Graphics::getDefaultStorageBuffer()
+{
+	if (defaultStorageBuffer != nullptr)
+		return defaultStorageBuffer;
+
+	Buffer::Settings settings(BUFFERUSAGEFLAG_SHADER_STORAGE, BUFFERDATAUSAGE_STATIC);
+	settings.zeroInitialize = true;
+	settings.debugName = "default_storagebuffer";
+
+	defaultStorageBuffer = newBuffer(settings, DATAFORMAT_FLOAT, nullptr, Buffer::SHADER_STORAGE_BUFFER_MAX_STRIDE, 0);
+
+	return defaultStorageBuffer;
+}
+
+void Graphics::releaseDefaultResources()
+{
+	for (int type = 0; type < TEXTURE_MAX_ENUM; type++)
+	{
+		for (int dataType = 0; dataType < DATA_BASETYPE_MAX_ENUM; dataType++)
+		{
+			for (int depthsample = 0; depthsample < 2; depthsample++)
+			{
+				if (defaultTextures[type][dataType][depthsample])
+					defaultTextures[type][dataType][depthsample]->release();
+				defaultTextures[type][dataType][depthsample] = nullptr;
+			}
+		}
+	}
+
+	for (int dataType = 0; dataType < DATA_BASETYPE_MAX_ENUM; dataType++)
+	{
+		if (defaultTexelBuffers[dataType])
+			defaultTexelBuffers[dataType]->release();
+		defaultTexelBuffers[dataType] = nullptr;
+	}
+
+	if (defaultStorageBuffer)
+		defaultStorageBuffer->release();
+	defaultStorageBuffer = nullptr;
+}
+
+Texture *Graphics::getTextureOrDefaultForActiveShader(Texture *tex)
+{
+	if (tex != nullptr)
+		return tex;
+
+	Shader *shader = Shader::current;
+
+	if (shader != nullptr)
+	{
+		auto texinfo = shader->getMainTextureInfo();
+		if (texinfo != nullptr && texinfo->textureType != TEXTURE_MAX_ENUM)
+			return getDefaultTexture(texinfo->textureType, texinfo->dataBaseType, texinfo->isDepthSampler);
+	}
+
+	return getDefaultTexture(TEXTURE_2D, DATA_BASETYPE_FLOAT, false);
+}
+
+void Graphics::validateStencilState(const StencilState &s) const
+{
+	if (s.action != STENCIL_KEEP)
+	{
+		const auto &rts = states.back().renderTargets;
+		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
+
+		if (!isRenderTargetActive() && !backbufferHasStencil)
+			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
+		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
+			throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
+	}
+}
+
+void Graphics::validateDepthState(bool depthwrite) const
+{
+	if (depthwrite)
+	{
+		const auto &rts = states.back().renderTargets;
+		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
+
+		if (!isRenderTargetActive() && !backbufferHasDepth)
+			throw love::Exception("The window must have depth enabled to draw to the main screen's depth buffer.");
+		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) == 0 && (dstexture == nullptr || !isPixelFormatDepth(dstexture->getPixelFormat())))
+			throw love::Exception("Drawing to the depth buffer with a Canvas active requires either depth=true or a custom depth-type Canvas to be used, in setCanvas.");
+	}
+}
+
 int Graphics::getWidth() const
 {
 	return width;
@@ -584,6 +784,11 @@ void Graphics::reset()
 	origin();
 }
 
+void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight)
+{
+	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferHasStencil, backbufferHasDepth, getRequestedBackbufferMSAA());
+}
+
 /**
  * State functions.
  **/
@@ -613,7 +818,7 @@ void Graphics::restoreState(const DisplayState &s)
 	setShader(s.shader.get());
 	setRenderTargets(s.renderTargets);
 
-	setStencilMode(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
+	setStencilState(s.stencil);
 	setDepthMode(s.depthTest, s.depthWrite);
 
 	setColorMask(s.colorMask);
@@ -689,7 +894,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 		setRenderTargets(s.renderTargets);
 
 	if (!(s.stencil == cur.stencil))
-		setStencilMode(s.stencil.action, s.stencil.compare, s.stencil.value, s.stencil.readMask, s.stencil.writeMask);
+		setStencilState(s.stencil);
 
 	if (s.depthTest != cur.depthTest || s.depthWrite != cur.depthWrite)
 		setDepthMode(s.depthTest, s.depthWrite);
@@ -703,7 +908,7 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 	setDefaultSamplerState(s.defaultSamplerState);
 
 	if (s.useCustomProjection)
-		setCustomProjection(s.customProjection);
+		setProjection(s.customProjection);
 	else if (cur.useCustomProjection)
 		resetProjection();
 }
@@ -731,7 +936,10 @@ void Graphics::checkSetDefaultFont()
 
 	// Create a new default font if we don't have one yet.
 	if (!defaultFont.get())
-		defaultFont.set(newDefaultFont(13, font::TrueTypeRasterizer::HINTING_NORMAL), Acquire::NORETAIN);
+	{
+		font::TrueTypeRasterizer::Settings settings;
+		defaultFont.set(newDefaultFont(13, settings), Acquire::NORETAIN);
+	}
 
 	states.back().font.set(defaultFont.get());
 }
@@ -807,35 +1015,35 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	if (firsttex == nullptr)
 		return setRenderTarget();
 
-	const auto &prevRTs = state.renderTargets;
+	const auto &prevRTsRef = state.renderTargets;
 
-	if (rtcount == (int) prevRTs.colors.size())
+	if (rtcount == (int) prevRTsRef.colors.size())
 	{
 		bool modified = false;
 
 		for (int i = 0; i < rtcount; i++)
 		{
-			if (rts.colors[i] != prevRTs.colors[i])
+			if (rts.colors[i] != prevRTsRef.colors[i])
 			{
 				modified = true;
 				break;
 			}
 		}
 
-		if (!modified && rts.depthStencil != prevRTs.depthStencil)
+		if (!modified && rts.depthStencil != prevRTsRef.depthStencil)
 			modified = true;
 
-		if (rts.temporaryRTFlags != prevRTs.temporaryRTFlags)
+		if (rts.temporaryRTFlags != prevRTsRef.temporaryRTFlags)
 			modified = true;
 
 		if (!modified)
 			return;
 	}
 
+	const RenderTargetsStrongRef prevRTs = prevRTsRef;
+
 	if (rtcount > capabilities.limits[LIMIT_RENDER_TARGETS])
 		throw love::Exception("This system can't simultaneously render to %d textures.", rtcount);
-
-	bool multiformatsupported = capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS];
 
 	PixelFormat firstcolorformat = PIXELFORMAT_UNKNOWN;
 	if (!rts.colors.empty())
@@ -876,9 +1084,6 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 		if (c->getPixelWidth(mip) != pixelw || c->getPixelHeight(mip) != pixelh)
 			throw love::Exception("All textures must have the same pixel dimensions.");
-
-		if (!multiformatsupported && format != firstcolorformat)
-			throw love::Exception("This system doesn't support multi-render-target rendering with different texture formats.");
 
 		if (c->getRequestedMSAA() != reqmsaa)
 			throw love::Exception("All textures must have the same MSAA value.");
@@ -925,7 +1130,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		PixelFormat dsformat = PIXELFORMAT_STENCIL8;
 		if (wantsdepth && wantsstencil)
 			dsformat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-		else if (wantsdepth && isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, PIXELFORMATUSAGEFLAGS_RENDERTARGET, false))
+		else if (wantsdepth && isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
 			dsformat = PIXELFORMAT_DEPTH24_UNORM;
 		else if (wantsdepth)
 			dsformat = PIXELFORMAT_DEPTH16_UNORM;
@@ -963,6 +1168,13 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 	resetProjection();
 
+	// generateMipmaps can't be used for depth/stencil textures.
+	for (const auto &rt : prevRTs.colors)
+	{
+		if (rt.texture && rt.texture->getMipmapsMode() == Texture::MIPMAPS_AUTO && rt.mipmap == 0)
+			rt.texture->generateMipmaps();
+	}
+
 	// Clear/reset the temporary depth/stencil buffers.
 	// TODO: make this deferred somehow to avoid double clearing if the user
 	// also calls love.graphics.clear after setCanvas.
@@ -982,6 +1194,8 @@ void Graphics::setRenderTarget()
 	if (state.renderTargets.colors.empty() && state.renderTargets.depthStencil.texture == nullptr)
 		return;
 
+	const RenderTargetsStrongRef prevRTs = state.renderTargets;
+
 	flushBatchedDraws();
 	setRenderTargetsInternal(RenderTargets(), pixelWidth, pixelHeight, isGammaCorrect());
 
@@ -989,6 +1203,13 @@ void Graphics::setRenderTarget()
 	renderTargetSwitchCount++;
 
 	resetProjection();
+
+	// generateMipmaps can't be used for depth/stencil textures.
+	for (const auto& rt : prevRTs.colors)
+	{
+		if (rt.texture && rt.texture->getMipmapsMode() == Texture::MIPMAPS_AUTO && rt.mipmap == 0)
+			rt.texture->generateMipmaps();
+	}
 }
 
 Graphics::RenderTargets Graphics::getRenderTargets() const
@@ -1015,15 +1236,16 @@ bool Graphics::isRenderTargetActive() const
 
 bool Graphics::isRenderTargetActive(Texture *texture) const
 {
+	Texture *roottexture = texture->getRootViewInfo().texture;
 	const auto &rts = states.back().renderTargets;
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.texture.get() == texture)
+		if (rt.texture.get() && rt.texture->getRootViewInfo().texture == roottexture)
 			return true;
 	}
 
-	if (rts.depthStencil.texture.get() == texture)
+	if (rts.depthStencil.texture.get() && rts.depthStencil.texture->getRootViewInfo().texture == roottexture)
 		return true;
 
 	return false;
@@ -1031,16 +1253,27 @@ bool Graphics::isRenderTargetActive(Texture *texture) const
 
 bool Graphics::isRenderTargetActive(Texture *texture, int slice) const
 {
+	const auto &rootinfo = texture->getRootViewInfo();
+	slice += rootinfo.startLayer;
+
 	const auto &rts = states.back().renderTargets;
 
 	for (const auto &rt : rts.colors)
 	{
-		if (rt.texture.get() == texture && rt.slice == slice)
-			return true;
+		if (rt.texture.get())
+		{
+			const auto &info = rt.texture->getRootViewInfo();
+			if (rootinfo.texture == info.texture && rt.slice + info.startLayer == slice)
+				return true;
+		}
 	}
 
-	if (rts.depthStencil.texture.get() == texture && rts.depthStencil.slice == slice)
-		return true;
+	if (rts.depthStencil.texture.get())
+	{
+		const auto &info = rts.depthStencil.texture->getRootViewInfo();
+		if (rootinfo.texture == info.texture && rts.depthStencil.slice + info.startLayer == slice)
+			return true;
+	}
 
 	return false;
 }
@@ -1219,19 +1452,39 @@ bool Graphics::getScissor(Rect &rect) const
 	return state.scissor;
 }
 
-void Graphics::setStencilMode()
+void Graphics::setStencilMode(StencilMode mode, int value)
 {
-	setStencilMode(STENCIL_KEEP, COMPARE_ALWAYS, 0, LOVE_UINT32_MAX, LOVE_UINT32_MAX);
+	setStencilState(computeStencilState(mode, value));
+	if (mode == STENCIL_MODE_DRAW)
+		setColorMask({ false, false, false, false });
+	else
+		setColorMask({ true, true, true, true });
 }
 
-void Graphics::getStencilMode(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const
+void Graphics::setStencilMode()
+{
+	setStencilState(computeStencilState(STENCIL_MODE_OFF, 0));
+	setColorMask({ true, true, true, true });
+}
+
+StencilMode Graphics::getStencilMode(int &value) const
+{
+	const DisplayState& state = states.back();
+	StencilMode mode = computeStencilMode(state.stencil);
+	value = state.stencil.value;
+	return mode;
+}
+
+void Graphics::setStencilState()
+{
+	StencilState s;
+	setStencilState(s);
+}
+
+const StencilState &Graphics::getStencilState() const
 {
 	const DisplayState &state = states.back();
-	action = state.stencil.action;
-	compare = state.stencil.compare;
-	value = state.stencil.value;
-	readmask = state.stencil.readMask;
-	writemask = state.stencil.writeMask;
+	return state.stencil;
 }
 
 void Graphics::setDepthMode()
@@ -1346,9 +1599,6 @@ void Graphics::captureScreenshot(const ScreenshotInfo &info)
 
 void Graphics::copyBuffer(Buffer *source, Buffer *dest, size_t sourceoffset, size_t destoffset, size_t size)
 {
-	if (!capabilities.features[FEATURE_COPY_BUFFER])
-		throw love::Exception("Buffer copying is not supported on this system.");
-
 	Range sourcerange(sourceoffset, size);
 	Range destrange(destoffset, size);
 
@@ -1382,9 +1632,6 @@ void Graphics::copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int
 	{
 		if (!source->isRenderTarget())
 			throw love::Exception("Copying a non-render target Texture to a Buffer is not supported on this system.");
-
-		if (!capabilities.features[FEATURE_COPY_RENDER_TARGET_TO_BUFFER])
-			throw love::Exception("Copying a render target Texture to a Buffer is not supported on this system.");
 	}
 
 	PixelFormat format = source->getPixelFormat();
@@ -1470,9 +1717,6 @@ void Graphics::copyTextureToBuffer(Texture *source, Buffer *dest, int slice, int
 
 void Graphics::copyBufferToTexture(Buffer *source, Texture *dest, size_t sourceoffset, int sourcewidth, int slice, int mipmap, const Rect &rect)
 {
-	if (!capabilities.features[FEATURE_COPY_BUFFER_TO_TEXTURE])
-		throw love::Exception("Copying a Buffer to a Texture is not supported on this system.");
-
 	if (source->getDataUsage() == BUFFERDATAUSAGE_READBACK)
 		throw love::Exception("Buffers created with 'readback' data usage cannot be used as a copy source.");
 
@@ -1782,7 +2026,7 @@ void Graphics::flushBatchedDraws()
 {
 	auto &sbstate = batchedDrawState;
 
-	if (sbstate.vertexCount == 0 && sbstate.indexCount == 0)
+	if ((sbstate.vertexCount == 0 && sbstate.indexCount == 0) || sbstate.flushing)
 		return;
 
 	VertexAttributes attributes;
@@ -1807,6 +2051,8 @@ void Graphics::flushBatchedDraws()
 	if (attributes.enableBits == 0)
 		return;
 
+	sbstate.flushing = true;
+
 	Colorf nc = getColor();
 	if (attributes.isEnabled(ATTRIB_COLOR))
 		setColor(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
@@ -1822,7 +2068,7 @@ void Graphics::flushBatchedDraws()
 		cmd.indexCount = sbstate.indexCount;
 		cmd.indexType = INDEX_UINT16;
 		cmd.indexBufferOffset = sbstate.indexBuffer->unmap(usedsizes[2]);
-		cmd.texture = sbstate.texture;
+		cmd.texture = getTextureOrDefaultForActiveShader(sbstate.texture);
 		draw(cmd);
 
 		sbstate.indexBufferMap = StreamBuffer::MapInfo();
@@ -1833,7 +2079,7 @@ void Graphics::flushBatchedDraws()
 		cmd.primitiveType = sbstate.primitiveMode;
 		cmd.vertexStart = 0;
 		cmd.vertexCount = sbstate.vertexCount;
-		cmd.texture = sbstate.texture;
+		cmd.texture = getTextureOrDefaultForActiveShader(sbstate.texture);
 		draw(cmd);
 	}
 
@@ -1851,8 +2097,9 @@ void Graphics::flushBatchedDraws()
 	if (attributes.isEnabled(ATTRIB_COLOR))
 		setColor(nc);
 
-	batchedDrawState.vertexCount = 0;
-	batchedDrawState.indexCount = 0;
+	sbstate.vertexCount = 0;
+	sbstate.indexCount = 0;
+	sbstate.flushing = false;
 }
 
 void Graphics::flushBatchedDrawsGlobal()
@@ -1911,9 +2158,6 @@ void Graphics::drawFromShader(PrimitiveType primtype, int vertexcount, int insta
 
 	flushBatchedDraws();
 
-	if (!capabilities.features[FEATURE_GLSL3])
-		throw love::Exception("drawFromShader is not supported on this system (GLSL3 support is required.)");
-
 	if (Shader::isDefaultActive() || !Shader::current)
 		throw love::Exception("drawFromShader can only be used with a custom shader.");
 
@@ -1930,7 +2174,7 @@ void Graphics::drawFromShader(PrimitiveType primtype, int vertexcount, int insta
 	cmd.primitiveType = primtype;
 	cmd.vertexCount = vertexcount;
 	cmd.instanceCount = std::max(1, instancecount);
-	cmd.texture = maintexture;
+	cmd.texture = getTextureOrDefaultForActiveShader(maintexture);
 
 	draw(cmd);
 }
@@ -1938,9 +2182,6 @@ void Graphics::drawFromShader(PrimitiveType primtype, int vertexcount, int insta
 void Graphics::drawFromShader(Buffer *indexbuffer, int indexcount, int instancecount, int startindex, Texture *maintexture)
 {
 	flushBatchedDraws();
-
-	if (!capabilities.features[FEATURE_GLSL3])
-		throw love::Exception("drawFromShader is not supported on this system (GLSL3 support is required.)");
 
 	if (!(indexbuffer->getUsageFlags() & BUFFERUSAGEFLAG_INDEX))
 		throw love::Exception("The buffer passed to drawFromShader must be an index buffer.");
@@ -1971,7 +2212,7 @@ void Graphics::drawFromShader(Buffer *indexbuffer, int indexcount, int instancec
 	cmd.indexType = getIndexDataType(indexbuffer->getDataMember(0).decl.format);
 	cmd.indexBufferOffset = startindex * getIndexDataSize(cmd.indexType);
 
-	cmd.texture = maintexture;
+	cmd.texture = getTextureOrDefaultForActiveShader(maintexture);
 
 	draw(cmd);
 }
@@ -1998,7 +2239,7 @@ void Graphics::drawFromShaderIndirect(PrimitiveType primtype, Buffer *indirectar
 	cmd.primitiveType = primtype;
 	cmd.indirectBuffer = indirectargs;
 	cmd.indirectBufferOffset = argsindex * indirectargs->getArrayStride();
-	cmd.texture = maintexture;
+	cmd.texture = getTextureOrDefaultForActiveShader(maintexture);
 
 	draw(cmd);
 }
@@ -2026,7 +2267,7 @@ void Graphics::drawFromShaderIndirect(Buffer *indexbuffer, Buffer *indirectargs,
 	cmd.indexType = getIndexDataType(indexbuffer->getDataMember(0).decl.format);
 	cmd.indirectBuffer = indirectargs;
 	cmd.indexBufferOffset = argsindex * indirectargs->getArrayStride();
-	cmd.texture = maintexture;
+	cmd.texture = getTextureOrDefaultForActiveShader(maintexture);
 
 	draw(cmd);
 }
@@ -2366,27 +2607,64 @@ void Graphics::polygon(DrawMode mode, const Vector2 *coords, size_t count, bool 
 
 		BatchedDrawCommand cmd;
 		cmd.formats[0] = getSinglePositionFormat(is2D);
-		cmd.formats[1] = CommonFormat::RGBAub;
+		cmd.formats[1] = CommonFormat::STf_RGBAub;
 		cmd.indexMode = TRIANGLEINDEX_FAN;
 		cmd.vertexCount = (int)count - (skipLastFilledVertex ? 1 : 0);
 
 		BatchedVertexData data = requestBatchedDraw(cmd);
 
-		if (is2D)
-			t.transformXY((Vector2 *) data.stream[0], coords, cmd.vertexCount);
-		else
-			t.transformXY0((Vector3 *) data.stream[0], coords, cmd.vertexCount);
+		// Compute texture coordinates.
+		constexpr float inf = std::numeric_limits<float>::infinity();
+		Vector2 mincoord(inf, inf);
+		Vector2 maxcoord(-inf, -inf);
+
+		for (int i = 0; i < cmd.vertexCount; i++)
+		{
+			Vector2 v = coords[i];
+			mincoord.x = std::min(mincoord.x, v.x);
+			mincoord.y = std::min(mincoord.y, v.y);
+			maxcoord.x = std::max(maxcoord.x, v.x);
+			maxcoord.y = std::max(maxcoord.y, v.y);
+		}
+
+		Vector2 invsize(1.0f / (maxcoord.x - mincoord.x), 1.0f / (maxcoord.y - mincoord.y));
+		Vector2 start(mincoord.x * invsize.x, mincoord.y * invsize.y);
 
 		Color32 c = toColor32(getColor());
-		Color32 *colordata = (Color32 *) data.stream[1];
+		STf_RGBAub *attributes = (STf_RGBAub *) data.stream[1];
 		for (int i = 0; i < cmd.vertexCount; i++)
-			colordata[i] = c;
+		{
+			attributes[i].s = coords[i].x * invsize.x - start.x;
+			attributes[i].t = coords[i].y * invsize.y - start.y;
+			attributes[i].color = c;
+		}
+
+		if (is2D)
+			t.transformXY((Vector2*)data.stream[0], coords, cmd.vertexCount);
+		else
+			t.transformXY0((Vector3*)data.stream[0], coords, cmd.vertexCount);
 	}
 }
 
 const Graphics::Capabilities &Graphics::getCapabilities() const
 {
 	return capabilities;
+}
+
+PixelFormat Graphics::getSizedFormat(PixelFormat format) const
+{
+	switch (format)
+	{
+	case PIXELFORMAT_NORMAL:
+		if (isGammaCorrect())
+			return PIXELFORMAT_RGBA8_sRGB;
+		else
+			return PIXELFORMAT_RGBA8_UNORM;
+	case PIXELFORMAT_HDR:
+		return PIXELFORMAT_RGBA16_FLOAT;
+	default:
+		return format;
+	}
 }
 
 Graphics::Stats Graphics::getStats() const
@@ -2403,8 +2681,10 @@ Graphics::Stats Graphics::getStats() const
 	stats.drawCallsBatched = drawCallsBatched;
 	stats.textures = Texture::textureCount;
 	stats.fonts = Font::fontCount;
+	stats.buffers = Buffer::bufferCount;
 	stats.textureMemory = Texture::totalGraphicsMemory;
-	
+	stats.bufferMemory = Buffer::totalGraphicsMemory;
+
 	return stats;
 }
 
@@ -2540,28 +2820,7 @@ Vector2 Graphics::inverseTransformPoint(Vector2 point)
 	return p;
 }
 
-void Graphics::setOrthoProjection(float w, float h, float near, float far)
-{
-	if (near >= far)
-		throw love::Exception("Orthographic projection Z far value must be greater than the Z near value.");
-
-	Matrix4 m = Matrix4::ortho(0.0f, w, 0.0f, h, near, far);
-	setCustomProjection(m);
-}
-
-void Graphics::setPerspectiveProjection(float verticalfov, float aspect, float near, float far)
-{
-	if (near <= 0.0f)
-		throw love::Exception("Perspective projection Z near value must be greater than 0.");
-
-	if (near >= far)
-		throw love::Exception("Perspective projection Z far value must be greater than the Z near value.");
-
-	Matrix4 m = Matrix4::perspective(verticalfov, aspect, near, far);
-	setCustomProjection(m);
-}
-
-void Graphics::setCustomProjection(const Matrix4 &m)
+void Graphics::setProjection(const Matrix4 &m)
 {
 	flushBatchedDraws();
 
@@ -2590,29 +2849,14 @@ void Graphics::resetProjection()
 
 	state.useCustomProjection = false;
 
-	updateDeviceProjection(Matrix4::ortho(0.0f, w, 0.0f, h, -10.0f, 10.0f));
+	// NDC is y-up. The ortho() parameter names assume that as well. We want
+	// a y-down projection, so we set bottom to h and top to 0.
+	updateDeviceProjection(Matrix4::ortho(0.0f, w, h, 0.0f, -10.0f, 10.0f));
 }
 
 void Graphics::updateDeviceProjection(const Matrix4 &projection)
 {
-	// Note: graphics implementations define computeDeviceProjection.
-	deviceProjectionMatrix = computeDeviceProjection(projection, isRenderTargetActive());
-}
-
-Matrix4 Graphics::calculateDeviceProjection(const Matrix4 &projection, uint32 flags) const
-{
-	Matrix4 m = projection;
-	bool reverseZ = (flags & DEVICE_PROJECTION_REVERSE_Z) != 0;
-
-	if (flags & DEVICE_PROJECTION_FLIP_Y)
-		m.setRow(1, -m.getRow(1));
-
-	if (flags & DEVICE_PROJECTION_Z_01) // Go from Z [-1, 1] to Z [0, 1].
-		m.setRow(2, m.getRow(2) * (reverseZ ? -0.5f : 0.5f) + m.getRow(3));
-	else if (reverseZ)
-		m.setRow(2, -m.getRow(2));
-
-	return m;
+	deviceProjectionMatrix = projection;
 }
 
 STRINGMAP_CLASS_BEGIN(Graphics, Graphics::DrawMode, Graphics::DRAW_MAX_ENUM, drawMode)
@@ -2650,7 +2894,6 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "multirendertargetformats", Graphics::FEATURE_MULTI_RENDER_TARGET_FORMATS },
 	{ "clampzero",                Graphics::FEATURE_CLAMP_ZERO           },
 	{ "clampone",                 Graphics::FEATURE_CLAMP_ONE            },
-	{ "blendminmax",              Graphics::FEATURE_BLEND_MINMAX         },
 	{ "lighten",                  Graphics::FEATURE_LIGHTEN              },
 	{ "fullnpot",                 Graphics::FEATURE_FULL_NPOT            },
 	{ "pixelshaderhighp",         Graphics::FEATURE_PIXEL_SHADER_HIGHP   },
@@ -2659,12 +2902,7 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "glsl4",                    Graphics::FEATURE_GLSL4                },
 	{ "instancing",               Graphics::FEATURE_INSTANCING           },
 	{ "texelbuffer",              Graphics::FEATURE_TEXEL_BUFFER         },
-	{ "indexbuffer32bit",         Graphics::FEATURE_INDEX_BUFFER_32BIT   },
-	{ "copybuffer",               Graphics::FEATURE_COPY_BUFFER          },
-	{ "copybuffertotexture",      Graphics::FEATURE_COPY_BUFFER_TO_TEXTURE },
 	{ "copytexturetobuffer",      Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER },
-	{ "copyrendertargettobuffer", Graphics::FEATURE_COPY_RENDER_TARGET_TO_BUFFER },
-	{ "mipmaprange",              Graphics::FEATURE_MIPMAP_RANGE         },
 	{ "indirectdraw",             Graphics::FEATURE_INDIRECT_DRAW        },
 }
 STRINGMAP_CLASS_END(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)

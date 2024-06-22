@@ -68,7 +68,8 @@ Released: N/A
 * Added APIs to override the default orthographic projection: love.graphics.setOrthoProjection, setPerspectiveProjection, and resetProjection.
 * Added ability to set point size within a vertex shader by setting the 'love_PointSize' variable.
 * Added love.graphics.setBlendState, which gives lower level control over blend operations than setBlendMode.
-* Added love.graphics.setStencilMode and getStencilMode. Replaces love.graphics.stencil as well as setStencilTest.
+* Added high level love.graphics.setStencilMode and getStencilMode functions. Replaces love.graphics.stencil and setStencilTest.
+* Added lower level love.graphics.setStencilState and getStencilState functions.
 * Added a variant of love.graphics.setColorMask which accepts a single boolean.
 * Added new 'clampone' wrap mode.
 * Added 'clampone', 'texelbuffer', 'indexbuffer32bit', 'mipmaprange', and 'indirectdraw' graphics feature enums.
@@ -81,7 +82,6 @@ Released: N/A
 * Added love.joysticksensorupdated callback.
 * Added variant for enet peer:send and host:broadcast which accepts a pointer (light userdata) and a size.
 
-* Changed love.filesystem.exists to no longer be deprecated.
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed TrueType and OpenType font handling to have improved kerning and character combining support.
 * Changed the Texture class and implementation to no longer have separate Canvas and Image subclasses.
@@ -100,6 +100,7 @@ Released: N/A
 * Changed RevoluteJoint:getMotorTorque and WheelJoint:getMotorTorque to take 'dt' as a parameter instead of 'inverse_dt'.
 * Changed love.math.perlinNoise and simplexNoise to use higher precision numbers for its internal calculations.
 * Changed t.accelerometerjoystick startup flag in love.conf to unset by default.
+* Changed love.data.hash to take in a container type.
 
 * Renamed 'display' field to 'displayindex' in love.window.setMode/updateMode/getMode and love.conf.
 * Renamed love.graphics Text objects to TextBatch.
@@ -113,12 +114,13 @@ Released: N/A
 * Deprecated love.graphics.setNewFont (use love.graphics.newFont and love.graphics.setFont instead).
 * Deprecated love.graphics.newText (renamed to love.graphics.newTextBatch).
 * Deprecated love.graphics.getImageFormats and love.graphics.getCanvasFormats (replaced by getTextureFormats).
-* Deprecated love.graphics.stencil (replaced by love.graphics.setStencilMode).
-* Deprecated love.graphics.setStencilTest and love.graphics.getStencilTest (replaced by love.graphics.setStencilMode and getStencilMode).
+* Deprecated love.graphics.stencil (replaced by love.graphics.setStencilMode or love.graphics.setStencilState).
+* Deprecated love.graphics.setStencilTest and love.graphics.getStencilTest (replaced by love.graphics.setStencilMode or setStencilState).
 * Deprecated t.window.highdpi in love.conf and the highdpi flag of love.window.setMode (replaced by t.highdpi in love.conf).
 * Deprecated t.accelerometerjoystick in love.conf (replaced by love.sensor module).
 * Deprecated the variants of Mesh:attachAttribute and SpriteBatch:attachAttribute which accept a Mesh (replaced by variants which accept a Buffer).
 * Deprecated Texture:newImageData (replaced by love.graphics.readbackTexture).
+* Deprecated love.data.hash (replaced by function variant, which takes container type).
 
 * Removed the variant of SpriteBatch:setColor() which turns off all previously set colors.
 * Removed the no-argument variant of love.graphics.setColorMask.
@@ -145,13 +147,30 @@ Released: N/A
 LOVE 11.5 [Mysterious Mysteries]
 --------------------------------
 
-Released: N/A
+Released: 2023-12-03
 
+* Added "LÖVE Loader" launcher on Android for easier loading of .love files.
+
+* Changed iOS game selector to alphabetically sort the list of .love files.
+* Changed JIT compilation on macOS arm64 (Apple Silicon) to be off by default, since performance and available JIT memory isn't reliable.
+
+* Fixed inconsistent and buggy behaviour of 'pairs' by updating LuaJIT.
+* Fixed "unexpected alignment" errors when running love on some 32 bit Linux systems.
+* Fixed running fused games on Windows when the executable has been code-signed.
+* Fixed undefined behaviour in love.data.hash's implementation.
+* Fixed writing files when a symlink exists in the save directory's path.
 * Fixed love.threaderror not being called if the error message is an empty string.
 * Fixed a race condition when a Thread is destroyed immediately after Thread:start.
 * Fixed unexpectedly slow first frames on macOS.
+* Fixed love.joystick.setGamepadMapping when replacing an existing mapping.
+* Fixed love.joystick.getGamepadMappingString.
+* Fixed duplicate platform fields in love.joystick.saveGamepadMappings.
+* Fixed DistanceJoint type information.
 * Fixed time drift in Source:tell after a Source loops.
 * Fixed audio not always pausing when the app is minimized on Android.
+* Fixed RecordingDevice:start to return false instead of hard-crashing on iOS.
+* Fixed identical frames in Ogg Theora videos being skipped.
+* Fixed love.font.newBMFontRasterizer's single file parameter variant.
 * Fixed the original window size not always being restored when exiting fullscreen on Linux.
 * Fixed some cases of framerate hitches in Windows when vsync is enabled in windowed mode.
 * Fixed colors appearing over-saturated on P3 displays in macOS.

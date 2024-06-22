@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,8 @@ namespace physics
 {
 namespace box2d
 {
+
+love::Type DistanceJoint::type("DistanceJoint", &Joint::type);
 
 DistanceJoint::DistanceJoint(Body *body1, Body *body2, float x1, float y1, float x2, float y2, bool collideConnected)
 	: Joint(body1, body2)

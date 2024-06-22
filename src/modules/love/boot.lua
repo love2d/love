@@ -3,7 +3,7 @@ R"luastring"--(
 -- There is a matching delimiter at the bottom of the file.
 
 --[[
-Copyright (c) 2006-2023 LOVE Development Team
+Copyright (c) 2006-2024 LOVE Development Team
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -136,11 +136,11 @@ function love.boot()
 
 	if not can_has_game then
         -- when editing this message, change it at love.cpp too
-        print([[LÖVE is an *awesome* framework you can use to make 2D games in Lua
+        print([[LOVE is an *awesome* framework you can use to make 2D games in Lua
 https://love2d.org
 
 usage:
-    love --version                  prints LÖVE version and quits
+    love --version                  prints LOVE version and quits
     love --help                     prints this message and quits
     love path/to/gamedir            runs the game from the given directory which contains a main.lua file
     love path/to/packagedgame.love  runs the packaged game from the provided .love file

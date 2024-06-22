@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -50,7 +50,7 @@ public:
 	 * Create a new CircleShape from the a Box2D CircleShape definition.
 	 * @param c The CircleShape definition.
 	 **/
-	CircleShape(b2CircleShape *c, bool own = true);
+	CircleShape(Body *body, const b2CircleShape &c);
 
 	virtual ~CircleShape();
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,10 @@
 #include <SDL.h>
 
 #ifdef LOVE_BUILD_EXE
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#include <SDL_main.h>
+#endif
 
 // Lua
 extern "C" {
@@ -150,11 +154,11 @@ enum DoneAction
 static void print_usage()
 {
     // when editing this message, change it at boot.lua too
-    printf("LÖVE is an *awesome* framework you can use to make 2D games in Lua\n"
+    printf("LOVE is an *awesome* framework you can use to make 2D games in Lua\n"
         "https://love2d.org\n"
         "\n"
         "usage:\n"
-        "    love --version                  prints LÖVE version and quits\n"
+        "    love --version                  prints LOVE version and quits\n"
         "    love --help                     prints this message and quits\n"
         "    love path/to/gamedir            runs the game from the given directory which contains a main.lua file\n"
         "    love path/to/packagedgame.love  runs the packaged game from the provided .love file\n"
@@ -189,7 +193,7 @@ static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &res
 
 	// LuaJIT-specific setup needs to be done as early as possible - before
 	// get_app_arguments because that loads external library code. This is also
-	// loaded inside require("love"). Note that it doesn't use the love table.
+	// loaded inside love's Lua threads. Note that it doesn't use the love table.
 	love_preload(L, luaopen_love_jitsetup, "love.jitsetup");
 	lua_getglobal(L, "require");
 	lua_pushstring(L, "love.jitsetup");

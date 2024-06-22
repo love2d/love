@@ -7,7 +7,7 @@
 local max_width = 18
 local pattern = [[
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -77,13 +77,14 @@ local function auto(name)
 	local out_data = ""
 	--go through the input file line-by-line
 	for line in src_file:lines() do
+		line = line:gsub("\r", "")
 		--if the line is non-empty
 		if #line > 0 then
 			--set the counter to -1
 			--this will start a new line (see tohex)
 			counter = -1
 			--append the output to what we had, plus a newline character (0x0a is newline)
-			out_data = ("%s%s0x0a,"):format(out_data, line:gsub("\r", ""):gsub(".", tohex))
+			out_data = ("%s%s0x0a,"):format(out_data, line:gsub(".", tohex))
 		else
 			out_data = out_data .. "\n\t0x0a,"
 		end

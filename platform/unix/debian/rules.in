@@ -1,22 +1,14 @@
 #!/usr/bin/make -f
 
-commonflags = -Wall -Wno-maybe-uninitialized -Wno-strict-aliasing
-CFLAGS += $(commonflags)
-CXXFLAGS += $(commonflags)
-
-
 %:
-	dh  $@ --parallel --with autoreconf
+	dh $@ --parallel
 
 override_dh_auto_clean:
 	dh_auto_clean
 	rm -f platform/unix/love-unstable.6
 
-override_dh_auto_configure:
-	dh_auto_configure -- --with-lua=luajit
-
 override_dh_installdocs:
-	dh_installdocs --link-doc=liblove@LOVE_SUFFIX@0
+	dh_installdocs --link-doc=@LOVE_LIB_NAME@0
 
 override_dh_installchangelogs:
 	dh_installchangelogs changes.txt
@@ -26,6 +18,6 @@ override_dh_installman:
 	dh_installman
 
 override_dh_strip:
-	dh_strip -pliblove@LOVE_SUFFIX@0 --dbg-package=liblove@LOVE_SUFFIX@-dbg
+	dh_strip -p@LOVE_LIB_NAME@0 --dbg-package=@LOVE_LIB_NAME@-dbg
 	dh_strip --remaining-packages
 

@@ -1,7 +1,7 @@
 /**
  * Simple DDS data parser for compressed 2D textures.
  *
- * Copyright (c) 2013-2023 Sasha Szpakowski
+ * Copyright (c) 2013-2024 Sasha Szpakowski
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages

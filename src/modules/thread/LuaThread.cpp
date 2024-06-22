@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,7 @@
 
 #ifdef LOVE_BUILD_STANDALONE
 extern "C" int luaopen_love(lua_State * L);
+extern "C" int luaopen_love_jitsetup(lua_State * L);
 #endif // LOVE_BUILD_STANDALONE
 
 namespace love
@@ -55,6 +56,13 @@ void LuaThread::threadFunction()
 	luaL_openlibs(L);
 
 #ifdef LOVE_BUILD_STANDALONE
+	// Call LuaJIT-specific setup again. While it's quite late to call it at
+	// this point, it still needed to turn off JIT compilation (if necessary)
+	// for this thread.
+	luax_preload(L, luaopen_love_jitsetup, "love.jitsetup");
+	luax_require(L, "love.jitsetup");
+	lua_pop(L, 1);
+
 	luax_preload(L, luaopen_love, "love");
 	luax_require(L, "love");
 	lua_pop(L, 1);

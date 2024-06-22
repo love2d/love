@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,12 +26,9 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
 
-#ifdef LOVE_MACOSX_SDL_DIRECT_INCLUDE
 #include <SDL.h>
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
 #include <SDL_syswm.h>
-#else
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
 #endif
 
 namespace love
@@ -63,6 +60,13 @@ std::string checkDropEvents()
 	SDL_InitSubSystem(SDL_INIT_VIDEO);
 
 	SDL_PumpEvents();
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_EVENT_DROP_FILE, SDL_EVENT_DROP_FILE) > 0)
+	{
+		if (event.type == SDL_EVENT_DROP_FILE)
+			dropstr = std::string(event.drop.data);
+	}
+#else
 	if (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_DROPFILE, SDL_DROPFILE) > 0)
 	{
 		if (event.type == SDL_DROPFILE)
@@ -71,6 +75,7 @@ std::string checkDropEvents()
 			SDL_free(event.drop.file);
 		}
 	}
+#endif
 
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
@@ -122,9 +127,15 @@ void setWindowSRGBColorSpace(SDL_Window *window)
 		// (at least, it was back when I tested in December 2016).
 		if (@available(macOS 11.0, *))
 		{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+			SDL_PropertiesID props = SDL_GetWindowProperties(window);
+			NSWindow *window = (__bridge NSWindow *) SDL_GetProperty(props, SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
+			window.colorSpace = [NSColorSpace sRGBColorSpace];
+#else
 			SDL_SysWMinfo info = {};
 			if (SDL_GetWindowWMInfo(window, &info))
 				info.info.cocoa.window.colorSpace = [NSColorSpace sRGBColorSpace];
+#endif
 		}
 	}
 }

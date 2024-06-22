@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -178,19 +178,25 @@ int w_World_getContacts(lua_State *L)
 	return ret;
 }
 
-int w_World_queryBoundingBox(lua_State *L)
+int w_World_queryShapesInArea(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
-	return t->queryBoundingBox(L);
+	return t->queryShapesInArea(L);
 }
 
-int w_World_getFixturesInArea(lua_State *L)
+int w_World_queryBoundingBox(lua_State *L)
+{
+	luax_markdeprecated(L, 1, "World:queryBoundingBox", API_METHOD, DEPRECATED_RENAMED, "World:queryShapesInArea");
+	return w_World_queryShapesInArea(L);
+}
+
+int w_World_getShapesInArea(lua_State *L)
 {
 	World *t = luax_checkworld(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
-	luax_catchexcept(L, [&](){ ret = t->getFixturesInArea(L); });
+	luax_catchexcept(L, [&](){ ret = t->getShapesInArea(L); });
 	return ret;
 }
 
@@ -200,6 +206,24 @@ int w_World_rayCast(lua_State *L)
 	lua_remove(L, 1);
 	int ret = 0;
 	luax_catchexcept(L, [&](){ ret = t->rayCast(L); });
+	return ret;
+}
+
+int w_World_rayCastAny(lua_State *L)
+{
+	World *t = luax_checkworld(L, 1);
+	lua_remove(L, 1);
+	int ret = 0;
+	luax_catchexcept(L, [&]() { ret = t->rayCastAny(L); });
+	return ret;
+}
+
+int w_World_rayCastClosest(lua_State *L)
+{
+	World *t = luax_checkworld(L, 1);
+	lua_remove(L, 1);
+	int ret = 0;
+	luax_catchexcept(L, [&]() { ret = t->rayCastClosest(L); });
 	return ret;
 }
 
@@ -236,11 +260,16 @@ static const luaL_Reg w_World_functions[] =
 	{ "getBodies", w_World_getBodies },
 	{ "getJoints", w_World_getJoints },
 	{ "getContacts", w_World_getContacts },
-	{ "queryBoundingBox", w_World_queryBoundingBox },
-	{ "getFixturesInArea", w_World_getFixturesInArea },
+	{ "queryShapesInArea", w_World_queryShapesInArea },
+	{ "getShapesInArea", w_World_getShapesInArea },
 	{ "rayCast", w_World_rayCast },
+	{ "rayCastAny", w_World_rayCastAny },
+	{ "rayCastClosest", w_World_rayCastClosest },
 	{ "destroy", w_World_destroy },
 	{ "isDestroyed", w_World_isDestroyed },
+
+	// Deprecated
+	{ "queryBoundingBox", w_World_queryBoundingBox },
 
 	{ 0, 0 }
 };

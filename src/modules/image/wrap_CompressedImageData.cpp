@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -103,6 +103,20 @@ int w_CompressedImageData_getFormat(lua_State *L)
 	return 1;
 }
 
+int w_CompressedImageData_setLinear(lua_State *L)
+{
+	CompressedImageData *t = luax_checkcompressedimagedata(L, 1);
+	t->setLinear(luax_checkboolean(L, 2));
+	return 0;
+}
+
+int w_CompressedImageData_isLinear(lua_State *L)
+{
+	CompressedImageData *t = luax_checkcompressedimagedata(L, 1);
+	luax_pushboolean(L, t->isLinear());
+	return 1;
+}
+
 static const luaL_Reg w_CompressedImageData_functions[] =
 {
 	{ "clone", w_CompressedImageData_clone },
@@ -111,6 +125,8 @@ static const luaL_Reg w_CompressedImageData_functions[] =
 	{ "getDimensions", w_CompressedImageData_getDimensions },
 	{ "getMipmapCount", w_CompressedImageData_getMipmapCount },
 	{ "getFormat", w_CompressedImageData_getFormat },
+	{ "setLinear", w_CompressedImageData_setLinear },
+	{ "isLinear", w_CompressedImageData_isLinear },
 	{ 0, 0 },
 };
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -250,21 +250,28 @@ int w_Mesh_getVertexFormat(lua_State *L)
 
 	for (size_t i = 0; i < vertexformat.size(); i++)
 	{
-		const auto &decl = vertexformat[i].decl;
+		const auto &member = vertexformat[i];
 
-		if (!getConstant(decl.format, tname))
-			return luax_enumerror(L, "vertex attribute data type", getConstants(decl.format), tname);
+		if (!getConstant(member.decl.format, tname))
+			return luax_enumerror(L, "vertex attribute data type", getConstants(member.decl.format), tname);
 
-		lua_createtable(L, 3, 0);
+		lua_createtable(L, 0, 4);
 
-		lua_pushstring(L, decl.name.c_str());
-		lua_rawseti(L, -2, 1);
+		lua_pushstring(L, member.decl.name.c_str());
+		lua_setfield(L, -2, "name");
 
-		lua_pushstring(L, tname);
-		lua_rawseti(L, -2, 2);
+		const char *formatstr = "unknown";
+		getConstant(member.decl.format, formatstr);
+		lua_pushstring(L, formatstr);
+		lua_setfield(L, -2, "format");
 
-		// format[i] = {name, type}
-		lua_rawseti(L, -2, (int) i + 1);
+		lua_pushinteger(L, member.decl.arrayLength);
+		lua_setfield(L, -2, "arraylength");
+
+		lua_pushinteger(L, member.offset);
+		lua_setfield(L, -2, "offset");
+
+		lua_rawseti(L, -2, i + 1);
 	}
 
 	return 1;

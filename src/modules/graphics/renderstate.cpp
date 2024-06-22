@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@ namespace graphics
 
 // These are all with premultiplied alpha. computeBlendState adjusts for
 // alpha-multiply if needed.
-static const BlendState states[BLEND_MAX_ENUM] =
+static const BlendState blendStates[BLEND_MAX_ENUM] =
 {
 	// BLEND_ALPHA
 	{BLENDOP_ADD, BLENDOP_ADD, BLENDFACTOR_ONE, BLENDFACTOR_ONE, BLENDFACTOR_ONE_MINUS_SRC_ALPHA, BLENDFACTOR_ONE_MINUS_SRC_ALPHA},
@@ -63,7 +63,7 @@ static const BlendState states[BLEND_MAX_ENUM] =
 
 BlendState computeBlendState(BlendMode mode, BlendAlpha alphamode)
 {
-	BlendState s = states[mode];
+	BlendState s = blendStates[mode];
 
 	// We can only do alpha-multiplication when srcRGB would have been unmodified.
 	if (s.srcFactorRGB == BLENDFACTOR_ONE && alphamode == BLENDALPHA_MULTIPLY && mode != BLEND_NONE)
@@ -87,7 +87,7 @@ BlendMode computeBlendMode(BlendState s, BlendAlpha &alphamode)
 
 	for (int i = 0; i < (int) BLEND_MAX_ENUM; i++)
 	{
-		if (i != (int) BLEND_CUSTOM && states[i] == s)
+		if (i != (int) BLEND_CUSTOM && blendStates[i] == s)
 		{
 			alphamode = alphamultiply ? BLENDALPHA_MULTIPLY : BLENDALPHA_PREMULTIPLIED;
 			return (BlendMode) i;
@@ -109,6 +109,39 @@ bool isAlphaMultiplyBlendSupported(BlendMode mode)
 	default:
 		return true;
 	}
+}
+
+static const StencilState stencilStates[STENCIL_MODE_MAX_ENUM] =
+{
+	// STENCIL_MODE_OFF
+	{},
+
+	// STENCIL_MODE_DRAW
+	{COMPARE_ALWAYS, STENCIL_REPLACE},
+
+	// STENCIL_MODE_TEST
+	{COMPARE_EQUAL, STENCIL_KEEP},
+
+	// STENCIL_MODE_CUSTOM - N/A
+	{},
+};
+
+StencilState computeStencilState(StencilMode mode, int value)
+{
+	StencilState s = stencilStates[mode];
+	s.value = value;
+	return s;
+}
+
+StencilMode computeStencilMode(const StencilState &s)
+{
+	for (int i = 0; i < (int)STENCIL_MODE_MAX_ENUM; i++)
+	{
+		if (stencilStates[i].action == s.action && stencilStates[i].compare == s.compare)
+			return (StencilMode) i;
+	}
+
+	return STENCIL_MODE_CUSTOM;
 }
 
 CompareMode getReversedCompareMode(CompareMode mode)
@@ -170,6 +203,15 @@ STRINGMAP_BEGIN(BlendOperation, BLENDOP_MAX_ENUM, blendOperation)
 	{ "max",             BLENDOP_MAX              },
 }
 STRINGMAP_END(BlendOperation, BLENDOP_MAX_ENUM, blendOperation)
+
+STRINGMAP_BEGIN(StencilMode, STENCIL_MODE_MAX_ENUM, stencilMode)
+{
+	{ "off",    STENCIL_MODE_OFF    },
+	{ "draw",   STENCIL_MODE_DRAW   },
+	{ "test",   STENCIL_MODE_TEST   },
+	{ "custom", STENCIL_MODE_CUSTOM },
+}
+STRINGMAP_END(StencilMode, STENCIL_MODE_MAX_ENUM, stencilMode)
 
 STRINGMAP_BEGIN(StencilAction, STENCIL_MAX_ENUM, stencilAction)
 {

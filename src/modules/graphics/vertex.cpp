@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -25,6 +25,8 @@ namespace love
 {
 namespace graphics
 {
+
+static_assert(sizeof(VertexAttributeInfo) == 4, "Unexpected sizeof(VertexAttributeInfo)");
 
 static_assert(sizeof(Color32) == 4, "sizeof(Color32) incorrect!");
 static_assert(sizeof(STf_RGBAub) == sizeof(float)*2 + sizeof(Color32), "sizeof(STf_RGBAub) incorrect!");
@@ -110,17 +112,17 @@ static const DataFormatInfo dataFormatInfo[]
 	{ DATA_BASETYPE_FLOAT, false, 3, 0, 0, 4, 12 }, // DATAFORMAT_FLOAT_VEC3
 	{ DATA_BASETYPE_FLOAT, false, 4, 0, 0, 4, 16 }, // DATAFORMAT_FLOAT_VEC4
 
-	{ DATA_BASETYPE_FLOAT, true, 0, 2, 2, 4, 16 }, // DATAFORMAT_FLOAT_MAT2X2
-	{ DATA_BASETYPE_FLOAT, true, 0, 2, 3, 4, 24 }, // DATAFORMAT_FLOAT_MAT2X3
-	{ DATA_BASETYPE_FLOAT, true, 0, 2, 4, 4, 32 }, // DATAFORMAT_FLOAT_MAT2X4
+	{ DATA_BASETYPE_FLOAT, true, 4, 2, 2, 4, 16 }, // DATAFORMAT_FLOAT_MAT2X2
+	{ DATA_BASETYPE_FLOAT, true, 6, 2, 3, 4, 24 }, // DATAFORMAT_FLOAT_MAT2X3
+	{ DATA_BASETYPE_FLOAT, true, 8, 2, 4, 4, 32 }, // DATAFORMAT_FLOAT_MAT2X4
 
-	{ DATA_BASETYPE_FLOAT, true, 0, 3, 2, 4, 24 }, // DATAFORMAT_FLOAT_MAT3X2
-	{ DATA_BASETYPE_FLOAT, true, 0, 3, 3, 4, 36 }, // DATAFORMAT_FLOAT_MAT3X3
-	{ DATA_BASETYPE_FLOAT, true, 0, 3, 4, 4, 48 }, // DATAFORMAT_FLOAT_MAT3X4
+	{ DATA_BASETYPE_FLOAT, true, 6,  3, 2, 4, 24 }, // DATAFORMAT_FLOAT_MAT3X2
+	{ DATA_BASETYPE_FLOAT, true, 9,  3, 3, 4, 36 }, // DATAFORMAT_FLOAT_MAT3X3
+	{ DATA_BASETYPE_FLOAT, true, 12, 3, 4, 4, 48 }, // DATAFORMAT_FLOAT_MAT3X4
 
-	{ DATA_BASETYPE_FLOAT, true, 0, 4, 2, 4, 32 }, // DATAFORMAT_FLOAT_MAT4X2
-	{ DATA_BASETYPE_FLOAT, true, 0, 4, 3, 4, 48 }, // DATAFORMAT_FLOAT_MAT4X3
-	{ DATA_BASETYPE_FLOAT, true, 0, 4, 4, 4, 64 }, // DATAFORMAT_FLOAT_MAT4X4
+	{ DATA_BASETYPE_FLOAT, true, 8,  4, 2, 4, 32 }, // DATAFORMAT_FLOAT_MAT4X2
+	{ DATA_BASETYPE_FLOAT, true, 12, 4, 3, 4, 48 }, // DATAFORMAT_FLOAT_MAT4X3
+	{ DATA_BASETYPE_FLOAT, true, 16, 4, 4, 4, 64 }, // DATAFORMAT_FLOAT_MAT4X4
 
 	{ DATA_BASETYPE_INT, false, 1, 0, 0, 4, 4  }, // DATAFORMAT_INT32
 	{ DATA_BASETYPE_INT, false, 2, 0, 0, 4, 8  }, // DATAFORMAT_INT32_VEC2
@@ -336,7 +338,7 @@ bool VertexAttributes::operator == (const VertexAttributes &other) const
 		{
 			const auto &a = attribs[i];
 			const auto &b = other.attribs[i];
-			if (a.bufferIndex != b.bufferIndex || a.format != b.format || a.offsetFromVertex != b.offsetFromVertex)
+			if (a.bufferIndex != b.bufferIndex || a.packedFormat != b.packedFormat || a.offsetFromVertex != b.offsetFromVertex)
 				return false;
 
 			if (bufferLayouts[a.bufferIndex].stride != other.bufferLayouts[a.bufferIndex].stride)

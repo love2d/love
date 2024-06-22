@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -115,6 +115,15 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 {
 	update();
 
+	// setVideoTextures may call flushBatchedDraws before setting the textures, so
+	// we can't call it after requestBatchedDraw.
+	auto shader = Shader::current;
+	if (Shader::isDefaultActive())
+		shader = Shader::standardShaders[Shader::STANDARD_VIDEO];
+
+	if (shader != nullptr)
+		shader->setVideoTextures(textures[0], textures[1], textures[2]);
+
 	const Matrix4 &tm = gfx->getTransform();
 	bool is2D = tm.isAffine2DTransform();
 
@@ -144,9 +153,6 @@ void Video::draw(Graphics *gfx, const Matrix4 &m)
 		verts[i].t = vertices[i].t;
 		verts[i].color = c;
 	}
-
-	if (Shader::current != nullptr)
-		Shader::current->setVideoTextures(textures[0], textures[1], textures[2]);
 
 	gfx->flushBatchedDraws();
 }

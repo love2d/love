@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -62,9 +62,12 @@ namespace love
 love::Type Module::type("Module", &Object::type);
 Module *Module::instances[] = {};
 
-Module::Module()
+Module::Module(Module::ModuleType moduleType, const char *name)
+	: moduleType(moduleType)
+	, name(name)
 {
 	initDeprecation();
+	registerInstance(this);
 }
 
 Module::~Module()

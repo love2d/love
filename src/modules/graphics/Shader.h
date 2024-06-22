@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,7 @@
 #include "Texture.h"
 #include "ShaderStage.h"
 #include "Resource.h"
+#include "Buffer.h"
 
 // STL
 #include <string>
@@ -50,7 +51,6 @@ public:
 
 	enum Language
 	{
-		LANGUAGE_GLSL1,
 		LANGUAGE_GLSL3,
 		LANGUAGE_GLSL4,
 		LANGUAGE_MAX_ENUM
@@ -108,9 +108,18 @@ public:
 		ACCESS_WRITE = (1 << 1),
 	};
 
+	enum ClipSpaceTransformFlags
+	{
+		CLIP_TRANSFORM_NONE = 0,
+		CLIP_TRANSFORM_FLIP_Y = 1 << 0,
+		CLIP_TRANSFORM_Z_NEG1_1_TO_0_1 = 1 << 1,
+		CLIP_TRANSFORM_Z_0_1_TO_NEG1_1 = 1 << 2,
+	};
+
 	struct CompileOptions
 	{
 		std::map<std::string, std::string> defines;
+		std::string debugName;
 	};
 
 	struct SourceInfo
@@ -128,6 +137,10 @@ public:
 
 	struct UniformInfo
 	{
+		UniformType baseType;
+		uint32 stageMask;
+		bool active;
+
 		int location;
 		int count;
 
@@ -137,7 +150,6 @@ public:
 			MatrixSize matrix;
 		};
 
-		UniformType baseType;
 		DataBaseType dataBaseType;
 		TextureType textureType;
 		Access access;
@@ -146,6 +158,9 @@ public:
 		size_t bufferStride;
 		size_t bufferMemberCount;
 		std::string name;
+
+		int resourceIndex;
+		int bindingStartIndex;
 
 		union
 		{
@@ -156,12 +171,6 @@ public:
 		};
 
 		size_t dataSize;
-
-		union
-		{
-			Texture **textures;
-			Buffer **buffers;
-		};
 	};
 
 	union LocalUniformValue
@@ -176,7 +185,8 @@ public:
  	{
  		Matrix4 transformMatrix;
  		Matrix4 projectionMatrix;
- 		Vector4 normalMatrix[3]; // 3x3 matrix padded to an array of 3 vector4s.
+		Vector4 scaleParams;
+		Vector4 clipSpaceParams;
  		Colorf constantColor;
 
 		// Pixel shader-centric variables past this point.
@@ -189,7 +199,7 @@ public:
 	// Pointer to the default Shader.
 	static Shader *standardShaders[STANDARD_MAX_ENUM];
 
-	Shader(StrongRef<ShaderStage> stages[]);
+	Shader(StrongRef<ShaderStage> stages[], const CompileOptions &options);
 	virtual ~Shader();
 
 	/**
@@ -213,13 +223,27 @@ public:
 	static bool isDefaultActive();
 
 	/**
+	 * Used for transforming standardized post-projection clip space positions
+	 * into the backend's current clip space.
+	 * Right now, the standard is:
+	 *   NDC y is [-1, 1] starting at the bottom (y-up).
+	 *   NDC z is [-1, 1].
+	 *   Pixel coordinates are y-down.
+	 *   Pixel (0, 0) in a texture is the top-left.
+	 * Aside from NDC z, this matches Metal and D3D12.
+	 */
+	static Vector4 computeClipSpaceParams(uint32 clipSpaceTransformFlags);
+
+	/**
 	 * Returns any warnings this Shader may have generated.
 	 **/
 	virtual std::string getWarnings() const = 0;
 
+	const std::string &getDebugName() const { return debugName; }
+
 	virtual int getVertexAttributeIndex(const std::string &name) = 0;
 
-	virtual const UniformInfo *getUniformInfo(const std::string &name) const = 0;
+	const UniformInfo *getUniformInfo(const std::string &name) const;
 	virtual const UniformInfo *getUniformInfo(BuiltinUniform builtin) const = 0;
 
 	virtual void updateUniform(const UniformInfo *info, int count) = 0;
@@ -231,7 +255,7 @@ public:
 	 * Gets whether a uniform with the specified name exists and is actively
 	 * used in the shader.
 	 **/
-	virtual bool hasUniform(const std::string &name) const = 0;
+	bool hasUniform(const std::string &name) const;
 
 	/**
 	 * Sets the textures used when rendering a video. For internal use only.
@@ -242,6 +266,11 @@ public:
 	void validateDrawState(PrimitiveType primtype, Texture *maintexture) const;
 
 	void getLocalThreadgroupSize(int *x, int *y, int *z);
+
+	const std::vector<Buffer::DataDeclaration> *getBufferFormat(const std::string &name) const;
+
+	bool isUsingDeprecatedTextureFunctions() const;
+	bool isUsingDeprecatedTextureUniform() const;
 
 	static SourceInfo getSourceInfo(const std::string &src);
 	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const CompileOptions &options, const SourceInfo &info, bool gles, bool checksystemfeatures);
@@ -261,37 +290,36 @@ public:
 
 protected:
 
-	struct BufferReflection
+	struct Reflection
 	{
-		size_t stride;
-		size_t memberCount;
-		Access access;
-	};
+		std::map<std::string, UniformInfo> texelBuffers;
+		std::map<std::string, UniformInfo> storageBuffers;
+		std::map<std::string, UniformInfo> sampledTextures;
+		std::map<std::string, UniformInfo> storageTextures;
+		std::map<std::string, UniformInfo> localUniforms;
 
-	struct StorageTextureReflection
-	{
-		PixelFormat format;
-		Access access;
-	};
+		std::map<std::string, UniformInfo *> allUniforms;
 
-	struct LocalUniform
-	{
-		DataBaseType dataType;
-		std::vector<LocalUniformValue> initializerValues;
-	};
+		std::map<std::string, std::vector<LocalUniformValue>> localUniformInitializerValues;
 
-	struct ValidationReflection
-	{
-		std::map<std::string, BufferReflection> storageBuffers;
-		std::map<std::string, StorageTextureReflection> storageTextures;
-		std::map<std::string, LocalUniform> localUniforms;
+		std::map<std::string, std::vector<Buffer::DataDeclaration>> bufferFormats;
+
+		int textureCount;
+		int bufferCount;
+
 		int localThreadgroupSize[3];
 		bool usesPointSize;
 	};
 
-	bool fillUniformReflectionData(UniformInfo &u);
+	std::string getShaderStageDebugName(ShaderStageType stage) const;
 
-	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, ValidationReflection &reflection);
+	void handleUnknownUniformName(const char *name);
+
+	// std140 uniform buffer alignment-aware copy.
+	void copyToUniformBuffer(const UniformInfo *info, const void *src, void *dst, int count) const;
+
+	static std::string canonicaliizeUniformName(const std::string &name);
+	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, Reflection &reflection);
 	static DataBaseType getDataBaseType(PixelFormat format);
 	static bool isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b);
 
@@ -300,7 +328,12 @@ protected:
 
 	StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM];
 
-	ValidationReflection validationReflection;
+	Reflection reflection;
+
+	std::vector<Texture *> activeTextures;
+	std::vector<Buffer *> activeBuffers;
+
+	std::string debugName;
 
 }; // Shader
 

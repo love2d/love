@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -123,14 +123,12 @@ public:
 	double fromPixels(double x) const override;
 	void fromPixels(double px, double py, double &wx, double &wy) const override;
 
-	const void *getHandle() const override;
+	void *getHandle() const override;
 
 	bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) override;
 	int showMessageBox(const MessageBoxData &data) override;
 
 	void requestAttention(bool continuous) override;
-
-	const char *getName() const override;
 
 private:
 
@@ -163,6 +161,10 @@ private:
 	int pixelHeight  = 600;
 	WindowSettings settings;
 	StrongRef<love::image::ImageData> icon;
+
+#ifdef LOVE_WINDOWS
+	bool canUseDwmFlush = false;
+#endif
 
 	bool open;
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -147,24 +147,18 @@ public:
 
 	enum Feature
 	{
-		FEATURE_MULTI_RENDER_TARGET_FORMATS,
+		FEATURE_MULTI_RENDER_TARGET_FORMATS, // Deprecated
 		FEATURE_CLAMP_ZERO,
 		FEATURE_CLAMP_ONE,
-		FEATURE_BLEND_MINMAX,
 		FEATURE_LIGHTEN, // Deprecated
-		FEATURE_FULL_NPOT,
-		FEATURE_PIXEL_SHADER_HIGHP,
-		FEATURE_SHADER_DERIVATIVES,
-		FEATURE_GLSL3,
+		FEATURE_FULL_NPOT, // Deprecated
+		FEATURE_PIXEL_SHADER_HIGHP, // Deprecated
+		FEATURE_SHADER_DERIVATIVES, // Deprecated
+		FEATURE_GLSL3, // Deprecated
 		FEATURE_GLSL4,
-		FEATURE_INSTANCING,
+		FEATURE_INSTANCING, // Deprecated
 		FEATURE_TEXEL_BUFFER,
-		FEATURE_INDEX_BUFFER_32BIT,
-		FEATURE_COPY_BUFFER,
-		FEATURE_COPY_BUFFER_TO_TEXTURE,
 		FEATURE_COPY_TEXTURE_TO_BUFFER,
-		FEATURE_COPY_RENDER_TARGET_TO_BUFFER,
-		FEATURE_MIPMAP_RANGE,
 		FEATURE_INDIRECT_DRAW,
 		FEATURE_MAX_ENUM
 	};
@@ -230,7 +224,9 @@ public:
 		int shaderSwitches;
 		int textures;
 		int fonts;
+		int buffers;
 		int64 textureMemory;
+		int64 bufferMemory;
 	};
 
 	struct DrawCommand
@@ -449,17 +445,15 @@ public:
 		}
 	};
 
-	Graphics();
+	Graphics(const char *name);
 	virtual ~Graphics();
 
-	// Implements Module.
-	virtual ModuleType getModuleType() const { return M_GRAPHICS; }
-
 	virtual Texture *newTexture(const Texture::Settings &settings, const Texture::Slices *data = nullptr) = 0;
+	virtual Texture *newTextureView(Texture *base, const Texture::ViewSettings &viewsettings) = 0;
 
 	Quad *newQuad(Quad::Viewport v, double sw, double sh);
 	Font *newFont(love::font::Rasterizer *data);
-	Font *newDefaultFont(int size, font::TrueTypeRasterizer::Hinting hinting);
+	Font *newDefaultFont(int size, const font::TrueTypeRasterizer::Settings &settings);
 	Video *newVideo(love::video::VideoStream *stream, float dpiscale);
 
 	SpriteBatch *newSpriteBatch(Texture *texture, int size, BufferDataUsage usage);
@@ -485,6 +479,11 @@ public:
 
 	bool validateShader(bool gles, const std::vector<std::string> &stages, const Shader::CompileOptions &options, std::string &err);
 
+	Texture *getDefaultTexture(TextureType type, DataBaseType dataType, bool depthSample);
+	Buffer *getDefaultTexelBuffer(DataBaseType dataType);
+	Buffer *getDefaultStorageBuffer();
+	Texture *getTextureOrDefaultForActiveShader(Texture *tex);
+
 	/**
 	 * Resets the current color, background color, line style, and so forth.
 	 **/
@@ -501,16 +500,15 @@ public:
 	virtual void present(void *screenshotCallbackData) = 0;
 
 	/**
-	 * Sets the current graphics display viewport dimensions.
+	 * Called when the backbuffer changes.
 	 **/
-	virtual void setViewportSize(int width, int height, int pixelwidth, int pixelheight) = 0;
+	virtual void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) = 0;
+	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight);
 
 	/**
 	 * Sets the current graphics display viewport and initializes the renderer.
-	 * @param width The viewport width.
-	 * @param height The viewport height.
 	 **/
-	virtual bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool windowhasstencil, int msaa) = 0;
+	virtual bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if
@@ -608,9 +606,13 @@ public:
 	 */
 	bool getScissor(Rect &rect) const;
 
-	virtual void setStencilMode(StencilAction action, CompareMode compare, int value, uint32 readmask, uint32 writemask) = 0;
+	void setStencilMode(StencilMode mode, int value);
 	void setStencilMode();
-	void getStencilMode(StencilAction &action, CompareMode &compare, int &value, uint32 &readmask, uint32 &writemask) const;
+	StencilMode getStencilMode(int &value) const;
+
+	virtual void setStencilState(const StencilState &state) = 0;
+	void setStencilState();
+	const StencilState &getStencilState() const;
 
 	virtual void setDepthMode(CompareMode compare, bool write) = 0;
 	void setDepthMode();
@@ -619,6 +621,9 @@ public:
 	void setMeshCullMode(CullMode cull);
 	CullMode getMeshCullMode() const;
 
+	// Note: These are meant to be relative to the y-down default projection,
+	// which may be flipped compared to device NDC. Implementations may have
+	// to flip the winding internally.
 	virtual void setFrontFaceWinding(Winding winding) = 0;
 	Winding getFrontFaceWinding() const;
 
@@ -819,12 +824,12 @@ public:
 	/**
 	 * Converts PIXELFORMAT_NORMAL and PIXELFORMAT_HDR into a real format.
 	 **/
-	virtual PixelFormat getSizedFormat(PixelFormat format, bool rendertarget, bool readable) const = 0;
+	PixelFormat getSizedFormat(PixelFormat format) const;
 
 	/**
 	 * Gets whether the specified pixel format usage is supported.
 	 **/
-	virtual bool isPixelFormatSupported(PixelFormat format, uint32 usage, bool sRGB = false) = 0;
+	virtual bool isPixelFormatSupported(PixelFormat format, uint32 usage) = 0;
 
 	/**
 	 * Gets the renderer used by love.graphics.
@@ -867,12 +872,8 @@ public:
 	Vector2 transformPoint(Vector2 point);
 	Vector2 inverseTransformPoint(Vector2 point);
 
-	void setOrthoProjection(float w, float h, float near, float far);
-	void setPerspectiveProjection(float verticalfov, float aspect, float near, float far);
-	void setCustomProjection(const Matrix4 &m);
+	void setProjection(const Matrix4 &m);
 	void resetProjection();
-
-	virtual Matrix4 computeDeviceProjection(const Matrix4 &projection, bool rendertotexture) const = 0;
 
 	virtual void draw(const DrawCommand &cmd) = 0;
 	virtual void draw(const DrawIndexedCommand &cmd) = 0;
@@ -915,14 +916,6 @@ public:
 	STRINGMAP_CLASS_DECLARE(StackType);
 
 protected:
-
-	enum DeviceProjectionFlags
-	{
-		DEVICE_PROJECTION_DEFAULT = 0,
-		DEVICE_PROJECTION_FLIP_Y = (1 << 0),
-		DEVICE_PROJECTION_Z_01 = (1 << 1),
-		DEVICE_PROJECTION_REVERSE_Z = (1 << 2),
-	};
 
 	struct DisplayState
 	{
@@ -981,6 +974,8 @@ protected:
 		StreamBuffer::MapInfo vbMap[2];
 		StreamBuffer::MapInfo indexBufferMap = StreamBuffer::MapInfo();
 
+		bool flushing = false;
+
 		BatchedDrawState()
 		{
 			vb[0] = vb[1] = nullptr;
@@ -1015,7 +1010,7 @@ protected:
 
 	ShaderStage *newShaderStage(ShaderStageType stage, const std::string &source, const Shader::CompileOptions &options, const Shader::SourceInfo &info, bool cache);
 	virtual ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) = 0;
-	virtual Shader *newShaderInternal(StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM]) = 0;
+	virtual Shader *newShaderInternal(StrongRef<ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const Shader::CompileOptions &options) = 0;
 	virtual StreamBuffer *newStreamBuffer(BufferUsage type, size_t size) = 0;
 
 	virtual GraphicsReadback *newReadbackInternal(ReadbackMethod method, Buffer *buffer, size_t offset, size_t size, data::ByteData *dest, size_t destoffset) = 0;
@@ -1037,6 +1032,11 @@ protected:
 
 	void updatePendingReadbacks();
 
+	void releaseDefaultResources();
+
+	void validateStencilState(const StencilState &s) const;
+	void validateDepthState(bool depthwrite) const;
+
 	void restoreState(const DisplayState &s);
 	void restoreStateChecked(const DisplayState &s);
 
@@ -1045,12 +1045,14 @@ protected:
 	void popTransform();
 
 	void updateDeviceProjection(const Matrix4 &projection);
-	Matrix4 calculateDeviceProjection(const Matrix4 &projection, uint32 flags) const;
 
 	int width;
 	int height;
 	int pixelWidth;
 	int pixelHeight;
+
+	bool backbufferHasStencil;
+	bool backbufferHasDepth;
 
 	bool created;
 	bool active;
@@ -1091,6 +1093,10 @@ private:
 
 	void checkSetDefaultFont();
 	int calculateEllipsePoints(float rx, float ry) const;
+
+	Texture *defaultTextures[TEXTURE_MAX_ENUM][DATA_BASETYPE_MAX_ENUM][2];
+	Buffer *defaultTexelBuffers[DATA_BASETYPE_MAX_ENUM];
+	Buffer *defaultStorageBuffer;
 
 	std::vector<uint8> scratchBuffer;
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -100,19 +100,17 @@ public:
 		Access access;
 	};
 
-	Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM]);
+	Shader(id<MTLDevice> device, StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const CompileOptions &options);
 	virtual ~Shader();
 
 	// Implements Shader.
 	void attach() override;
 	std::string getWarnings() const override { return ""; }
 	int getVertexAttributeIndex(const std::string &name) override;
-	const UniformInfo *getUniformInfo(const std::string &name) const override;
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override;
 	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override;
 	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
-	bool hasUniform(const std::string &name) const override;
 	ptrdiff_t getHandle() const override { return 0; }
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
@@ -140,13 +138,11 @@ private:
 	};
 
 	void buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv_cross::SPIRType &type, size_t baseoffset, const std::string &basename);
-	void addImage(const spirv_cross::CompilerMSL &msl, const spirv_cross::Resource &resource, UniformType baseType);
 	void compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program);
 
 	id<MTLFunction> functions[SHADERSTAGE_MAX_ENUM];
 
 	UniformInfo *builtinUniformInfo[BUILTIN_MAX_ENUM];
-	std::map<std::string, UniformInfo> uniforms;
 
 	uint8 *localUniformStagingData;
 	uint8 *localUniformBufferData;

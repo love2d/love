@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -48,6 +48,8 @@ public:
 		if (buffer == nil)
 			throw love::Exception("Out of graphics memory.");
 
+		buffer.label = [NSString stringWithFormat:@"StreamBuffer (usage: %d, size: %ld)", usage, size];
+
 		data = (uint8 *) buffer.contents;
 
 		for (int i = 0; i < BUFFER_FRAMES; i++)
@@ -64,6 +66,11 @@ public:
 			frameSemaphores[i] = nil;
 		}
 	}}
+
+	size_t getGPUReadOffset() const override
+	{
+		return (frameIndex * bufferSize) + frameGPUReadOffset;
+	}
 
 	MapInfo map(size_t /*minsize*/) override
 	{

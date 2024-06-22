@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -103,6 +103,7 @@ protected:
 	StrongRef<love::image::ImageData> imageData;
 	Rect rect = {};
 	PixelFormat textureFormat = PIXELFORMAT_UNKNOWN;
+	bool isFormatLinear = false;
 	int imageDataX = 0;
 	int imageDataY = 0;
 

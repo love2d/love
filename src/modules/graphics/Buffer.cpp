@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -29,12 +29,16 @@ namespace graphics
 
 love::Type Buffer::type("GraphicsBuffer", &Object::type);
 
+int Buffer::bufferCount = 0;
+int64 Buffer::totalGraphicsMemory = 0;
+
 Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDeclaration> &bufferformat, size_t size, size_t arraylength)
 	: arrayLength(0)
 	, arrayStride(0)
 	, size(size)
 	, usageFlags(settings.usageFlags)
 	, dataUsage(settings.dataUsage)
+	, debugName(settings.debugName)
 	, mapped(false)
 	, mappedType(MAP_WRITE_INVALIDATE)
 	, immutable(false)
@@ -46,7 +50,6 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 		throw love::Exception("Data format must contain values.");
 
 	const auto &caps = gfx->getCapabilities();
-	bool supportsGLSL3 = caps.features[Graphics::FEATURE_GLSL3];
 
 	bool indexbuffer = usageFlags & BUFFERUSAGEFLAG_INDEX;
 	bool vertexbuffer = usageFlags & BUFFERUSAGEFLAG_VERTEX;
@@ -82,9 +85,6 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 		if (indexbuffer)
 		{
-			if (!caps.features[Graphics::FEATURE_INDEX_BUFFER_32BIT] && format == DATAFORMAT_UINT32)
-				throw love::Exception("32 bit index buffer formats are not supported on this system.");
-
 			if (format != DATAFORMAT_UINT16 && format != DATAFORMAT_UINT32)
 				throw love::Exception("Index buffers only support uint16 and uint32 data types.");
 
@@ -105,9 +105,6 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 			if (info.baseType == DATA_BASETYPE_BOOL)
 				throw love::Exception("Bool types are not supported in vertex buffers.");
-
-			if ((info.baseType == DATA_BASETYPE_INT || info.baseType == DATA_BASETYPE_UINT) && !supportsGLSL3)
-				throw love::Exception("Integer vertex attribute data types require GLSL 3 support.");
 
 			if (decl.name.empty())
 				throw love::Exception("Vertex buffer attributes must have a name.");
@@ -239,10 +236,15 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	if (texelbuffer && arraylength * dataMembers.size() > caps.limits[Graphics::LIMIT_TEXEL_BUFFER_SIZE])
 		throw love::Exception("Cannot create texel buffer: total number of values in the buffer (%d * %d) is too large for this system (maximum %d).",
 			(int) dataMembers.size(), (int) arraylength, caps.limits[Graphics::LIMIT_TEXEL_BUFFER_SIZE]);
+
+	++bufferCount;
+	totalGraphicsMemory += size;
 }
 
 Buffer::~Buffer()
 {
+	totalGraphicsMemory -= size;
+	--bufferCount;
 }
 
 int Buffer::getDataMemberIndex(const std::string &name) const
@@ -254,6 +256,20 @@ int Buffer::getDataMemberIndex(const std::string &name) const
 	}
 
 	return -1;
+}
+
+void Buffer::clear(size_t offset, size_t size)
+{
+	if (isImmutable())
+		throw love::Exception("Cannot clear an immutable Buffer.");
+	else if (isMapped())
+		throw love::Exception("Cannot clear a mapped Buffer.");
+	else if (offset + size > getSize())
+		throw love::Exception("The given offset and size parameters to clear() are not within the Buffer's size.");
+	else if (offset % 4 != 0 || size % 4 != 0)
+		throw love::Exception("clear() must be used with offset and size parameters that are multiples of 4 bytes.");
+
+	clearInternal(offset, size);
 }
 
 std::vector<Buffer::DataDeclaration> Buffer::getCommonFormatDeclaration(CommonFormat format)

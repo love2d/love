@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -56,6 +56,7 @@ public:
 		std::string name;
 		StrongRef<Buffer> buffer;
 		StrongRef<Mesh> mesh;
+		std::string nameInBuffer;
 		int indexInBuffer;
 		int startArrayIndex;
 		AttributeStep step;
@@ -186,6 +187,7 @@ private:
 
 	void setupAttachedAttributes();
 	int getAttachedAttributeIndex(const std::string &name) const;
+	void finalizeAttribute(Graphics *gfx, BufferAttribute &attrib) const;
 
 	void drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buffer *indirectargs, int argsindex);
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,8 @@
 // SDL
 #include <SDL.h>
 
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+
 namespace love
 {
 namespace joystick
@@ -44,7 +46,7 @@ public:
 
 	virtual ~Joystick();
 
-	bool open(int deviceindex) override;
+	bool open(int64 deviceid) override;
 	void close() override;
 
 	bool isConnected() const override;
@@ -66,7 +68,7 @@ public:
 	void setPlayerIndex(int index) override;
 	int getPlayerIndex() const override;
 
-	bool openGamepad(int deviceindex) override;
+	bool openGamepad(int64 deviceid) override;
 	bool isGamepad() const override;
 
 	GamepadType getGamepadType() const override;
@@ -154,5 +156,7 @@ private:
 } // sdl
 } // joystick
 } // love
+
+#endif // !SDL_VERSION_ATLEAST(3, 0, 0)
 
 #endif // LOVE_JOYSTICK_SDL_JOYSTICK_H

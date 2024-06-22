@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -35,15 +35,20 @@ namespace video
 class Video : public Module
 {
 public:
-	virtual ~Video() {}
 
-	// Implements Module
-	virtual ModuleType getModuleType() const { return M_VIDEO; }
+	virtual ~Video() {}
 
 	/**
 	 * Create a VideoStream representing video frames
 	 **/
 	virtual VideoStream *newVideoStream(love::filesystem::File *file) = 0;
+
+protected:
+
+	Video(const char *name)
+		: Module(M_VIDEO, name)
+	{}
+
 }; // Video
 
 } // video

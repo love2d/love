@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2006-2023 LOVE Development Team
+ * Copyright (c) 2006-2024 LOVE Development Team
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,8 @@
 #include "Cursor.h"
 #include "common/config.h"
 
+#include <SDL_version.h>
+
 namespace love
 {
 namespace mouse
@@ -34,6 +36,13 @@ Cursor::Cursor(image::ImageData *data, int hotx, int hoty)
 	, type(CURSORTYPE_IMAGE)
 	, systemType(CURSOR_MAX_ENUM)
 {
+	int w = data->getWidth();
+	int h = data->getHeight();
+	int pitch = w * 4;
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_Surface *surface = SDL_CreateSurfaceFrom(data->getData(), w, h, pitch, SDL_PIXELFORMAT_RGBA8888);
+#else
 	Uint32 rmask, gmask, bmask, amask;
 #ifdef LOVE_BIG_ENDIAN
 	rmask = 0xFF000000;
@@ -47,16 +56,18 @@ Cursor::Cursor(image::ImageData *data, int hotx, int hoty)
 	amask = 0xFF000000;
 #endif
 
-	int w = data->getWidth();
-	int h = data->getHeight();
-	int pitch = w * 4;
-
 	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(data->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
+#endif
 	if (!surface)
 		throw love::Exception("Cannot create cursor: out of memory!");
 
 	cursor = SDL_CreateColorCursor(surface, hotx, hoty);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_DestroySurface(surface);
+#else
 	SDL_FreeSurface(surface);
+
+#endif
 
 	if (!cursor)
 		throw love::Exception("Cannot create cursor: %s", SDL_GetError());
@@ -80,8 +91,13 @@ Cursor::Cursor(mouse::Cursor::SystemCursor cursortype)
 
 Cursor::~Cursor()
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (cursor)
+		SDL_DestroyCursor(cursor);
+#else
 	if (cursor)
 		SDL_FreeCursor(cursor);
+#endif
 }
 
 void *Cursor::getHandle() const
