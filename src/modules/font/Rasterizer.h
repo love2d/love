@@ -147,6 +147,7 @@ protected:
 
 	FontMetrics metrics;
 	float dpiScale;
+	bool sdf;
 
 }; // Rasterizer
 
