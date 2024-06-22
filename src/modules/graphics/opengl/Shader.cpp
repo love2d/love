@@ -655,7 +655,6 @@ void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffe
 
 	count = std::min(count, info->count);
 
-	// Bind the textures to the texture units.
 	for (int i = 0; i < count; i++)
 	{
 		love::graphics::Buffer *buffer = buffers[i];

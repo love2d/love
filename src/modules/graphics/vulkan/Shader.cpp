@@ -362,39 +362,80 @@ void Shader::updateUniform(const UniformInfo *info, int count)
 
 void Shader::sendTextures(const UniformInfo *info, graphics::Texture **textures, int count)
 {
+	bool issampler = info->baseType == UNIFORM_SAMPLER;
+	bool isstoragetex = info->baseType == UNIFORM_STORAGETEXTURE;
+
+	count = std::min(count, info->count);
+
 	if (current == this)
 		Graphics::flushBatchedDrawsGlobal();
 
 	for (int i = 0; i < count; i++)
 	{
+		love::graphics::Texture *tex = textures[i];
+		bool isdefault = tex == nullptr;
+
+		if (tex != nullptr)
+		{
+			if (!validateTexture(info, tex, false))
+				continue;
+		}
+		else
+		{
+			auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
+			tex = gfx->getDefaultTexture(info->textureType, info->dataBaseType, info->isDepthSampler);
+		}
+
 		int resourceindex = info->resourceIndex + i;
 		auto prevtexture = activeTextures[resourceindex];
-		activeTextures[resourceindex] = textures[i];
+		activeTextures[resourceindex] = tex;
 		activeTextures[resourceindex]->retain();
 		if (prevtexture)
 			prevtexture->release();
 
-		if (textures[i] != prevtexture)
-			setTextureDescriptor(info, textures[i], i);
+		if (tex != prevtexture)
+			setTextureDescriptor(info, (isdefault && (info->access & ACCESS_WRITE) != 0) ? nullptr : tex, i);
 	}
 }
 
 void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
 {
+	bool texelbinding = info->baseType == UNIFORM_TEXELBUFFER;
+	bool storagebinding = info->baseType == UNIFORM_STORAGEBUFFER;
+
+	count = std::min(count, info->count);
+
 	if (current == this)
 		Graphics::flushBatchedDrawsGlobal();
 
 	for (int i = 0; i < count; i++)
 	{
+		love::graphics::Buffer *buffer = buffers[i];
+		bool isdefault = buffer == nullptr;
+
+		if (buffer != nullptr)
+		{
+			if (!validateBuffer(info, buffer, false))
+				continue;
+		}
+		else
+		{
+			auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
+			if (texelbinding)
+				buffer = gfx->getDefaultTexelBuffer(info->dataBaseType);
+			else
+				buffer = gfx->getDefaultStorageBuffer();
+		}
+
 		int resourceindex = info->resourceIndex + i;
 		auto prevbuffer = activeBuffers[resourceindex];
-		activeBuffers[resourceindex] = buffers[i];
+		activeBuffers[resourceindex] = buffer;
 		activeBuffers[resourceindex]->retain();
 		if (prevbuffer)
 			prevbuffer->release();
 
-		if (buffers[i] != prevbuffer)
-			setBufferDescriptor(info, buffers[i], i);
+		if (buffer != prevbuffer)
+			setBufferDescriptor(info, (isdefault && (info->access & ACCESS_WRITE) != 0) ? nullptr : buffer, i);
 	}
 }
 
@@ -1070,7 +1111,8 @@ void Shader::setMainTex(graphics::Texture *texture)
 	if (u != nullptr)
 	{
 		auto prevtexture = activeTextures[u->resourceIndex];
-		texture->retain();
+		if (texture != nullptr)
+			texture->retain();
 		if (prevtexture)
 			prevtexture->release();
 		activeTextures[u->resourceIndex] = texture;
@@ -1088,8 +1130,8 @@ void Shader::setTextureDescriptor(const UniformInfo *info, love::graphics::Textu
 
 	// Samplers may change after this call, so they're set just before the
 	// descriptor set is used instead of here.
-	imageInfo.imageLayout = vkTexture->getImageLayout();
-	imageInfo.imageView = (VkImageView)vkTexture->getRenderTargetHandle();
+	imageInfo.imageLayout = vkTexture != nullptr ? vkTexture->getImageLayout() : VK_IMAGE_LAYOUT_UNDEFINED;
+	imageInfo.imageView = vkTexture != nullptr ? (VkImageView)vkTexture->getRenderTargetHandle() : VK_NULL_HANDLE;
 
 	resourceDescriptorsDirty = true;
 }
@@ -1099,13 +1141,13 @@ void Shader::setBufferDescriptor(const UniformInfo *info, love::graphics::Buffer
 	if (info->baseType == UNIFORM_STORAGEBUFFER)
 	{
 		VkDescriptorBufferInfo &bufferInfo = descriptorBuffers[info->bindingStartIndex + index];
-		bufferInfo.buffer = (VkBuffer)buffer->getHandle();
+		bufferInfo.buffer = buffer != nullptr ? (VkBuffer)buffer->getHandle() : VK_NULL_HANDLE;
 		bufferInfo.offset = 0;
-		bufferInfo.range = buffer->getSize();
+		bufferInfo.range = buffer != nullptr ? buffer->getSize() : 0;
 	}
 	else if (info->baseType == UNIFORM_TEXELBUFFER)
 	{
-		descriptorBufferViews[info->bindingStartIndex + index] = (VkBufferView)buffer->getTexelBufferHandle();
+		descriptorBufferViews[info->bindingStartIndex + index] = buffer != nullptr ? (VkBufferView)buffer->getTexelBufferHandle() : VK_NULL_HANDLE;
 	}
 
 	resourceDescriptorsDirty = true;
