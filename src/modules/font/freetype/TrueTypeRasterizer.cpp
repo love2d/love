@@ -121,10 +121,10 @@ GlyphData *TrueTypeRasterizer::getGlyphDataForIndex(int index) const
 		throw love::Exception("TrueType Font glyph error: FT_Get_Glyph failed (0x%x)", err);
 
 	FT_Render_Mode rendermode = FT_RENDER_MODE_NORMAL;
-	if (hinting == HINTING_MONO)
-		rendermode = FT_RENDER_MODE_MONO;
-	else if (sdf == true)
+	if (sdf)
 		rendermode = FT_RENDER_MODE_SDF;
+	else if (hinting == HINTING_MONO)
+		rendermode = FT_RENDER_MODE_MONO;
 
 	err = FT_Glyph_To_Bitmap(&ftglyph, rendermode, 0, 1);
 
