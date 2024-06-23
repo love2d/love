@@ -49,6 +49,7 @@ public:
 	{
 		Hinting hinting = HINTING_NORMAL;
 		OptionalFloat dpiScale;
+		bool sdf = false;
 	};
 
 	virtual ~TrueTypeRasterizer() {}
