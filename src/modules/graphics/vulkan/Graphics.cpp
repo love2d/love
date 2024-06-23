@@ -1370,7 +1370,8 @@ void Graphics::startRecordingGraphicsCommands()
 	}
 }
 
-void Graphics::endRecordingGraphicsCommands() {
+void Graphics::endRecordingGraphicsCommands()
+{
 	if (renderPassState.active)
 		endRenderPass();
 
@@ -2426,8 +2427,28 @@ void Graphics::setDefaultRenderPass()
 	renderPassState.renderPassConfiguration = std::move(renderPassConfiguration);
 	renderPassState.framebufferConfiguration = std::move(framebufferConfiguration);
 
+	// Can't call clear() here because it depends on current RT state, which might not be
+	// set yet when this is called from within setRenderTargetsInternal.
 	if (renderPassState.windowClearRequested)
-		clear(renderPassState.mainWindowClearColorValue, renderPassState.mainWindowClearStencilValue, renderPassState.mainWindowClearDepthValue);
+	{
+		if (renderPassState.mainWindowClearColorValue.hasValue)
+		{
+			renderPassState.renderPassConfiguration.colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			renderPassState.clearColors[0].color = Texture::getClearColor(nullptr, renderPassState.mainWindowClearColorValue.value);
+		}
+
+		if (renderPassState.mainWindowClearDepthValue.hasValue && backbufferHasDepth)
+		{
+			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			renderPassState.clearColors[1].depthStencil.depth = static_cast<float>(renderPassState.mainWindowClearDepthValue.value);
+		}
+
+		if (renderPassState.mainWindowClearStencilValue.hasValue && backbufferHasStencil)
+		{
+			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			renderPassState.clearColors[1].depthStencil.stencil = static_cast<uint32_t>(renderPassState.mainWindowClearStencilValue.value);
+		}
+	}
 }
 
 void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
