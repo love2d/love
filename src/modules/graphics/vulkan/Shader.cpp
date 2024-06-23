@@ -51,7 +51,7 @@ public:
 		auto it = bindingMappings.find(name);
 		if (it == bindingMappings.end())
 		{
-			auto binding = comp.get_decoration(id, spv::DecorationBinding);
+			auto binding = comp.get_decoration(id, decoration);
 
 			if (isFreeBinding(binding, count))
 			{
