@@ -2315,13 +2315,14 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	if (!renderPassState.active)
 		startRenderPass();
 
-	usedShadersInFrame.insert((dynamic_cast<Shader*>(Shader::current)));
+	auto s = dynamic_cast<Shader*>(Shader::current);
+
+	usedShadersInFrame.insert(s);
 
 	GraphicsPipelineConfiguration configuration{};
 
 	configuration.renderPass = renderPassState.beginInfo.renderPass;
 	configuration.vertexAttributes = attributes;
-	configuration.shader = (Shader*)Shader::current;
 	configuration.wireFrame = states.back().wireframe;
 	configuration.blendState = states.back().blend;
 	configuration.colorChannelMask = states.back().colorMask;
@@ -2341,11 +2342,15 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 		configuration.dynamicState.cullmode = cullmode;
 	}
 
-	configuration.shader->setMainTex(texture);
+	VkPipeline pipeline = s->getCachedGraphicsPipeline(this, configuration);
+	if (pipeline != renderPassState.pipeline)
+	{
+		vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+		renderPassState.pipeline = pipeline;
+	}
 
-	ensureGraphicsPipelineConfiguration(configuration);
-
-	configuration.shader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS);
+	s->setMainTex(texture);
+	s->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS);
 
 	VkBuffer vkbuffers[BufferBindings::MAX];
 	VkDeviceSize vkoffsets[BufferBindings::MAX];
@@ -2640,7 +2645,6 @@ void Graphics::cleanupUnusedObjects()
 {
 	eraseUnusedObjects(renderPasses, renderPassUsages, vkDestroyRenderPass, device);
 	eraseUnusedObjects(framebuffers, framebufferUsages, vkDestroyFramebuffer, device);
-	eraseUnusedObjects(graphicsPipelines, pipelineUsages, vkDestroyPipeline, device);
 }
 
 void Graphics::requestSwapchainRecreation()
@@ -2670,17 +2674,17 @@ VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)
 	}
 }
 
-VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &configuration)
+VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipelineConfiguration &configuration)
 {
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 
-	auto &shaderStages = configuration.shader->getShaderStages();
+	auto &shaderStages = shader->getShaderStages();
 
 	std::vector<VkVertexInputBindingDescription> bindingDescriptions;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-	createVulkanVertexFormat(configuration.shader, configuration.vertexAttributes, bindingDescriptions, attributeDescriptions);
+	createVulkanVertexFormat(shader, configuration.vertexAttributes, bindingDescriptions, attributeDescriptions);
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -2812,7 +2816,7 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	pipelineInfo.pMultisampleState = &multisampling;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = configuration.shader->getGraphicsPipelineLayout();
+	pipelineInfo.layout = shader->getGraphicsPipelineLayout();
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 	pipelineInfo.basePipelineIndex = -1;
@@ -2822,28 +2826,6 @@ VkPipeline Graphics::createGraphicsPipeline(GraphicsPipelineConfiguration &confi
 	if (vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
 		throw love::Exception("failed to create graphics pipeline");
 	return graphicsPipeline;
-}
-
-void Graphics::ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration)
-{
-	auto it = graphicsPipelines.find(configuration);
-	if (it != graphicsPipelines.end())
-	{
-		if (it->second != renderPassState.pipeline)
-		{
-			vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, it->second);
-			renderPassState.pipeline = it->second;
-			pipelineUsages[it->second] = true;
-		}
-	}
-	else
-	{
-		VkPipeline pipeline = createGraphicsPipeline(configuration);
-		graphicsPipelines.insert({configuration, pipeline});
-		vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-		renderPassState.pipeline = pipeline;
-		pipelineUsages[pipeline] = true;
-	}
 }
 
 VkSampleCountFlagBits Graphics::getMsaaCount(int requestedMsaa) const
@@ -3112,10 +3094,6 @@ void Graphics::cleanup()
 	for (const auto &entry : framebuffers)
 		vkDestroyFramebuffer(device, entry.second, nullptr);
 	framebuffers.clear();
-		
-	for (auto const &p : graphicsPipelines)
-		vkDestroyPipeline(device, p.second, nullptr);
-	graphicsPipelines.clear();
 
 	vkDestroyCommandPool(device, commandPool, nullptr);
 	vkDestroyPipelineCache(device, pipelineCache, nullptr);

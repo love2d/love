@@ -167,6 +167,7 @@ static bool usesLocalUniformData(const graphics::Shader::UniformInfo *info)
 
 Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[], const CompileOptions &options)
 	: graphics::Shader(stages, options)
+	, builtinUniformInfo()
 {
 	auto gfx = Module::getInstance<Graphics>(Module::ModuleType::M_GRAPHICS);
 	vgfx = dynamic_cast<Graphics*>(gfx);
@@ -199,7 +200,8 @@ void Shader::unloadVolatile()
 	if (shaderModules.empty())
 		return;
 
-	vgfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout, descriptorPools = descriptorPools, computePipeline = computePipeline](){
+	vgfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout,
+		descriptorPools = descriptorPools, computePipeline = computePipeline, graphicsPipelines = std::move(graphicsPipelines)](){
 		for (const auto &pools : descriptorPools)
 		{
 			for (const auto pool : pools)
@@ -211,6 +213,8 @@ void Shader::unloadVolatile()
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		if (computePipeline != VK_NULL_HANDLE)
 			vkDestroyPipeline(device, computePipeline, nullptr);
+		for (const auto& kvp : graphicsPipelines)
+			vkDestroyPipeline(device, kvp.second, nullptr);
 	});
 
 	shaderModules.clear();
@@ -1197,6 +1201,18 @@ VkDescriptorSet Shader::allocateDescriptorSet()
 			throw love::Exception("failed to allocate descriptor set");
 		}
 	}
+}
+
+VkPipeline Shader::getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfiguration &configuration)
+{
+	auto it = graphicsPipelines.find(configuration);
+	if (it != graphicsPipelines.end())
+		return it->second;
+
+	VkPipeline pipeline = vgfx->createGraphicsPipeline(this, configuration);
+	graphicsPipelines.insert({ configuration, pipeline });
+	
+	return pipeline;
 }
 
 } // vulkan

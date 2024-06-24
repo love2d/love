@@ -170,46 +170,6 @@ struct OptionalDeviceExtensions
 	bool spirv14 = false;
 };
 
-struct GraphicsPipelineConfiguration
-{
-	VkRenderPass renderPass;
-	VertexAttributes vertexAttributes;
-	Shader *shader = nullptr;
-	bool wireFrame;
-	BlendState blendState;
-	ColorChannelMask colorChannelMask;
-	VkSampleCountFlagBits msaaSamples;
-	uint32_t numColorAttachments;
-	PrimitiveType primitiveType;
-
-	struct DynamicState
-	{
-		CullMode cullmode = CULL_NONE;
-		Winding winding = WINDING_MAX_ENUM;
-		StencilAction stencilAction = STENCIL_MAX_ENUM;
-		CompareMode stencilCompare = COMPARE_MAX_ENUM;
-		DepthState depthState{};
-	} dynamicState;
-
-	GraphicsPipelineConfiguration()
-	{
-		memset(this, 0, sizeof(GraphicsPipelineConfiguration));
-	}
-
-	bool operator==(const GraphicsPipelineConfiguration &other) const
-	{
-		return memcmp(this, &other, sizeof(GraphicsPipelineConfiguration)) == 0;
-	}
-};
-
-struct GraphicsPipelineConfigurationHasher
-{
-	size_t operator() (const GraphicsPipelineConfiguration &configuration) const
-	{
-		return XXH32(&configuration, sizeof(GraphicsPipelineConfiguration), 0);
-	}
-};
-
 struct QueueFamilyIndices
 {
 	Optional<uint32_t> graphicsFamily;
@@ -315,6 +275,8 @@ public:
 	int getVsync() const;
 	void mapLocalUniformData(void *data, size_t size, VkDescriptorBufferInfo &bufferInfo);
 
+	VkPipeline createGraphicsPipeline(Shader *shader, const GraphicsPipelineConfiguration &configuration);
+
 	uint32 getDeviceApiVersion() const { return deviceApiVersion; }
 
 protected:
@@ -349,7 +311,6 @@ private:
 	void createDefaultShaders();
 	VkRenderPass createRenderPass(RenderPassConfiguration &configuration);
 	VkRenderPass getRenderPass(RenderPassConfiguration &configuration);
-	VkPipeline createGraphicsPipeline(GraphicsPipelineConfiguration &configuration);
 	void createColorResources();
 	VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat findDepthFormat();
@@ -364,7 +325,6 @@ private:
 	void beginFrame();
 	void startRecordingGraphicsCommands();
 	void endRecordingGraphicsCommands();
-	void ensureGraphicsPipelineConfiguration(GraphicsPipelineConfiguration &configuration);
 	void createVulkanVertexFormat(
 		Shader *shader,
 		const VertexAttributes &attributes, 
@@ -412,10 +372,8 @@ private:
 	VkPipelineCache pipelineCache = VK_NULL_HANDLE;
 	std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
-	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
 	std::unordered_map<VkRenderPass, bool> renderPassUsages;
 	std::unordered_map<VkFramebuffer, bool> framebufferUsages;
-	std::unordered_map<VkPipeline, bool> pipelineUsages;
 	std::unordered_map<uint64, VkSampler> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers;

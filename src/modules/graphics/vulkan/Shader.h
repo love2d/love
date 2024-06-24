@@ -29,6 +29,7 @@
 // Libraries
 #include "VulkanWrapper.h"
 #include "libraries/spirv_cross/spirv_reflect.hpp"
+#include "libraries/xxHash/xxhash.h"
 
 // C++
 #include <map>
@@ -44,6 +45,45 @@ namespace graphics
 {
 namespace vulkan
 {
+
+struct GraphicsPipelineConfiguration
+{
+	VkRenderPass renderPass;
+	VertexAttributes vertexAttributes;
+	bool wireFrame;
+	BlendState blendState;
+	ColorChannelMask colorChannelMask;
+	VkSampleCountFlagBits msaaSamples;
+	uint32_t numColorAttachments;
+	PrimitiveType primitiveType;
+
+	struct DynamicState
+	{
+		CullMode cullmode = CULL_NONE;
+		Winding winding = WINDING_MAX_ENUM;
+		StencilAction stencilAction = STENCIL_MAX_ENUM;
+		CompareMode stencilCompare = COMPARE_MAX_ENUM;
+		DepthState depthState{};
+	} dynamicState;
+
+	GraphicsPipelineConfiguration()
+	{
+		memset(this, 0, sizeof(GraphicsPipelineConfiguration));
+	}
+
+	bool operator==(const GraphicsPipelineConfiguration &other) const
+	{
+		return memcmp(this, &other, sizeof(GraphicsPipelineConfiguration)) == 0;
+	}
+};
+
+struct GraphicsPipelineConfigurationHasher
+{
+	size_t operator() (const GraphicsPipelineConfiguration &configuration) const
+	{
+		return XXH32(&configuration, sizeof(GraphicsPipelineConfiguration), 0);
+	}
+};
 
 class Graphics;
 
@@ -95,6 +135,8 @@ public:
 
 	void setMainTex(graphics::Texture *texture);
 
+	VkPipeline getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfiguration &configuration);
+
 private:
 	void compileShaders();
 	void createDescriptorSetLayout();
@@ -107,10 +149,10 @@ private:
 	void setTextureDescriptor(const UniformInfo *info, love::graphics::Texture *texture, int index);
 	void setBufferDescriptor(const UniformInfo *info, love::graphics::Buffer *buffer, int index);
 
-	VkPipeline computePipeline;
+	VkPipeline computePipeline = VK_NULL_HANDLE;
 
-	VkDescriptorSetLayout descriptorSetLayout;
-	VkPipelineLayout pipelineLayout;
+	VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 	std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
 
 	std::vector<std::vector<VkDescriptorPool>> descriptorPools;
@@ -124,7 +166,7 @@ private:
 	std::vector<VkShaderModule> shaderModules;
 
 	Graphics *vgfx = nullptr;
-	VkDevice device;
+	VkDevice device = VK_NULL_HANDLE;
 
 	bool isCompute = false;
 	bool resourceDescriptorsDirty = false;
@@ -135,13 +177,15 @@ private:
 	std::unique_ptr<StreamBuffer> uniformBufferObjectBuffer;
 	std::vector<uint8> localUniformData;
 	std::vector<uint8> localUniformStagingData;
-	uint32_t localUniformLocation;
+	uint32_t localUniformLocation = 0;
 	OptionalInt builtinUniformDataOffset;
 
 	std::unordered_map<std::string, AttributeInfo> attributes;
 
-	uint32_t currentFrame;
-	uint32_t currentDescriptorPool;
+	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
+
+	uint32_t currentFrame = 0;
+	uint32_t currentDescriptorPool = 0;
 };
 
 }
