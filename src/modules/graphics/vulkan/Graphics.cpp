@@ -2224,8 +2224,6 @@ VkRenderPass Graphics::getRenderPass(RenderPassConfiguration &configuration)
 		renderPasses[configuration] = renderPass;
 	}
 
-	renderPassUsages[renderPass] = true;
-
 	return renderPass;
 }
 
@@ -2643,7 +2641,6 @@ static void eraseUnusedObjects(
 
 void Graphics::cleanupUnusedObjects()
 {
-	eraseUnusedObjects(renderPasses, renderPassUsages, vkDestroyRenderPass, device);
 	eraseUnusedObjects(framebuffers, framebufferUsages, vkDestroyFramebuffer, device);
 }
 

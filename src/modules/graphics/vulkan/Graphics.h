@@ -372,7 +372,6 @@ private:
 	VkPipelineCache pipelineCache = VK_NULL_HANDLE;
 	std::unordered_map<RenderPassConfiguration, VkRenderPass, RenderPassConfigurationHasher> renderPasses;
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
-	std::unordered_map<VkRenderPass, bool> renderPassUsages;
 	std::unordered_map<VkFramebuffer, bool> framebufferUsages;
 	std::unordered_map<uint64, VkSampler> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
