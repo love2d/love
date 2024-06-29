@@ -1740,6 +1740,10 @@ void Graphics::initVMA()
 	allocatorCreateInfo.device = device;
 	allocatorCreateInfo.instance = instance;
 
+	// Default of 256 MB is a little too wasteful for most love games.
+	// TODO: Tune this more.
+	allocatorCreateInfo.preferredLargeHeapBlockSize = 128 * 1024 * 1024;
+
 	VmaVulkanFunctions vulkanFunctions{};
 
 	vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
