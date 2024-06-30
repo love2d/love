@@ -1,0 +1,324 @@
+
+# VK_LAYER_KHRONOS_validation
+
+# Fine Grained Locking
+# =====================
+# <LayerIdentifier>.fine_grained_locking
+# Enable fine grained locking for Core Validation, which should improve
+# performance in multithreaded applications. This setting allows the
+# optimization to be disabled for debugging.
+khronos_validation.fine_grained_locking = true
+
+# Core
+# =====================
+# <LayerIdentifier>.validate_core
+# The main, heavy-duty validation checks. This may be valuable early in the
+# development cycle to reduce validation output while correcting
+# parameter/object usage errors.
+khronos_validation.validate_core = true
+
+# Image Layout
+# =====================
+# <LayerIdentifier>.check_image_layout
+# Check that the layout of each image subresource is correct whenever it is used
+# by a command buffer. These checks are very CPU intensive for some
+# applications.
+khronos_validation.check_image_layout = true
+
+# Command Buffer State
+# =====================
+# <LayerIdentifier>.check_command_buffer
+# Check that all Vulkan objects used by a command buffer have not been
+# destroyed. These checks can be CPU intensive for some applications.
+khronos_validation.check_command_buffer = true
+
+# Object in Use
+# =====================
+# <LayerIdentifier>.check_object_in_use
+# Check that Vulkan objects are not in use by a command buffer when they are
+# destroyed.
+khronos_validation.check_object_in_use = true
+
+# Query
+# =====================
+# <LayerIdentifier>.check_query
+# Checks for commands that use VkQueryPool objects.
+khronos_validation.check_query = true
+
+# Shader
+# =====================
+# <LayerIdentifier>.check_shaders
+# Shader checks. These checks can be CPU intensive during application start up,
+# especially if Shader Validation Caching is also disabled.
+khronos_validation.check_shaders = true
+
+# Caching
+# =====================
+# <LayerIdentifier>.check_shaders_caching
+# Enable caching of shader validation results.
+khronos_validation.check_shaders_caching = true
+
+# Handle Wrapping
+# =====================
+# <LayerIdentifier>.unique_handles
+# Handle wrapping checks. Disable this feature if you are exerience crashes when
+# creating new extensions or developing new Vulkan objects/structures.
+khronos_validation.unique_handles = true
+
+# Object Lifetime
+# =====================
+# <LayerIdentifier>.object_lifetime
+# Object tracking checks. This may not always be necessary late in a development
+# cycle.
+khronos_validation.object_lifetime = true
+
+# Stateless Parameter
+# =====================
+# <LayerIdentifier>.stateless_param
+# Stateless parameter checks. This may not always be necessary late in a
+# development cycle.
+khronos_validation.stateless_param = true
+
+# Thread Safety
+# =====================
+# <LayerIdentifier>.thread_safety
+# Thread checks. In order to not degrade performance, it might be best to run
+# your program with thread-checking disabled most of the time, enabling it
+# occasionally for a quick sanity check or when debugging difficult application
+# behaviors.
+khronos_validation.thread_safety = true
+
+# Synchronization
+# =====================
+# <LayerIdentifier>.validate_sync
+# Enable synchronization validation during command buffers recording. This
+# feature reports resource access conflicts due to missing or incorrect
+# synchronization operations between actions (Draw, Copy, Dispatch, Blit)
+# reading or writing the same regions of memory.
+khronos_validation.validate_sync = true
+
+# QueueSubmit Synchronization Validation
+# =====================
+# <LayerIdentifier>.sync_queue_submit
+# Enable synchronization validation between submitted command buffers when
+# Synchronization Validation is enabled. This option will increase the
+# synchronization performance cost.
+khronos_validation.sync_queue_submit = true
+
+# GPU Base
+# =====================
+# <LayerIdentifier>.validate_gpu_based
+# Setting an option here will enable specialized areas of validation
+khronos_validation.validate_gpu_based = GPU_BASED_NONE
+
+# Redirect Printf messages to stdout
+# =====================
+# <LayerIdentifier>.printf_to_stdout
+# Enable redirection of Debug Printf messages from the debug callback to stdout
+#khronos_validation.printf_to_stdout = true
+
+# Printf verbose
+# =====================
+# <LayerIdentifier>.printf_verbose
+# Set the verbosity of debug printf messages
+#khronos_validation.printf_verbose = false
+
+# Printf buffer size
+# =====================
+# <LayerIdentifier>.printf_buffer_size
+# Set the size in bytes of the buffer used by debug printf
+#khronos_validation.printf_buffer_size = 1024
+
+# Shader instrumentation
+# =====================
+# <LayerIdentifier>.gpuav_shader_instrumentation
+# Instrument shaders to validate descriptors, descriptor indexing, buffer device
+# addresses and ray queries. Warning: will considerably slow down shader
+# executions.
+#khronos_validation.gpuav_shader_instrumentation = true
+
+# Descriptors indexing
+# =====================
+# <LayerIdentifier>.gpuav_descriptor_checks
+# Enable descriptors and buffer out of bounds validation when using descriptor
+# indexing
+khronos_validation.gpuav_descriptor_checks = true
+
+# Generate warning on out of bounds accesses even if buffer robustness is enabled
+# =====================
+# <LayerIdentifier>.gpuav_warn_on_robust_oob
+# Warn on out of bounds accesses even if robustness is enabled
+khronos_validation.gpuav_warn_on_robust_oob = true
+
+# Out of bounds buffer device addresses
+# =====================
+# <LayerIdentifier>.gpuav_buffer_address_oob
+# Check for
+khronos_validation.gpuav_buffer_address_oob = true
+
+# Maximum number of buffer device addresses in use at one time
+# =====================
+# <LayerIdentifier>.gpuav_max_buffer_device_addresses
+
+khronos_validation.gpuav_max_buffer_device_addresses = 10000
+
+# RayQuery SPIR-V Instructions
+# =====================
+# <LayerIdentifier>.gpuav_validate_ray_query
+# Enable shader instrumentation on OpRayQueryInitializeKHR
+khronos_validation.gpuav_validate_ray_query = true
+
+# Cache instrumented shaders rather than instrumenting them on every run
+# =====================
+# <LayerIdentifier>.gpuav_cache_instrumented_shaders
+# Enable instrumented shader caching
+khronos_validation.gpuav_cache_instrumented_shaders = true
+
+# Enable instrumenting shaders selectively
+# =====================
+# <LayerIdentifier>.gpuav_select_instrumented_shaders
+# Select which shaders to instrument passing a VkValidationFeaturesEXT struct
+# with GPU-AV enabled in the VkShaderModuleCreateInfo pNext
+khronos_validation.gpuav_select_instrumented_shaders = false
+
+# Buffer content validation
+# =====================
+# <LayerIdentifier>.gpuav_buffers_validation
+# Validate buffers containing parameters used in indirect Vulkan commands, or
+# used in copy commands
+#khronos_validation.gpuav_buffers_validation = true
+
+# Indirect draws parameters
+# =====================
+# <LayerIdentifier>.gpuav_indirect_draws_buffers
+# Validate buffers containing draw parameters used in indirect draw commands
+khronos_validation.gpuav_indirect_draws_buffers = true
+
+# Indirect dispatches parameters
+# =====================
+# <LayerIdentifier>.indirect_dispatches
+# Validate buffers containing dispatch parameters used in indirect dispatch
+# commands
+khronos_validation.indirect_dispatches = true
+
+# Indirect trace rays parameters
+# =====================
+# <LayerIdentifier>.indirect_trace_rays
+# Validate buffers containing ray tracing parameters used in indirect ray
+# tracing commands
+khronos_validation.indirect_trace_rays = true
+
+# Buffer copies
+# =====================
+# <LayerIdentifier>.gpuav_buffer_copies
+# Validate copies involving a VkBuffer. Right now only validates copy buffer to
+# image.
+khronos_validation.gpuav_buffer_copies = true
+
+# Reserve Descriptor Set Binding Slot
+# =====================
+# <LayerIdentifier>.gpuav_reserve_binding_slot
+# Specifies that the validation layers reserve a descriptor set binding slot for
+# their own use. The layer reports a value for
+# VkPhysicalDeviceLimits::maxBoundDescriptorSets that is one less than the value
+# reported by the device. If the device supports the binding of only one
+# descriptor set, the validation layer does not perform GPU-assisted validation.
+#khronos_validation.gpuav_reserve_binding_slot = true
+
+# Linear Memory Allocation Mode
+# =====================
+# <LayerIdentifier>.gpuav_vma_linear_output
+# Use VMA linear memory allocations for GPU-AV output buffers instead of finding
+# best place for new allocations among free regions to optimize memory usage.
+# Enabling this setting reduces performance cost but disabling this method
+# minimizes memory usage.
+#khronos_validation.gpuav_vma_linear_output = true
+
+# Validate instrumented shaders
+# =====================
+# <LayerIdentifier>.gpuav_debug_validate_instrumented_shaders
+# Run spirv-val after doing shader instrumentation
+#khronos_validation.gpuav_debug_validate_instrumented_shaders = false
+
+# Dump instrumented shaders
+# =====================
+# <LayerIdentifier>.gpuav_debug_dump_instrumented_shaders
+# Will dump the instrumented shaders (before and after) to working directory
+#khronos_validation.gpuav_debug_dump_instrumented_shaders = false
+
+# Best Practices
+# =====================
+# <LayerIdentifier>.validate_best_practices
+# Outputs warnings related to common misuse of the API, but which are not
+# explicitly prohibited by the specification.
+khronos_validation.validate_best_practices = true
+
+# ARM-specific best practices
+# =====================
+# <LayerIdentifier>.validate_best_practices_arm
+# Outputs warnings for spec-conforming but non-ideal code on ARM GPUs.
+khronos_validation.validate_best_practices_arm = false
+
+# AMD-specific best practices
+# =====================
+# <LayerIdentifier>.validate_best_practices_amd
+# Outputs warnings for spec-conforming but non-ideal code on AMD GPUs.
+khronos_validation.validate_best_practices_amd = false
+
+# IMG-specific best practices
+# =====================
+# <LayerIdentifier>.validate_best_practices_img
+# Outputs warnings for spec-conforming but non-ideal code on Imagination GPUs.
+khronos_validation.validate_best_practices_img = false
+
+# NVIDIA-specific best practices
+# =====================
+# <LayerIdentifier>.validate_best_practices_nvidia
+# Outputs warnings for spec-conforming but non-ideal code on NVIDIA GPUs.
+khronos_validation.validate_best_practices_nvidia = false
+
+# Debug Action
+# =====================
+# <LayerIdentifier>.debug_action
+# Specifies what action is to be taken when a layer reports information
+khronos_validation.debug_action = VK_DBG_LAYER_ACTION_LOG_MSG
+
+# Log Filename
+# =====================
+# <LayerIdentifier>.log_filename
+# Specifies the output filename
+khronos_validation.log_filename = stdout
+
+# Message Severity
+# =====================
+# <LayerIdentifier>.report_flags
+# Comma-delineated list of options specifying the types of messages to be
+# reported
+khronos_validation.report_flags = error
+
+# Limit Duplicated Messages
+# =====================
+# <LayerIdentifier>.enable_message_limit
+# Enable limiting of duplicate messages.
+khronos_validation.enable_message_limit = false
+
+# Max Duplicated Messages
+# =====================
+# <LayerIdentifier>.duplicate_message_limit
+# Maximum number of times any single validation message should be reported.
+#khronos_validation.duplicate_message_limit = 10
+
+# Mute Message VUIDs
+# =====================
+# <LayerIdentifier>.message_id_filter
+# List of VUIDs and VUID identifers which are to be IGNORED by the validation
+# layer
+khronos_validation.message_id_filter = 
+
+# Display Application Name
+# =====================
+# <LayerIdentifier>.message_format_display_application_name
+# Useful when running multiple instances to know which instance the message is
+# from.
+khronos_validation.message_format_display_application_name = false
+

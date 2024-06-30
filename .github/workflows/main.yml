@@ -9,6 +9,7 @@ jobs:
       pull-requests: write
     env:
       ALSOFT_CONF: love2d-${{ github.sha }}/testing/resources/alsoft.conf
+      VK_LAYER_SETTINGS_PATH: love2d-${{ github.sha }}/testing/resources/vk_layer_settings.txt
       DISPLAY: :99
     steps:
     - name: Update APT
