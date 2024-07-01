@@ -53,6 +53,29 @@
 #endif
 #endif
 
+#if defined(LOVE_LINUX)
+#include <unordered_set>
+
+static std::unordered_set<pid_t>& getSpawnedPids()
+{
+	static std::unordered_set<pid_t> spawnedPids;
+	return spawnedPids;
+}
+
+static void sigchldHandler(int signo, siginfo_t* info, void* /*context*/)
+{
+	// We need to be selective when reaping child processes, because simply calling
+	// `waitpid` on every child process that terminated will break any other calls
+	// to `waitpid`.
+	// Particularly `os.execute` (internally: `system`) will always return -1, because
+	// their call to `waitpid` returned `ECHILD`, since we already reaped the process.
+	// This was reported in #1047 and fixed with a similar approach in 30ff7d4 and f7d226d
+	// and then later removed in a4a62f3.
+	if (getSpawnedPids().erase(info->si_pid) > 0)
+		::waitpid(info->si_pid, nullptr, 0);
+}
+#endif
+
 namespace love
 {
 namespace system
@@ -61,6 +84,13 @@ namespace system
 System::System(const char *name)
 	: Module(M_SYSTEM, name)
 {
+#if defined(LOVE_LINUX)
+	struct sigaction sa;
+	sa.sa_sigaction = sigchldHandler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART | SA_SIGINFO;
+	sigaction(SIGCHLD, &sa, nullptr);
+#endif
 }
 
 const char *System::getOS()
@@ -131,6 +161,8 @@ bool System::openURL(const std::string &url) const
 		return false;
 	}
 #endif
+
+	getSpawnedPids().insert(pid);
 
 	// Check if xdg-open already completed (or failed.)
 	int status = 0;
