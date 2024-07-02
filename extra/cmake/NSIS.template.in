@@ -880,7 +880,7 @@ Section "-Core installation"
 SectionEnd
 
 Section "-Add to path"
-  Push $INSTDIR\bin
+  Push $INSTDIR
   StrCmp "@CPACK_NSIS_MODIFY_PATH@" "ON" 0 doNotAddToPath
   StrCmp $DO_NOT_ADD_TO_PATH "1" doNotAddToPath 0
     Call AddToPath
@@ -1040,7 +1040,7 @@ Section "Uninstall"
 
   DeleteRegKey /ifempty SHCTX "Software\@CPACK_PACKAGE_VENDOR@\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@"
 
-  Push $INSTDIR\bin
+  Push $INSTDIR
   StrCmp $DO_NOT_ADD_TO_PATH_ "1" doNotRemoveFromPath 0
     Call un.RemoveFromPath
   doNotRemoveFromPath:
