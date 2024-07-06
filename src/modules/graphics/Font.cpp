@@ -71,7 +71,8 @@ Font::Font(love::font::Rasterizer *r, const SamplerState &s)
 	// largest texture size if no rough match is found.
 	while (true)
 	{
-		if ((shaper->getHeight() * 0.8) * shaper->getHeight() * 30 <= textureWidth * textureHeight)
+		float dpiscale = r->getDPIScale();
+		if ((shaper->getHeight() * 0.8 * dpiscale) * shaper->getHeight() * 30 * dpiscale <= textureWidth * textureHeight)
 			break;
 
 		TextureSize nextsize = getNextTextureSize();
