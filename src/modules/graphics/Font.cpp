@@ -315,18 +315,20 @@ const Font::Glyph &Font::addGlyph(love::font::TextShaper::GlyphIndex glyphindex)
 		// 1---3
 		const GlyphVertex verts[4] =
 		{
-			{float(-o),      float(-o),                normToUint16((tX-o)/tWidth),   normToUint16((tY-o)/tHeight),   c},
-			{float(-o),      (h+o)/glyphdpiscale,      normToUint16((tX-o)/tWidth),   normToUint16((tY+h+o)/tHeight), c},
-			{(w+o)/glyphdpiscale, float(-o),           normToUint16((tX+w+o)/tWidth), normToUint16((tY-o)/tHeight),   c},
-			{(w+o)/glyphdpiscale, (h+o)/glyphdpiscale, normToUint16((tX+w+o)/tWidth), normToUint16((tY+h+o)/tHeight), c}
+			{ -o,  -o, normToUint16((tX-o)/tWidth),   normToUint16((tY-o)/tHeight),   c},
+			{ -o, h+o, normToUint16((tX-o)/tWidth),   normToUint16((tY+h+o)/tHeight), c},
+			{w+o,  -o, normToUint16((tX+w+o)/tWidth), normToUint16((tY-o)/tHeight),   c},
+			{w+o, h+o, normToUint16((tX+w+o)/tWidth), normToUint16((tY+h+o)/tHeight), c}
 		};
 
 		// Copy vertex data to the glyph and set proper bearing.
 		for (int i = 0; i < 4; i++)
 		{
 			g.vertices[i] = verts[i];
-			g.vertices[i].x += gd->getBearingX() / glyphdpiscale;
-			g.vertices[i].y -= gd->getBearingY() / glyphdpiscale;
+			g.vertices[i].x += gd->getBearingX();
+			g.vertices[i].y -= gd->getBearingY();
+			g.vertices[i].x /= glyphdpiscale;
+			g.vertices[i].y /= glyphdpiscale;
 		}
 
 		textureX += w + TEXTURE_PADDING;
