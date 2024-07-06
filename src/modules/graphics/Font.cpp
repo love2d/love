@@ -308,7 +308,7 @@ const Font::Glyph &Font::addGlyph(love::font::TextShaper::GlyphIndex glyphindex)
 		// Extrude the quad borders by 1 pixel. We have an extra pixel of
 		// transparent padding in the texture atlas, so the quad extrusion will
 		// add some antialiasing at the edges of the quad.
-		int o = 1;
+		float o = 1;
 
 		// 0---2
 		// | / |
