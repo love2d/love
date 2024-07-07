@@ -86,6 +86,7 @@ TextShaper::TextShaper(Rasterizer *rasterizer)
 	: rasterizers{rasterizer}
 	, dpiScales{rasterizer->getDPIScale()}
 	, height(floorf(rasterizer->getHeight() / rasterizer->getDPIScale() + 0.5f))
+	, pixelHeight(rasterizer->getHeight())
 	, lineHeight(1)
 	, useSpacesForTab(false)
 {
@@ -102,6 +103,16 @@ float TextShaper::getHeight() const
 	return height;
 }
 
+float TextShaper::getPixelHeight() const
+{
+	return pixelHeight;
+}
+
+float TextShaper::getCombinedHeight() const
+{
+	return floorf(pixelHeight * lineHeight + 0.5f) / rasterizers[0]->getDPIScale();
+}
+
 void TextShaper::setLineHeight(float h)
 {
 	lineHeight = h;
@@ -112,14 +123,14 @@ float TextShaper::getLineHeight() const
 	return lineHeight;
 }
 
-int TextShaper::getAscent() const
+float TextShaper::getAscent() const
 {
-	return floorf(rasterizers[0]->getAscent() / rasterizers[0]->getDPIScale() + 0.5f);
+	return rasterizers[0]->getAscent() / rasterizers[0]->getDPIScale();
 }
 
-int TextShaper::getDescent() const
+float TextShaper::getDescent() const
 {
-	return floorf(rasterizers[0]->getDescent() / rasterizers[0]->getDPIScale() + 0.5f);
+	return rasterizers[0]->getDescent() / rasterizers[0]->getDPIScale();
 }
 
 float TextShaper::getBaseline() const
@@ -128,7 +139,7 @@ float TextShaper::getBaseline() const
 	if (ascent != 0.0f)
 		return ascent;
 	else if (rasterizers[0]->getDataType() == font::Rasterizer::DATA_TRUETYPE)
-		return floorf(getHeight() / 1.25f + 0.5f); // 1.25 is magic line height for true type fonts
+		return floorf(getPixelHeight() / 1.25f + 0.5f) / rasterizers[0]->getDPIScale(); // 1.25 is magic line height for true type fonts
 	else
 		return 0.0f;
 }
@@ -186,13 +197,13 @@ float TextShaper::getKerning(uint32 leftglyph, uint32 rightglyph)
 		if (r->hasGlyph(leftglyph) && r->hasGlyph(rightglyph))
 		{
 			found = true;
-			k = floorf(r->getKerning(leftglyph, rightglyph) / r->getDPIScale() + 0.5f);
+			k = r->getKerning(leftglyph, rightglyph) / r->getDPIScale();
 			break;
 		}
 	}
 
 	if (!found)
-		k = floorf(rasterizers[0]->getKerning(leftglyph, rightglyph) / rasterizers[0]->getDPIScale() + 0.5f);
+		k = rasterizers[0]->getKerning(leftglyph, rightglyph) / rasterizers[0]->getDPIScale();
 
 	kerning[packedglyphs] = k;
 	return k;
@@ -216,7 +227,7 @@ float TextShaper::getKerning(const std::string &leftchar, const std::string &rig
 	return getKerning(left, right);
 }
 
-int TextShaper::getGlyphAdvance(uint32 glyph, GlyphIndex *glyphindex)
+float TextShaper::getGlyphAdvance(uint32 glyph, GlyphIndex *glyphindex)
 {
 	const auto it = glyphAdvances.find(glyph);
 	if (it != glyphAdvances.end())
@@ -242,7 +253,7 @@ int TextShaper::getGlyphAdvance(uint32 glyph, GlyphIndex *glyphindex)
 	}
 
 	const auto &r = rasterizers[rasterizeri];
-	int advance = floorf(r->getGlyphSpacing(realglyph) / r->getDPIScale() + 0.5f);
+	float advance = r->getGlyphSpacing(realglyph) / r->getDPIScale();
 
 	if (glyph == '\t' && realglyph == ' ')
 		advance *= SPACES_PER_TAB;
@@ -255,7 +266,7 @@ int TextShaper::getGlyphAdvance(uint32 glyph, GlyphIndex *glyphindex)
 	return advance;
 }
 
-int TextShaper::getWidth(const std::string &str)
+float TextShaper::getWidth(const std::string& str)
 {
 	if (str.size() == 0) return 0;
 
@@ -281,7 +292,7 @@ static size_t findNewline(const ColoredCodepoints &codepoints, size_t start)
 	return codepoints.cps.size();
 }
 
-void TextShaper::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &lineranges, std::vector<int> *linewidths)
+void TextShaper::getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &lineranges, std::vector<float> *linewidths)
 {
 	size_t nextnewline = findNewline(codepoints, 0);
 
@@ -325,7 +336,7 @@ void TextShaper::getWrap(const ColoredCodepoints &codepoints, float wraplimit, s
 	}
 }
 
-void TextShaper::getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths)
+void TextShaper::getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<float> *linewidths)
 {
 	ColoredCodepoints cps;
 	getCodepointsFromString(text, cps);

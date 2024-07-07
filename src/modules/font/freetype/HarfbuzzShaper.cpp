@@ -27,6 +27,8 @@
 #include <hb.h>
 #include <hb-ft.h>
 
+#include <algorithm>
+
 namespace love
 {
 namespace font
@@ -226,7 +228,7 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 	std::vector<BufferRange> bufferranges;
 	computeBufferRanges(codepoints, range, bufferranges);
 
-	int maxwidth = (int)curpos.x;
+	float maxwidth = curpos.x;
 
 	for (const auto &bufferrange : bufferranges)
 	{
@@ -259,11 +261,10 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 			// the glyph list so we can do it manually.
 			if (clustercodepoint == '\n')
 			{
-				if (curpos.x > maxwidth)
-					maxwidth = (int)curpos.x;
+				maxwidth = std::max(maxwidth, curpos.x);
 
 				// Wrap newline, but do not output a position for it.
-				curpos.y += floorf(getHeight() * getLineHeight() + 0.5f);
+				curpos.y += getCombinedHeight();
 				curpos.x = offset.x;
 				continue;
 			}
@@ -273,7 +274,7 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 				continue;
 
 			// This is a glyph index at this point, despite the name.
-			GlyphIndex gindex = { (int) info.codepoint, (int)bufferrange.index };
+			GlyphIndex gindex = { (int) info.codepoint, (int) bufferrange.index };
 
 			if (clustercodepoint == '\t' && isUsingSpacesForTab())
 			{
@@ -300,30 +301,29 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 
 				// Harfbuzz position coordinate systems are based on the given font.
 				// Freetype uses 26.6 fixed point coordinates, so harfbuzz does too.
-				p.position.x += floorf((glyphpos.x_offset >> 6) / dpiScales[0] + 0.5f);
-				p.position.y += floorf((glyphpos.y_offset >> 6) / dpiScales[0] + 0.5f);
+				p.position.x += (glyphpos.x_offset >> 6) / dpiScales[bufferrange.index];
+				p.position.y += (glyphpos.y_offset >> 6) / dpiScales[bufferrange.index];
 
 				positions->push_back(p);
 			}
 
-			curpos.x += floorf((glyphpos.x_advance >> 6) / dpiScales[0] + 0.5f);
-			curpos.y += floorf((glyphpos.y_advance >> 6) / dpiScales[0] + 0.5f);
+			curpos.x += (glyphpos.x_advance >> 6) / dpiScales[bufferrange.index];
+			curpos.y += (glyphpos.y_advance >> 6) / dpiScales[bufferrange.index];
 
 			// Account for extra spacing given to space characters.
 			if (clustercodepoint == ' ' && extraspacing != 0.0f)
-				curpos.x = floorf(curpos.x + extraspacing);
+				curpos.x += extraspacing;
 		}
 	}
 
-	if (curpos.x > maxwidth)
-		maxwidth = (int)curpos.x;
+	maxwidth = std::max(maxwidth, curpos.x);
 
 	if (info != nullptr)
 	{
 		info->width = maxwidth - offset.x;
 		info->height = curpos.y - offset.y;
 		if (curpos.x > offset.x)
-			info->height += floorf(getHeight() * getLineHeight() + 0.5f);
+			info->height += getCombinedHeight();
 	}
 }
 
@@ -373,7 +373,7 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ra
 				glyphpos.y_advance = HB_DIRECTION_IS_VERTICAL(direction) ? tabSpacesAdvanceY : 0;
 			}
 
-			float newwidth = w + floorf((glyphpos.x_advance >> 6) / dpiScales[0] + 0.5f);
+			float newwidth = w + (glyphpos.x_advance >> 6) / dpiScales[bufferrange.index];
 
 			// Don't count trailing spaces in the output width.
 			if (isWhitespace(clustercodepoint))

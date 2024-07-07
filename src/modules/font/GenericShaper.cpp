@@ -23,6 +23,8 @@
 #include "Rasterizer.h"
 #include "common/Optional.h"
 
+#include <algorithm>
+
 namespace love
 {
 namespace font
@@ -48,7 +50,7 @@ void GenericShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, R
 	// Spacing counter and newline handling.
 	Vector2 curpos = offset;
 
-	int maxwidth = 0;
+	float maxwidth = 0;
 	uint32 prevglyph = 0;
 
 	if (positions)
@@ -86,11 +88,10 @@ void GenericShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, R
 
 		if (g == '\n')
 		{
-			if (curpos.x > maxwidth)
-				maxwidth = (int)curpos.x;
+			maxwidth = std::max(maxwidth, curpos.x);
 
 			// Wrap newline, but do not output a position for it.
-			curpos.y += floorf(getHeight() * getLineHeight() + 0.5f);
+			curpos.y += getCombinedHeight();
 			curpos.x = offset.x;
 			prevglyph = 0;
 			continue;
@@ -114,7 +115,7 @@ void GenericShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, R
 		curpos.x += getKerning(prevglyph, g);
 
 		GlyphIndex glyphindex;
-		int advance = getGlyphAdvance(g, &glyphindex);
+		float advance = getGlyphAdvance(g, &glyphindex);
 
 		if (positions)
 			positions->push_back({ Vector2(curpos.x, curpos.y), glyphindex });
@@ -124,20 +125,19 @@ void GenericShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, R
 
 		// Account for extra spacing given to space characters.
 		if (g == ' ' && extraspacing != 0.0f)
-			curpos.x = floorf(curpos.x + extraspacing);
+			curpos.x += extraspacing;
 
 		prevglyph = g;
 	}
 
-	if (curpos.x > maxwidth)
-		maxwidth = (int)curpos.x;
+	maxwidth = std::max(maxwidth, curpos.x);
 
 	if (info != nullptr)
 	{
 		info->width = maxwidth - offset.x;
 		info->height = curpos.y - offset.y;
 		if (curpos.x > offset.x)
-			info->height += floorf(getHeight() * getLineHeight() + 0.5f);
+			info->height += getCombinedHeight();
 	}
 }
 

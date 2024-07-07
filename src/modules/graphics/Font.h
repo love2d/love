@@ -115,8 +115,8 @@ public:
 	 * @param max_width Optional output of the maximum width
 	 * Returns a vector with the lines.
 	 **/
-	void getWrap(const std::vector<love::font::ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *line_widths = nullptr);
-	void getWrap(const love::font::ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &ranges, std::vector<int> *line_widths = nullptr);
+	void getWrap(const std::vector<love::font::ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<float> *line_widths = nullptr);
+	void getWrap(const love::font::ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &ranges, std::vector<float> *line_widths = nullptr);
 
 	/**
 	 * Sets the line height (which should be a number to multiply the font size by,

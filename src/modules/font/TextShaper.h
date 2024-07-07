@@ -77,8 +77,8 @@ public:
 
 	struct TextInfo
 	{
-		int width;
-		int height;
+		float width;
+		float height;
 	};
 
 	// This will be used if the Rasterizer doesn't have a tab character itself.
@@ -92,6 +92,9 @@ public:
 	bool isUsingSpacesForTab() const { return useSpacesForTab; }
 
 	float getHeight() const;
+	float getPixelHeight() const;
+
+	float getCombinedHeight() const;
 
 	/**
 	 * Sets the line height (which should be a number to multiply the font size by,
@@ -106,8 +109,8 @@ public:
 	float getLineHeight() const;
 
 	// Extra font metrics
-	int getAscent() const;
-	int getDescent() const;
+	float getAscent() const;
+	float getDescent() const;
 	float getBaseline() const;
 
 	bool hasGlyph(uint32 glyph) const;
@@ -116,12 +119,12 @@ public:
 	float getKerning(uint32 leftglyph, uint32 rightglyph);
 	float getKerning(const std::string &leftchar, const std::string &rightchar);
 
-	int getGlyphAdvance(uint32 glyph, GlyphIndex *glyphindex = nullptr);
+	float getGlyphAdvance(uint32 glyph, GlyphIndex *glyphindex = nullptr);
 
-	int getWidth(const std::string &str);
+	float getWidth(const std::string &str);
 
-	void getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths = nullptr);
-	void getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &lineranges, std::vector<int> *linewidths = nullptr);
+	void getWrap(const std::vector<ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<float> *linewidths = nullptr);
+	void getWrap(const ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &lineranges, std::vector<float> *linewidths = nullptr);
 
 	virtual void setFallbacks(const std::vector<Rasterizer *> &fallbacks);
 
@@ -140,12 +143,13 @@ protected:
 private:
 
 	int height;
+	int pixelHeight;
 	float lineHeight;
 
 	bool useSpacesForTab;
 
 	// maps glyphs to advance and glyph+rasterizer index.
-	std::unordered_map<uint32, std::pair<int, GlyphIndex>> glyphAdvances;
+	std::unordered_map<uint32, std::pair<float, GlyphIndex>> glyphAdvances;
 
 	// map of left/right glyph pairs to horizontal kerning.
 	std::unordered_map<uint64, float> kerning;

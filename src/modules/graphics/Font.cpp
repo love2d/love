@@ -470,7 +470,7 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const love::font:
 	vertices.reserve(text.cps.size() * 4);
 
 	std::vector<Range> ranges;
-	std::vector<int> widths;
+	std::vector<float> widths;
 	shaper->getWrap(text, wrap, ranges, &widths);
 
 	float y = 0.0f;
@@ -478,15 +478,15 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const love::font:
 
 	for (int i = 0; i < (int)ranges.size(); i++)
 	{
-		const auto& range = ranges[i];
+		const auto &range = ranges[i];
 
 		if (!range.isValid())
 		{
-			y += getHeight() * getLineHeight();
+			y += shaper->getCombinedHeight();
 			continue;
 		}
 
-		float width = (float) widths[i];
+		float width = widths[i];
 		love::Vector2 offset(0.0f, floorf(y));
 		float extraspacing = 0.0f;
 
@@ -506,7 +506,7 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const love::font:
 				auto end = start + range.getSize();
 				float numspaces = std::count(start, end, ' ');
 				if (width < wrap && numspaces >= 1)
-					extraspacing = (wrap - width) / numspaces;
+					extraspacing = floorf((wrap - width) / numspaces);
 				else
 					extraspacing = 0.0f;
 				break;
@@ -539,7 +539,7 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const love::font:
 			drawcommands.insert(drawcommands.end(), firstcmd, newcommands.end());
 		}
 
-		y += getHeight() * getLineHeight();
+		y += shaper->getCombinedHeight();
 	}
 
 	if (info != nullptr)
@@ -612,12 +612,12 @@ int Font::getWidth(uint32 glyph)
 	return shaper->getGlyphAdvance(glyph);
 }
 
-void Font::getWrap(const love::font::ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &ranges, std::vector<int> *linewidths)
+void Font::getWrap(const love::font::ColoredCodepoints &codepoints, float wraplimit, std::vector<Range> &ranges, std::vector<float> *linewidths)
 {
 	shaper->getWrap(codepoints, wraplimit, ranges, linewidths);
 }
 
-void Font::getWrap(const std::vector<love::font::ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<int> *linewidths)
+void Font::getWrap(const std::vector<love::font::ColoredString> &text, float wraplimit, std::vector<std::string> &lines, std::vector<float> *linewidths)
 {
 	shaper->getWrap(text, wraplimit, lines, linewidths);
 }

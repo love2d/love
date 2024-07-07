@@ -107,16 +107,16 @@ int w_Font_getWrap(lua_State *L)
 	luax_checkcoloredstring(L, 2, text);
 
 	float wrap = (float) luaL_checknumber(L, 3);
-	int max_width = 0;
+	float max_width = 0;
 	std::vector<std::string> lines;
-	std::vector<int> widths;
+	std::vector<float> widths;
 
 	luax_catchexcept(L, [&]() { t->getWrap(text, wrap, lines, &widths); });
 
-	for (int width : widths)
+	for (float width : widths)
 		max_width = std::max(max_width, width);
 
-	lua_pushinteger(L, max_width);
+	lua_pushnumber(L, max_width);
 	lua_createtable(L, (int) lines.size(), 0);
 
 	for (int i = 0; i < (int) lines.size(); i++)
