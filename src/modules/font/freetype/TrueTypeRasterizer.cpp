@@ -38,7 +38,6 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int
 	, hinting(settings.hinting)
 {
 	dpiScale = settings.dpiScale.get(defaultdpiscale);
-	size = floorf(size * dpiScale + 0.5f);
 
 	sdf = settings.sdf;
 
@@ -55,7 +54,7 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font loading error: FT_New_Face failed: 0x%x (problem with font file?)", err);
 
-	err = FT_Set_Pixel_Sizes(face, size, size);
+	err = FT_Set_Char_Size(face, size << 6, size << 6, 72 * dpiScale, 72 * dpiScale);
 
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font loading error: FT_Set_Pixel_Sizes failed: 0x%x (invalid size?)", err);
