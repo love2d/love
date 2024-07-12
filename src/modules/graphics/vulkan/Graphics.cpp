@@ -2598,14 +2598,14 @@ VkSampler Graphics::createSampler(const SamplerState &samplerState)
 	if (samplerState.depthSampleMode.hasValue)
 	{
 		samplerInfo.compareEnable = VK_TRUE;
-		samplerInfo.compareOp = Vulkan::getCompareOp(samplerState.depthSampleMode.value);
+		// See the comment in renderstate.h
+		samplerInfo.compareOp = Vulkan::getCompareOp(getReversedCompareMode(samplerState.depthSampleMode.value));
 	}
 	else
 	{
 		samplerInfo.compareEnable = VK_FALSE;
 		samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	}
-	samplerInfo.compareEnable = VK_FALSE;
 	samplerInfo.mipmapMode = Vulkan::getMipMapMode(samplerState.mipmapFilter);
 	samplerInfo.mipLodBias = samplerState.lodBias;
 	samplerInfo.minLod = static_cast<float>(samplerState.minLod);
