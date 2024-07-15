@@ -187,7 +187,7 @@ private:
 
 	void setupAttachedAttributes();
 	int getAttachedAttributeIndex(const std::string &name) const;
-	void finalizeAttribute(Graphics *gfx, BufferAttribute &attrib) const;
+	void finalizeAttribute(BufferAttribute &attrib) const;
 
 	void drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buffer *indirectargs, int argsindex);
 

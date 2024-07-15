@@ -30,7 +30,7 @@ namespace love
 namespace graphics
 {
 
-ShaderStage::ShaderStage(Graphics *gfx, ShaderStageType stage, const std::string &glsl, bool gles, const std::string &cachekey)
+ShaderStage::ShaderStage(Graphics */*gfx*/, ShaderStageType stage, const std::string &glsl, bool gles, const std::string &cachekey)
 	: stageType(stage)
 	, source(glsl)
 	, cacheKey(cachekey)

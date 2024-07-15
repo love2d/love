@@ -837,7 +837,7 @@ static void luax_checktexturesettings(lua_State *L, int idx, bool opt, bool chec
 		if (lua_type(L, -1) != LUA_TTABLE)
 			luaL_argerror(L, idx, "expected field 'viewformats' to be a table type");
 
-		for (int i = 1; i <= luax_objlen(L, -1); i++)
+		for (int i = 1; i <= (int)luax_objlen(L, -1); i++)
 		{
 			lua_rawgeti(L, -1, i);
 			const char *str = luaL_checkstring(L, -1);

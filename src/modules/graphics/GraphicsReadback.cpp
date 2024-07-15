@@ -33,13 +33,11 @@ namespace graphics
 
 love::Type GraphicsReadback::type("GraphicsReadback", &Object::type);
 
-GraphicsReadback::GraphicsReadback(Graphics *gfx, ReadbackMethod method, Buffer *buffer, size_t offset, size_t size, love::data::ByteData *dest, size_t destoffset)
+GraphicsReadback::GraphicsReadback(Graphics */*gfx*/, ReadbackMethod method, Buffer *buffer, size_t offset, size_t size, love::data::ByteData *dest, size_t destoffset)
 	: dataType(DATA_BUFFER)
 	, method(method)
 	, bufferData(dest)
 {
-	const auto &caps = gfx->getCapabilities();
-
 	if (offset + size > buffer->getSize())
 		throw love::Exception("Invalid offset or size for the given Buffer.");
 

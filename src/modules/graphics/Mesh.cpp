@@ -109,13 +109,11 @@ Mesh::Mesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType d
 	attachedAttributes = attributes;
 	vertexCount = attachedAttributes.size() > 0 ? LOVE_UINT32_MAX : 0;
 
-	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-
 	for (int i = 0; i < (int) attachedAttributes.size(); i++)
 	{
 		auto &attrib = attachedAttributes[i];
 
-		finalizeAttribute(gfx, attrib);
+		finalizeAttribute(attrib);
 
 		int attributeIndex = getAttachedAttributeIndex(attrib.name);
 		if (attributeIndex != i && attributeIndex != -1)
@@ -158,7 +156,7 @@ int Mesh::getAttachedAttributeIndex(const std::string &name) const
 	return -1;
 }
 
-void Mesh::finalizeAttribute(Graphics *gfx, BufferAttribute &attrib) const
+void Mesh::finalizeAttribute(BufferAttribute &attrib) const
 {
 	if ((attrib.buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
 		throw love::Exception("Buffer must be created with vertex buffer support to be used as a Mesh vertex attribute.");
@@ -228,8 +226,6 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 
 void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, int startindex, AttributeStep step)
 {
-	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
-
 	BufferAttribute oldattrib = {};
 	BufferAttribute newattrib = {};
 
@@ -248,7 +244,7 @@ void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, 
 	newattrib.startArrayIndex = startindex;
 	newattrib.step = step;
 
-	finalizeAttribute(gfx, newattrib);
+	finalizeAttribute(newattrib);
 
 	if (newattrib.indexInBuffer < 0)
 		throw love::Exception("The specified vertex buffer does not have a vertex attribute named '%s'", attachname.c_str());
