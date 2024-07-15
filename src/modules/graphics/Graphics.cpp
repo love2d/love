@@ -547,6 +547,7 @@ Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType, bo
 
 	Texture::Settings settings;
 	settings.type = type;
+	settings.readable.set(true);
 
 	switch (dataType)
 	{
@@ -564,6 +565,8 @@ Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType, bo
 
 	if (depthSample)
 	{
+		settings.renderTarget = true;
+
 		if (isPixelFormatSupported(PIXELFORMAT_DEPTH16_UNORM, PIXELFORMATUSAGE_SAMPLE))
 			settings.format = PIXELFORMAT_DEPTH16_UNORM;
 		else if (isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, PIXELFORMATUSAGE_SAMPLE))
@@ -597,12 +600,15 @@ Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType, bo
 
 	tex->setSamplerState(s);
 
-	uint8 pixel[] = {255, 255, 255, 255};
-	if (isPixelFormatInteger(settings.format))
-		pixel[0] = pixel[1] = pixel[2] = pixel[3] = 1;
+	if (!depthSample)
+	{
+		uint8 pixel[] = {255, 255, 255, 255};
+		if (isPixelFormatInteger(settings.format))
+			pixel[0] = pixel[1] = pixel[2] = pixel[3] = 1;
 
-	for (int slice = 0; slice < (type == TEXTURE_CUBE ? 6 : 1); slice++)
-		tex->replacePixels(pixel, sizeof(pixel), slice, 0, {0, 0, 1, 1}, false);
+		for (int slice = 0; slice < (type == TEXTURE_CUBE ? 6 : 1); slice++)
+			tex->replacePixels(pixel, sizeof(pixel), slice, 0, {0, 0, 1, 1}, false);
+	}
 
 	defaultTextures[type][dataType][depthsampleindex] = tex;
 

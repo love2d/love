@@ -284,6 +284,9 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	if (isCompressed() && renderTarget)
 		throw love::Exception("Compressed textures cannot be render targets.");
 
+	if (isPixelFormatDepthStencil(format) && !renderTarget)
+		throw love::Exception("Depth or stencil pixel formats are only supported with render target textures.");
+
 	for (PixelFormat viewformat : viewFormats)
 	{
 		if (getLinearPixelFormat(viewformat) == getLinearPixelFormat(format))
@@ -581,6 +584,9 @@ void Texture::replacePixels(love::image::ImageDataBase *d, int slice, int mipmap
 
 	if (getMSAA() > 1)
 		throw love::Exception("replacePixels cannot be called on a MSAA Texture.");
+
+	if (isPixelFormatDepthStencil(format))
+		throw love::Exception("replacePixels cannot be called on depth or stencil Textures.");
 
 	auto gfx = Module::getInstance<Graphics>(Module::M_GRAPHICS);
 	if (gfx != nullptr && gfx->isRenderTargetActive(this))
