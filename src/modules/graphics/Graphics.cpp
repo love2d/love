@@ -1045,28 +1045,12 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	if (rtcount > capabilities.limits[LIMIT_RENDER_TARGETS])
 		throw love::Exception("This system can't simultaneously render to %d textures.", rtcount);
 
-	PixelFormat firstcolorformat = PIXELFORMAT_UNKNOWN;
-	if (!rts.colors.empty())
-		firstcolorformat = rts.colors[0].texture->getPixelFormat();
-
-	if (!firsttex->isRenderTarget())
-		throw love::Exception("Texture must be created as a canvas to be used in setCanvas.");
-
-	if (isPixelFormatDepthStencil(firstcolorformat))
-		throw love::Exception("Depth/stencil format textures must be used with the 'depthstencil' field of the table passed into setCanvas.");
-
-	if (firsttarget.mipmap < 0 || firsttarget.mipmap >= firsttex->getMipmapCount())
-		throw love::Exception("Invalid mipmap level %d.", firsttarget.mipmap + 1);
-
-	if (!firsttex->isValidSlice(firsttarget.slice, firsttarget.mipmap))
-		throw love::Exception("Invalid slice index: %d.", firsttarget.slice + 1);
-
-	bool hasSRGBtexture = isPixelFormatSRGB(firstcolorformat);
+	bool hasSRGBtexture = false;
 	int pixelw = firsttex->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firsttex->getPixelHeight(firsttarget.mipmap);
 	int reqmsaa = firsttex->getRequestedMSAA();
 
-	for (int i = 1; i < rtcount; i++)
+	for (int i = 0; i < rtcount; i++)
 	{
 		Texture *c = rts.colors[i].texture;
 		PixelFormat format = c->getPixelFormat();
