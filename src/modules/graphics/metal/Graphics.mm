@@ -33,6 +33,7 @@
 
 #ifdef LOVE_MACOS
 // Needed for the GPU dynamic switching hack below.
+#define GL_SILENCE_DEPRECATION 1
 #import <Cocoa/Cocoa.h>
 #endif
 
