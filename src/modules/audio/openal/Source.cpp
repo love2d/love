@@ -176,13 +176,13 @@ Source::Source(Pool *pool, love::sound::Decoder *decoder)
 		slotlist.push(i);
 }
 
-Source::Source(Pool *pool, int sampleRate, int bitDepth, int channels, int buffers)
+Source::Source(Pool *pool, int sampleRate, int bitDepth, int channels, int b)
 	: love::audio::Source(Source::TYPE_QUEUE)
 	, pool(pool)
 	, sampleRate(sampleRate)
 	, channels(channels)
 	, bitDepth(bitDepth)
-	, buffers(buffers)
+	, buffers(b)
 {
 	ALenum fmt = Audio::getFormat(bitDepth, channels);
 	if (fmt == AL_NONE)
