@@ -337,7 +337,7 @@ protected:
 	Texture(Graphics *gfx, Texture *base, const ViewSettings &viewsettings);
 	virtual ~Texture();
 
-	void setGraphicsMemorySize(int64 size);
+	void updateGraphicsMemorySize(bool loaded);
 
 	void uploadImageData(love::image::ImageDataBase *d, int level, int slice, int x, int y);
 	virtual void uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r) = 0;

@@ -209,6 +209,8 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 		}
 	}
 
+	updateGraphicsMemorySize(true);
+
 	// Non-readable textures can't have mipmaps (enforced in the base class),
 	// so generateMipmaps here is fine - when they aren't already initialized.
 	if (shouldgeneratemips)

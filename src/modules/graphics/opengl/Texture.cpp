@@ -426,26 +426,6 @@ bool Texture::loadVolatile()
 		return false;
 	}
 
-	int64 memsize = 0;
-
-	for (int mip = 0; mip < getMipmapCount(); mip++)
-	{
-		int w = getPixelWidth(mip);
-		int h = getPixelHeight(mip);
-		int slices = getDepth(mip) * layers * (texType == TEXTURE_CUBE ? 6 : 1);
-		memsize += getPixelFormatSliceSize(format, w, h) * slices;
-	}
-
-	if (actualSamples > 1 && isReadable())
-	{
-		int slices = depth * layers * (texType == TEXTURE_CUBE ? 6 : 1);
-		memsize += getPixelFormatSliceSize(format, pixelWidth, pixelHeight) * slices * actualSamples;
-	}
-	else if (actualSamples > 1)
-		memsize *= actualSamples;
-
-	setGraphicsMemorySize(memsize);
-
 	if (!debugName.empty() && (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_2))
 	{
 		if (texture)
@@ -459,6 +439,8 @@ bool Texture::loadVolatile()
 			glObjectLabel(GL_RENDERBUFFER, renderbuffer, -1, rname.c_str());
 		}
 	}
+
+	updateGraphicsMemorySize(true);
 
 	return true;
 }
@@ -487,7 +469,7 @@ void Texture::unloadVolatile()
 	renderbuffer = 0;
 	texture = 0;
 
-	setGraphicsMemorySize(0);
+	updateGraphicsMemorySize(false);
 }
 
 void Texture::uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r)
