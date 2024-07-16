@@ -287,6 +287,9 @@ Texture::Texture(Graphics *gfx, const Settings &settings, const Slices *slices)
 	if (isPixelFormatDepthStencil(format) && !renderTarget)
 		throw love::Exception("Depth or stencil pixel formats are only supported with render target textures.");
 
+	if (isPixelFormatDepthStencil(format) && texType == TEXTURE_VOLUME)
+		throw love::Exception("Volume texture types are not supported with depth or stencil pixel formats.");
+
 	for (PixelFormat viewformat : viewFormats)
 	{
 		if (getLinearPixelFormat(viewformat) == getLinearPixelFormat(format))
