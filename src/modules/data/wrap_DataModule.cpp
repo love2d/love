@@ -57,7 +57,7 @@ int w_newDataView(lua_State *L)
 	Data *data = luax_checkdata(L, 1);
 
 	lua_Integer offset = luaL_checkinteger(L, 2);
-	lua_Integer size = luaL_checkinteger(L, 3);
+	lua_Integer size = luaL_optinteger(L, 3, data->getSize() - offset);
 
 	if (offset < 0 || size < 0)
 		return luaL_error(L, "DataView offset and size must not be negative.");
