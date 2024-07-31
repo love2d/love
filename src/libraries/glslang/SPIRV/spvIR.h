@@ -97,12 +97,24 @@ public:
     Instruction(Id resultId, Id typeId, Op opCode) : resultId(resultId), typeId(typeId), opCode(opCode), block(nullptr) { }
     explicit Instruction(Op opCode) : resultId(NoResult), typeId(NoType), opCode(opCode), block(nullptr) { }
     virtual ~Instruction() {}
+    void reserveOperands(size_t count) {
+        operands.reserve(count);
+        idOperand.reserve(count);
+    }
     void addIdOperand(Id id) {
         // ids can't be 0
         assert(id);
         operands.push_back(id);
         idOperand.push_back(true);
     }
+    // This method is potentially dangerous as it can break assumptions
+    // about SSA and lack of forward references.
+    void setIdOperand(unsigned idx, Id id) {
+        assert(id);
+        assert(idOperand[idx]);
+        operands[idx] = id;
+    }
+
     void addImmediateOperand(unsigned int immediate) {
         operands.push_back(immediate);
         idOperand.push_back(false);
@@ -234,7 +246,7 @@ public:
     void addLocalVariable(std::unique_ptr<Instruction> inst) { localVariables.push_back(std::move(inst)); }
     const std::vector<Block*>& getPredecessors() const { return predecessors; }
     const std::vector<Block*>& getSuccessors() const { return successors; }
-    const std::vector<std::unique_ptr<Instruction> >& getInstructions() const {
+    std::vector<std::unique_ptr<Instruction> >& getInstructions() {
         return instructions;
     }
     const std::vector<std::unique_ptr<Instruction> >& getLocalVariables() const { return localVariables; }
@@ -398,6 +410,7 @@ public:
 
     void setDebugLineInfo(Id fileName, int line, int column) {
         lineInstruction = std::unique_ptr<Instruction>{new Instruction(OpLine)};
+        lineInstruction->reserveOperands(3);
         lineInstruction->addIdOperand(fileName);
         lineInstruction->addImmediateOperand(line);
         lineInstruction->addImmediateOperand(column);
@@ -521,6 +534,7 @@ __inline Function::Function(Id id, Id resultType, Id functionType, Id firstParam
       linkType(linkage)
 {
     // OpFunction
+    functionInstruction.reserveOperands(2);
     functionInstruction.addImmediateOperand(FunctionControlMaskNone);
     functionInstruction.addIdOperand(functionType);
     parent.mapInstruction(&functionInstruction);

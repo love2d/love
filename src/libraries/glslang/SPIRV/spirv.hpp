@@ -385,7 +385,7 @@ enum ImageOperandsShift {
     ImageOperandsMax = 0x7fffffff,
 };
 
-enum ImageOperandsMask {
+enum ImageOperandsMask : unsigned {
     ImageOperandsMaskNone = 0,
     ImageOperandsBiasMask = 0x00000001,
     ImageOperandsLodMask = 0x00000002,
@@ -420,7 +420,7 @@ enum FPFastMathModeShift {
     FPFastMathModeMax = 0x7fffffff,
 };
 
-enum FPFastMathModeMask {
+enum FPFastMathModeMask : unsigned {
     FPFastMathModeMaskNone = 0,
     FPFastMathModeNotNaNMask = 0x00000001,
     FPFastMathModeNotInfMask = 0x00000002,
@@ -745,7 +745,7 @@ enum SelectionControlShift {
     SelectionControlMax = 0x7fffffff,
 };
 
-enum SelectionControlMask {
+enum SelectionControlMask : unsigned {
     SelectionControlMaskNone = 0,
     SelectionControlFlattenMask = 0x00000001,
     SelectionControlDontFlattenMask = 0x00000002,
@@ -774,7 +774,7 @@ enum LoopControlShift {
     LoopControlMax = 0x7fffffff,
 };
 
-enum LoopControlMask {
+enum LoopControlMask : unsigned {
     LoopControlMaskNone = 0,
     LoopControlUnrollMask = 0x00000001,
     LoopControlDontUnrollMask = 0x00000002,
@@ -806,7 +806,7 @@ enum FunctionControlShift {
     FunctionControlMax = 0x7fffffff,
 };
 
-enum FunctionControlMask {
+enum FunctionControlMask : unsigned {
     FunctionControlMaskNone = 0,
     FunctionControlInlineMask = 0x00000001,
     FunctionControlDontInlineMask = 0x00000002,
@@ -836,7 +836,7 @@ enum MemorySemanticsShift {
     MemorySemanticsMax = 0x7fffffff,
 };
 
-enum MemorySemanticsMask {
+enum MemorySemanticsMask : unsigned {
     MemorySemanticsMaskNone = 0,
     MemorySemanticsAcquireMask = 0x00000002,
     MemorySemanticsReleaseMask = 0x00000004,
@@ -872,7 +872,7 @@ enum MemoryAccessShift {
     MemoryAccessMax = 0x7fffffff,
 };
 
-enum MemoryAccessMask {
+enum MemoryAccessMask : unsigned {
     MemoryAccessMaskNone = 0,
     MemoryAccessVolatileMask = 0x00000001,
     MemoryAccessAlignedMask = 0x00000002,
@@ -922,7 +922,7 @@ enum KernelProfilingInfoShift {
     KernelProfilingInfoMax = 0x7fffffff,
 };
 
-enum KernelProfilingInfoMask {
+enum KernelProfilingInfoMask : unsigned {
     KernelProfilingInfoMaskNone = 0,
     KernelProfilingInfoCmdExecTimeMask = 0x00000001,
 };
@@ -1002,6 +1002,7 @@ enum Capability {
     CapabilityTileImageColorReadAccessEXT = 4166,
     CapabilityTileImageDepthReadAccessEXT = 4167,
     CapabilityTileImageStencilReadAccessEXT = 4168,
+    CapabilityCooperativeMatrixLayoutsARM = 4201,
     CapabilityFragmentShadingRateKHR = 4422,
     CapabilitySubgroupBallotKHR = 4423,
     CapabilityDrawParameters = 4427,
@@ -1163,6 +1164,7 @@ enum Capability {
     CapabilityDotProductKHR = 6019,
     CapabilityRayCullMaskKHR = 6020,
     CapabilityCooperativeMatrixKHR = 6022,
+    CapabilityReplicatedCompositesEXT = 6024,
     CapabilityBitInstructions = 6025,
     CapabilityGroupNonUniformRotateKHR = 6026,
     CapabilityAtomicFloat32AddEXT = 6033,
@@ -1192,7 +1194,7 @@ enum RayFlagsShift {
     RayFlagsMax = 0x7fffffff,
 };
 
-enum RayFlagsMask {
+enum RayFlagsMask : unsigned {
     RayFlagsMaskNone = 0,
     RayFlagsOpaqueKHRMask = 0x00000001,
     RayFlagsNoOpaqueKHRMask = 0x00000002,
@@ -1234,7 +1236,7 @@ enum FragmentShadingRateShift {
     FragmentShadingRateMax = 0x7fffffff,
 };
 
-enum FragmentShadingRateMask {
+enum FragmentShadingRateMask : unsigned {
     FragmentShadingRateMaskNone = 0,
     FragmentShadingRateVertical2PixelsMask = 0x00000001,
     FragmentShadingRateVertical4PixelsMask = 0x00000002,
@@ -1289,7 +1291,7 @@ enum CooperativeMatrixOperandsShift {
     CooperativeMatrixOperandsMax = 0x7fffffff,
 };
 
-enum CooperativeMatrixOperandsMask {
+enum CooperativeMatrixOperandsMask : unsigned {
     CooperativeMatrixOperandsMaskNone = 0,
     CooperativeMatrixOperandsMatrixASignedComponentsKHRMask = 0x00000001,
     CooperativeMatrixOperandsMatrixBSignedComponentsKHRMask = 0x00000002,
@@ -1301,6 +1303,8 @@ enum CooperativeMatrixOperandsMask {
 enum CooperativeMatrixLayout {
     CooperativeMatrixLayoutRowMajorKHR = 0,
     CooperativeMatrixLayoutColumnMajorKHR = 1,
+    CooperativeMatrixLayoutRowBlockedInterleavedARM = 4202,
+    CooperativeMatrixLayoutColumnBlockedInterleavedARM = 4203,
     CooperativeMatrixLayoutMax = 0x7fffffff,
 };
 
@@ -1667,6 +1671,7 @@ enum Op {
     OpSubgroupAllEqualKHR = 4430,
     OpGroupNonUniformRotateKHR = 4431,
     OpSubgroupReadInvocationKHR = 4432,
+    OpExtInstWithForwardRefsKHR = 4433,
     OpTraceRayKHR = 4445,
     OpExecuteCallableKHR = 4446,
     OpConvertUToAccelerationStructureKHR = 4447,
@@ -1689,6 +1694,9 @@ enum Op {
     OpCooperativeMatrixStoreKHR = 4458,
     OpCooperativeMatrixMulAddKHR = 4459,
     OpCooperativeMatrixLengthKHR = 4460,
+    OpConstantCompositeReplicateEXT = 4461,
+    OpSpecConstantCompositeReplicateEXT = 4462,
+    OpCompositeConstructReplicateEXT = 4463,
     OpTypeRayQueryKHR = 4472,
     OpRayQueryInitializeKHR = 4473,
     OpRayQueryTerminateKHR = 4474,
@@ -2391,6 +2399,7 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpPtrEqual: *hasResult = true; *hasResultType = true; break;
     case OpPtrNotEqual: *hasResult = true; *hasResultType = true; break;
     case OpPtrDiff: *hasResult = true; *hasResultType = true; break;
+    case OpExtInstWithForwardRefsKHR: *hasResult = true; *hasResultType = true; break;
     case OpColorAttachmentReadEXT: *hasResult = true; *hasResultType = true; break;
     case OpDepthAttachmentReadEXT: *hasResult = true; *hasResultType = true; break;
     case OpStencilAttachmentReadEXT: *hasResult = true; *hasResultType = true; break;
@@ -2418,6 +2427,9 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpCooperativeMatrixStoreKHR: *hasResult = false; *hasResultType = false; break;
     case OpCooperativeMatrixMulAddKHR: *hasResult = true; *hasResultType = true; break;
     case OpCooperativeMatrixLengthKHR: *hasResult = true; *hasResultType = true; break;
+    case OpConstantCompositeReplicateEXT: *hasResult = true; *hasResultType = true; break;
+    case OpSpecConstantCompositeReplicateEXT: *hasResult = true; *hasResultType = true; break;
+    case OpCompositeConstructReplicateEXT: *hasResult = true; *hasResultType = true; break;
     case OpTypeRayQueryKHR: *hasResult = true; *hasResultType = false; break;
     case OpRayQueryInitializeKHR: *hasResult = false; *hasResultType = false; break;
     case OpRayQueryTerminateKHR: *hasResult = false; *hasResultType = false; break;

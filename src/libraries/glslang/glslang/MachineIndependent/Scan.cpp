@@ -1497,7 +1497,7 @@ int TScanContext::tokenizeIdentifier()
     case USAMPLER2DARRAY:
         afterType = true;
         if (keyword == SAMPLER2DARRAY || keyword == SAMPLER2DARRAYSHADOW) {
-            if ((keyword == SAMPLER2DARRAY || !parseContext.isEsProfile()) &&
+            if (!parseContext.isEsProfile() &&
                 (parseContext.extensionTurnedOn(E_GL_EXT_texture_array) || parseContext.symbolTable.atBuiltInLevel())) {
                 return keyword;
             }

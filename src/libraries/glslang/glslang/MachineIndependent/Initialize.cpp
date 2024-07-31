@@ -1707,9 +1707,6 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
 
                 "vec4 textureCube(samplerCube, vec3);"
 
-                "vec4 texture2DArray(sampler2DArray, vec3);"        // GL_EXT_texture_array
-                "vec4 texture2DArray(sampler2DArray, vec3, float);" // GL_EXT_texture_array
-
                 "\n");
         }
     }
@@ -1736,9 +1733,11 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
                 "vec4 shadow2DRectProj(sampler2DRectShadow, vec4);" // GL_ARB_texture_rectangle, caught by keyword check
 
                 "vec4 texture1DArray(sampler1DArray, vec2);"      // GL_EXT_texture_array
+                "vec4 texture2DArray(sampler2DArray, vec3);"      // GL_EXT_texture_array
                 "vec4 shadow1DArray(sampler1DArrayShadow, vec3);" // GL_EXT_texture_array
                 "vec4 shadow2DArray(sampler2DArrayShadow, vec4);" // GL_EXT_texture_array
                 "vec4 texture1DArray(sampler1DArray, vec2, float);"                // GL_EXT_texture_array
+                "vec4 texture2DArray(sampler2DArray, vec3, float);"                // GL_EXT_texture_array
                 "vec4 shadow1DArray(sampler1DArrayShadow, vec3, float);"           // GL_EXT_texture_array
                 "vec4 texture1DArrayLod(sampler1DArray, vec2, float);"      // GL_EXT_texture_array
                 "vec4 texture2DArrayLod(sampler2DArray, vec3, float);"      // GL_EXT_texture_array
@@ -4559,6 +4558,8 @@ void TBuiltIns::initialize(int version, EProfile profile, const SpvVersion& spvV
             "const int gl_MatrixOperandsSaturatingAccumulation = 0x10;\n"
             "const int gl_CooperativeMatrixLayoutRowMajor = 0;\n"
             "const int gl_CooperativeMatrixLayoutColumnMajor = 1;\n"
+            "const int gl_CooperativeMatrixLayoutRowBlockedInterleavedARM = 4202;\n"
+            "const int gl_CooperativeMatrixLayoutColumnBlockedInterleavedARM = 4203;\n"
             "\n"
             );
     }
@@ -8122,11 +8123,9 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
         }
 
         // E_GL_EXT_texture_array
-        if (spvVersion.spv == 0) {
-            symbolTable.setFunctionExtensions("texture2DArray", 1, &E_GL_EXT_texture_array);
-        }
         if (profile != EEsProfile && spvVersion.spv == 0) {
             symbolTable.setFunctionExtensions("texture1DArray", 1, &E_GL_EXT_texture_array);
+            symbolTable.setFunctionExtensions("texture2DArray", 1, &E_GL_EXT_texture_array);
             symbolTable.setFunctionExtensions("shadow1DArray", 1, &E_GL_EXT_texture_array);
             symbolTable.setFunctionExtensions("shadow2DArray", 1, &E_GL_EXT_texture_array);
 
@@ -9212,8 +9211,6 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_RayTmaxNV",              EbvRayTmax,            symbolTable);
             BuiltInVariable("gl_RayTmaxEXT",             EbvRayTmax,            symbolTable);
             BuiltInVariable("gl_CullMaskEXT",            EbvCullMask,           symbolTable);
-            BuiltInVariable("gl_HitTNV",                 EbvHitT,               symbolTable);
-            BuiltInVariable("gl_HitTEXT",                EbvHitT,               symbolTable);
             BuiltInVariable("gl_HitKindNV",              EbvHitKind,            symbolTable);
             BuiltInVariable("gl_HitKindEXT",             EbvHitKind,            symbolTable);
             BuiltInVariable("gl_ObjectToWorldNV",        EbvObjectToWorld,      symbolTable);
@@ -9231,6 +9228,10 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             BuiltInVariable("gl_HitMicroTriangleVertexBarycentricsNV", EbvMicroTriangleBaryNV, symbolTable);
             BuiltInVariable("gl_HitKindFrontFacingMicroTriangleNV", EbvHitKindFrontFacingMicroTriangleNV, symbolTable);
             BuiltInVariable("gl_HitKindBackFacingMicroTriangleNV", EbvHitKindBackFacingMicroTriangleNV, symbolTable);
+
+            // gl_HitT variables are aliases of their gl_RayTmax counterparts.
+            RetargetVariable("gl_HitTNV",                "gl_RayTmaxNV",        symbolTable);
+            RetargetVariable("gl_HitTEXT",               "gl_RayTmaxEXT",       symbolTable);
 
             // GL_ARB_shader_ballot
             symbolTable.setVariableExtensions("gl_SubGroupSizeARB",       1, &E_GL_ARB_shader_ballot);
@@ -10138,11 +10139,9 @@ void TBuiltIns::identifyBuiltIns(int version, EProfile profile, const SpvVersion
             symbolTable.relateToOperator("textureBlockMatchGatherSADQCOM", EOpImageBlockMatchGatherSADQCOM);
         }
 
-        if (spvVersion.spv == 0) {
-            symbolTable.relateToOperator("texture2DArray", EOpTexture);
-        }
         if (profile != EEsProfile && spvVersion.spv == 0) {
             symbolTable.relateToOperator("texture1DArray", EOpTexture);
+            symbolTable.relateToOperator("texture2DArray", EOpTexture);
             symbolTable.relateToOperator("shadow1DArray", EOpTexture);
             symbolTable.relateToOperator("shadow2DArray", EOpTexture);
 

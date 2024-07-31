@@ -271,6 +271,8 @@ enum EShMessages : unsigned {
     EShMsgBuiltinSymbolTable   = (1 << 14), // print the builtin symbol table
     EShMsgEnhanced             = (1 << 15), // enhanced message readability
     EShMsgAbsolutePath         = (1 << 16), // Output Absolute path for messages
+    EShMsgDisplayErrorColumn   = (1 << 17), // Display error message column aswell as line
+    EshMsgCrossStageIO         = (1 << 30), // Always validate cross-stage IO
     LAST_ELEMENT_MARKER(EShMsgCount),
 };
 
@@ -746,6 +748,8 @@ public:
     GLSLANG_EXPORT int getBinding() const;
     GLSLANG_EXPORT void dump() const;
     static TObjectReflection badReflection() { return TObjectReflection(); }
+
+    GLSLANG_EXPORT unsigned int layoutLocation() const;
 
     std::string name;
     int offset;
