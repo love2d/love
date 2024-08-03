@@ -431,7 +431,7 @@ jobs:
         mv apple-dependencies/macOS/Frameworks platform/xcode/macosx
     - name: Build
       run:
-        xcodebuild clean archive -project platform/xcode/love.xcodeproj -scheme love-macosx -configuration Release -archivePath love-macos.xcarchive
+        xcodebuild clean archive -project platform/xcode/love.xcodeproj -scheme love-macosx -configuration Release -destination generic/platform=macOS -archivePath love-macos.xcarchive
     - name: Export Archive
       run:
         xcodebuild -exportArchive -archivePath love-macos.xcarchive -exportPath love-macos -exportOptionsPlist platform/xcode/macosx/macos-copy-app.plist
