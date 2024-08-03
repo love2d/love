@@ -125,7 +125,7 @@ static T *readEXRChannels(int width, int height, T *rgba[4], T one)
 }
 
 template <typename T>
-static void writeEXRChannels(int width, int height, int components, const T *pixels, T *rgba[4])
+static void writeEXRChannels(int width, int height, int components, const int *channelmapping, const T *pixels, T *rgba[4])
 {
 	for (int y = 0; y < height; y++)
 	{
@@ -133,7 +133,7 @@ static void writeEXRChannels(int width, int height, int components, const T *pix
 		{
 			size_t offset = y * width + x;
 			for (int c = 0; c < components; c++)
-				rgba[c][offset] = pixels[offset * components + c];
+				rgba[channelmapping[c]][offset] = pixels[offset * components + c];
 		}
 	}
 }
@@ -303,12 +303,23 @@ FormatHandler::EncodedImage EXRHandler::encode(const DecodedImage &img, EncodedF
 		throw love::Exception("Cannot convert the given pixel format to an EXR pixel type.");
 	}
 
+	// EXR parsers tend to only handle (A)BGR order,
+	// the spec says channels should be stored alphabetically.
+	const int channelmappings[4][4] = {
+		{0},
+		{1, 0},
+		{2, 1, 0},
+		{3, 2, 1, 0},
+	};
+
+	const int *channelmapping = channelmappings[exrHeader.num_channels - 1];
+
 	for (int i = 0; i < exrHeader.num_channels; i++)
 	{
 		exrHeader.channels[i] = EXRChannelInfo();
 
 		const char names[] = {'R', 'G', 'B', 'A'};
-		exrHeader.channels[i].name[0] = names[i];
+		exrHeader.channels[i].name[0] = names[channelmapping[i]];
 
 		exrHeader.pixel_types[i] = pixeltype;
 		exrHeader.requested_pixel_types[i] = pixeltype;
@@ -339,15 +350,15 @@ FormatHandler::EncodedImage EXRHandler::encode(const DecodedImage &img, EncodedF
 
 	if (pixeltype == TINYEXR_PIXELTYPE_UINT)
 	{
-		writeEXRChannels(img.width, img.height, formatinfo.components, (const uint32 *) img.data, (uint32 **) exrImage.images);
+		writeEXRChannels(img.width, img.height, formatinfo.components, channelmapping, (const uint32 *) img.data, (uint32 **) exrImage.images);
 	}
 	else if (pixeltype == TINYEXR_PIXELTYPE_HALF)
 	{
-		writeEXRChannels(img.width, img.height, formatinfo.components, (const float16 *) img.data, (float16 **) exrImage.images);
+		writeEXRChannels(img.width, img.height, formatinfo.components, channelmapping, (const float16 *) img.data, (float16 **) exrImage.images);
 	}
 	else if (pixeltype == TINYEXR_PIXELTYPE_FLOAT)
 	{
-		writeEXRChannels(img.width, img.height, formatinfo.components, (const float *) img.data, (float **) exrImage.images);
+		writeEXRChannels(img.width, img.height, formatinfo.components, channelmapping, (const float *) img.data, (float **) exrImage.images);
 	}
 
 	EncodedImage encimg;
