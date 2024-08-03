@@ -38,6 +38,9 @@
 #include <unistd.h>
 #endif
 
+// C++17 std::filesystem
+#include <filesystem>
+
 namespace love
 {
 namespace filesystem
@@ -180,6 +183,18 @@ bool Filesystem::createRealDirectory(const std::string &path)
 	}
 
 	return true;
+}
+
+std::string Filesystem::canonicalizeRealPath(const std::string &p) const
+{
+	try
+	{
+		return std::filesystem::weakly_canonical(p).string();
+	}
+	catch (std::exception &)
+	{
+		return p;
+	}
 }
 
 std::string Filesystem::getExecutablePath() const

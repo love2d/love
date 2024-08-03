@@ -172,9 +172,14 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 			continue;
 
 		// If a file is still open, unmount will fail.
-		std::string fullPath = getFullCommonPath(p);
-		if (!fullPath.empty() && !PHYSFS_canUnmount(fullPath.c_str()))
-			return false;
+		std::string fullpath = getFullCommonPath(p);
+		
+		if (!fullpath.empty())
+		{
+			std::string canonpath = canonicalizeRealPath(fullpath);
+			if (!PHYSFS_canUnmount(canonpath.c_str()))
+				return false;
+		}
 	}
 
 	bool oldMountedCommonPaths[COMMONPATH_MAX_ENUM] = {false};
@@ -237,7 +242,7 @@ bool Filesystem::setSource(const char *source)
 	if (!gameSource.empty())
 		return false;
 
-	std::string new_search_path = source;
+	std::string new_search_path = canonicalizeRealPath(source);
 
 #ifdef LOVE_ANDROID
 	if (!love::android::createStorageDirectories())
@@ -395,10 +400,12 @@ bool Filesystem::mountFullPath(const char *archive, const char *mountpoint, Moun
 	if (!PHYSFS_isInit() || !archive)
 		return false;
 
-	if (permissions == MOUNT_PERMISSIONS_READWRITE)
-		return PHYSFS_mountRW(archive, mountpoint, appendToPath) != 0;
+	std::string canonarchive = canonicalizeRealPath(archive);
 
-	return PHYSFS_mount(archive, mountpoint, appendToPath) != 0;
+	if (permissions == MOUNT_PERMISSIONS_READWRITE)
+		return PHYSFS_mountRW(canonarchive.c_str(), mountpoint, appendToPath) != 0;
+
+	return PHYSFS_mount(canonarchive.c_str(), mountpoint, appendToPath) != 0;
 }
 
 bool Filesystem::mountCommonPathInternal(CommonPath path, const char *mountpoint, MountPermissions permissions, bool appendToPath, bool createDir)
@@ -474,10 +481,12 @@ bool Filesystem::unmount(const char *archive)
 	realPath += LOVE_PATH_SEPARATOR;
 	realPath += archive;
 
-	if (PHYSFS_getMountPoint(realPath.c_str()) == nullptr)
+	std::string canonpath = canonicalizeRealPath(realPath.c_str());
+
+	if (PHYSFS_getMountPoint(canonpath.c_str()) == nullptr)
 		return false;
 
-	return PHYSFS_unmount(realPath.c_str()) != 0;
+	return PHYSFS_unmount(canonpath.c_str()) != 0;
 }
 
 bool Filesystem::unmountFullPath(const char *fullpath)
@@ -485,7 +494,9 @@ bool Filesystem::unmountFullPath(const char *fullpath)
 	if (!PHYSFS_isInit() || !fullpath)
 		return false;
 
-	return PHYSFS_unmount(fullpath) != 0;
+	std::string canonpath = canonicalizeRealPath(fullpath);
+
+	return PHYSFS_unmount(canonpath.c_str()) != 0;
 }
 
 bool Filesystem::unmount(CommonPath path)
@@ -725,8 +736,6 @@ std::string Filesystem::getSourceBaseDirectory() const
 	if (source_len == 0)
 		return "";
 
-	// FIXME: This doesn't take into account parent and current directory
-	// symbols (i.e. '..' and '.')
 #ifdef LOVE_WINDOWS
 	// In windows, delimiters can be either '/' or '\'.
 	size_t base_end_pos = gameSource.find_last_of("/\\", source_len - 2);

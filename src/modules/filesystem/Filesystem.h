@@ -304,6 +304,12 @@ public:
 	virtual bool createRealDirectory(const std::string &path);
 
 	/**
+	 * Converts the given real path to its canonical version (e.g. resolving
+	 * '..', '.', relative paths, etc).
+	 **/
+	virtual std::string canonicalizeRealPath(const std::string &path) const;
+
+	/**
 	 * Gets the full platform-dependent path to the executable.
 	 **/
 	virtual std::string getExecutablePath() const;

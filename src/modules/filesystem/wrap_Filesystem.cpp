@@ -498,6 +498,13 @@ int w_getRealDirectory(lua_State *L)
 	return 1;
 }
 
+int w_canonicalizeRealPath(lua_State *L)
+{
+	const char *path = luaL_checkstring(L, 1);
+	luax_pushstring(L, instance()->canonicalizeRealPath(path));
+	return 1;
+}
+
 int w_getExecutablePath(lua_State *L)
 {
 	luax_pushstring(L, instance()->getExecutablePath());
@@ -1033,6 +1040,7 @@ static const luaL_Reg functions[] =
 	{ "getSaveDirectory", w_getSaveDirectory },
 	{ "getSourceBaseDirectory", w_getSourceBaseDirectory },
 	{ "getRealDirectory", w_getRealDirectory },
+	{ "canonicalizeRealPath", w_canonicalizeRealPath },
 	{ "getExecutablePath", w_getExecutablePath },
 	{ "createDirectory", w_createDirectory },
 	{ "remove", w_remove },

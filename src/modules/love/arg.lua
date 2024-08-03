@@ -66,20 +66,9 @@ end
 
 -- Converts any path into a full path.
 function love.path.getFull(p)
-
-	if love.path.abs(p) then
-		return love.path.normalslashes(p)
-	end
-
-	local cwd = love.filesystem.getWorkingDirectory()
-	cwd = love.path.normalslashes(cwd)
-	cwd = love.path.endslash(cwd)
-
-	-- Construct a full path.
-	local full = cwd .. love.path.normalslashes(p)
-
-	-- Remove trailing /., if applicable
-	return full:match("(.-)/%.$") or full
+	p = love.filesystem.canonicalizeRealPath(p)
+	p = love.path.normalslashes(p)
+	return p
 end
 
 -- Returns the leaf of a full path.
