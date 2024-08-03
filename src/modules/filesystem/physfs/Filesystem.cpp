@@ -563,7 +563,9 @@ std::string Filesystem::getFullCommonPath(CommonPath path)
 		else
 			suffix = std::string(LOVE_PATH_SEPARATOR LOVE_APPDATA_FOLDER LOVE_PATH_SEPARATOR) + saveIdentity;
 
+		// TODO: do we still need the normalize?
 		fullPaths[path] = normalize(rootpath + suffix);
+		fullPaths[path] = canonicalizeRealPath(fullPaths[path].c_str());
 
 		return fullPaths[path];
 	}
