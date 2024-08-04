@@ -1073,7 +1073,7 @@ void Shader::createDescriptorPoolSizes()
 			continue;
 
 		size.type = type;
-		size.descriptorCount = 1;
+		size.descriptorCount = entry.second->count;
 		descriptorPoolSizes.push_back(size);
 	}
 }
