@@ -970,24 +970,40 @@ void Graphics::applyScissor()
 {
 	VkRect2D scissor{};
 
-	if (renderPassState.isWindow)
-		scissor.extent = swapChainExtent;
-	else
-	{
-		scissor.extent.width = renderPassState.width;
-		scissor.extent.height = renderPassState.height;
-	}
+	bool win = renderPassState.isWindow;
+	scissor.extent.width = win ? swapChainExtent.width : renderPassState.width;
+	scissor.extent.height = win ? swapChainExtent.height : renderPassState.height;
 
 	if (states.back().scissor)
 	{
 		const Rect &rect = states.back().scissorRect;
 		double dpiScale = getCurrentDPIScale();
 
-		// TODO: clamp this to the above viewport size.
-		scissor.offset.x = (int)(rect.x * dpiScale);
-		scissor.offset.y = (int)(rect.y * dpiScale);
-		scissor.extent.width = (uint32)(rect.w * dpiScale);
-		scissor.extent.height = (uint32)(rect.h * dpiScale);
+		int minScissorX = (int)(rect.x * dpiScale);
+		int minScissorY = (int)(rect.y * dpiScale);
+
+		int maxScissorX = minScissorX + (int)(rect.w * dpiScale) - 1;
+		int maxScissorY = minScissorY + (int)(rect.h * dpiScale) - 1;
+
+		// Avoid negative offsets.
+		int minX = std::max(scissor.offset.x, minScissorX);
+		int minY = std::max(scissor.offset.y, minScissorY);
+
+		int maxX = std::min(scissor.offset.x + (int)scissor.extent.width - 1, maxScissorX);
+		int maxY = std::min(scissor.offset.y + (int)scissor.extent.height - 1, maxScissorY);
+
+		if (maxX >= minX && maxY >= minY)
+		{
+			scissor.offset.x = minX;
+			scissor.offset.y = minY;
+			scissor.extent.width = (maxX - minX) + 1;
+			scissor.extent.height = (maxY - minY) + 1;
+		}
+		else
+		{
+			scissor.extent.width = 0;
+			scissor.extent.height = 0;
+		}
 	}
 
 	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
