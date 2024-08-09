@@ -447,15 +447,15 @@ love.test.physics.Shape = function(test)
   test:assertEquals(nil, yn2, 'check ray 2 y')
 
   -- check filtering
-  test:assertEquals(nil, shape2:getMask(), 'check no mask')
-  shape2:setMask(1, 2, 3)
-  test:assertEquals(3, #{shape2:getMask()}, 'check set mask')
+  test:assertEquals(nil, shape2:getCollisionMask(), 'check no mask')
+  shape2:setCollisionMask(1, 2, 3)
+  test:assertEquals(3, #{shape2:getCollisionMask()}, 'check set mask')
   test:assertEquals(0, shape2:getGroupIndex(), 'check no index')
   shape2:setGroupIndex(-1)
   test:assertEquals(-1, shape2:getGroupIndex(), 'check set index')
   local cat, mask, group = shape2:getFilterData()
   test:assertEquals(1, cat, 'check filter cat')
-  test:assertEquals(65528, mask, 'check filter mask')
+  test:assertEquals(7, mask, 'check filter mask')
   test:assertEquals(-1, group, 'check filter group')
 
   -- check destroyed
