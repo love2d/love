@@ -577,7 +577,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 	flush();
 
 	if (Shader::isDefaultActive())
-		Shader::attachDefault(Shader::STANDARD_DEFAULT);
+		Shader::attachDefault(primitiveType == PRIMITIVE_POINTS ? Shader::STANDARD_POINTS : Shader::STANDARD_DEFAULT);
 
 	if (Shader::current)
 		Shader::current->validateDrawState(primitiveType, texture);
