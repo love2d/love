@@ -1635,15 +1635,19 @@ add_library(love_3p_luahttps
 	src/libraries/luahttps/src/common/HTTPS.h
 	src/libraries/luahttps/src/common/HTTPSClient.cpp
 	src/libraries/luahttps/src/common/HTTPSClient.h
+	src/libraries/luahttps/src/common/LibraryLoader.h
 	src/libraries/luahttps/src/common/PlaintextConnection.cpp
 	src/libraries/luahttps/src/common/PlaintextConnection.h
 	src/libraries/luahttps/src/generic/CurlClient.cpp
 	src/libraries/luahttps/src/generic/CurlClient.h
+	src/libraries/luahttps/src/generic/LinktimeLibraryLoader.cpp
 	src/libraries/luahttps/src/generic/OpenSSLConnection.cpp
 	src/libraries/luahttps/src/generic/OpenSSLConnection.h
+	src/libraries/luahttps/src/generic/UnixLibraryLoader.cpp
 	src/libraries/luahttps/src/lua/main.cpp
 	src/libraries/luahttps/src/windows/SChannelConnection.cpp
 	src/libraries/luahttps/src/windows/SChannelConnection.h
+	src/libraries/luahttps/src/windows/WindowsLibraryLoader.cpp
 	src/libraries/luahttps/src/windows/WinINetClient.cpp
 	src/libraries/luahttps/src/windows/WinINetClient.h
 )
