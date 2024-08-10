@@ -905,6 +905,9 @@ public:
 		return (T *) scratchBuffer.data();
 	}
 
+	// Workaround for some very old nvidia drivers that aren't compliant with the GLSL 3.30 spec.
+	bool isUsingNoTextureCubeShadowBiasHack() const { return usingNoTextureCubeShadowBiasHack; }
+
 	static Graphics *createInstance();
 
 	STRINGMAP_CLASS_DECLARE(DrawMode);
@@ -1085,6 +1088,8 @@ protected:
 	Capabilities capabilities;
 
 	Deprecations deprecations;
+
+	bool usingNoTextureCubeShadowBiasHack = false;
 
 	static const size_t MAX_USER_STACK_DEPTH = 128;
 	static const int MAX_TEMPORARY_RESOURCE_UNUSED_FRAMES = 16;

@@ -383,7 +383,25 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 			Shader::CompileOptions opts;
 			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_VERTEX));
 			stages.push_back(Shader::getDefaultCode(stype, SHADERSTAGE_PIXEL));
-			Shader::standardShaders[i] = newShader(stages, opts);
+
+			try
+			{
+				Shader::standardShaders[i] = newShader(stages, opts);
+			}
+			catch (love::Exception &)
+			{
+				// Attempted workaround for nvidia driver bug affecting old GPUs
+				// on Windows (e.g. the 300 series).
+				if (!isUsingNoTextureCubeShadowBiasHack())
+				{
+					usingNoTextureCubeShadowBiasHack = true;
+					Shader::standardShaders[i] = newShader(stages, opts);
+				}
+				else
+				{
+					throw;
+				}
+			}
 		}
 	}
 

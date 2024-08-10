@@ -143,7 +143,9 @@ float Texel(sampler2DArrayShadow s, highp vec4 c) { return texture(s, c); }
 	uvec4 Texel(usampler2DArray s, highp vec3 c, float b) { return texture(s, c, b); }
 
 	float Texel(sampler2DShadow s, highp vec3 c, float b) { return texture(s, c, b); }
+#ifndef LOVE_NO_TEXTURECUBESHADOWBIAS_HACK
 	float Texel(samplerCubeShadow s, highp vec4 c, float b) { return texture(s, c, b); }
+#endif
 #endif
 
 uniform mediump float deprecatedTextureCall;
@@ -612,6 +614,9 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 		ss << "#define LOVE_GAMMA_CORRECT 1\n";
 	if (info.usesMRT)
 		ss << "#define LOVE_MULTI_RENDER_TARGETS 1\n";
+
+	if (gfx->isUsingNoTextureCubeShadowBiasHack())
+		ss << "#define LOVE_NO_TEXTURECUBESHADOWBIAS_HACK 1\n";
 
 	for (const auto &def : options.defines)
 		ss << "#define " + def.first + " " + def.second + "\n";
