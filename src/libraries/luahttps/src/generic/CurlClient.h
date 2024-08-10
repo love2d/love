@@ -7,6 +7,7 @@
 #include <curl/curl.h>
 
 #include "../common/HTTPSClient.h"
+#include "../common/LibraryLoader.h"
 
 class CurlClient : public HTTPSClient
 {
@@ -19,7 +20,7 @@ private:
 	{
 		Curl();
 		~Curl();
-		void *handle;
+		LibraryLoader::handle *handle;
 		bool loaded;
 
 		decltype(&curl_global_cleanup) global_cleanup;

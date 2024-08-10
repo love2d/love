@@ -5,7 +5,7 @@
 #include <sstream>
 #include <type_traits>
 
-#include <dlfcn.h>
+#include "../common/LibraryLoader.h"
 
 // We want std::string that contains null byte, hence length of 1.
 // NOLINTNEXTLINE
@@ -52,10 +52,11 @@ static std::string getStringUTF(JNIEnv *env, jstring str)
 AndroidClient::AndroidClient()
 : HTTPSClient()
 {
+	LibraryLoader::handle *library = LibraryLoader::GetCurrentProcessHandle();
 	// Look for SDL_AndroidGetJNIEnv
-	SDL_AndroidGetJNIEnv = (decltype(SDL_AndroidGetJNIEnv)) dlsym(RTLD_DEFAULT, "SDL_AndroidGetJNIEnv");
+	LibraryLoader::LoadSymbol(SDL_AndroidGetJNIEnv, library, "SDL_AndroidGetJNIEnv");
 	// Look for SDL_AndroidGetActivity
-	SDL_AndroidGetActivity = (decltype(SDL_AndroidGetActivity)) dlsym(RTLD_DEFAULT, "SDL_AndroidGetActivity");
+	LibraryLoader::LoadSymbol(SDL_AndroidGetActivity, library, "SDL_AndroidGetActivity");
 }
 
 bool AndroidClient::valid() const

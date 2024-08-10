@@ -1,6 +1,7 @@
 #include "HTTPS.h"
 #include "config.h"
 #include "ConnectionClient.h"
+#include "LibraryLoader.h"
 
 #include <stdexcept>
 
@@ -64,6 +65,9 @@ static HTTPSClient *clients[] = {
 #endif
 	nullptr,
 };
+
+// Call into the library loader to make sure it is linked in
+static LibraryLoader::handle* dummyProcessHandle = LibraryLoader::GetCurrentProcessHandle();
 
 HTTPSClient::Reply request(const HTTPSClient::Request &req)
 {

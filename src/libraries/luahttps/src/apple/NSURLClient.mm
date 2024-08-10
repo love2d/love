@@ -78,6 +78,11 @@ HTTPSClient::Reply NSURLClient::request(const HTTPSClient::Request &req)
 		}
 	}
 
+	if (reply.responseCode == 0 && body == nil && error != nil)
+	{
+		reply.body = toCppString(error.localizedDescription);
+	}
+
 	return reply;
 }}
 

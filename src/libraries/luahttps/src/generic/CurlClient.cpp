@@ -1,8 +1,3 @@
-#ifdef _WIN32
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#endif
-
 #include "CurlClient.h"
 
 #ifdef HTTPS_BACKEND_CURL
@@ -12,29 +7,11 @@
 #include <sstream>
 #include <vector>
 
-// Dynamic library loader
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <dlfcn.h>
-#endif
-
 typedef struct StringReader
 {
 	const std::string *str;
 	size_t pos;
 } StringReader;
-
-template <class T>
-static inline bool loadSymbol(T &var, void *handle, const char *name)
-{
-#ifdef _WIN32
-	var = (T) GetProcAddress((HMODULE) handle, name);
-#else
-	var = (T) dlsym(handle, name);
-#endif
-	return var != nullptr;
-}
 
 CurlClient::Curl::Curl()
 : handle(nullptr)
@@ -48,33 +25,35 @@ CurlClient::Curl::Curl()
 , slist_append(nullptr)
 , slist_free_all(nullptr)
 {
+	using namespace LibraryLoader;
+
 #ifdef _WIN32
-	handle = (void *) LoadLibraryA("libcurl.dll");
+	handle = OpenLibrary("libcurl.dll");
 #else
-	handle = dlopen("libcurl.so.4", RTLD_LAZY);
+	handle = OpenLibrary("libcurl.so.4");
 #endif
 	if (!handle)
 		return;
 
 	// Load symbols
 	decltype(&curl_global_init) global_init = nullptr;
-	if (!loadSymbol(global_init, handle, "curl_global_init"))
+	if (!LoadSymbol(global_init, handle, "curl_global_init"))
 		return;
-	if (!loadSymbol(global_cleanup, handle, "curl_global_cleanup"))
+	if (!LoadSymbol(global_cleanup, handle, "curl_global_cleanup"))
 		return;
-	if (!loadSymbol(easy_init, handle, "curl_easy_init"))
+	if (!LoadSymbol(easy_init, handle, "curl_easy_init"))
 		return;
-	if (!loadSymbol(easy_cleanup, handle, "curl_easy_cleanup"))
+	if (!LoadSymbol(easy_cleanup, handle, "curl_easy_cleanup"))
 		return;
-	if (!loadSymbol(easy_setopt, handle, "curl_easy_setopt"))
+	if (!LoadSymbol(easy_setopt, handle, "curl_easy_setopt"))
 		return;
-	if (!loadSymbol(easy_perform, handle, "curl_easy_perform"))
+	if (!LoadSymbol(easy_perform, handle, "curl_easy_perform"))
 		return;
-	if (!loadSymbol(easy_getinfo, handle, "curl_easy_getinfo"))
+	if (!LoadSymbol(easy_getinfo, handle, "curl_easy_getinfo"))
 		return;
-	if (!loadSymbol(slist_append, handle, "curl_slist_append"))
+	if (!LoadSymbol(slist_append, handle, "curl_slist_append"))
 		return;
-	if (!loadSymbol(slist_free_all, handle, "curl_slist_free_all"))
+	if (!LoadSymbol(slist_free_all, handle, "curl_slist_free_all"))
 		return;
 
 	global_init(CURL_GLOBAL_DEFAULT);
@@ -87,11 +66,7 @@ CurlClient::Curl::~Curl()
 		global_cleanup();
 
 	if (handle)
-#ifdef _WIN32
-		FreeLibrary((HMODULE) handle);
-#else
-		dlclose(handle);
-#endif
+		LibraryLoader::CloseLibrary(handle);
 }
 
 static char toUppercase(char c)

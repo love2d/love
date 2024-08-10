@@ -76,6 +76,17 @@
 		D9DB6E402B4B41580037A1F6 /* GLSL.ext.ARM.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DB6E3A2B4B41570037A1F6 /* GLSL.ext.ARM.h */; };
 		D9DB6E412B4B41580037A1F6 /* GLSL.ext.QCOM.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DB6E3B2B4B41580037A1F6 /* GLSL.ext.QCOM.h */; };
 		D9DB6E452B4B80E80037A1F6 /* build_info.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DB6E442B4B80E80037A1F6 /* build_info.h */; };
+		D9F0C2CC2C68091200BB2D25 /* LibraryLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = D9F0C2CB2C68091200BB2D25 /* LibraryLoader.h */; };
+		D9F0C2D42C680A5500BB2D25 /* CurlClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F0C2CD2C680A5500BB2D25 /* CurlClient.cpp */; };
+		D9F0C2D52C680A5500BB2D25 /* CurlClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F0C2CD2C680A5500BB2D25 /* CurlClient.cpp */; };
+		D9F0C2D62C680A5500BB2D25 /* CurlClient.h in Headers */ = {isa = PBXBuildFile; fileRef = D9F0C2CE2C680A5500BB2D25 /* CurlClient.h */; };
+		D9F0C2D72C680A5500BB2D25 /* LinktimeLibraryLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F0C2CF2C680A5500BB2D25 /* LinktimeLibraryLoader.cpp */; };
+		D9F0C2D82C680A5500BB2D25 /* LinktimeLibraryLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F0C2CF2C680A5500BB2D25 /* LinktimeLibraryLoader.cpp */; };
+		D9F0C2D92C680A5500BB2D25 /* OpenSSLConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F0C2D02C680A5500BB2D25 /* OpenSSLConnection.cpp */; };
+		D9F0C2DA2C680A5500BB2D25 /* OpenSSLConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F0C2D02C680A5500BB2D25 /* OpenSSLConnection.cpp */; };
+		D9F0C2DB2C680A5500BB2D25 /* OpenSSLConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = D9F0C2D12C680A5500BB2D25 /* OpenSSLConnection.h */; };
+		D9F0C2DC2C680A5500BB2D25 /* UnixLibraryLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F0C2D22C680A5500BB2D25 /* UnixLibraryLoader.cpp */; };
+		D9F0C2DD2C680A5500BB2D25 /* UnixLibraryLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F0C2D22C680A5500BB2D25 /* UnixLibraryLoader.cpp */; };
 		FA0A3A5F23366CE9001C269E /* floattypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0A3A5D23366CE9001C269E /* floattypes.h */; };
 		FA0A3A6023366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
 		FA0A3A6123366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
@@ -1424,6 +1435,13 @@
 		D9DB6E3A2B4B41570037A1F6 /* GLSL.ext.ARM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLSL.ext.ARM.h; sourceTree = "<group>"; };
 		D9DB6E3B2B4B41580037A1F6 /* GLSL.ext.QCOM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLSL.ext.QCOM.h; sourceTree = "<group>"; };
 		D9DB6E442B4B80E80037A1F6 /* build_info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = build_info.h; sourceTree = "<group>"; };
+		D9F0C2CB2C68091200BB2D25 /* LibraryLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibraryLoader.h; sourceTree = "<group>"; };
+		D9F0C2CD2C680A5500BB2D25 /* CurlClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CurlClient.cpp; sourceTree = "<group>"; };
+		D9F0C2CE2C680A5500BB2D25 /* CurlClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CurlClient.h; sourceTree = "<group>"; };
+		D9F0C2CF2C680A5500BB2D25 /* LinktimeLibraryLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LinktimeLibraryLoader.cpp; sourceTree = "<group>"; };
+		D9F0C2D02C680A5500BB2D25 /* OpenSSLConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenSSLConnection.cpp; sourceTree = "<group>"; };
+		D9F0C2D12C680A5500BB2D25 /* OpenSSLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenSSLConnection.h; sourceTree = "<group>"; };
+		D9F0C2D22C680A5500BB2D25 /* UnixLibraryLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UnixLibraryLoader.cpp; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "liblove-macosx.plist"; path = "macosx/liblove-macosx.plist"; sourceTree = "<group>"; };
 		FA0A3A5D23366CE9001C269E /* floattypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = floattypes.h; sourceTree = "<group>"; };
 		FA0A3A5E23366CE9001C269E /* floattypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = floattypes.cpp; sourceTree = "<group>"; };
@@ -2384,6 +2402,19 @@
 				D9DB6E332B4B41100037A1F6 /* ResourceLimits.cpp */,
 			);
 			path = ResourceLimits;
+			sourceTree = "<group>";
+		};
+		D9F0C2D32C680A5500BB2D25 /* generic */ = {
+			isa = PBXGroup;
+			children = (
+				D9F0C2CD2C680A5500BB2D25 /* CurlClient.cpp */,
+				D9F0C2CE2C680A5500BB2D25 /* CurlClient.h */,
+				D9F0C2CF2C680A5500BB2D25 /* LinktimeLibraryLoader.cpp */,
+				D9F0C2D02C680A5500BB2D25 /* OpenSSLConnection.cpp */,
+				D9F0C2D12C680A5500BB2D25 /* OpenSSLConnection.h */,
+				D9F0C2D22C680A5500BB2D25 /* UnixLibraryLoader.cpp */,
+			);
+			path = generic;
 			sourceTree = "<group>";
 		};
 		FA08F5AC16C751BA00F007B5 /* Resources */ = {
@@ -3593,6 +3624,7 @@
 			children = (
 				FA94729827A6F9AC00817677 /* apple */,
 				FA94725327A6EE1B00817677 /* common */,
+				D9F0C2D32C680A5500BB2D25 /* generic */,
 				FA94725127A6EE1B00817677 /* lua */,
 			);
 			path = src;
@@ -3618,6 +3650,7 @@
 				FA94725E27A6EE1B00817677 /* HTTPS.h */,
 				FA94725527A6EE1B00817677 /* HTTPSClient.cpp */,
 				FA94725627A6EE1B00817677 /* HTTPSClient.h */,
+				D9F0C2CB2C68091200BB2D25 /* LibraryLoader.h */,
 				FA94725D27A6EE1B00817677 /* PlaintextConnection.cpp */,
 				FA94725727A6EE1B00817677 /* PlaintextConnection.h */,
 			);
@@ -4128,6 +4161,7 @@
 				FA0B7D3E1A95902C000E1D17 /* Texture.h in Headers */,
 				FA0B7ECA1A95902C000E1D17 /* threads.h in Headers */,
 				FADF54361E3DAE6E00012CC0 /* wrap_SpriteBatch.h in Headers */,
+				D9F0C2D62C680A5500BB2D25 /* CurlClient.h in Headers */,
 				FA0B7DB01A95902C000E1D17 /* wrap_CompressedImageData.h in Headers */,
 				FAC7CD8D1FE35E95006A60C7 /* physfs_platforms.h in Headers */,
 				FABDA9B82552448300B5C523 /* b2_motor_joint.h in Headers */,
@@ -4300,6 +4334,7 @@
 				FA0B7DD81A95902C000E1D17 /* MathModule.h in Headers */,
 				217DFBDA1D9F6D490055D849 /* auxiliar.h in Headers */,
 				FA0B7EC71A95902C000E1D17 /* ThreadModule.h in Headers */,
+				D9F0C2DB2C680A5500BB2D25 /* OpenSSLConnection.h in Headers */,
 				FA4F2BAD1DE1E37000CA37D7 /* RecordingDevice.h in Headers */,
 				FABDA9CE2552448300B5C523 /* b2_time_of_impact.h in Headers */,
 				FA0B792B1A958E3B000E1D17 /* Matrix.h in Headers */,
@@ -4324,6 +4359,7 @@
 				FA93C4531F315B960087CCD4 /* FormatHandler.h in Headers */,
 				FA0B7CD81A95902C000E1D17 /* Audio.h in Headers */,
 				FA0B7CF61A95902C000E1D17 /* File.h in Headers */,
+				D9F0C2CC2C68091200BB2D25 /* LibraryLoader.h in Headers */,
 				FA18CF2123DCF67900263725 /* spirv.hpp in Headers */,
 				FA0A3A5F23366CE9001C269E /* floattypes.h in Headers */,
 				FADF54091E3D78F700012CC0 /* Video.h in Headers */,
@@ -4746,6 +4782,7 @@
 				D99081F02BB2473900D2B0E4 /* JoystickSDL3.cpp in Sources */,
 				FADF54031E3D77B500012CC0 /* wrap_TextBatch.cpp in Sources */,
 				FA0B7DCB1A95902C000E1D17 /* Keyboard.cpp in Sources */,
+				D9F0C2DD2C680A5500BB2D25 /* UnixLibraryLoader.cpp in Sources */,
 				FA0B7DFB1A95902C000E1D17 /* Body.cpp in Sources */,
 				FA0B7ED21A95902C000E1D17 /* wrap_ThreadModule.cpp in Sources */,
 				FADF54261E3DA5BA00012CC0 /* Mesh.cpp in Sources */,
@@ -4758,7 +4795,9 @@
 				FA18CF4023DCF67900263725 /* spirv_parser.cpp in Sources */,
 				FA24348821D401CB00B8918A /* attribute.cpp in Sources */,
 				FACA02FC1F5E39810084B28F /* wrap_CompressedData.cpp in Sources */,
+				D9F0C2DA2C680A5500BB2D25 /* OpenSSLConnection.cpp in Sources */,
 				FABDA9A32552448300B5C523 /* b2_friction_joint.cpp in Sources */,
+				D9F0C2D52C680A5500BB2D25 /* CurlClient.cpp in Sources */,
 				FAF140AD1E20934C00F898D2 /* Versions.cpp in Sources */,
 				FA0B793C1A958E3B000E1D17 /* runtime.cpp in Sources */,
 				FA6BDF8A280B62A000240F2A /* GraphicsReadback.mm in Sources */,
@@ -4960,6 +4999,7 @@
 				FABDA9D92552448300B5C523 /* b2_settings.cpp in Sources */,
 				FA0B7DB21A95902C000E1D17 /* wrap_Image.cpp in Sources */,
 				FA0B7E891A95902C000E1D17 /* Decoder.cpp in Sources */,
+				D9F0C2D82C680A5500BB2D25 /* LinktimeLibraryLoader.cpp in Sources */,
 				FAECA1B31F3164700095D008 /* CompressedSlice.cpp in Sources */,
 				FA18CF1823DCF67900263725 /* spirv_glsl.cpp in Sources */,
 				FA0B7E3D1A95902C000E1D17 /* wrap_Body.cpp in Sources */,
@@ -5175,6 +5215,7 @@
 				D99081EF2BB2473900D2B0E4 /* JoystickSDL3.cpp in Sources */,
 				FAF140931E20934C00F898D2 /* PpScanner.cpp in Sources */,
 				FA9D53AC1F5307E900125C6B /* Deprecations.cpp in Sources */,
+				D9F0C2DC2C680A5500BB2D25 /* UnixLibraryLoader.cpp in Sources */,
 				FA0B7CCD1A95902C000E1D17 /* Audio.cpp in Sources */,
 				FA0B7DCA1A95902C000E1D17 /* Keyboard.cpp in Sources */,
 				FA9D8DDD1DEF842A002CD881 /* Drawable.cpp in Sources */,
@@ -5187,7 +5228,9 @@
 				217DFBFB1D9F6D490055D849 /* serial.c in Sources */,
 				FA18CED823DBC6E000263725 /* StreamBuffer.mm in Sources */,
 				FADF54251E3DA5BA00012CC0 /* Mesh.cpp in Sources */,
+				D9F0C2D92C680A5500BB2D25 /* OpenSSLConnection.cpp in Sources */,
 				FA4F2BE51DE6650600CA37D7 /* wrap_Transform.cpp in Sources */,
+				D9F0C2D42C680A5500BB2D25 /* CurlClient.cpp in Sources */,
 				FABDA9A22552448300B5C523 /* b2_friction_joint.cpp in Sources */,
 				FA0B7CDC1A95902C000E1D17 /* Source.cpp in Sources */,
 				FA6BDF89280B62A000240F2A /* GraphicsReadback.mm in Sources */,
@@ -5389,6 +5432,7 @@
 				FA0B7ACB1A958EA3000E1D17 /* list.c in Sources */,
 				FA0B7E7E1A95902C000E1D17 /* Joint.cpp in Sources */,
 				FA0B7DB11A95902C000E1D17 /* wrap_Image.cpp in Sources */,
+				D9F0C2D72C680A5500BB2D25 /* LinktimeLibraryLoader.cpp in Sources */,
 				FABDA9D82552448300B5C523 /* b2_settings.cpp in Sources */,
 				FAC7CD831FE35E95006A60C7 /* physfs_platform_windows.c in Sources */,
 				FA0B7E881A95902C000E1D17 /* Decoder.cpp in Sources */,

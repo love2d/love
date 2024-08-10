@@ -10,6 +10,7 @@
 #elif defined(WIN32) || defined(_WIN32)
 	#define HTTPS_BACKEND_SCHANNEL
 	#define HTTPS_USE_WINSOCK
+	#define HTTPS_LIBRARY_LOADER_WINDOWS
 	#include <winapifamily.h>
 	#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
 		// WinINet is only supported on desktop.
@@ -23,9 +24,13 @@
 	#endif
 #elif defined(__ANDROID__)
 	#define HTTPS_BACKEND_ANDROID
+	#define HTTPS_LIBRARY_LOADER_UNIX
 #elif defined(__APPLE__)
 	#define HTTPS_BACKEND_NSURL
+	#define HTTPS_LIBRARY_LOADER_UNIX
 #elif defined(linux) || defined(__linux) || defined(__linux__)
+	#define HTTPS_LIBRARY_LOADER_UNIX
+
 	#if defined __has_include
 		#if __has_include(<curl/curl.h>)
 			#define HTTPS_BACKEND_CURL
