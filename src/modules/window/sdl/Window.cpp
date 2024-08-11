@@ -737,12 +737,13 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 #endif
 
 			graphics->setMode(context, (int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.depth, f.msaa);
-			this->settings.msaa = graphics->getBackbufferMSAA();
 		}
 		else
 		{
 			graphics->backbufferChanged((int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.depth, f.msaa);
 		}
+
+		this->settings.msaa = graphics->getBackbufferMSAA();
 	}
 
 	// Set fullscreen when user requested it before.
