@@ -618,6 +618,8 @@ void Texture::copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int 
 	region.bufferRowLength = sourcewidth;
 	region.bufferImageHeight = 1;
 	region.imageSubresource = layers;
+	region.imageOffset.x = rect.x;
+	region.imageOffset.y = rect.y;
 	region.imageExtent.width = static_cast<uint32_t>(rect.w);
 	region.imageExtent.height = static_cast<uint32_t>(rect.h);
 
@@ -648,6 +650,8 @@ void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const 
 	region.bufferRowLength = destwidth;
 	region.bufferImageHeight = 0;
 	region.imageSubresource = layers;
+	region.imageOffset.x = rect.x;
+	region.imageOffset.y = rect.y;
 	region.imageExtent.width = static_cast<uint32_t>(rect.w);
 	region.imageExtent.height = static_cast<uint32_t>(rect.h);
 	region.imageExtent.depth = 1;
