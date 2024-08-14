@@ -114,7 +114,7 @@ public:
 	ptrdiff_t getHandle() const override { return 0; }
 	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
-	id<MTLRenderPipelineState> getCachedRenderPipeline(const RenderPipelineKey &key);
+	id<MTLRenderPipelineState> getCachedRenderPipeline(Graphics *gfx, const RenderPipelineKey &key);
 	id<MTLComputePipelineState> getComputePipeline() const { return computePipeline; }
 
 	static int getUniformBufferBinding();

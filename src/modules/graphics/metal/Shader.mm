@@ -855,7 +855,7 @@ void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics:
 	}
 }
 
-id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineKey &key)
+id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(graphics::Graphics *gfx, const RenderPipelineKey &key)
 {
 	auto it = cachedRenderPipelines.find(key);
 
@@ -882,7 +882,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(const RenderPipelineK
 		auto formatdesc = Metal::convertPixelFormat(device, format);
 		attachment.pixelFormat = formatdesc.format;
 
-		if (key.blend.enable)
+		if (key.blend.enable && gfx->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_BLEND))
 		{
 			attachment.blendingEnabled = YES;
 			attachment.sourceRGBBlendFactor = getMTLBlendFactor(key.blend.srcFactorRGB);

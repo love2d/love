@@ -1001,7 +1001,7 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 			key.blend = state.blend;
 			key.colorChannelMask = state.colorMask;
 
-			pipeline = shader->getCachedRenderPipeline(key);
+			pipeline = shader->getCachedRenderPipeline(this, key);
 		}
 
 		[encoder setRenderPipelineState:pipeline];
