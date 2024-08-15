@@ -198,6 +198,7 @@ struct RenderpassState
 	VkPipeline pipeline = VK_NULL_HANDLE;
 	std::vector<std::tuple<VkImage, PixelFormat, VkImageLayout, VkImageLayout, int, int>> transitionImages;
 	uint32_t numColorAttachments = 0;
+	uint64 packedColorAttachmentFormats = 0;
 	float width = 0.0f;
 	float height = 0.0f;
 	VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT;

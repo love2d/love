@@ -56,6 +56,7 @@ struct GraphicsPipelineConfiguration
 	VkSampleCountFlagBits msaaSamples;
 	uint32_t numColorAttachments;
 	PrimitiveType primitiveType;
+	uint64 packedColorAttachmentFormats;
 
 	struct DynamicState
 	{

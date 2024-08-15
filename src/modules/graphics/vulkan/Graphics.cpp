@@ -2346,6 +2346,7 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 	configuration.colorChannelMask = states.back().colorMask;
 	configuration.msaaSamples = renderPassState.msaa;
 	configuration.numColorAttachments = renderPassState.numColorAttachments;
+	configuration.packedColorAttachmentFormats = renderPassState.packedColorAttachmentFormats;
 	configuration.primitiveType = primitiveType;
 
 	if (optionalDeviceExtensions.extendedDynamicState)
@@ -2415,6 +2416,7 @@ void Graphics::setDefaultRenderPass()
 	renderPassState.height = static_cast<float>(swapChainExtent.height);
 	renderPassState.msaa = msaaSamples;
 	renderPassState.numColorAttachments = 1;
+	renderPassState.packedColorAttachmentFormats = (uint8)swapChainPixelFormat;
 	renderPassState.transitionImages.clear();
 
 	RenderPassConfiguration renderPassConfiguration{};
@@ -2542,6 +2544,9 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	renderPassState.height = static_cast<float>(pixelh);
 	renderPassState.msaa = VK_SAMPLE_COUNT_1_BIT;
 	renderPassState.numColorAttachments = static_cast<uint32_t>(rts.colors.size());
+	renderPassState.packedColorAttachmentFormats = 0;
+	for (size_t i = 0; i < rts.colors.size(); i++)
+		renderPassState.packedColorAttachmentFormats |= ((uint64)rts.colors[i].texture->getPixelFormat()) << (i * 8ull);
 	renderPassState.transitionImages = std::move(transitionImages);
 }
 
@@ -2782,6 +2787,16 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 	colorBlendAttachment.alphaBlendOp = Vulkan::getBlendOp(configuration.blendState.operationA);
 
 	std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments(configuration.numColorAttachments, colorBlendAttachment);
+
+	if (configuration.blendState.enable)
+	{
+		for (uint32 i = 0; i < configuration.numColorAttachments; i++)
+		{
+			PixelFormat format = (PixelFormat)((configuration.packedColorAttachmentFormats >> (i * 8ull)) & 0xFF);
+			if (!isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_BLEND))
+				colorBlendAttachments[i].blendEnable = false;
+		}
+	}
 
 	VkPipelineColorBlendStateCreateInfo colorBlending{};
 	colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
