@@ -581,6 +581,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	Uint32 sdlflags = 0;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 	const SDL_DisplayMode *fsmode = nullptr;
+#else
+	SDL_DisplayMode fsmode = {0, width, height, 0, nullptr};
 #endif
 
 	if (f.fullscreen)
@@ -608,8 +610,6 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 #else
 		if (f.fstype == FULLSCREEN_EXCLUSIVE)
 		{
-			SDL_DisplayMode fsmode = {0, width, height, 0, nullptr};
-
 			// Fullscreen window creation will bug out if no mode can be used.
 			if (SDL_GetClosestDisplayMode(f.displayindex, &fsmode, &fsmode) == nullptr)
 			{
@@ -642,12 +642,13 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		SDL_SetWindowFullscreenMode(window, fsmode);
 		if (SDL_SetWindowFullscreen(window, (sdlflags & SDL_WINDOW_FULLSCREEN) != 0) == 0 && renderer == graphics::RENDERER_OPENGL)
 #else
+		if (f.fullscreen && f.fstype == FULLSCREEN_EXCLUSIVE)
+			SDL_SetWindowDisplayMode(window, &fsmode);
 		if (SDL_SetWindowFullscreen(window, sdlflags) == 0 && renderer == graphics::RENDERER_OPENGL)
 #endif
 			SDL_GL_MakeCurrent(window, glcontext);
 
-		if (!f.fullscreen)
-			SDL_SetWindowSize(window, width, height);
+		SDL_SetWindowSize(window, width, height);
 
 		if (this->settings.resizable != f.resizable)
 			SDL_SetWindowResizable(window, f.resizable ? SDL_TRUE : SDL_FALSE);
