@@ -100,7 +100,7 @@ GraphicsReadback::GraphicsReadback(Graphics *gfx, ReadbackMethod method, Texture
 
 	if (dest != nullptr)
 	{
-		if (dest->getFormat() != textureFormat)
+		if (getLinearPixelFormat(dest->getFormat()) != textureFormat)
 			throw love::Exception("Destination ImageData pixel format must match the source Texture's format.");
 
 		if (destx < 0 || desty < 0)
