@@ -141,7 +141,12 @@ void Mesh::setupAttachedAttributes()
 		if (getAttachedAttributeIndex(name) != -1)
 			throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
 
-		attachedAttributes.push_back({name, vertexBuffer, nullptr, name, (int) i, 0, STEP_PER_VERTEX, true});
+		BuiltinVertexAttribute builtinattrib;
+		int builtinAttribIndex = -1;
+		if (getConstant(name.c_str(), builtinattrib))
+			builtinAttribIndex = (int)builtinattrib;
+
+		attachedAttributes.push_back({name, vertexBuffer, nullptr, name, (int) i, 0, STEP_PER_VERTEX, builtinAttribIndex, true});
 	}
 }
 
@@ -167,6 +172,12 @@ void Mesh::finalizeAttribute(BufferAttribute &attrib) const
 	int indexInBuffer = attrib.buffer->getDataMemberIndex(attrib.nameInBuffer);
 	if (indexInBuffer < 0)
 		throw love::Exception("Buffer does not have a vertex attribute with name '%s'.", attrib.nameInBuffer.c_str());
+
+	BuiltinVertexAttribute builtinattrib;
+	if (getConstant(attrib.name.c_str(), builtinattrib))
+		attrib.builtinAttributeIndex = (int)builtinattrib;
+	else
+		attrib.builtinAttributeIndex = -1;
 
 	attrib.indexInBuffer = indexInBuffer;
 }
@@ -593,14 +604,11 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 			continue;
 
 		Buffer *buffer = attrib.buffer.get();
-		int attributeindex = -1;
+		int attributeindex = attrib.builtinAttributeIndex;
 
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
-		BuiltinVertexAttribute builtinattrib;
-		if (getConstant(attrib.name.c_str(), builtinattrib))
-			attributeindex = (int) builtinattrib;
-		else if (Shader::current)
+		if (attributeindex < 0 && Shader::current)
 			attributeindex = Shader::current->getVertexAttributeIndex(attrib.name);
 
 		if (attributeindex >= 0)

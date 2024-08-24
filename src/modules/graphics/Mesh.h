@@ -60,6 +60,7 @@ public:
 		int indexInBuffer;
 		int startArrayIndex;
 		AttributeStep step;
+		int builtinAttributeIndex;
 		bool enabled;
 	};
 

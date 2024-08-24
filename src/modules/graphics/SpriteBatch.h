@@ -113,6 +113,7 @@ private:
 		StrongRef<Buffer> buffer;
 		StrongRef<Mesh> mesh;
 		int index;
+		int builtinAttributeIndex;
 	};
 
 	/**
