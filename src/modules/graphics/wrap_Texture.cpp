@@ -375,10 +375,17 @@ int w_Texture_generateMipmaps(lua_State *L)
 int w_Texture_replacePixels(lua_State *L)
 {
 	Texture *t = luax_checktexture(L, 1);
-	love::image::ImageData *id = luax_checktype<love::image::ImageData>(L, 2);
+
+	love::image::ImageData *id = nullptr;
+	love::image::CompressedImageData *cid = nullptr;
+
+	if (luax_istype(L, 2, love::image::CompressedImageData::type))
+		cid = luax_checktype<love::image::CompressedImageData>(L, 2);
+	else
+		id = luax_checktype<love::image::ImageData>(L, 2);
 
 	int slice = 0;
-	int mipmap = 0;
+	int dstmip = 0;
 	int x = 0;
 	int y = 0;
 	bool reloadmipmaps = t->getMipmapsMode() == Texture::MIPMAPS_AUTO;
@@ -386,7 +393,7 @@ int w_Texture_replacePixels(lua_State *L)
 	if (t->getTextureType() != TEXTURE_2D)
 		slice = (int) luaL_checkinteger(L, 3) - 1;
 
-	mipmap = (int) luaL_optinteger(L, 4, 1) - 1;
+	dstmip = (int) luaL_optinteger(L, 4, 1) - 1;
 
 	if (!lua_isnoneornil(L, 5))
 	{
@@ -397,7 +404,22 @@ int w_Texture_replacePixels(lua_State *L)
 			reloadmipmaps = luax_optboolean(L, 7, reloadmipmaps);
 	}
 
-	luax_catchexcept(L, [&](){ t->replacePixels(id, slice, mipmap, x, y, reloadmipmaps); });
+	if (cid != nullptr)
+	{
+		int srcmip = 0;
+
+		if (cid->getMipmapCount() > 1)
+			srcmip = (int) luaL_checkinteger(L, 8) - 1;
+
+		if (srcmip < 0 || srcmip >= cid->getMipmapCount())
+			return luaL_error(L, "Invalid source mipmap level.");
+
+		luax_catchexcept(L, [&](){ t->replacePixels(cid->getSlice(0, srcmip), slice, dstmip, x, y, reloadmipmaps); });
+	}
+	else
+	{
+		luax_catchexcept(L, [&](){ t->replacePixels(id, slice, dstmip, x, y, reloadmipmaps); });
+	}
 	return 0;
 }
 
