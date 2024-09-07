@@ -147,6 +147,25 @@ struct BlendState
 			&& srcFactorRGB == b.srcFactorRGB && srcFactorA == b.srcFactorA
 			&& dstFactorRGB == b.dstFactorRGB && dstFactorA == b.dstFactorA;
 	}
+
+	uint32 toKey() const
+	{
+		return (dstFactorA << 0) | (dstFactorRGB << 4) | (srcFactorA << 8) | (srcFactorRGB << 12)
+			| (operationA << 16) | (operationRGB << 20) | ((enable ? 1 : 0) << 24);
+	}
+
+	static BlendState fromKey(uint32 key)
+	{
+		BlendState b;
+		b.enable = (bool)((key >> 24) & 1);
+		b.operationRGB = (BlendOperation)((key >> 20) & 0x7);
+		b.operationA = (BlendOperation)((key >> 16) & 0x7);
+		b.srcFactorRGB = (BlendFactor)((key >> 12) & 0xF);
+		b.srcFactorA = (BlendFactor)((key >> 8) & 0xF);
+		b.dstFactorRGB = (BlendFactor)((key >> 4) & 0xF);
+		b.dstFactorA = (BlendFactor)((key >> 0) & 0xF);
+		return b;
+	}
 };
 
 struct DepthState
