@@ -1170,6 +1170,10 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 	{
 		const glslang::TObjectReflection &info = program.getPipeInput(i);
 
+		// Avoid builtins.
+		if (info.name.rfind("gl_", 0) == 0)
+			continue;
+
 		int location = info.layoutLocation();
 		if (location == glslang::TQualifier::layoutLocationEnd)
 			location = -1;
