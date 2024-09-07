@@ -1058,7 +1058,7 @@ public:
     void addIoAccessed(const TString& name) { ioAccessed.insert(name); }
     bool inIoAccessed(const TString& name) const { return ioAccessed.find(name) != ioAccessed.end(); }
 
-    int addUsedLocation(const TQualifier&, const TType&, bool& typeCollision);
+    int addUsedLocation(EShMessages, const TQualifier&, const TType&, bool& typeCollision);
     int checkLocationRange(int set, const TIoRange& range, const TType&, bool& typeCollision);
     int checkLocationRT(int set, int location);
     int addUsedOffsets(int binding, int offset, int numOffsets);

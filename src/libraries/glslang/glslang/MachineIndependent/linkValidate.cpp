@@ -1644,7 +1644,7 @@ bool TIntermediate::userOutputUsed() const
 // typeCollision is set to true if there is no direct collision, but the types in the same location
 // are different.
 //
-int TIntermediate::addUsedLocation(const TQualifier& qualifier, const TType& type, bool& typeCollision)
+int TIntermediate::addUsedLocation(EShMessages messages, const TQualifier& qualifier, const TType& type, bool& typeCollision)
 {
     typeCollision = false;
 
@@ -1758,7 +1758,7 @@ int TIntermediate::addUsedLocation(const TQualifier& qualifier, const TType& typ
     TIoRange range(locationRange, componentRange, basicTy, qualifier.hasIndex() ? qualifier.getIndex() : 0, qualifier.centroid, qualifier.smooth, qualifier.flat, qualifier.sample, qualifier.patch);
 
     // check for collisions, except for vertex inputs on desktop targeting OpenGL
-    if (! (!isEsProfile() && language == EShLangVertex && qualifier.isPipeInput()) || spvVersion.vulkan > 0)
+    if (! (!isEsProfile() && language == EShLangVertex && qualifier.isPipeInput()) || spvVersion.vulkan > 0 || (messages & EshMsgOverlappingLocations) != 0)
         collision = checkLocationRange(set, range, type, typeCollision);
 
     if (collision < 0)

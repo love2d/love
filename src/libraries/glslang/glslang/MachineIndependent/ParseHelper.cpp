@@ -6583,7 +6583,7 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         }
 
         bool typeCollision;
-        int repeated = intermediate.addUsedLocation(qualifier, type, typeCollision);
+        int repeated = intermediate.addUsedLocation(messages, qualifier, type, typeCollision);
         if (repeated >= 0 && ! typeCollision)
             error(loc, "overlapping use of location", "location", "%d", repeated);
         // When location aliasing, the aliases sharing the location must have the same underlying numerical type and bit width(
