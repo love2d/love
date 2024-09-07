@@ -314,7 +314,7 @@ struct VertexBufferLayout
 
 struct VertexAttributes
 {
-	static const uint32 MAX = 32;
+	static const uint32 MAX = 30;
 
 	uint32 enableBits = 0; // indexed by attribute
 	uint32 instanceBits = 0; // indexed by buffer
