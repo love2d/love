@@ -782,7 +782,7 @@ VkDescriptorType Vulkan::getDescriptorType(graphics::Shader::UniformType type)
 	case graphics::Shader::UniformType::UNIFORM_STORAGEBUFFER:
 		return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 	default:
-		throw love::Exception("unkonwn uniform type");
+		throw love::Exception("unknown uniform type");
 	}
 }
 
