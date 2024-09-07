@@ -58,7 +58,7 @@ ShaderStage::ShaderStage(Graphics */*gfx*/, ShaderStageType stage, const std::st
 	bool forcedefault = false;
 	bool forwardcompat = true;
 
-	if (!glslangShader->parse(GetResources(), defaultversion, defaultprofile, forcedefault, forwardcompat, EShMsgSuppressWarnings))
+	if (!glslangShader->parse(GetResources(), defaultversion, defaultprofile, forcedefault, forwardcompat, (EShMessages)(EShMsgSuppressWarnings | EshMsgOverlappingLocations)))
 	{
 		const char *stagename = "unknown";
 		getConstant(stage, stagename);
