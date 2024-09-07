@@ -61,8 +61,8 @@ public:
 
 	struct RenderPipelineKey
 	{
-		VertexAttributes vertexAttributes;
-		BlendState blend;
+		VertexAttributesID vertexAttributesID;
+		uint32 blendStateKey;
 		uint64 colorRenderTargetFormats;
 		uint32 depthStencilFormat;
 		ColorChannelMask colorChannelMask;

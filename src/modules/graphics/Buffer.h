@@ -65,11 +65,13 @@ public:
 		std::string name;
 		DataFormat format;
 		int arrayLength;
+		int bindingLocation;
 
-		DataDeclaration(const std::string &name, DataFormat format, int arrayLength = 0)
+		DataDeclaration(const std::string &name, DataFormat format, int arrayLength = 0, int bindingLocation = -1)
 			: name(name)
 			, format(format)
 			, arrayLength(arrayLength)
+			, bindingLocation(bindingLocation)
 		{}
 	};
 
@@ -117,6 +119,7 @@ public:
 	const DataMember &getDataMember(int index) const { return dataMembers[index]; }
 	size_t getMemberOffset(int index) const { return dataMembers[index].offset; }
 	int getDataMemberIndex(const std::string &name) const;
+	int getDataMemberIndex(int bindingLocation) const;
 	const std::string &getDebugName() const { return debugName; }
 
 	void setImmutable(bool immutable) { this->immutable = immutable; };
@@ -153,6 +156,8 @@ public:
 	 * handle.
 	 **/
 	virtual ptrdiff_t getTexelBufferHandle() const = 0;
+
+	bool hasLegacyVertexBindings() const { return legacyVertexBindings; }
 
 	static std::vector<DataDeclaration> getCommonFormatDeclaration(CommonFormat format);
 
@@ -198,6 +203,8 @@ protected:
 	bool mapped;
 	MapType mappedType;
 	bool immutable;
+
+	bool legacyVertexBindings = false;
 	
 }; // Buffer
 

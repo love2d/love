@@ -882,15 +882,17 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(graphics::Graphics *g
 		auto formatdesc = Metal::convertPixelFormat(device, format);
 		attachment.pixelFormat = formatdesc.format;
 
-		if (key.blend.enable && gfx->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_BLEND))
+		BlendState blend = BlendState::fromKey(key.blendStateKey);
+
+		if (blend.enable && gfx->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_BLEND))
 		{
 			attachment.blendingEnabled = YES;
-			attachment.sourceRGBBlendFactor = getMTLBlendFactor(key.blend.srcFactorRGB);
-			attachment.destinationRGBBlendFactor = getMTLBlendFactor(key.blend.dstFactorRGB);
-			attachment.rgbBlendOperation = getMTLBlendOperation(key.blend.operationRGB);
-			attachment.sourceAlphaBlendFactor = getMTLBlendFactor(key.blend.srcFactorA);
-			attachment.destinationAlphaBlendFactor = getMTLBlendFactor(key.blend.dstFactorA);
-			attachment.alphaBlendOperation = getMTLBlendOperation(key.blend.operationA);
+			attachment.sourceRGBBlendFactor = getMTLBlendFactor(blend.srcFactorRGB);
+			attachment.destinationRGBBlendFactor = getMTLBlendFactor(blend.dstFactorRGB);
+			attachment.rgbBlendOperation = getMTLBlendOperation(blend.operationRGB);
+			attachment.sourceAlphaBlendFactor = getMTLBlendFactor(blend.srcFactorA);
+			attachment.destinationAlphaBlendFactor = getMTLBlendFactor(blend.dstFactorA);
+			attachment.alphaBlendOperation = getMTLBlendOperation(blend.operationA);
 		}
 
 		MTLColorWriteMask writeMask = MTLColorWriteMaskNone;
@@ -923,8 +925,10 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(graphics::Graphics *g
 		}
 	}
 
+	VertexAttributes attributes;
+	gfx->findVertexAttributes(key.vertexAttributesID, attributes);
+
 	MTLVertexDescriptor *vertdesc = [MTLVertexDescriptor vertexDescriptor];
-	const auto &attributes = key.vertexAttributes;
 
 	for (const auto &pair : this->attributes)
 	{

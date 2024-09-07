@@ -56,7 +56,7 @@ namespace graphics
 static int luax_checkgraphicscreated(lua_State *L)
 {
 	if (!instance()->isCreated())
-		return luaL_error(L, "love.graphics cannot function without a window!");
+		return luaL_error(L, "love.graphics cannot function without a window.");
 	return 0;
 }
 
@@ -1599,6 +1599,11 @@ int w_newShader(lua_State *L)
 			luax_markdeprecated(L, 1, "texture2D() or textureCube() function calls in shader code", API_CUSTOM, DEPRECATED_REPLACED, "texture() function calls");
 		if (shader->isUsingDeprecatedTextureUniform())
 			luax_markdeprecated(L, 1, "'texture' uniform variable name in shader code", API_CUSTOM, DEPRECATED_NO_REPLACEMENT, "");
+		if (!shader->getUnsetVertexInputLocationsString().empty())
+		{
+			std::string str = "vertex input attribute(s) " + shader->getUnsetVertexInputLocationsString() + " without a 'location' layout qualifier in shader code";
+			luax_markdeprecated(L, 1, str.c_str(), API_CUSTOM, DEPRECATED_REPLACED, "layout(location = #) qualifier for vertex inputs");
+		}
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -1632,6 +1637,11 @@ int w_newComputeShader(lua_State* L)
 			luax_markdeprecated(L, 1, "texture2D() or textureCube() function calls in shader code", API_CUSTOM, DEPRECATED_REPLACED, "texture() function calls");
 		if (shader->isUsingDeprecatedTextureUniform())
 			luax_markdeprecated(L, 1, "'texture' uniform variable name in shader code", API_CUSTOM, DEPRECATED_NO_REPLACEMENT, "");
+		if (!shader->getUnsetVertexInputLocationsString().empty())
+		{
+			std::string str = "vertex input attribute(s) " + shader->getUnsetVertexInputLocationsString() + " without a 'location' layout qualifier in shader code";
+			luax_markdeprecated(L, 1, str.c_str(), API_CUSTOM, DEPRECATED_REPLACED, "layout(location = #) qualifier for vertex inputs");
+		}
 		luax_pushtype(L, shader);
 		shader->release();
 	}
@@ -1709,7 +1719,7 @@ static void luax_optbuffersettings(lua_State *L, int idx, Buffer::Settings &sett
 	lua_pop(L, 1);
 }
 
-static Buffer::DataDeclaration luax_checkdatadeclaration(lua_State* L, int formattableidx, int arrayindex, int declindex, bool requirename)
+static Buffer::DataDeclaration luax_checkdatadeclaration(lua_State* L, int formattableidx, int arrayindex, int declindex, bool requirename, bool requirelocation)
 {
 	Buffer::DataDeclaration decl("", DATAFORMAT_MAX_ENUM);
 
@@ -1744,10 +1754,24 @@ static Buffer::DataDeclaration luax_checkdatadeclaration(lua_State* L, int forma
 
 	decl.arrayLength = luax_intflag(L, declindex, "arraylength", 0);
 
+	lua_getfield(L, declindex, "location");
+	if (requirelocation && lua_type(L, -1) != LUA_TNUMBER)
+	{
+		std::ostringstream ss;
+		ss << "'location' field expected in array element #";
+		ss << arrayindex;
+		ss << " of format table";
+		std::string str = ss.str();
+		luaL_argerror(L, formattableidx, str.c_str());
+	}
+	else if (!lua_isnoneornil(L, -1))
+		decl.bindingLocation = luaL_checkint(L, -1);
+	lua_pop(L, 1);
+
 	return decl;
 }
 
-static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::DataDeclaration> &format)
+static void luax_checkbufferformat(lua_State *L, int idx, const Buffer::Settings &settings, std::vector<Buffer::DataDeclaration> &format)
 {
 	if (lua_type(L, idx) == LUA_TSTRING)
 	{
@@ -1759,6 +1783,8 @@ static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::Da
 		return;
 	}
 
+	bool requirelocation = (settings.usageFlags & BUFFERUSAGE_VERTEX) != 0;
+
 	luaL_checktype(L, idx, LUA_TTABLE);
 	int tablelen = luax_objlen(L, idx);
 
@@ -1767,10 +1793,31 @@ static void luax_checkbufferformat(lua_State *L, int idx, std::vector<Buffer::Da
 		lua_rawgeti(L, idx, i);
 		luaL_checktype(L, -1, LUA_TTABLE);
 
-		Buffer::DataDeclaration decl = luax_checkdatadeclaration(L, idx, i, -1, false);
+		Buffer::DataDeclaration decl = luax_checkdatadeclaration(L, idx, i, -1, false, requirelocation);
 
 		format.push_back(decl);
 		lua_pop(L, 1);
+	}
+}
+
+static void luax_validatebuffervertexbindings(lua_State *L, Buffer *buffer)
+{
+	if (buffer->hasLegacyVertexBindings())
+	{
+		std::string names;
+
+		for (const auto &member : buffer->getDataMembers())
+		{
+			if (member.decl.bindingLocation < 0)
+			{
+				if (names.empty())
+					names = member.decl.name;
+				else
+					names += ", " + member.decl.name;
+			}
+		}
+
+		luax_markdeprecated(L, 1, "vertex format 'name' fields in Meshes and Buffers", API_CUSTOM, DEPRECATED_REPLACED, "'location' field containing a binding location number value.");
 	}
 }
 
@@ -1820,6 +1867,8 @@ static Buffer *luax_newbuffer(lua_State *L, int idx, Buffer::Settings settings, 
 
 	Buffer *b = nullptr;
 	luax_catchexcept(L, [&] { b = instance()->newBuffer(settings, format, initialdata, bytesize, arraylength); });
+
+	luax_validatebuffervertexbindings(L, b);
 
 	if (lua_istable(L, idx))
 	{
@@ -1896,7 +1945,7 @@ int w_newBuffer(lua_State *L)
 	luax_optbuffersettings(L, 3, settings);
 
 	std::vector<Buffer::DataDeclaration> format;
-	luax_checkbufferformat(L, 1, format);
+	luax_checkbufferformat(L, 1, settings, format);
 
 	Buffer *b = luax_newbuffer(L, 2, settings, format);
 
@@ -2005,7 +2054,7 @@ static Mesh *newCustomMesh(lua_State *L)
 		lua_pop(L, 1);
 
 		if (hasformatfield || luax_objlen(L, -1) == 0)
-			decl = luax_checkdatadeclaration(L, 1, i, -1, true);
+			decl = luax_checkdatadeclaration(L, 1, i, -1, false, true);
 		else
 		{
 			// Legacy format arguments: {name, datatype, components}
@@ -2013,7 +2062,7 @@ static Mesh *newCustomMesh(lua_State *L)
 				lua_rawgeti(L, -j, j);
 
 			decl.name = luaL_checkstring(L, -3);
-			const char* tname = luaL_checkstring(L, -2);
+			const char *tname = luaL_checkstring(L, -2);
 			int components = (int)luaL_checkinteger(L, -1);
 
 			// Check deprecated format names.
@@ -2053,7 +2102,7 @@ static Mesh *newCustomMesh(lua_State *L)
 
 			lua_pop(L, 3);
 
-			luax_markdeprecated(L, 1, "vertex format array values in love.graphics.newMesh", API_CUSTOM, DEPRECATED_REPLACED, "named table fields 'format' and 'name'");
+			luax_markdeprecated(L, 1, "vertex format array values in love.graphics.newMesh", API_CUSTOM, DEPRECATED_REPLACED, "named table fields 'format' and 'location'");
 		}
 
 		lua_pop(L, 1);
@@ -2124,6 +2173,9 @@ static Mesh *newCustomMesh(lua_State *L)
 		t->flush();
 	}
 
+	if (t->getVertexBuffer() != nullptr)
+		luax_validatebuffervertexbindings(L, t->getVertexBuffer());
+
 	return t;
 }
 
@@ -2147,7 +2199,7 @@ static bool luax_isbufferattributetable(lua_State* L, int idx)
 
 static Mesh::BufferAttribute luax_checkbufferattributetable(lua_State *L, int idx)
 {
-	Mesh::BufferAttribute attrib = {};
+	Mesh::BufferAttribute attrib;
 
 	attrib.step = STEP_PER_VERTEX;
 	attrib.enabled = true;
@@ -2156,8 +2208,13 @@ static Mesh::BufferAttribute luax_checkbufferattributetable(lua_State *L, int id
 	attrib.buffer = luax_checkbuffer(L, -1);
 	lua_pop(L, 1);
 
+	lua_getfield(L, idx, "location");
+	attrib.bindingLocation = luaL_checkint(L, -1);
+	lua_pop(L, 1);
+
 	lua_getfield(L, idx, "name");
-	attrib.name = luax_checkstring(L, -1);
+	if (!lua_isnoneornil(L, -1))
+		attrib.name = luax_checkstring(L, -1);
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "step");
@@ -2167,6 +2224,13 @@ static Mesh::BufferAttribute luax_checkbufferattributetable(lua_State *L, int id
 		if (!getConstant(stepstr, attrib.step))
 			luax_enumerror(L, "vertex attribute step", getConstants(attrib.step), stepstr);
 	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, idx, "locationinbuffer");
+	if (!lua_isnoneornil(L, -1))
+		attrib.bindingLocationInBuffer = luaL_checkint(L, -1);
+	else
+		attrib.bindingLocationInBuffer = attrib.bindingLocation;
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "nameinbuffer");	
@@ -2197,6 +2261,10 @@ static Mesh* newMeshFromBuffers(lua_State *L)
 
 	Mesh *t = nullptr;
 	luax_catchexcept(L, [&]() { t = instance()->newMesh(attributes, drawmode); });
+
+	if (t->getVertexBuffer() != nullptr)
+		luax_validatebuffervertexbindings(L, t->getVertexBuffer());
+
 	return t;
 }
 

@@ -569,8 +569,11 @@ bool Graphics::dispatch(love::graphics::Shader *s, love::graphics::Buffer *indir
 
 void Graphics::draw(const DrawCommand &cmd)
 {
+	VertexAttributes attributes;
+	findVertexAttributes(cmd.attributesID, attributes);
+
 	gl.prepareDraw(this);
-	gl.setVertexAttributes(*cmd.attributes, *cmd.buffers);
+	gl.setVertexAttributes(attributes, *cmd.buffers);
 	gl.bindTextureToUnit(cmd.texture, 0, false);
 	gl.setCullMode(cmd.cullMode);
 
@@ -591,8 +594,11 @@ void Graphics::draw(const DrawCommand &cmd)
 
 void Graphics::draw(const DrawIndexedCommand &cmd)
 {
+	VertexAttributes attributes;
+	findVertexAttributes(cmd.attributesID, attributes);
+
 	gl.prepareDraw(this);
-	gl.setVertexAttributes(*cmd.attributes, *cmd.buffers);
+	gl.setVertexAttributes(attributes, *cmd.buffers);
 	gl.bindTextureToUnit(cmd.texture, 0, false);
 	gl.setCullMode(cmd.cullMode);
 
@@ -640,10 +646,13 @@ static inline void advanceVertexOffsets(const VertexAttributes &attributes, Buff
 	}
 }
 
-void Graphics::drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture)
+void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, const BufferBindings &buffers, love::graphics::Texture *texture)
 {
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
+
+	VertexAttributes attributes;
+	findVertexAttributes(attributesID, attributes);
 
 	gl.prepareDraw(this);
 	gl.bindTextureToUnit(texture, 0, false);

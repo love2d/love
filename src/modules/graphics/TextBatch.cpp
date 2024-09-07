@@ -32,7 +32,7 @@ love::Type TextBatch::type("TextBatch", &Drawable::type);
 
 TextBatch::TextBatch(Font *font, const std::vector<love::font::ColoredString> &text)
 	: font(font)
-	, vertexAttributes(Font::vertexFormat, 0)
+	, vertexAttributesID(font->getVertexAttributesID())
 	, vertexData(nullptr)
 	, modifiedVertices()
 	, vertOffset(0)
@@ -218,6 +218,7 @@ void TextBatch::setFont(Font *f)
 	// Invalidate the texture cache ID since the font is different. We also have
 	// to re-upload all the vertices based on the new font's textures.
 	textureCacheID = (uint32) -1;
+	vertexAttributesID = font->getVertexAttributesID();
 	regenerateVertices();
 }
 
@@ -292,7 +293,7 @@ void TextBatch::draw(Graphics *gfx, const Matrix4 &m)
 	for (const Font::DrawCommand &cmd : drawCommands)
 	{
 		Texture *tex = gfx->getTextureOrDefaultForActiveShader(cmd.texture);
-		gfx->drawQuads(cmd.startvertex / 4, cmd.vertexcount / 4, vertexAttributes, vertexBuffers, tex);
+		gfx->drawQuads(cmd.startvertex / 4, cmd.vertexcount / 4, vertexAttributesID, vertexBuffers, tex);
 	}
 }
 

@@ -106,8 +106,13 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 			if (info.baseType == DATA_BASETYPE_BOOL)
 				throw love::Exception("Bool types are not supported in vertex buffers.");
 
-			if (decl.name.empty())
-				throw love::Exception("Vertex buffer attributes must have a name.");
+			if (decl.bindingLocation < 0 || decl.bindingLocation >= VertexAttributes::MAX)
+			{
+				if (decl.bindingLocation == -1 && !decl.name.empty())
+					legacyVertexBindings = true;
+				else
+					throw love::Exception("Vertex buffer attributes must have a valid binding location value within [0, %d).", VertexAttributes::MAX);
+			}
 		}
 
 		if (texelbuffer)
@@ -258,6 +263,17 @@ int Buffer::getDataMemberIndex(const std::string &name) const
 	return -1;
 }
 
+int Buffer::getDataMemberIndex(int bindingLocation) const
+{
+	for (size_t i = 0; i < dataMembers.size(); i++)
+	{
+		if (dataMembers[i].decl.bindingLocation == bindingLocation)
+			return (int)i;
+	}
+
+	return -1;
+}
+
 void Buffer::clear(size_t offset, size_t size)
 {
 	if (isImmutable())
@@ -280,53 +296,53 @@ std::vector<Buffer::DataDeclaration> Buffer::getCommonFormatDeclaration(CommonFo
 		return {};
 	case CommonFormat::XYf:
 		return {
-			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 }
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_POS }
 		};
 	case CommonFormat::XYZf:
 		return {
-			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC3 }
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC3, 0, ATTRIB_POS }
 		};
 	case CommonFormat::RGBAub:
 		return {
-			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 }
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4, 0, ATTRIB_COLOR }
 		};
 	case CommonFormat::STf_RGBAub:
 		return {
-			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2 },
-			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_TEXCOORD },
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4, 0, ATTRIB_COLOR },
 		};
 	case CommonFormat::STPf_RGBAub:
 		return {
-			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC3 },
-			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC3, 0, ATTRIB_TEXCOORD },
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4, 0, ATTRIB_COLOR },
 		};
 	case CommonFormat::XYf_STf:
 		return {
-			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 },
-			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2 },
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_POS },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_TEXCOORD },
 		};
 	case CommonFormat::XYf_STPf:
 		return {
-			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 },
-			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC3 },
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_POS },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC3, 0, ATTRIB_TEXCOORD },
 		};
 	case CommonFormat::XYf_STf_RGBAub:
 		return {
-			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 },
-			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2 },
-			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 },
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_POS },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_TEXCOORD },
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4, 0, ATTRIB_COLOR },
 		};
 	case CommonFormat::XYf_STus_RGBAub:
 		return {
-			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 },
-			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_UNORM16_VEC2 },
-			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 },
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_POS },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_UNORM16_VEC2, 0, ATTRIB_TEXCOORD },
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4, 0, ATTRIB_COLOR },
 		};
 	case CommonFormat::XYf_STPf_RGBAub:
 		return {
-			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2 },
-			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2 },
-			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4 },
+			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_POS },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_TEXCOORD },
+			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4, 0, ATTRIB_COLOR },
 		};
 	}
 

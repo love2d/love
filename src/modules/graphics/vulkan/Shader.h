@@ -46,43 +46,67 @@ namespace graphics
 namespace vulkan
 {
 
-struct GraphicsPipelineConfiguration
+struct GraphicsPipelineConfigurationCore
 {
 	VkRenderPass renderPass;
-	VertexAttributes vertexAttributes;
+	VertexAttributesID attributesID;
 	bool wireFrame;
-	BlendState blendState;
+	uint32 blendStateKey;
 	ColorChannelMask colorChannelMask;
 	VkSampleCountFlagBits msaaSamples;
 	uint32_t numColorAttachments;
 	PrimitiveType primitiveType;
 	uint64 packedColorAttachmentFormats;
 
-	struct DynamicState
+	GraphicsPipelineConfigurationCore()
 	{
-		CullMode cullmode = CULL_NONE;
-		Winding winding = WINDING_MAX_ENUM;
-		StencilAction stencilAction = STENCIL_MAX_ENUM;
-		CompareMode stencilCompare = COMPARE_MAX_ENUM;
-		DepthState depthState{};
-	} dynamicState;
-
-	GraphicsPipelineConfiguration()
-	{
-		memset(this, 0, sizeof(GraphicsPipelineConfiguration));
+		memset(this, 0, sizeof(GraphicsPipelineConfigurationCore));
 	}
 
-	bool operator==(const GraphicsPipelineConfiguration &other) const
+	bool operator==(const GraphicsPipelineConfigurationCore &other) const
 	{
-		return memcmp(this, &other, sizeof(GraphicsPipelineConfiguration)) == 0;
+		return memcmp(this, &other, sizeof(GraphicsPipelineConfigurationCore)) == 0;
 	}
 };
 
-struct GraphicsPipelineConfigurationHasher
+struct GraphicsPipelineConfigurationCoreHasher
 {
-	size_t operator() (const GraphicsPipelineConfiguration &configuration) const
+	size_t operator() (const GraphicsPipelineConfigurationCore &configuration) const
 	{
-		return XXH32(&configuration, sizeof(GraphicsPipelineConfiguration), 0);
+		return XXH32(&configuration, sizeof(GraphicsPipelineConfigurationCore), 0);
+	}
+};
+
+struct GraphicsPipelineConfigurationNoDynamicState
+{
+	CullMode cullmode = CULL_NONE;
+	Winding winding = WINDING_MAX_ENUM;
+	StencilAction stencilAction = STENCIL_MAX_ENUM;
+	CompareMode stencilCompare = COMPARE_MAX_ENUM;
+	DepthState depthState{};
+};
+
+struct GraphicsPipelineConfigurationFull
+{
+	GraphicsPipelineConfigurationCore core;
+	GraphicsPipelineConfigurationNoDynamicState noDynamicState;
+
+	GraphicsPipelineConfigurationFull()
+	{
+		memset(this, 0, sizeof(GraphicsPipelineConfigurationFull));
+	}
+
+	bool operator==(const GraphicsPipelineConfigurationFull &other) const
+	{
+		return memcmp(this, &other, sizeof(GraphicsPipelineConfigurationFull)) == 0;
+	}
+};
+
+struct GraphicsPipelineConfigurationFullHasher
+{
+	size_t operator() (const GraphicsPipelineConfigurationFull &configuration) const
+	{
+		return XXH32(&configuration, sizeof(GraphicsPipelineConfigurationFull), 0);
 	}
 };
 
@@ -136,7 +160,8 @@ public:
 
 	void setMainTex(graphics::Texture *texture);
 
-	VkPipeline getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfiguration &configuration);
+	VkPipeline getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfigurationCore &configuration);
+	VkPipeline getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfigurationFull &configuration);
 
 private:
 	void compileShaders();
@@ -183,7 +208,8 @@ private:
 
 	std::unordered_map<std::string, AttributeInfo> attributes;
 
-	std::unordered_map<GraphicsPipelineConfiguration, VkPipeline, GraphicsPipelineConfigurationHasher> graphicsPipelines;
+	std::unordered_map<GraphicsPipelineConfigurationCore, VkPipeline, GraphicsPipelineConfigurationCoreHasher> graphicsPipelinesDynamicState;
+	std::unordered_map<GraphicsPipelineConfigurationFull, VkPipeline, GraphicsPipelineConfigurationFullHasher> graphicsPipelinesNoDynamicState;
 
 	uint32_t currentFrame = 0;
 	uint32_t currentDescriptorPool = 0;

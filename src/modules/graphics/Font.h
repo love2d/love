@@ -150,6 +150,8 @@ public:
 
 	uint32 getTextureCacheID() const;
 
+	VertexAttributesID getVertexAttributesID() const { return vertexAttributesID; }
+
 	// Implements Volatile.
 	bool loadVolatile() override;
 	void unloadVolatile() override;
@@ -203,6 +205,8 @@ private:
 
 	// ID which is incremented when the texture cache is invalidated.
 	uint32 textureCacheID;
+
+	VertexAttributesID vertexAttributesID;
 
 	// 1 pixel of transparent padding between glyphs (so quads won't pick up
 	// other glyphs), plus one pixel of transparent padding that the quads will

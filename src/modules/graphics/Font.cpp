@@ -92,6 +92,8 @@ Font::Font(love::font::Rasterizer *r, const SamplerState &s)
 	if (pixelFormat == PIXELFORMAT_LA8_UNORM && !gfx->isPixelFormatSupported(pixelFormat, PIXELFORMATUSAGEFLAGS_SAMPLE))
 		pixelFormat = PIXELFORMAT_RGBA8_UNORM;
 
+	vertexAttributesID = gfx->registerVertexAttributes(VertexAttributes(vertexFormat, 0));
+
 	loadVolatile();
 	++fontCount;
 }

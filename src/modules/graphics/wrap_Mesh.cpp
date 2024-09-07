@@ -260,6 +260,9 @@ int w_Mesh_getVertexFormat(lua_State *L)
 		lua_pushstring(L, member.decl.name.c_str());
 		lua_setfield(L, -2, "name");
 
+		lua_pushnumber(L, member.decl.bindingLocation);
+		lua_setfield(L, -2, "location");
+
 		const char *formatstr = "unknown";
 		getConstant(member.decl.format, formatstr);
 		lua_pushstring(L, formatstr);
@@ -280,18 +283,34 @@ int w_Mesh_getVertexFormat(lua_State *L)
 int w_Mesh_setAttributeEnabled(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	const char *name = luaL_checkstring(L, 2);
 	bool enable = luax_checkboolean(L, 3);
-	luax_catchexcept(L, [&](){ t->setAttributeEnabled(name, enable); });
+	if (lua_type(L, 2) == LUA_TSTRING)
+	{
+		const char *name = luaL_checkstring(L, 2);
+		luax_catchexcept(L, [&](){ t->setAttributeEnabled(name, enable); });
+	}
+	else
+	{
+		int location = luaL_checkint(L, 2);
+		luax_catchexcept(L, [&](){ t->setAttributeEnabled(location, enable); });
+	}
 	return 0;
 }
 
 int w_Mesh_isAttributeEnabled(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	const char *name = luaL_checkstring(L, 2);
 	bool enabled = false;
-	luax_catchexcept(L, [&](){ enabled = t->isAttributeEnabled(name); });
+	if (lua_type(L, 2) == LUA_TSTRING)
+	{
+		const char *name = luaL_checkstring(L, 2);
+		luax_catchexcept(L, [&](){ enabled = t->isAttributeEnabled(name); });
+	}
+	else
+	{
+		int location = luaL_checkint(L, 2);
+		luax_catchexcept(L, [&](){ enabled = t->isAttributeEnabled(location); });
+	}
 	lua_pushboolean(L, enabled);
 	return 1;
 }
@@ -299,7 +318,13 @@ int w_Mesh_isAttributeEnabled(lua_State *L)
 int w_Mesh_attachAttribute(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	const char *name = luaL_checkstring(L, 2);
+
+	const char *name = nullptr;
+	int location = -1;
+	if (lua_type(L, 2) == LUA_TSTRING)
+		name = luaL_checkstring(L, 2);
+	else
+		location = luaL_checkint(L, 2);
 
 	Buffer *buffer = nullptr;
 	Mesh *mesh = nullptr;
@@ -320,10 +345,19 @@ int w_Mesh_attachAttribute(lua_State *L)
 	if (stepstr != nullptr && !getConstant(stepstr, step))
 		return luax_enumerror(L, "vertex attribute step", getConstants(step), stepstr);
 
-	const char *attachname = luaL_optstring(L, 5, name);
+	const char *attachname = name;
+	int attachlocation = location;
+	if (name != nullptr)
+		attachname = luaL_optstring(L, 5, name);
+	else
+		attachlocation = luaL_optint(L, 5, location);
+
 	int startindex = (int) luaL_optinteger(L, 6, 1) - 1;
 
-	luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer, mesh, attachname, startindex, step); });
+	if (name != nullptr)
+		luax_catchexcept(L, [&](){ t->attachAttribute(name, buffer, mesh, attachname, startindex, step); });
+	else
+		luax_catchexcept(L, [&]() { t->attachAttribute(location, buffer, mesh, attachlocation, startindex, step); });
 	return 0;
 }
 
@@ -348,26 +382,32 @@ int w_Mesh_getAttachedAttributes(lua_State *L)
 	{
 		const auto &attrib = attributes[i];
 
-		lua_createtable(L, 5, 0);
+		lua_createtable(L, 0, 7);
 
 		luax_pushstring(L, attrib.name);
-		lua_rawseti(L, -1, 1);
+		lua_setfield(L, -2, "name");
+
+		lua_pushnumber(L, attrib.bindingLocation);
+		lua_setfield(L, -2, "location");
 
 		luax_pushtype(L, attrib.buffer.get());
-		lua_rawseti(L, -1, 2);
+		lua_setfield(L, -2, "buffer");
 
 		const char *stepstr = nullptr;
 		if (!getConstant(attrib.step, stepstr))
 			return luaL_error(L, "Invalid vertex attribute step.");
 		lua_pushstring(L, stepstr);
-		lua_rawseti(L, -1, 3);
+		lua_setfield(L, -2, "step");
 
 		const Buffer::DataMember &member = attrib.buffer->getDataMember(attrib.indexInBuffer);
 		luax_pushstring(L, member.decl.name);
-		lua_rawseti(L, -1, 4);
+		lua_setfield(L, -2, "nameinbuffer");
+
+		lua_pushnumber(L, member.decl.bindingLocation);
+		lua_setfield(L, -2, "locationinbuffer");
 
 		lua_pushinteger(L, attrib.startArrayIndex + 1);
-		lua_rawseti(L, -1, 5);
+		lua_setfield(L, -2, "startindex");
 
 		lua_rawseti(L, -1, i + 1);
 	}

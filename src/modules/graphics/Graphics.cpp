@@ -212,8 +212,10 @@ Graphics::Graphics(const char *name)
 	states.reserve(10);
 	states.push_back(DisplayState());
 
+	noAttributesID = registerVertexAttributes(VertexAttributes());
+
 	if (!Shader::initialize())
-		throw love::Exception("Shader support failed to initialize!");
+		throw love::Exception("Shader support failed to initialize.");
 }
 
 Graphics::~Graphics()
@@ -1413,6 +1415,29 @@ void Graphics::updatePendingReadbacks()
 	}
 }
 
+VertexAttributesID Graphics::registerVertexAttributes(const VertexAttributes &attributes)
+{
+	for (size_t i = 0; i < vertexAttributesDatabase.size(); i++)
+	{
+		if (attributes == vertexAttributesDatabase[i])
+			return { (int)i + 1 };
+	}
+
+	vertexAttributesDatabase.push_back(attributes);
+	return { (int)vertexAttributesDatabase.size() };
+}
+
+bool Graphics::findVertexAttributes(VertexAttributesID id, VertexAttributes &attributes)
+{
+	int index = id.id - 1;
+
+	if (index < 0 || index >= (int)vertexAttributesDatabase.size())
+		return false;
+
+	attributes = vertexAttributesDatabase[index];
+	return true;
+}
+
 void Graphics::intersectScissor(const Rect &rect)
 {
 	Rect currect = states.back().scissorRect;
@@ -2022,14 +2047,23 @@ void Graphics::flushBatchedDraws()
 	VertexAttributes attributes;
 	BufferBindings buffers;
 
+	VertexAttributesID attributesID = sbstate.attributesIDs[(int)sbstate.formats[0]][(int)sbstate.formats[1]];
+
+	if (!findVertexAttributes(attributesID, attributes))
+	{
+		for (int i = 0; i < 2; i++)
+			attributes.setCommonFormat(sbstate.formats[i], (uint8)i);
+		
+		attributesID = registerVertexAttributes(attributes);
+		sbstate.attributesIDs[(int)sbstate.formats[0]][(int)sbstate.formats[1]] = attributesID;
+	}
+
 	size_t usedsizes[3] = {0, 0, 0};
 
 	for (int i = 0; i < 2; i++)
 	{
 		if (sbstate.formats[i] == CommonFormat::NONE)
 			continue;
-
-		attributes.setCommonFormat(sbstate.formats[i], (uint8) i);
 
 		usedsizes[i] = getFormatStride(sbstate.formats[i]) * sbstate.vertexCount;
 
@@ -2053,7 +2087,7 @@ void Graphics::flushBatchedDraws()
 	{
 		usedsizes[2] = sizeof(uint16) * sbstate.indexCount;
 
-		DrawIndexedCommand cmd(&attributes, &buffers, sbstate.indexBuffer);
+		DrawIndexedCommand cmd(attributesID, &buffers, sbstate.indexBuffer);
 		cmd.primitiveType = sbstate.primitiveMode;
 		cmd.indexCount = sbstate.indexCount;
 		cmd.indexType = INDEX_UINT16;
@@ -2065,7 +2099,7 @@ void Graphics::flushBatchedDraws()
 	}
 	else
 	{
-		DrawCommand cmd(&attributes, &buffers);
+		DrawCommand cmd(attributesID, &buffers);
 		cmd.primitiveType = sbstate.primitiveMode;
 		cmd.vertexStart = 0;
 		cmd.vertexCount = sbstate.vertexCount;
@@ -2156,10 +2190,8 @@ void Graphics::drawFromShader(PrimitiveType primtype, int vertexcount, int insta
 
 	Shader::current->validateDrawState(primtype, maintexture);
 
-	VertexAttributes attributes;
 	BufferBindings buffers;
-
-	DrawCommand cmd(&attributes, &buffers);
+	DrawCommand cmd(noAttributesID, &buffers);
 
 	cmd.primitiveType = primtype;
 	cmd.vertexCount = vertexcount;
@@ -2190,10 +2222,8 @@ void Graphics::drawFromShader(Buffer *indexbuffer, int indexcount, int instancec
 
 	Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, maintexture);
 
-	VertexAttributes attributes;
 	BufferBindings buffers;
-
-	DrawIndexedCommand cmd(&attributes, &buffers, indexbuffer);
+	DrawIndexedCommand cmd(noAttributesID, &buffers, indexbuffer);
 
 	cmd.primitiveType = PRIMITIVE_TRIANGLES;
 	cmd.indexCount = indexcount;
@@ -2221,10 +2251,8 @@ void Graphics::drawFromShaderIndirect(PrimitiveType primtype, Buffer *indirectar
 
 	Shader::current->validateDrawState(primtype, maintexture);
 
-	VertexAttributes attributes;
 	BufferBindings buffers;
-
-	DrawCommand cmd(&attributes, &buffers);
+	DrawCommand cmd(noAttributesID, &buffers);
 
 	cmd.primitiveType = primtype;
 	cmd.indirectBuffer = indirectargs;
@@ -2248,10 +2276,8 @@ void Graphics::drawFromShaderIndirect(Buffer *indexbuffer, Buffer *indirectargs,
 
 	Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, maintexture);
 
-	VertexAttributes attributes;
 	BufferBindings buffers;
-
-	DrawIndexedCommand cmd(&attributes, &buffers, indexbuffer);
+	DrawIndexedCommand cmd(noAttributesID, &buffers, indexbuffer);
 
 	cmd.primitiveType = PRIMITIVE_TRIANGLES;
 	cmd.indexType = getIndexDataType(indexbuffer->getDataMember(0).decl.format);

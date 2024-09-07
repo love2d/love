@@ -57,11 +57,12 @@ public:
 		StrongRef<Buffer> buffer;
 		StrongRef<Mesh> mesh;
 		std::string nameInBuffer;
-		int indexInBuffer;
-		int startArrayIndex;
-		AttributeStep step;
-		int builtinAttributeIndex;
-		bool enabled;
+		int bindingLocationInBuffer = -1;
+		int indexInBuffer = 0;
+		int startArrayIndex = 0;
+		AttributeStep step = STEP_PER_VERTEX;
+		int bindingLocation = -1;
+		bool enabled = false;
 	};
 
 	static love::Type type;
@@ -104,6 +105,8 @@ public:
 	 **/
 	void setAttributeEnabled(const std::string &name, bool enable);
 	bool isAttributeEnabled(const std::string &name) const;
+	void setAttributeEnabled(int bindingLocation, bool enable);
+	bool isAttributeEnabled(int bindingLocation) const;
 
 	/**
 	 * Attaches a vertex attribute from another vertex buffer to this Mesh. The
@@ -114,6 +117,8 @@ public:
 	 **/
 	void attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, int startindex = 0, AttributeStep step = STEP_PER_VERTEX);
 	bool detachAttribute(const std::string &name);
+	void attachAttribute(int bindingLocation, Buffer *buffer, Mesh *mesh, int attachBindingLocation, int startindex = 0, AttributeStep step = STEP_PER_VERTEX);
+	bool detachAttribute(int bindingLocation);
 	const std::vector<BufferAttribute> &getAttachedAttributes() const;
 
 	void *getVertexData() const;
@@ -188,6 +193,7 @@ private:
 
 	void setupAttachedAttributes();
 	int getAttachedAttributeIndex(const std::string &name) const;
+	int getAttachedAttributeIndex(int bindingLocation) const;
 	void finalizeAttribute(BufferAttribute &attrib) const;
 
 	void drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buffer *indirectargs, int argsindex);
@@ -195,6 +201,8 @@ private:
 	std::vector<Buffer::DataMember> vertexFormat;
 
 	std::vector<BufferAttribute> attachedAttributes;
+
+	VertexAttributesID attributesID;
 
 	// Vertex buffer, for the vertex data.
 	StrongRef<Buffer> vertexBuffer;

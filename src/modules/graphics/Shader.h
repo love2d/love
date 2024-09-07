@@ -269,6 +269,8 @@ public:
 	bool isUsingDeprecatedTextureFunctions() const;
 	bool isUsingDeprecatedTextureUniform() const;
 
+	const std::string& getUnsetVertexInputLocationsString() const { return unsetVertexInputLocationsString; }
+
 	static SourceInfo getSourceInfo(const std::string &src);
 	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const CompileOptions &options, const SourceInfo &info, bool gles, bool checksystemfeatures);
 
@@ -289,6 +291,8 @@ protected:
 
 	struct Reflection
 	{
+		std::map<std::string, int> vertexInputs;
+
 		std::map<std::string, UniformInfo> texelBuffers;
 		std::map<std::string, UniformInfo> storageBuffers;
 		std::map<std::string, UniformInfo> sampledTextures;
@@ -331,6 +335,8 @@ protected:
 	std::vector<Buffer *> activeBuffers;
 
 	std::string debugName;
+
+	std::string unsetVertexInputLocationsString;
 
 }; // Shader
 

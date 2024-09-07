@@ -233,7 +233,7 @@ public:
 	{
 		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-		const VertexAttributes *attributes;
+		VertexAttributesID attributesID;
 		const BufferBindings *buffers;
 
 		int vertexStart = 0;
@@ -248,8 +248,8 @@ public:
 		// TODO: This should be moved out to a state transition API?
 		CullMode cullMode = CULL_NONE;
 
-		DrawCommand(const VertexAttributes *attribs, const BufferBindings *buffers)
-			: attributes(attribs)
+		DrawCommand(VertexAttributesID attributesID, const BufferBindings *buffers)
+			: attributesID(attributesID)
 			, buffers(buffers)
 		{}
 	};
@@ -258,7 +258,7 @@ public:
 	{
 		PrimitiveType primitiveType = PRIMITIVE_TRIANGLES;
 
-		const VertexAttributes *attributes;
+		VertexAttributesID attributesID;
 		const BufferBindings *buffers;
 
 		int indexCount = 0;
@@ -276,8 +276,8 @@ public:
 		// TODO: This should be moved out to a state transition API?
 		CullMode cullMode = CULL_NONE;
 
-		DrawIndexedCommand(const VertexAttributes *attribs, const BufferBindings *buffers, Resource *indexbuffer)
-			: attributes(attribs)
+		DrawIndexedCommand(VertexAttributesID attributesID, const BufferBindings *buffers, Resource *indexbuffer)
+			: attributesID(attributesID)
 			, buffers(buffers)
 			, indexBuffer(indexbuffer)
 		{}
@@ -877,7 +877,7 @@ public:
 
 	virtual void draw(const DrawCommand &cmd) = 0;
 	virtual void draw(const DrawIndexedCommand &cmd) = 0;
-	virtual void drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, Texture *texture) = 0;
+	virtual void drawQuads(int start, int count, VertexAttributesID attributesID, const BufferBindings &buffers, Texture *texture) = 0;
 
 	void flushBatchedDraws();
 	BatchedVertexData requestBatchedDraw(const BatchedDrawCommand &command);
@@ -893,6 +893,9 @@ public:
 	void cleanupCachedShaderStage(ShaderStageType type, const std::string &cachekey);
 
 	void validateIndirectArgsBuffer(IndirectArgsType argstype, Buffer *indirectargs, int argsindex);
+
+	VertexAttributesID registerVertexAttributes(const VertexAttributes &attributes);
+	bool findVertexAttributes(VertexAttributesID id, VertexAttributes &attributes);
 
 	template <typename T>
 	T *getScratchBuffer(size_t count)
@@ -964,27 +967,22 @@ protected:
 
 	struct BatchedDrawState
 	{
-		StreamBuffer *vb[2];
+		StreamBuffer *vb[2] = {};
 		StreamBuffer *indexBuffer = nullptr;
 
 		PrimitiveType primitiveMode = PRIMITIVE_TRIANGLES;
-		CommonFormat formats[2];
+		CommonFormat formats[2] = {};
 		StrongRef<Texture> texture;
 		Shader::StandardShader standardShaderType = Shader::STANDARD_DEFAULT;
 		int vertexCount = 0;
 		int indexCount = 0;
 
-		StreamBuffer::MapInfo vbMap[2];
+		VertexAttributesID attributesIDs[(int)CommonFormat::COUNT][(int)CommonFormat::COUNT] = {};
+
+		StreamBuffer::MapInfo vbMap[2] = {};
 		StreamBuffer::MapInfo indexBufferMap = StreamBuffer::MapInfo();
 
 		bool flushing = false;
-
-		BatchedDrawState()
-		{
-			vb[0] = vb[1] = nullptr;
-			formats[0] = formats[1] = CommonFormat::NONE;
-			vbMap[0] = vbMap[1] = StreamBuffer::MapInfo();
-		}
 	};
 
 	struct TemporaryBuffer
@@ -1106,6 +1104,10 @@ private:
 	std::vector<uint8> scratchBuffer;
 
 	std::unordered_map<std::string, ShaderStage *> cachedShaderStages[SHADERSTAGE_MAX_ENUM];
+
+	std::vector<VertexAttributes> vertexAttributesDatabase;
+
+	VertexAttributesID noAttributesID;
 
 }; // Graphics
 

@@ -46,6 +46,7 @@ SpriteBatch::SpriteBatch(Graphics *gfx, Texture *texture, int size, BufferDataUs
 	, next(0)
 	, color(255, 255, 255, 255)
 	, colorf(1.0f, 1.0f, 1.0f, 1.0f)
+	, attributesID()
 	, array_buf(nullptr)
 	, vertex_data(nullptr)
 	, modified_sprites()
@@ -134,7 +135,7 @@ int SpriteBatch::addLayer(int layer, const Matrix4 &m, int index)
 int SpriteBatch::addLayer(int layer, Quad *quad, const Matrix4 &m, int index)
 {
 	if (vertex_format != CommonFormat::XYf_STPf_RGBAub)
-		throw love::Exception("addLayer can only be called on a SpriteBatch that uses an Array Texture!");
+		throw love::Exception("addLayer can only be called on a SpriteBatch that uses an Array Texture.");
 
 	if (index < -1 || index >= size)
 		throw love::Exception("Invalid sprite index: %d", index + 1);
@@ -284,14 +285,16 @@ void SpriteBatch::attachAttribute(const std::string &name, Buffer *buffer, Mesh 
 
 	newattrib.buffer = buffer;
 	newattrib.mesh = mesh;
+	newattrib.bindingIndex = buffer->getDataMember(newattrib.index).decl.bindingLocation;
 
 	BuiltinVertexAttribute builtinattrib;
-	if (getConstant(name.c_str(), builtinattrib))
-		newattrib.builtinAttributeIndex = (int)builtinattrib;
-	else
-		newattrib.builtinAttributeIndex = -1;
+	if (newattrib.bindingIndex < 0 && getConstant(name.c_str(), builtinattrib))
+		newattrib.bindingIndex = (int)builtinattrib;
 
 	attached_attributes[name] = newattrib;
+
+	// Invalidate attributes ID.
+	attributesID = VertexAttributesID();
 }
 
 void SpriteBatch::setDrawRange(int start, int count)
@@ -342,6 +345,8 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	flush(); // Upload any modified sprite data to the GPU.
 
+	bool attributesIDneedsupdate = !attributesID.isValid();
+
 	VertexAttributes attributes;
 	BufferBindings buffers;
 
@@ -361,14 +366,17 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 		if (buffer->getArrayLength() < (size_t) next * 4)
 			throw love::Exception("Buffer with attribute '%s' attached to this SpriteBatch has too few vertices", it.first.c_str());
 
-		int attributeindex = it.second.builtinAttributeIndex;
+		int bindingindex = it.second.bindingIndex;
 
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
-		if (attributeindex < 0 && Shader::current)
-			attributeindex = Shader::current->getVertexAttributeIndex(it.first);
+		if (bindingindex < 0 && Shader::current)
+		{
+			bindingindex = Shader::current->getVertexAttributeIndex(it.first);
+			attributesIDneedsupdate = true;
+		}
 
-		if (attributeindex >= 0)
+		if (bindingindex >= 0)
 		{
 			if (it.second.mesh.get())
 				it.second.mesh->flush();
@@ -378,7 +386,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 			uint16 offset = (uint16) buffer->getMemberOffset(it.second.index);
 			uint16 stride = (uint16) buffer->getArrayStride();
 
-			attributes.set(attributeindex, member.decl.format, offset, activebuffers);
+			attributes.set(bindingindex, member.decl.format, offset, activebuffers);
 			attributes.setBufferLayout(activebuffers, stride);
 
 			// TODO: We should reuse buffer bindings with the same buffer+stride+step.
@@ -386,6 +394,9 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 			activebuffers++;
 		}
 	}
+
+	if (attributesIDneedsupdate)
+		attributesID = gfx->registerVertexAttributes(attributes);
 
 	Graphics::TempTransform transform(gfx, m);
 
@@ -400,7 +411,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	if (count > 0)
 	{
 		Texture *tex = gfx->getTextureOrDefaultForActiveShader(texture);
-		gfx->drawQuads(start, count, attributes, buffers, tex);
+		gfx->drawQuads(start, count, attributesID, buffers, tex);
 	}
 }
 

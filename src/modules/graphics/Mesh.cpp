@@ -115,9 +115,19 @@ Mesh::Mesh(const std::vector<Mesh::BufferAttribute> &attributes, PrimitiveType d
 
 		finalizeAttribute(attrib);
 
-		int attributeIndex = getAttachedAttributeIndex(attrib.name);
-		if (attributeIndex != i && attributeIndex != -1)
-			throw love::Exception("Duplicate vertex attribute name: %s", attrib.name.c_str());
+		if (attrib.bindingLocation >= 0)
+		{
+			int attributeIndex = getAttachedAttributeIndex(attrib.bindingLocation);
+			if (attributeIndex != i && attributeIndex != -1)
+				throw love::Exception("Duplicate vertex attribute binding location: %d", attrib.bindingLocation);
+		}
+
+		if (!attrib.name.empty())
+		{
+			int attributeIndex = getAttachedAttributeIndex(attrib.name);
+			if (attributeIndex != i && attributeIndex != -1)
+				throw love::Exception("Duplicate vertex attribute name: %s", attrib.name.c_str());
+		}
 
 		vertexCount = std::min(vertexCount, attrib.buffer->getArrayLength());
 	}
@@ -137,16 +147,28 @@ void Mesh::setupAttachedAttributes()
 	for (size_t i = 0; i < vertexFormat.size(); i++)
 	{
 		const std::string &name = vertexFormat[i].decl.name;
+		int bindingLocation = vertexFormat[i].decl.bindingLocation;
 
-		if (getAttachedAttributeIndex(name) != -1)
-			throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
+		if (bindingLocation >= 0)
+		{
+			if (getAttachedAttributeIndex(bindingLocation) != -1)
+				throw love::Exception("Duplicate vertex attribute binding location: %d", bindingLocation);
+		}
 
-		BuiltinVertexAttribute builtinattrib;
-		int builtinAttribIndex = -1;
-		if (getConstant(name.c_str(), builtinattrib))
-			builtinAttribIndex = (int)builtinattrib;
+		if (!name.empty())
+		{
+			if (getAttachedAttributeIndex(name) != -1)
+				throw love::Exception("Duplicate vertex attribute name: %s", name.c_str());
+		}
 
-		attachedAttributes.push_back({name, vertexBuffer, nullptr, name, (int) i, 0, STEP_PER_VERTEX, builtinAttribIndex, true});
+		if (bindingLocation < 0)
+		{
+			BuiltinVertexAttribute builtinattrib;
+			if (getConstant(name.c_str(), builtinattrib))
+				bindingLocation = (int)builtinattrib;
+		}
+
+		attachedAttributes.push_back({name, vertexBuffer, nullptr, name, bindingLocation, (int) i, 0, STEP_PER_VERTEX, bindingLocation, true});
 	}
 }
 
@@ -161,6 +183,17 @@ int Mesh::getAttachedAttributeIndex(const std::string &name) const
 	return -1;
 }
 
+int Mesh::getAttachedAttributeIndex(int bindingLocation) const
+{
+	for (int i = 0; i < (int)attachedAttributes.size(); i++)
+	{
+		if (attachedAttributes[i].bindingLocation == bindingLocation)
+			return i;
+	}
+
+	return -1;
+}
+
 void Mesh::finalizeAttribute(BufferAttribute &attrib) const
 {
 	if ((attrib.buffer->getUsageFlags() & BUFFERUSAGEFLAG_VERTEX) == 0)
@@ -169,17 +202,33 @@ void Mesh::finalizeAttribute(BufferAttribute &attrib) const
 	if (attrib.startArrayIndex < 0 || attrib.startArrayIndex >= (int)attrib.buffer->getArrayLength())
 		throw love::Exception("Invalid start array index %d.", attrib.startArrayIndex + 1);
 
-	int indexInBuffer = attrib.buffer->getDataMemberIndex(attrib.nameInBuffer);
-	if (indexInBuffer < 0)
-		throw love::Exception("Buffer does not have a vertex attribute with name '%s'.", attrib.nameInBuffer.c_str());
-
-	BuiltinVertexAttribute builtinattrib;
-	if (getConstant(attrib.name.c_str(), builtinattrib))
-		attrib.builtinAttributeIndex = (int)builtinattrib;
+	if (attrib.bindingLocationInBuffer >= 0)
+	{
+		int indexInBuffer = attrib.buffer->getDataMemberIndex(attrib.bindingLocationInBuffer);
+		if (indexInBuffer < 0)
+			throw love::Exception("Buffer does not have a vertex attribute with binding location %d.", attrib.bindingLocationInBuffer);
+		attrib.indexInBuffer = indexInBuffer;
+	}
 	else
-		attrib.builtinAttributeIndex = -1;
+	{
+		int indexInBuffer = attrib.buffer->getDataMemberIndex(attrib.nameInBuffer);
+		if (indexInBuffer < 0)
+			throw love::Exception("Buffer does not have a vertex attribute with name '%s'.", attrib.nameInBuffer.c_str());
+		attrib.indexInBuffer = indexInBuffer;
+	}
 
-	attrib.indexInBuffer = indexInBuffer;
+	if (attrib.bindingLocation < 0)
+		attrib.bindingLocation = attrib.buffer->getDataMember(attrib.indexInBuffer).decl.bindingLocation;
+
+	if (attrib.bindingLocation < 0)
+	{
+		BuiltinVertexAttribute builtinattrib;
+		if (getConstant(attrib.name.c_str(), builtinattrib))
+			attrib.bindingLocation = (int)builtinattrib;
+	}
+
+	if (attrib.bindingLocation >= VertexAttributes::MAX || (attrib.bindingLocation < 0 && attrib.name.empty()))
+		throw love::Exception("Vertex attributes must have a valid binding location value within [0, %d).", VertexAttributes::MAX);
 }
 
 void *Mesh::checkVertexDataOffset(size_t vertindex, size_t *byteoffset)
@@ -224,6 +273,7 @@ void Mesh::setAttributeEnabled(const std::string &name, bool enable)
 		throw love::Exception("Mesh does not have an attached vertex attribute named '%s'", name.c_str());
 
 	attachedAttributes[index].enabled = enable;
+	attributesID.invalidate();
 }
 
 bool Mesh::isAttributeEnabled(const std::string &name) const
@@ -235,10 +285,29 @@ bool Mesh::isAttributeEnabled(const std::string &name) const
 	return attachedAttributes[index].enabled;
 }
 
+void Mesh::setAttributeEnabled(int bindingLocation, bool enable)
+{
+	int index = getAttachedAttributeIndex(bindingLocation);
+	if (index == -1)
+		throw love::Exception("Mesh does not have an attached vertex attribute with binding location %d", bindingLocation);
+
+	attachedAttributes[index].enabled = enable;
+	attributesID.invalidate();
+}
+
+bool Mesh::isAttributeEnabled(int bindingLocation) const
+{
+	int index = getAttachedAttributeIndex(bindingLocation);
+	if (index == -1)
+		throw love::Exception("Mesh does not have an attached vertex attribute with binding location %d", bindingLocation);
+
+	return attachedAttributes[index].enabled;
+}
+
 void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, const std::string &attachname, int startindex, AttributeStep step)
 {
-	BufferAttribute oldattrib = {};
-	BufferAttribute newattrib = {};
+	BufferAttribute oldattrib;
+	BufferAttribute newattrib;
 
 	int oldindex = getAttachedAttributeIndex(name);
 	if (oldindex != -1)
@@ -257,13 +326,42 @@ void Mesh::attachAttribute(const std::string &name, Buffer *buffer, Mesh *mesh, 
 
 	finalizeAttribute(newattrib);
 
-	if (newattrib.indexInBuffer < 0)
-		throw love::Exception("The specified vertex buffer does not have a vertex attribute named '%s'", attachname.c_str());
+	if (oldindex != -1)
+		attachedAttributes[oldindex] = newattrib;
+	else
+		attachedAttributes.push_back(newattrib);
+
+	attributesID.invalidate();
+}
+
+void Mesh::attachAttribute(int bindingLocation, Buffer *buffer, Mesh *mesh, int attachBindingLocation, int startindex, AttributeStep step)
+{
+	BufferAttribute oldattrib;
+	BufferAttribute newattrib;
+
+	int oldindex = getAttachedAttributeIndex(bindingLocation);
+	if (oldindex != -1)
+		oldattrib = attachedAttributes[oldindex];
+	else if (attachedAttributes.size() + 1 > VertexAttributes::MAX)
+		throw love::Exception("A maximum of %d attributes can be attached at once.", VertexAttributes::MAX);
+
+	newattrib.bindingLocation = bindingLocation;
+	newattrib.buffer = buffer;
+	newattrib.mesh = mesh;
+	newattrib.enabled = oldattrib.buffer.get() ? oldattrib.enabled : true;
+	newattrib.bindingLocationInBuffer = attachBindingLocation;
+	newattrib.indexInBuffer = -1;
+	newattrib.startArrayIndex = startindex;
+	newattrib.step = step;
+
+	finalizeAttribute(newattrib);
 
 	if (oldindex != -1)
 		attachedAttributes[oldindex] = newattrib;
 	else
 		attachedAttributes.push_back(newattrib);
+
+	attributesID.invalidate();
 }
 
 bool Mesh::detachAttribute(const std::string &name)
@@ -277,6 +375,22 @@ bool Mesh::detachAttribute(const std::string &name)
 	if (vertexBuffer.get() && vertexBuffer->getDataMemberIndex(name) != -1)
 		attachAttribute(name, vertexBuffer, nullptr, name);
 
+	attributesID.invalidate();
+	return true;
+}
+
+bool Mesh::detachAttribute(int bindingLocation)
+{
+	int index = getAttachedAttributeIndex(bindingLocation);
+	if (index == -1)
+		return false;
+
+	attachedAttributes.erase(attachedAttributes.begin() + index);
+
+	if (vertexBuffer.get() && vertexBuffer->getDataMemberIndex(bindingLocation) != -1)
+		attachAttribute(bindingLocation, vertexBuffer, nullptr, bindingLocation);
+
+	attributesID.invalidate();
 	return true;
 }
 
@@ -593,6 +707,8 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 	if (Shader::current)
 		Shader::current->validateDrawState(primitiveType, texture);
 
+	bool attributesIDneedsupdate = !attributesID.isValid();
+
 	VertexAttributes attributes;
 	BufferBindings buffers;
 
@@ -604,14 +720,17 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 			continue;
 
 		Buffer *buffer = attrib.buffer.get();
-		int attributeindex = attrib.builtinAttributeIndex;
+		int bindinglocation = attrib.bindingLocation;
 
-		// If the attribute is one of the LOVE-defined ones, use the constant
-		// attribute index for it, otherwise query the index from the shader.
-		if (attributeindex < 0 && Shader::current)
-			attributeindex = Shader::current->getVertexAttributeIndex(attrib.name);
+		// Query the index from the shader as a fallback to support old code that
+		// hasn't set a binding location.
+		if (bindinglocation < 0 && Shader::current)
+		{
+			bindinglocation = Shader::current->getVertexAttributeIndex(attrib.name);
+			attributesIDneedsupdate = true;
+		}
 
-		if (attributeindex >= 0)
+		if (bindinglocation >= 0)
 		{
 			if (attrib.mesh.get())
 				attrib.mesh->flush();
@@ -622,7 +741,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 			uint16 stride = (uint16) buffer->getArrayStride();
 			size_t bufferoffset = (size_t) stride * attrib.startArrayIndex;
 
-			attributes.set(attributeindex, member.decl.format, offset, activebuffers);
+			attributes.set(bindinglocation, member.decl.format, offset, activebuffers);
 			attributes.setBufferLayout(activebuffers, stride, attrib.step);
 
 			// TODO: Ideally we want to reuse buffers with the same stride+step.
@@ -634,6 +753,9 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 	// Not supported on all platforms or GL versions, I believe.
 	if ((attributes.enableBits & ~(ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR)) == 0)
 		throw love::Exception("Mesh must have an enabled VertexPosition or custom attribute to be drawn.");
+
+	if (attributesIDneedsupdate)
+		attributesID = gfx->registerVertexAttributes(attributes);
 
 	Graphics::TempTransform transform(gfx, m);
 
@@ -660,7 +782,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 		if (range.isValid())
 			r.intersect(range);
 
-		Graphics::DrawIndexedCommand cmd(&attributes, &buffers, indexbuffer);
+		Graphics::DrawIndexedCommand cmd(attributesID, &buffers, indexbuffer);
 
 		cmd.primitiveType = primitiveType;
 		cmd.indexType = indexDataType;
@@ -683,7 +805,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 		if (range.isValid())
 			r.intersect(range);
 
-		Graphics::DrawCommand cmd(&attributes, &buffers);
+		Graphics::DrawCommand cmd(attributesID, &buffers);
 
 		cmd.primitiveType = primitiveType;
 		cmd.vertexStart = (int) r.getOffset();

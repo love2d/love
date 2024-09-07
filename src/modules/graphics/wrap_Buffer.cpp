@@ -404,8 +404,14 @@ static int w_Buffer_getFormat(lua_State *L)
 		lua_pushinteger(L, member.decl.arrayLength);
 		lua_setfield(L, -2, "arraylength");
 
+		lua_pushinteger(L, member.decl.bindingLocation);
+		lua_setfield(L, -2, "location");
+
 		lua_pushinteger(L, member.offset);
 		lua_setfield(L, -2, "offset");
+
+		lua_pushinteger(L, member.size);
+		lua_setfield(L, -2, "size");
 
 		lua_rawseti(L, -2, i + 1);
 	}

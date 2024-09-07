@@ -13,9 +13,9 @@ love.test.graphics.Buffer = function(test)
 
   -- setup vertex data and create some buffers
   local vertexformat = {
-    {name="VertexPosition", format="floatvec2"},
-    {name="VertexTexCoord", format="floatvec2"},
-    {name="VertexColor", format="unorm8vec4"},
+    {name="VertexPosition", format="floatvec2", location=0},
+    {name="VertexTexCoord", format="floatvec2", location=1},
+    {name="VertexColor", format="unorm8vec4", location=2},
   }
   local vertexdata = {
     {0,  0,  0, 0, 1, 0, 1, 1},
@@ -529,11 +529,11 @@ love.test.graphics.Mesh = function(test)
 
   -- check using custom attributes
   local mesh2 = love.graphics.newMesh({
-    { name = 'VertexPosition', format = 'floatvec2'},
-    { name = 'VertexTexCoord', format = 'floatvec2'},
-    { name = 'VertexColor', format = 'floatvec4'},
-    { name = 'CustomValue1', format = 'floatvec2'},
-    { name = 'CustomValue2', format = 'uint16'}
+    { name = 'VertexPosition', format = 'floatvec2', location = 0},
+    { name = 'VertexTexCoord', format = 'floatvec2', location = 1},
+    { name = 'VertexColor', format = 'floatvec4', location = 2},
+    { name = 'CustomValue1', format = 'floatvec2', location = 3},
+    { name = 'CustomValue2', format = 'uint16', location = 4}
   }, {
 		{ 0, 0, 0, 0, 1, 0, 0, 1, 2, 1, 1005 },
 		{ image:getWidth(), 0, 1, 0, 0, 1, 0, 0, 2, 2, 2005 },
@@ -962,8 +962,8 @@ love.test.graphics.Shader = function(test)
       flat varying ivec4 VaryingInt;
 
       #ifdef VERTEX
-      in vec4 VertexPosition;
-      in ivec4 IntAttributeUnused;
+      layout(location = 0) in vec4 VertexPosition;
+      layout(location = 1) in ivec4 IntAttributeUnused;
 
       void vertexmain()
       {

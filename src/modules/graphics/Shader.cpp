@@ -650,6 +650,22 @@ Shader::Shader(StrongRef<ShaderStage> _stages[], const CompileOptions &options)
 	if (!validateInternal(_stages, err, reflection))
 		throw love::Exception("%s", err.c_str());
 
+	std::vector<std::string> unsetVertexInputLocations;
+
+	for (const auto &kvp : reflection.vertexInputs)
+	{
+		if (kvp.second < 0)
+			unsetVertexInputLocations.push_back(kvp.first);
+	}
+
+	if (!unsetVertexInputLocations.empty())
+	{
+		std::string str = unsetVertexInputLocations[0];
+		for (size_t i = 1; i < unsetVertexInputLocations.size(); i++)
+			str += ", " + unsetVertexInputLocations[i];
+		unsetVertexInputLocationsString = str;
+	}
+
 	activeTextures.resize(reflection.textureCount);
 	activeBuffers.resize(reflection.bufferCount);
 
@@ -1148,6 +1164,17 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 				return false;
 			}
 		}
+	}
+
+	for (int i = 0; i < program.getNumPipeInputs(); i++)
+	{
+		const glslang::TObjectReflection &info = program.getPipeInput(i);
+
+		int location = info.layoutLocation();
+		if (location == glslang::TQualifier::layoutLocationEnd)
+			location = -1;
+
+		reflection.vertexInputs[info.name] = location;
 	}
 
 	reflection.textureCount = 0;

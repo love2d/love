@@ -93,7 +93,7 @@ ParticleSystem::ParticleSystem(Texture *texture, uint32 size)
 	, offset(float(texture->getWidth())*0.5f, float(texture->getHeight())*0.5f)
 	, defaultOffset(true)
 	, relativeRotation(false)
-	, vertexAttributes(CommonFormat::XYf_STf_RGBAub, 0)
+	, vertexAttributesID(Module::getInstance<Graphics>(Module::M_GRAPHICS)->registerVertexAttributes(VertexAttributes(CommonFormat::XYf_STf_RGBAub, 0)))
 	, buffer(nullptr)
 {
 	if (size == 0 || size > MAX_PARTICLES)
@@ -154,7 +154,7 @@ ParticleSystem::ParticleSystem(const ParticleSystem &p)
 	, colors(p.colors)
 	, quads(p.quads)
 	, relativeRotation(p.relativeRotation)
-	, vertexAttributes(p.vertexAttributes)
+	, vertexAttributesID(p.vertexAttributesID)
 	, buffer(nullptr)
 {
 	setBufferSize(maxParticles);
@@ -1087,7 +1087,7 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 	vertexbuffers.set(0, buffer, 0);
 
 	Texture *tex = gfx->getTextureOrDefaultForActiveShader(texture);
-	gfx->drawQuads(0, pCount, vertexAttributes, vertexbuffers, tex);
+	gfx->drawQuads(0, pCount, vertexAttributesID, vertexbuffers, tex);
 }
 
 bool ParticleSystem::getConstant(const char *in, AreaSpreadDistribution &out)

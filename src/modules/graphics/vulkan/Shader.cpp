@@ -201,7 +201,8 @@ void Shader::unloadVolatile()
 		return;
 
 	vgfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout,
-		descriptorPools = descriptorPools, computePipeline = computePipeline, graphicsPipelines = std::move(graphicsPipelines)](){
+		descriptorPools = descriptorPools, computePipeline = computePipeline,
+		graphicsPipelinesCore = std::move(graphicsPipelinesDynamicState), graphicsPipelinesFull = std::move(graphicsPipelinesNoDynamicState)]() {
 		for (const auto &pools : descriptorPools)
 		{
 			for (const auto pool : pools)
@@ -213,7 +214,9 @@ void Shader::unloadVolatile()
 		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 		if (computePipeline != VK_NULL_HANDLE)
 			vkDestroyPipeline(device, computePipeline, nullptr);
-		for (const auto& kvp : graphicsPipelines)
+		for (const auto &kvp : graphicsPipelinesCore)
+			vkDestroyPipeline(device, kvp.second, nullptr);
+		for (const auto &kvp : graphicsPipelinesFull)
 			vkDestroyPipeline(device, kvp.second, nullptr);
 	});
 
@@ -594,6 +597,7 @@ void Shader::compileShaders()
 
 	BindingMapper bindingMapper(spv::DecorationBinding);
 	BindingMapper ioLocationMapper(spv::DecorationLocation);
+	BindingMapper vertexInputLocationMapper(spv::DecorationLocation);
 
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
@@ -712,25 +716,21 @@ void Shader::compileShaders()
 
 		if (shaderStage == SHADERSTAGE_VERTEX)
 		{
-			int nextAttributeIndex = ATTRIB_MAX_ENUM;
-
-			// Don't skip unused inputs, vulkan still needs to have valid
-			// bindings for them.
+			// Use the mapper on known used inputs first, so their bindings get
+			// put into the map without being changed.
 			for (const auto &r : shaderResources.stage_inputs)
 			{
-				int index;
+				auto it = reflection.vertexInputs.find(r.name);
+				if (it != reflection.vertexInputs.end() && it->second >= 0)
+					vertexInputLocationMapper(comp, spirv, r.name, 1, r.id);
+			}
 
-				BuiltinVertexAttribute builtinAttribute;
-				if (graphics::getConstant(r.name.c_str(), builtinAttribute))
-					index = (int)builtinAttribute;
-				else
-					index = nextAttributeIndex++;
-
-				uint32_t locationOffset;
-				if (!comp.get_binary_offset_for_decoration(r.id, spv::DecorationLocation, locationOffset))
-					throw love::Exception("could not get binary offset for vertex attribute %s location", r.name.c_str());
-
-				spirv[locationOffset] = (uint32_t)index;
+			for (const auto &r : shaderResources.stage_inputs)
+			{
+				// Don't skip unused inputs, vulkan still needs to have valid
+				// bindings for them. This will also avoid shuffling intentional
+				// used bindings because of the earlier loop.
+				int index = (int)vertexInputLocationMapper(comp, spirv, r.name, 1, r.id);
 
 				DataBaseType basetype = DATA_BASETYPE_FLOAT;
 
@@ -1203,14 +1203,26 @@ VkDescriptorSet Shader::allocateDescriptorSet()
 	}
 }
 
-VkPipeline Shader::getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfiguration &configuration)
+VkPipeline Shader::getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfigurationCore &configuration)
 {
-	auto it = graphicsPipelines.find(configuration);
-	if (it != graphicsPipelines.end())
+	auto it = graphicsPipelinesDynamicState.find(configuration);
+	if (it != graphicsPipelinesDynamicState.end())
 		return it->second;
 
-	VkPipeline pipeline = vgfx->createGraphicsPipeline(this, configuration);
-	graphicsPipelines.insert({ configuration, pipeline });
+	VkPipeline pipeline = vgfx->createGraphicsPipeline(this, configuration, nullptr);
+	graphicsPipelinesDynamicState.insert({ configuration, pipeline });
+	
+	return pipeline;
+}
+
+VkPipeline Shader::getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfigurationFull &configuration)
+{
+	auto it = graphicsPipelinesNoDynamicState.find(configuration);
+	if (it != graphicsPipelinesNoDynamicState.end())
+		return it->second;
+
+	VkPipeline pipeline = vgfx->createGraphicsPipeline(this, configuration.core, &configuration.noDynamicState);
+	graphicsPipelinesNoDynamicState.insert({ configuration, pipeline });
 	
 	return pipeline;
 }

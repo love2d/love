@@ -867,7 +867,7 @@ Graphics::RendererInfo Graphics::getRendererInfo() const
 
 void Graphics::draw(const DrawCommand &cmd)
 {
-	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
+	prepareDraw(cmd.attributesID, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
 	if (cmd.indirectBuffer != nullptr)
 	{
@@ -893,7 +893,7 @@ void Graphics::draw(const DrawCommand &cmd)
 
 void Graphics::draw(const DrawIndexedCommand &cmd)
 {
-	prepareDraw(*cmd.attributes, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
+	prepareDraw(cmd.attributesID, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
 	vkCmdBindIndexBuffer(
 		commandBuffers.at(currentFrame),
@@ -924,12 +924,12 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	drawCalls++;
 }
 
-void Graphics::drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, graphics::Texture *texture)
+void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, const BufferBindings &buffers, graphics::Texture *texture)
 {
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
 
-	prepareDraw(attributes, buffers, texture, PRIMITIVE_TRIANGLES, CULL_NONE);
+	prepareDraw(attributesID, buffers, texture, PRIMITIVE_TRIANGLES, CULL_NONE);
 
 	vkCmdBindIndexBuffer(
 		commandBuffers.at(currentFrame),
@@ -2328,7 +2328,7 @@ void Graphics::createVulkanVertexFormat(
 	}
 }
 
-void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindings &buffers, graphics::Texture *texture, PrimitiveType primitiveType, CullMode cullmode)
+void Graphics::prepareDraw(VertexAttributesID attributesID, const BufferBindings &buffers, graphics::Texture *texture, PrimitiveType primitiveType, CullMode cullmode)
 {
 	if (!renderPassState.active)
 		startRenderPass();
@@ -2337,31 +2337,37 @@ void Graphics::prepareDraw(const VertexAttributes &attributes, const BufferBindi
 
 	usedShadersInFrame.insert(s);
 
-	GraphicsPipelineConfiguration configuration{};
+	GraphicsPipelineConfigurationFull configuration{};
 
-	configuration.renderPass = renderPassState.beginInfo.renderPass;
-	configuration.vertexAttributes = attributes;
-	configuration.wireFrame = states.back().wireframe;
-	configuration.blendState = states.back().blend;
-	configuration.colorChannelMask = states.back().colorMask;
-	configuration.msaaSamples = renderPassState.msaa;
-	configuration.numColorAttachments = renderPassState.numColorAttachments;
-	configuration.packedColorAttachmentFormats = renderPassState.packedColorAttachmentFormats;
-	configuration.primitiveType = primitiveType;
+	configuration.core.renderPass = renderPassState.beginInfo.renderPass;
+	configuration.core.attributesID = attributesID;
+	configuration.core.wireFrame = states.back().wireframe;
+	configuration.core.blendStateKey = states.back().blend.toKey();
+	configuration.core.colorChannelMask = states.back().colorMask;
+	configuration.core.msaaSamples = renderPassState.msaa;
+	configuration.core.numColorAttachments = renderPassState.numColorAttachments;
+	configuration.core.packedColorAttachmentFormats = renderPassState.packedColorAttachmentFormats;
+	configuration.core.primitiveType = primitiveType;
+
+	VkPipeline pipeline = VK_NULL_HANDLE;
 
 	if (optionalDeviceExtensions.extendedDynamicState)
+	{
 		vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
+		pipeline = s->getCachedGraphicsPipeline(this, configuration.core);
+	}
 	else
 	{
-		configuration.dynamicState.winding = states.back().winding;
-		configuration.dynamicState.depthState.compare = states.back().depthTest;
-		configuration.dynamicState.depthState.write = states.back().depthWrite;
-		configuration.dynamicState.stencilAction = states.back().stencil.action;
-		configuration.dynamicState.stencilCompare = states.back().stencil.compare;
-		configuration.dynamicState.cullmode = cullmode;
+		configuration.noDynamicState.winding = states.back().winding;
+		configuration.noDynamicState.depthState.compare = states.back().depthTest;
+		configuration.noDynamicState.depthState.write = states.back().depthWrite;
+		configuration.noDynamicState.stencilAction = states.back().stencil.action;
+		configuration.noDynamicState.stencilCompare = states.back().stencil.compare;
+		configuration.noDynamicState.cullmode = cullmode;
+
+		pipeline = s->getCachedGraphicsPipeline(this, configuration);
 	}
 
-	VkPipeline pipeline = s->getCachedGraphicsPipeline(this, configuration);
 	if (pipeline != renderPassState.pipeline)
 	{
 		vkCmdBindPipeline(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
@@ -2696,7 +2702,7 @@ VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)
 	}
 }
 
-VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipelineConfiguration &configuration)
+VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipelineConfigurationCore &configuration, const GraphicsPipelineConfigurationNoDynamicState *noDynamicStateConfiguration)
 {
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -2706,7 +2712,10 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 	std::vector<VkVertexInputBindingDescription> bindingDescriptions;
 	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-	createVulkanVertexFormat(shader, configuration.vertexAttributes, bindingDescriptions, attributeDescriptions);
+	VertexAttributes vertexAttributes;
+	findVertexAttributes(configuration.attributesID, vertexAttributes);
+
+	createVulkanVertexFormat(shader, vertexAttributes, bindingDescriptions, attributeDescriptions);
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -2733,8 +2742,8 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 	rasterizer.lineWidth = 1.0f;
 	if (!optionalDeviceExtensions.extendedDynamicState)
 	{
-		rasterizer.cullMode = Vulkan::getCullMode(configuration.dynamicState.cullmode);
-		rasterizer.frontFace = Vulkan::getFrontFace(configuration.dynamicState.winding);
+		rasterizer.cullMode = Vulkan::getCullMode(noDynamicStateConfiguration->cullmode);
+		rasterizer.frontFace = Vulkan::getFrontFace(noDynamicStateConfiguration->winding);
 	}
 
 	rasterizer.depthBiasEnable = VK_FALSE;
@@ -2752,8 +2761,8 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 	depthStencil.depthTestEnable = VK_TRUE;
 	if (!optionalDeviceExtensions.extendedDynamicState)
 	{
-		depthStencil.depthWriteEnable = Vulkan::getBool(configuration.dynamicState.depthState.write);
-		depthStencil.depthCompareOp = Vulkan::getCompareOp(configuration.dynamicState.depthState.compare);
+		depthStencil.depthWriteEnable = Vulkan::getBool(noDynamicStateConfiguration->depthState.write);
+		depthStencil.depthCompareOp = Vulkan::getCompareOp(noDynamicStateConfiguration->depthState.compare);
 	}
 	depthStencil.depthBoundsTestEnable = VK_FALSE;
 	depthStencil.minDepthBounds = 0.0f;
@@ -2764,31 +2773,33 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 	if (!optionalDeviceExtensions.extendedDynamicState)
 	{
 		depthStencil.front.failOp = VK_STENCIL_OP_KEEP;
-		depthStencil.front.passOp = Vulkan::getStencilOp(configuration.dynamicState.stencilAction);
+		depthStencil.front.passOp = Vulkan::getStencilOp(noDynamicStateConfiguration->stencilAction);
 		depthStencil.front.depthFailOp = VK_STENCIL_OP_KEEP;
-		depthStencil.front.compareOp = Vulkan::getCompareOp(getReversedCompareMode(configuration.dynamicState.stencilCompare));
+		depthStencil.front.compareOp = Vulkan::getCompareOp(getReversedCompareMode(noDynamicStateConfiguration->stencilCompare));
 
 		depthStencil.back.failOp = VK_STENCIL_OP_KEEP;
-		depthStencil.back.passOp = Vulkan::getStencilOp(configuration.dynamicState.stencilAction);
+		depthStencil.back.passOp = Vulkan::getStencilOp(noDynamicStateConfiguration->stencilAction);
 		depthStencil.back.depthFailOp = VK_STENCIL_OP_KEEP;
-		depthStencil.back.compareOp = Vulkan::getCompareOp(getReversedCompareMode(configuration.dynamicState.stencilCompare));
+		depthStencil.back.compareOp = Vulkan::getCompareOp(getReversedCompareMode(noDynamicStateConfiguration->stencilCompare));
 	}
 
 	pipelineInfo.pDepthStencilState = &depthStencil;
 
+	BlendState blendState = BlendState::fromKey(configuration.blendStateKey);
+
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	colorBlendAttachment.colorWriteMask = Vulkan::getColorMask(configuration.colorChannelMask);
-	colorBlendAttachment.blendEnable = Vulkan::getBool(configuration.blendState.enable);
-	colorBlendAttachment.srcColorBlendFactor = Vulkan::getBlendFactor(configuration.blendState.srcFactorRGB);
-	colorBlendAttachment.dstColorBlendFactor = Vulkan::getBlendFactor(configuration.blendState.dstFactorRGB);
-	colorBlendAttachment.colorBlendOp = Vulkan::getBlendOp(configuration.blendState.operationRGB);
-	colorBlendAttachment.srcAlphaBlendFactor = Vulkan::getBlendFactor(configuration.blendState.srcFactorA);
-	colorBlendAttachment.dstAlphaBlendFactor = Vulkan::getBlendFactor(configuration.blendState.dstFactorA);
-	colorBlendAttachment.alphaBlendOp = Vulkan::getBlendOp(configuration.blendState.operationA);
+	colorBlendAttachment.blendEnable = Vulkan::getBool(blendState.enable);
+	colorBlendAttachment.srcColorBlendFactor = Vulkan::getBlendFactor(blendState.srcFactorRGB);
+	colorBlendAttachment.dstColorBlendFactor = Vulkan::getBlendFactor(blendState.dstFactorRGB);
+	colorBlendAttachment.colorBlendOp = Vulkan::getBlendOp(blendState.operationRGB);
+	colorBlendAttachment.srcAlphaBlendFactor = Vulkan::getBlendFactor(blendState.srcFactorA);
+	colorBlendAttachment.dstAlphaBlendFactor = Vulkan::getBlendFactor(blendState.dstFactorA);
+	colorBlendAttachment.alphaBlendOp = Vulkan::getBlendOp(blendState.operationA);
 
 	std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments(configuration.numColorAttachments, colorBlendAttachment);
 
-	if (configuration.blendState.enable)
+	if (blendState.enable)
 	{
 		for (uint32 i = 0; i < configuration.numColorAttachments; i++)
 		{

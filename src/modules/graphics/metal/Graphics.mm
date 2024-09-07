@@ -910,7 +910,7 @@ id<MTLDepthStencilState> Graphics::getCachedDepthStencilState(const DepthState &
 	return mtlstate;
 }
 
-void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const VertexAttributes &attributes)
+void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, VertexAttributesID attributesID)
 {
 	const uint32 pipelineStateBits = STATEBIT_SHADER | STATEBIT_BLEND | STATEBIT_COLORMASK;
 
@@ -987,18 +987,18 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, const Verte
 		[encoder setCullMode:mode];
 	}
 
-	if ((dirtyState & pipelineStateBits) != 0 || !(attributes == lastRenderPipelineKey.vertexAttributes))
+	if ((dirtyState & pipelineStateBits) != 0 || attributesID != lastRenderPipelineKey.vertexAttributesID)
 	{
 		auto &key = lastRenderPipelineKey;
 
-		key.vertexAttributes = attributes;
+		key.vertexAttributesID = attributesID;
 
 		Shader *shader = (Shader *) Shader::current;
 		id<MTLRenderPipelineState> pipeline = nil;
 
 		if (shader)
 		{
-			key.blend = state.blend;
+			key.blendStateKey = state.blend.toKey();
 			key.colorChannelMask = state.colorMask;
 
 			pipeline = shader->getCachedRenderPipeline(this, key);
@@ -1233,7 +1233,7 @@ void Graphics::draw(const DrawCommand &cmd)
 		dirtyRenderState |= STATEBIT_CULLMODE;
 	}
 
-	applyRenderState(encoder, *cmd.attributes);
+	applyRenderState(encoder, cmd.attributesID);
 	applyShaderUniforms(encoder, Shader::current, cmd.texture);
 
 	setVertexBuffers(encoder, Shader::current, cmd.buffers, renderBindings);
@@ -1265,7 +1265,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 		dirtyRenderState |= STATEBIT_CULLMODE;
 	}
 
-	applyRenderState(encoder, *cmd.attributes);
+	applyRenderState(encoder, cmd.attributesID);
 	applyShaderUniforms(encoder, Shader::current, cmd.texture);
 
 	setVertexBuffers(encoder, Shader::current, cmd.buffers, renderBindings);
@@ -1317,7 +1317,7 @@ static inline void advanceVertexOffsets(const VertexAttributes &attributes, Buff
 	}
 }
 
-void Graphics::drawQuads(int start, int count, const VertexAttributes &attributes, const BufferBindings &buffers, love::graphics::Texture *texture)
+void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, const BufferBindings &buffers, love::graphics::Texture *texture)
 { @autoreleasepool {
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
@@ -1330,7 +1330,7 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 		dirtyRenderState |= STATEBIT_CULLMODE;
 	}
 
-	applyRenderState(encoder, attributes);
+	applyRenderState(encoder, attributesID);
 	applyShaderUniforms(encoder, Shader::current, texture);
 
 	id<MTLBuffer> ib = getMTLBuffer(quadIndexBuffer);
@@ -1361,6 +1361,9 @@ void Graphics::drawQuads(int start, int count, const VertexAttributes &attribute
 	}
 	else
 	{
+		VertexAttributes attributes;
+		findVertexAttributes(attributesID, attributes);
+
 		BufferBindings bufferscopy = buffers;
 		if (start > 0)
 			advanceVertexOffsets(attributes, bufferscopy, start * 4);
@@ -1490,7 +1493,7 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*pixelw*/
 	}
 
 	lastRenderPipelineKey.depthStencilFormat = dsformat;
-	lastRenderPipelineKey.vertexAttributes = VertexAttributes();
+	lastRenderPipelineKey.vertexAttributesID = VertexAttributesID();
 
 	dirtyRenderState = STATEBIT_ALL;
 }}
