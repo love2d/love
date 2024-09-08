@@ -453,24 +453,44 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 
 		if (stageindex == SHADERSTAGE_VERTEX)
 		{
-			int nextattributeindex = ATTRIB_MAX_ENUM;
+			uint64 usedInputLocationBits = 0;
 
+			// First pass: record active input locations that were set to a valid value
+			// beforehand.
 			for (const auto &var : interfacevars)
 			{
-				spv::StorageClass storage = msl.get_storage_class(var);
-				const std::string &name = msl.get_name(var);
-
-				if (storage == spv::StorageClassInput)
+				if (msl.get_storage_class(var) == spv::StorageClassInput)
 				{
-					int index = 0;
+					const std::string &name = msl.get_name(var);
 
-					BuiltinVertexAttribute builtinattribute;
-					if (graphics::getConstant(name.c_str(), builtinattribute))
-						index = (int) builtinattribute;
-					else
-						index = nextattributeindex++;
+					auto it = reflection.vertexInputs.find(name);
+					if (it != reflection.vertexInputs.end() && it->second >= 0)
+						usedInputLocationBits |= (1ull << it->second);
+				}
+			}
 
-					msl.set_decoration(var, spv::DecorationLocation, index);
+			// Second pass: set input locations which were not part of the above pass,
+			// they need to not overlap. And then store all input locations for later use.
+			for (const auto &var : interfacevars)
+			{
+				if (msl.get_storage_class(var) == spv::StorageClassInput)
+				{
+					const std::string &name = msl.get_name(var);
+
+					auto it = reflection.vertexInputs.find(name);
+					if (it == reflection.vertexInputs.end() || it->second < 0)
+					{
+						for (int i = 0; i < 64; i++)
+						{
+							if ((usedInputLocationBits & (1ull << i)) == 0)
+							{
+								usedInputLocationBits |= (1ull << i);
+								msl.set_decoration(var, spv::DecorationLocation, i);
+								break;
+							}
+						}
+					}
+
 					attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
 				}
 			}
