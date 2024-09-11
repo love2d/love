@@ -108,6 +108,8 @@ public:
 
 private:
 
+	void updateVertexAttributes(Graphics *gfx);
+
 	struct AttachedAttribute
 	{
 		StrongRef<Buffer> buffer;
@@ -138,6 +140,7 @@ private:
 	size_t vertex_stride;
 
 	VertexAttributesID attributesID;
+	BufferBindings bufferBindings;
 
 	StrongRef<love::graphics::Buffer> array_buf;
 	uint8 *vertex_data;

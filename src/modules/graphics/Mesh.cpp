@@ -660,6 +660,58 @@ bool Mesh::getDrawRange(int &start, int &count) const
 	return true;
 }
 
+void Mesh::updateVertexAttributes(Graphics *gfx)
+{
+	VertexAttributes attributes;
+	BufferBindings &buffers = bufferBindings;
+
+	int activebuffers = 0;
+
+	for (const auto &attrib : attachedAttributes)
+	{
+		if (!attrib.enabled)
+			continue;
+
+		Buffer *buffer = attrib.buffer.get();
+		int bindinglocation = attrib.bindingLocation;
+
+		// Query the index from the shader as a fallback to support old code that
+		// hasn't set a binding location.
+		if (bindinglocation < 0 && Shader::current)
+			bindinglocation = Shader::current->getVertexAttributeIndex(attrib.name);
+
+		if (bindinglocation >= 0)
+		{
+			const auto &member = buffer->getDataMember(attrib.indexInBuffer);
+
+			uint16 offset = (uint16)member.offset;
+			uint16 stride = (uint16)buffer->getArrayStride();
+			size_t bufferoffset = (size_t)stride * attrib.startArrayIndex;
+
+			int bufferindex = activebuffers;
+
+			for (int i = 0; i < activebuffers; i++)
+			{
+				if (buffers.info[i].buffer == buffer && buffers.info[i].offset == bufferoffset
+					&& attributes.bufferLayouts[i].stride == stride && attributes.getBufferStep(i) == attrib.step)
+				{
+					bufferindex = i;
+					break;
+				}
+			}
+
+			attributes.set(bindinglocation, member.decl.format, offset, bufferindex);
+			attributes.setBufferLayout(bufferindex, stride, attrib.step);
+
+			buffers.set(bufferindex, buffer, bufferoffset);
+
+			activebuffers = std::max(activebuffers, bufferindex + 1);
+		}
+	}
+
+	attributesID = gfx->registerVertexAttributes(attributes);
+}
+
 void Mesh::draw(Graphics *gfx, const love::Matrix4 &m)
 {
 	drawInternal(gfx, m, 1, nullptr, 0);
@@ -709,53 +761,22 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 
 	bool attributesIDneedsupdate = !attributesID.isValid();
 
-	VertexAttributes attributes;
-	BufferBindings buffers;
-
-	int activebuffers = 0;
-
 	for (const auto &attrib : attachedAttributes)
 	{
 		if (!attrib.enabled)
 			continue;
 
-		Buffer *buffer = attrib.buffer.get();
-		int bindinglocation = attrib.bindingLocation;
+		if (attrib.mesh.get())
+			attrib.mesh->flush();
 
 		// Query the index from the shader as a fallback to support old code that
 		// hasn't set a binding location.
-		if (bindinglocation < 0 && Shader::current)
-		{
-			bindinglocation = Shader::current->getVertexAttributeIndex(attrib.name);
+		if (attrib.bindingLocation < 0)
 			attributesIDneedsupdate = true;
-		}
-
-		if (bindinglocation >= 0)
-		{
-			if (attrib.mesh.get())
-				attrib.mesh->flush();
-
-			const auto &member = buffer->getDataMember(attrib.indexInBuffer);
-
-			uint16 offset = (uint16) member.offset;
-			uint16 stride = (uint16) buffer->getArrayStride();
-			size_t bufferoffset = (size_t) stride * attrib.startArrayIndex;
-
-			attributes.set(bindinglocation, member.decl.format, offset, activebuffers);
-			attributes.setBufferLayout(activebuffers, stride, attrib.step);
-
-			// TODO: Ideally we want to reuse buffers with the same stride+step.
-			buffers.set(activebuffers, buffer, bufferoffset);
-			activebuffers++;
-		}
 	}
 
-	// Not supported on all platforms or GL versions, I believe.
-	if ((attributes.enableBits & ~(ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR)) == 0)
-		throw love::Exception("Mesh must have an enabled VertexPosition or custom attribute to be drawn.");
-
 	if (attributesIDneedsupdate)
-		attributesID = gfx->registerVertexAttributes(attributes);
+		updateVertexAttributes(gfx);
 
 	Graphics::TempTransform transform(gfx, m);
 
@@ -782,7 +803,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 		if (range.isValid())
 			r.intersect(range);
 
-		Graphics::DrawIndexedCommand cmd(attributesID, &buffers, indexbuffer);
+		Graphics::DrawIndexedCommand cmd(attributesID, &bufferBindings, indexbuffer);
 
 		cmd.primitiveType = primitiveType;
 		cmd.indexType = indexDataType;
@@ -805,7 +826,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 		if (range.isValid())
 			r.intersect(range);
 
-		Graphics::DrawCommand cmd(attributesID, &buffers);
+		Graphics::DrawCommand cmd(attributesID, &bufferBindings);
 
 		cmd.primitiveType = primitiveType;
 		cmd.vertexStart = (int) r.getOffset();

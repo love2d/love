@@ -196,6 +196,8 @@ private:
 	int getAttachedAttributeIndex(int bindingLocation) const;
 	void finalizeAttribute(BufferAttribute &attrib) const;
 
+	void updateVertexAttributes(Graphics *gfx);
+
 	void drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buffer *indirectargs, int argsindex);
 
 	std::vector<Buffer::DataMember> vertexFormat;
@@ -225,6 +227,8 @@ private:
 	Range drawRange = Range();
 
 	StrongRef<Texture> texture;
+
+	BufferBindings bufferBindings;
 
 }; // Mesh
 

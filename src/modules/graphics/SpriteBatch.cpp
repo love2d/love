@@ -321,6 +321,57 @@ bool SpriteBatch::getDrawRange(int &start, int &count) const
 	return true;
 }
 
+void SpriteBatch::updateVertexAttributes(Graphics *gfx)
+{
+	VertexAttributes attributes;
+	BufferBindings &buffers = bufferBindings;
+
+	buffers.set(0, array_buf, 0);
+	attributes.setCommonFormat(vertex_format, 0);
+
+	int activebuffers = 1;
+
+	for (const auto &it : attached_attributes)
+	{
+		Buffer *buffer = it.second.buffer.get();
+
+		int bindingindex = it.second.bindingIndex;
+
+		// If the attribute is one of the LOVE-defined ones, use the constant
+		// attribute index for it, otherwise query the index from the shader.
+		if (bindingindex < 0 && Shader::current)
+			bindingindex = Shader::current->getVertexAttributeIndex(it.first);
+
+		if (bindingindex >= 0)
+		{
+			const auto &member = buffer->getDataMember(it.second.index);
+
+			uint16 offset = (uint16) buffer->getMemberOffset(it.second.index);
+			uint16 stride = (uint16) buffer->getArrayStride();
+
+			int bufferindex = activebuffers;
+
+			for (int i = 1; i < activebuffers; i++)
+			{
+				if (buffers.info[i].buffer == buffer && attributes.bufferLayouts[i].stride == stride)
+				{
+					bufferindex = i;
+					break;
+				}
+			}
+
+			attributes.set(bindingindex, member.decl.format, offset, bufferindex);
+			attributes.setBufferLayout(bufferindex, stride);
+
+			buffers.set(bufferindex, buffer, 0);
+
+			activebuffers = std::max(activebuffers, bufferindex + 1);
+		}
+	}
+
+	attributesID = gfx->registerVertexAttributes(attributes);
+}
+
 void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 {
 	if (next == 0)
@@ -347,16 +398,6 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 
 	bool attributesIDneedsupdate = !attributesID.isValid();
 
-	VertexAttributes attributes;
-	BufferBindings buffers;
-
-	{
-		buffers.set(0, array_buf, 0);
-		attributes.setCommonFormat(vertex_format, 0);
-	}
-
-	int activebuffers = 1;
-
 	for (const auto &it : attached_attributes)
 	{
 		Buffer *buffer = it.second.buffer.get();
@@ -366,37 +407,17 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 		if (buffer->getArrayLength() < (size_t) next * 4)
 			throw love::Exception("Buffer with attribute '%s' attached to this SpriteBatch has too few vertices", it.first.c_str());
 
-		int bindingindex = it.second.bindingIndex;
-
 		// If the attribute is one of the LOVE-defined ones, use the constant
 		// attribute index for it, otherwise query the index from the shader.
-		if (bindingindex < 0 && Shader::current)
-		{
-			bindingindex = Shader::current->getVertexAttributeIndex(it.first);
+		if (it.second.bindingIndex < 0)
 			attributesIDneedsupdate = true;
-		}
 
-		if (bindingindex >= 0)
-		{
-			if (it.second.mesh.get())
-				it.second.mesh->flush();
-
-			const auto &member = buffer->getDataMember(it.second.index);
-
-			uint16 offset = (uint16) buffer->getMemberOffset(it.second.index);
-			uint16 stride = (uint16) buffer->getArrayStride();
-
-			attributes.set(bindingindex, member.decl.format, offset, activebuffers);
-			attributes.setBufferLayout(activebuffers, stride);
-
-			// TODO: We should reuse buffer bindings with the same buffer+stride+step.
-			buffers.set(activebuffers, buffer, 0);
-			activebuffers++;
-		}
+		if (it.second.mesh.get())
+			it.second.mesh->flush();
 	}
 
 	if (attributesIDneedsupdate)
-		attributesID = gfx->registerVertexAttributes(attributes);
+		updateVertexAttributes(gfx);
 
 	Graphics::TempTransform transform(gfx, m);
 
@@ -411,7 +432,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	if (count > 0)
 	{
 		Texture *tex = gfx->getTextureOrDefaultForActiveShader(texture);
-		gfx->drawQuads(start, count, attributesID, buffers, tex);
+		gfx->drawQuads(start, count, attributesID, bufferBindings, tex);
 	}
 }
 
