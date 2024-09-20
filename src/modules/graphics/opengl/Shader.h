@@ -65,10 +65,7 @@ public:
 	int getVertexAttributeIndex(const std::string &name) override;
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override;
-	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override;
-	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
 	ptrdiff_t getHandle() const override;
-	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
 	void updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH);
 
@@ -95,10 +92,9 @@ private:
 	void mapActiveUniforms();
 
 	void updateUniform(const UniformInfo *info, int count, bool internalupdate);
-	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count, bool internalupdate);
-	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count, bool internalupdate);
 
-	void flushBatchedDraws() const;
+	void applyTexture(const UniformInfo *info, int i, love::graphics::Texture *texture, UniformType basetype, bool isdefault) override;
+	void applyBuffer(const UniformInfo *info, int i, love::graphics::Buffer *buffer, UniformType basetype, bool isdefault) override;
 
 	// Get any warnings or errors generated only by the shader program object.
 	std::string getProgramWarnings() const;

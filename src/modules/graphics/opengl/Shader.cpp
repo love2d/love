@@ -553,170 +553,76 @@ void Shader::updateUniform(const UniformInfo *info, int count, bool internalupda
 	}
 }
 
-void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)
+void Shader::applyTexture(const UniformInfo *info, int i, love::graphics::Texture *texture, UniformType basetype, bool isdefault)
 {
-	Shader::sendTextures(info, textures, count, false);
-}
-
-void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count, bool internalUpdate)
-{
-	bool issampler = info->baseType == UNIFORM_SAMPLER;
-	bool isstoragetex = info->baseType == UNIFORM_STORAGETEXTURE;
-
-	if (!issampler && !isstoragetex)
-		return;
-
 	bool shaderactive = current == this;
 
-	if (!internalUpdate && shaderactive)
-		flushBatchedDraws();
-
-	count = std::min(count, info->count);
-
-	// Bind the textures to the texture units.
-	for (int i = 0; i < count; i++)
+	if (basetype == UNIFORM_STORAGETEXTURE)
 	{
-		love::graphics::Texture *tex = textures[i];
-		bool isdefault = tex == nullptr;
+		GLuint gltex = (GLuint) texture->getHandle();
 
-		if (tex != nullptr)
+		int bindingindex = info->ints[i];
+		auto &binding = storageTextureBindings[bindingindex];
+
+		if (isdefault && (info->access & ACCESS_WRITE) != 0)
 		{
-			if (!validateTexture(info, tex, internalUpdate))
-				continue;
+			binding.texture = nullptr;
+			binding.gltexture = 0;
 		}
 		else
 		{
-			auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
-			tex = gfx->getDefaultTexture(info->textureType, info->dataBaseType, info->isDepthSampler);
-		}
-
-		tex->retain();
-
-		int resourceindex = info->resourceIndex + i;
-
-		if (activeTextures[resourceindex] != nullptr)
-			activeTextures[resourceindex]->release();
-
-		activeTextures[resourceindex] = tex;
-
-		if (isstoragetex)
-		{
-			GLuint gltex = (GLuint) tex->getHandle();
-
-			int bindingindex = info->ints[i];
-			auto &binding = storageTextureBindings[bindingindex];
-
-			if (isdefault && (info->access & ACCESS_WRITE) != 0)
-			{
-				binding.texture = nullptr;
-				binding.gltexture = 0;
-			}
-			else
-			{
-				binding.texture = tex;
-				binding.gltexture = gltex;
-
-				if (shaderactive)
-					glBindImageTexture(bindingindex, binding.gltexture, 0, GL_TRUE, 0, binding.access, binding.internalFormat);
-			}
-		}
-		else
-		{
-			GLuint gltex = (GLuint) tex->getHandle();
-
-			int texunit = info->ints[i];
+			binding.texture = texture;
+			binding.gltexture = gltex;
 
 			if (shaderactive)
-				gl.bindTextureToUnit(info->textureType, gltex, texunit, false, false);
-
-			// Store texture id so it can be re-bound to the texture unit later.
-			textureUnits[texunit].texture = gltex;
+				glBindImageTexture(bindingindex, binding.gltexture, 0, GL_TRUE, 0, binding.access, binding.internalFormat);
 		}
+	}
+	else
+	{
+		GLuint gltex = (GLuint) texture->getHandle();
+
+		int texunit = info->ints[i];
+
+		if (shaderactive)
+			gl.bindTextureToUnit(info->textureType, gltex, texunit, false, false);
+
+		// Store texture id so it can be re-bound to the texture unit later.
+		textureUnits[texunit].texture = gltex;
 	}
 }
 
-void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
+void Shader::applyBuffer(const UniformInfo *info, int i, love::graphics::Buffer *buffer, UniformType basetype, bool isdefault)
 {
-	Shader::sendBuffers(info, buffers, count, false);
-}
-
-void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count, bool internalUpdate)
-{
-	bool texelbinding = info->baseType == UNIFORM_TEXELBUFFER;
-	bool storagebinding = info->baseType == UNIFORM_STORAGEBUFFER;
-
-	if (!texelbinding && !storagebinding)
-		return;
-
 	bool shaderactive = current == this;
 
-	if (!internalUpdate && shaderactive)
-		flushBatchedDraws();
-
-	count = std::min(count, info->count);
-
-	for (int i = 0; i < count; i++)
+	if (basetype == UNIFORM_TEXELBUFFER)
 	{
-		love::graphics::Buffer *buffer = buffers[i];
-		bool isdefault = buffer == nullptr;
+		GLuint gltex = (GLuint) buffer->getTexelBufferHandle();
+		int texunit = info->ints[i];
 
-		if (buffer != nullptr)
-		{
-			if (!validateBuffer(info, buffer, internalUpdate))
-				continue;
-		}
-		else
-		{
-			auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
-			if (texelbinding)
-				buffer = gfx->getDefaultTexelBuffer(info->dataBaseType);
-			else
-				buffer = gfx->getDefaultStorageBuffer();
-		}
+		if (shaderactive)
+			gl.bindBufferTextureToUnit(gltex, texunit, false, false);
 
-		buffer->retain();
-
-		int resourceindex = info->resourceIndex + i;
-
-		if (activeBuffers[resourceindex] != nullptr)
-			activeBuffers[resourceindex]->release();
-
-		activeBuffers[resourceindex] = buffer;
-
-		if (texelbinding)
-		{
-			GLuint gltex = (GLuint) buffer->getTexelBufferHandle();
-			int texunit = info->ints[i];
-
-			if (shaderactive)
-				gl.bindBufferTextureToUnit(gltex, texunit, false, false);
-
-			// Store texture id so it can be re-bound to the texture unit later.
-			textureUnits[texunit].texture = gltex;
-		}
-		else if (storagebinding)
-		{
-			GLuint glbuffer = (GLuint)buffer->getHandle();
-			int bindingindex = info->ints[i];
-
-			if (shaderactive)
-				gl.bindIndexedBuffer(glbuffer, BUFFERUSAGE_SHADER_STORAGE, bindingindex);
-
-			auto activeindex = storageBufferBindingIndexToActiveBinding[bindingindex];
-
-			if (activeindex.first >= 0)
-				activeStorageBufferBindings[activeindex.first].buffer = glbuffer;
-
-			if (activeindex.second >= 0)
-				activeWritableStorageBuffers[activeindex.second] = isdefault ? nullptr : buffer;
-		}
+		// Store texture id so it can be re-bound to the texture unit later.
+		textureUnits[texunit].texture = gltex;
 	}
-}
+	else if (basetype == UNIFORM_STORAGEBUFFER)
+	{
+		GLuint glbuffer = (GLuint)buffer->getHandle();
+		int bindingindex = info->ints[i];
 
-void Shader::flushBatchedDraws() const
-{
-	if (current == this)
-		Graphics::flushBatchedDrawsGlobal();
+		if (shaderactive)
+			gl.bindIndexedBuffer(glbuffer, BUFFERUSAGE_SHADER_STORAGE, bindingindex);
+
+		auto activeindex = storageBufferBindingIndexToActiveBinding[bindingindex];
+
+		if (activeindex.first >= 0)
+			activeStorageBufferBindings[activeindex.first].buffer = glbuffer;
+
+		if (activeindex.second >= 0)
+			activeWritableStorageBuffers[activeindex.second] = isdefault ? nullptr : buffer;
+	}
 }
 
 ptrdiff_t Shader::getHandle() const
@@ -734,25 +640,6 @@ int Shader::getVertexAttributeIndex(const std::string &name)
 
 	attributes[name] = location;
 	return location;
-}
-
-void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture)
-{
-	const BuiltinUniform builtins[3] = {
-		BUILTIN_TEXTURE_VIDEO_Y,
-		BUILTIN_TEXTURE_VIDEO_CB,
-		BUILTIN_TEXTURE_VIDEO_CR,
-	};
-
-	love::graphics::Texture *textures[3] = {ytexture, cbtexture, crtexture};
-
-	for (int i = 0; i < 3; i++)
-	{
-		const UniformInfo *info = builtinUniformInfo[builtins[i]];
-
-		if (info != nullptr)
-			sendTextures(info, &textures[i], 1, true);
-	}
 }
 
 void Shader::updateBuiltinUniforms(love::graphics::Graphics *gfx, int viewportW, int viewportH)

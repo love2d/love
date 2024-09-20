@@ -797,6 +797,125 @@ bool Shader::hasUniform(const std::string &name) const
 	return it != reflection.allUniforms.end() && it->second->active;
 }
 
+void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture)
+{
+	const BuiltinUniform builtins[3] = {
+		BUILTIN_TEXTURE_VIDEO_Y,
+		BUILTIN_TEXTURE_VIDEO_CB,
+		BUILTIN_TEXTURE_VIDEO_CR,
+	};
+
+	love::graphics::Texture *textures[3] = {ytexture, cbtexture, crtexture};
+
+	for (int i = 0; i < 3; i++)
+	{
+		const UniformInfo *info = getUniformInfo(builtins[i]);
+		if (info != nullptr)
+			sendTextures(info, &textures[i], 1, true);
+	}
+}
+
+void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count)
+{
+	Shader::sendTextures(info, textures, count, false);
+}
+
+void Shader::sendBuffers(const UniformInfo *info, Buffer **buffers, int count)
+{
+	Shader::sendBuffers(info, buffers, count, false);
+}
+
+void Shader::sendTextures(const UniformInfo *info, Texture **textures, int count, bool internalUpdate)
+{
+	UniformType basetype = info->baseType;
+
+	if (basetype != UNIFORM_SAMPLER && basetype != UNIFORM_STORAGETEXTURE)
+		return;
+
+	if (!internalUpdate && current == this)
+		flushBatchedDraws();
+
+	count = std::min(count, info->count);
+
+	for (int i = 0; i < count; i++)
+	{
+		love::graphics::Texture *tex = textures[i];
+		bool isdefault = tex == nullptr;
+
+		if (tex != nullptr)
+		{
+			if (!validateTexture(info, tex, internalUpdate))
+				continue;
+		}
+		else
+		{
+			auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
+			tex = gfx->getDefaultTexture(info->textureType, info->dataBaseType, info->isDepthSampler);
+		}
+
+		tex->retain();
+
+		int resourceindex = info->resourceIndex + i;
+
+		if (activeTextures[resourceindex] != nullptr)
+			activeTextures[resourceindex]->release();
+
+		activeTextures[resourceindex] = tex;
+
+		applyTexture(info, i, tex, basetype, isdefault);
+	}
+}
+
+void Shader::sendBuffers(const UniformInfo *info, Buffer **buffers, int count, bool internalUpdate)
+{
+	UniformType basetype = info->baseType;
+
+	if (basetype != UNIFORM_TEXELBUFFER && basetype != UNIFORM_STORAGEBUFFER)
+		return;
+
+	if (!internalUpdate && current == this)
+		flushBatchedDraws();
+
+	count = std::min(count, info->count);
+
+	for (int i = 0; i < count; i++)
+	{
+		love::graphics::Buffer *buffer = buffers[i];
+		bool isdefault = buffer == nullptr;
+
+		if (buffer != nullptr)
+		{
+			if (!validateBuffer(info, buffer, internalUpdate))
+				continue;
+		}
+		else
+		{
+			auto gfx = Module::getInstance<love::graphics::Graphics>(Module::M_GRAPHICS);
+			if (basetype == UNIFORM_TEXELBUFFER)
+				buffer = gfx->getDefaultTexelBuffer(info->dataBaseType);
+			else
+				buffer = gfx->getDefaultStorageBuffer();
+		}
+
+		buffer->retain();
+
+		int resourceindex = info->resourceIndex + i;
+
+		if (activeBuffers[resourceindex] != nullptr)
+			activeBuffers[resourceindex]->release();
+
+		activeBuffers[resourceindex] = buffer;
+
+		applyBuffer(info, i, buffer, basetype, isdefault);
+	}
+}
+
+void Shader::flushBatchedDraws() const
+{
+	if (current == this)
+		Graphics::flushBatchedDrawsGlobal();
+}
+
 const Shader::UniformInfo *Shader::getMainTextureInfo() const
 {
 	return getUniformInfo(BUILTIN_TEXTURE_MAIN);
@@ -1532,17 +1651,15 @@ bool Shader::validateBuffer(const UniformInfo *info, Buffer *buffer, bool intern
 	{
 		if (info->bufferStride != buffer->getArrayStride())
 		{
-			if (internalUpdate)
-				return false;
-			else
+			// Don't prevent this from working for internally bound default resources.
+			if (!internalUpdate)
 				throw love::Exception("Shader storage block '%s' has an array stride of %d bytes, but the given Buffer has an array stride of %d bytes.",
 					info->name.c_str(), info->bufferStride, buffer->getArrayStride());
 		}
 		else if (info->bufferMemberCount != buffer->getDataMembers().size())
 		{
-			if (internalUpdate)
-				return false;
-			else
+			// Don't prevent this from working for internally bound default resources.
+			if (!internalUpdate)
 				throw love::Exception("Shader storage block '%s' has a struct with %d fields, but the given Buffer has a format with %d members.",
 					info->name.c_str(), info->bufferMemberCount, buffer->getDataMembers().size());
 		}

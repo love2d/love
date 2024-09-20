@@ -675,11 +675,11 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 		{
 		case UNIFORM_SAMPLER:
 		case UNIFORM_STORAGETEXTURE:
-			sendTextures(info, &activeTextures[info->resourceIndex], info->count);
+			sendTextures(info, &activeTextures[info->resourceIndex], info->count, true);
 			break;
 		case UNIFORM_TEXELBUFFER:
 		case UNIFORM_STORAGEBUFFER:
-			sendBuffers(info, &activeBuffers[info->resourceIndex], info->count);
+			sendBuffers(info, &activeBuffers[info->resourceIndex], info->count, true);
 			break;
 		default:
 			break;
@@ -741,139 +741,47 @@ void Shader::updateUniform(const UniformInfo *info, int count)
 	copyToUniformBuffer(info, info->data, dst, count);
 }
 
-void Shader::sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count)
+void Shader::applyTexture(const UniformInfo *info, int i, love::graphics::Texture *texture, UniformType /*basetype*/, bool isdefault)
 { @autoreleasepool {
-	if (info->baseType != UNIFORM_SAMPLER && info->baseType != UNIFORM_STORAGETEXTURE)
+	if (info->location < 0)
 		return;
 
-	if (current == this)
-		Graphics::flushBatchedDrawsGlobal();
+	int bindingindex = info->location + i;
+	if (bindingindex < 0)
+		return;
 
-	count = std::min(count, info->count);
-
-	for (int i = 0; i < count; i++)
+	auto &binding = textureBindings[bindingindex];
+	if (isdefault && (binding.access & ACCESS_WRITE) != 0)
 	{
-		love::graphics::Texture *tex = textures[i];
-		bool isdefault = tex == nullptr;
-
-		if (tex != nullptr)
-		{
-			if (!validateTexture(info, tex, false))
-				continue;
-		}
-		else
-		{
-			auto gfx = Graphics::getInstance();
-			tex = gfx->getDefaultTexture(info->textureType, info->dataBaseType, info->isDepthSampler);
-		}
-
-		tex->retain();
-
-		int resourceindex = info->resourceIndex + i;
-
-		if (activeTextures[resourceindex] != nullptr)
-			activeTextures[resourceindex]->release();
-
-		activeTextures[resourceindex] = tex;
-
-		if (info->location < 0)
-			continue;
-
-		int bindingindex = info->location + i;
-		if (bindingindex < 0)
-			continue;
-
-		auto &binding = textureBindings[bindingindex];
-		if (isdefault && (binding.access & ACCESS_WRITE) != 0)
-		{
-			binding.texture = nil;
-			binding.samplerTexture = nullptr;
-		}
-		else
-		{
-			binding.texture = getMTLTexture(tex);
-			binding.samplerTexture = tex;
-		}
+		binding.texture = nil;
+		binding.samplerTexture = nullptr;
+	}
+	else
+	{
+		binding.texture = getMTLTexture(texture);
+		binding.samplerTexture = texture;
 	}
 }}
 
-void Shader::sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count)
-{
-	bool texelbinding = info->baseType == UNIFORM_TEXELBUFFER;
-	bool storagebinding = info->baseType == UNIFORM_STORAGEBUFFER;
-
-	if (!texelbinding && !storagebinding)
+void Shader::applyBuffer(const UniformInfo *info, int i, love::graphics::Buffer *buffer, UniformType basetype, bool isdefault)
+{ @autoreleasepool {
+	if (info->location < 0)
 		return;
 
-	if (current == this)
-		Graphics::flushBatchedDrawsGlobal();
-
-	count = std::min(count, info->count);
-
-	for (int i = 0; i < count; i++)
+	int bindingindex = info->location + i;
+	if (basetype == UNIFORM_TEXELBUFFER && bindingindex >= 0)
 	{
-		love::graphics::Buffer *buffer = buffers[i];
-		bool isdefault = buffer == nullptr;
-
-		if (buffer != nullptr)
-		{
-			if (!validateBuffer(info, buffer, false))
-				continue;
-		}
+		textureBindings[bindingindex].texture = getMTLTexture(buffer);
+	}
+	else if (basetype == UNIFORM_STORAGEBUFFER && bindingindex >= 0)
+	{
+		auto &binding = bufferBindings[bindingindex];
+		if (isdefault && (binding.access & ACCESS_WRITE) != 0)
+			binding.buffer = nil;
 		else
-		{
-			auto gfx = Graphics::getInstance();
-			if (texelbinding)
-				buffer = gfx->getDefaultTexelBuffer(info->dataBaseType);
-			else
-				buffer = gfx->getDefaultStorageBuffer();
-		}
-
-		buffer->retain();
-
-		int resourceindex = info->resourceIndex + i;
-
-		if (activeBuffers[resourceindex] != nullptr)
-			activeBuffers[resourceindex]->release();
-
-		activeBuffers[resourceindex] = buffer;
-
-		if (info->location < 0)
-			continue;
-
-		int bindingindex = info->location + i;
-		if (texelbinding && bindingindex >= 0)
-		{
-			textureBindings[bindingindex].texture = getMTLTexture(buffer);
-		}
-		else if (storagebinding && bindingindex >= 0)
-		{
-			auto &binding = bufferBindings[bindingindex];
-			if (isdefault && (binding.access & ACCESS_WRITE) != 0)
-				binding.buffer = nil;
-			else
-				binding.buffer = getMTLBuffer(buffer);
-		}
+			binding.buffer = getMTLBuffer(buffer);
 	}
-}
-
-void Shader::setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture)
-{
-	const BuiltinUniform builtins[3] = {
-		BUILTIN_TEXTURE_VIDEO_Y,
-		BUILTIN_TEXTURE_VIDEO_CB,
-		BUILTIN_TEXTURE_VIDEO_CR,
-	};
-
-	love::graphics::Texture *textures[3] = {ytexture, cbtexture, crtexture};
-
-	for (int i = 0; i < 3; i++)
-	{
-		const UniformInfo *info = builtinUniformInfo[builtins[i]];
-		if (info != nullptr)
-			sendTextures(info, &textures[i], 1);
-	}
-}
+}}
 
 id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(graphics::Graphics *gfx, const RenderPipelineKey &key)
 {

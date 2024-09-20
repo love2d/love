@@ -153,11 +153,6 @@ public:
 
 	void updateUniform(const UniformInfo *info, int count) override;
 
-	void sendTextures(const UniformInfo *info, graphics::Texture **textures, int count) override;
-	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
-
-	void setVideoTextures(graphics::Texture *ytexture, graphics::Texture *cbtexture, graphics::Texture *crtexture) override;
-
 	void setMainTex(graphics::Texture *texture);
 
 	VkPipeline getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfigurationCore &configuration);
@@ -174,6 +169,9 @@ private:
 
 	void setTextureDescriptor(const UniformInfo *info, love::graphics::Texture *texture, int index);
 	void setBufferDescriptor(const UniformInfo *info, love::graphics::Buffer *buffer, int index);
+
+	void applyTexture(const UniformInfo *info, int i, love::graphics::Texture *texture, UniformType basetype, bool isdefault) override;
+	void applyBuffer(const UniformInfo *info, int i, love::graphics::Buffer *buffer, UniformType basetype, bool isdefault) override;
 
 	VkPipeline computePipeline = VK_NULL_HANDLE;
 

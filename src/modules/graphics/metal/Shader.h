@@ -109,10 +109,7 @@ public:
 	int getVertexAttributeIndex(const std::string &name) override;
 	const UniformInfo *getUniformInfo(BuiltinUniform builtin) const override;
 	void updateUniform(const UniformInfo *info, int count) override;
-	void sendTextures(const UniformInfo *info, love::graphics::Texture **textures, int count) override;
-	void sendBuffers(const UniformInfo *info, love::graphics::Buffer **buffers, int count) override;
 	ptrdiff_t getHandle() const override { return 0; }
-	void setVideoTextures(love::graphics::Texture *ytexture, love::graphics::Texture *cbtexture, love::graphics::Texture *crtexture) override;
 
 	id<MTLRenderPipelineState> getCachedRenderPipeline(Graphics *gfx, const RenderPipelineKey &key);
 	id<MTLComputePipelineState> getComputePipeline() const { return computePipeline; }
@@ -139,6 +136,9 @@ private:
 
 	void buildLocalUniforms(const spirv_cross::CompilerMSL &msl, const spirv_cross::SPIRType &type, size_t baseoffset, const std::string &basename);
 	void compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &program);
+
+	void applyTexture(const UniformInfo *info, int i, love::graphics::Texture *texture, UniformType basetype, bool isdefault) override;
+	void applyBuffer(const UniformInfo *info, int i, love::graphics::Buffer *buffer, UniformType basetype, bool isdefault) override;
 
 	id<MTLFunction> functions[SHADERSTAGE_MAX_ENUM];
 
