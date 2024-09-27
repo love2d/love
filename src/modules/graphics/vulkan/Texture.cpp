@@ -491,11 +491,22 @@ void Texture::generateMipmapsInternal()
 		blit.dstSubresource.baseArrayLayer = rootView.startLayer;
 		blit.dstSubresource.layerCount = static_cast<uint32_t>(layerCount);
 
-		vkCmdBlitImage(commandBuffer, 
-			textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			1, &blit,
-			VK_FILTER_LINEAR);
+		if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
+		{
+			vkCmdBlitImage(commandBuffer,
+				textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1, &blit,
+				VK_FILTER_LINEAR);
+		}
+		else
+		{
+			vkCmdBlitImage(commandBuffer,
+				textureImage, VK_IMAGE_LAYOUT_GENERAL,
+				textureImage, VK_IMAGE_LAYOUT_GENERAL,
+				1, &blit,
+				VK_FILTER_LINEAR);
+		}
 
 		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 		barrier.newLayout = imageLayout;
