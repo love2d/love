@@ -754,9 +754,9 @@ VkSamplerMipmapMode Vulkan::getMipMapMode(SamplerState::MipmapFilterMode mode)
 {
 	switch (mode)
 	{
+	case SamplerState::MIPMAP_FILTER_NONE:
 	case SamplerState::MIPMAP_FILTER_NEAREST:
 		return VK_SAMPLER_MIPMAP_MODE_NEAREST;
-	case SamplerState::MIPMAP_FILTER_NONE:
 	case SamplerState::MIPMAP_FILTER_LINEAR:
 	default:
 		return VK_SAMPLER_MIPMAP_MODE_LINEAR;
