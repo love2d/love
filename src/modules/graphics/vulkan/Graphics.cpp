@@ -2426,8 +2426,11 @@ void Graphics::setDefaultRenderPass()
 	renderPassState.transitionImages.clear();
 
 	RenderPassConfiguration renderPassConfiguration{};
+
 	renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples });
-	renderPassConfiguration.staticData.depthStencilAttachment = { depthStencilFormat, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples };
+
+	VkFormat dsformat = backbufferHasDepth || backbufferHasStencil ? depthStencilFormat : VK_FORMAT_UNDEFINED;
+	renderPassConfiguration.staticData.depthStencilAttachment = { dsformat, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples };
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
 		renderPassConfiguration.staticData.resolve = false;
 	else
