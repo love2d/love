@@ -358,4 +358,14 @@ love.test.window.updateMode = function(test)
     fullscreen = false,
     resizable = true
   })
+
+  -- test different combinations of the backbuffer depth/stencil buffer.
+  test:waitFrames(1)
+  love.window.updateMode(360, 240, {depth = false, stencil = false})
+  test:waitFrames(1)
+  love.window.updateMode(360, 240, {depth = true, stencil = true})
+  test:waitFrames(1)
+  love.window.updateMode(360, 240, {depth = true, stencil = false})
+  test:waitFrames(1)
+  love.window.updateMode(360, 240, {depth = false, stencil = true})
 end
