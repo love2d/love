@@ -696,7 +696,10 @@ id<MTLRenderCommandEncoder> Graphics::useRenderEncoder()
 
 			auto &key = lastRenderPipelineKey;
 			key.colorRenderTargetFormats = isGammaCorrect() ? PIXELFORMAT_BGRA8_sRGB : PIXELFORMAT_BGRA8_UNORM;
-			key.depthStencilFormat = backbufferDepthStencil->getPixelFormat();
+			if (backbufferDepthStencil.get())
+				key.depthStencilFormat = backbufferDepthStencil->getPixelFormat();
+			else
+				key.depthStencilFormat = PIXELFORMAT_UNKNOWN;
 			key.msaa = backbufferMSAA ? (uint8) backbufferMSAA->getMSAA() : 1;
 		}
 
