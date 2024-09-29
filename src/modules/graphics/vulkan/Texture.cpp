@@ -146,6 +146,12 @@ bool Texture::loadVolatile()
 
 		VmaAllocationCreateInfo imageAllocationCreateInfo{};
 
+		// Dedicated allocations are recommended for fullscreen RTs.
+		if (renderTarget && pixelWidth >= vgfx->getPixelWidth() && pixelHeight >= vgfx->getPixelHeight())
+			imageAllocationCreateInfo.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
+
+		imageAllocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+
 		if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &textureImage, &textureImageAllocation, nullptr) != VK_SUCCESS)
 			throw love::Exception("failed to create image");
 
