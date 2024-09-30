@@ -55,6 +55,9 @@ public:
 	ptrdiff_t getHandle() const override;
 	ptrdiff_t getTexelBufferHandle() const override;
 
+	void postGPUWriteBarrier(VkCommandBuffer cmd);
+	void addPostGPUWriteBarrierFlags(VkAccessFlags &dstAccessFlags, VkPipelineStageFlags &dstStageFlags);
+
 private:
 
 	void clearInternal(size_t offset, size_t size) override;

@@ -21,6 +21,7 @@
 #include "Texture.h"
 #include "Graphics.h"
 #include "Vulkan.h"
+#include "Buffer.h"
 
 #include <limits>
 
@@ -683,6 +684,9 @@ void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const 
 	}
 	else
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, (VkBuffer)dest->getHandle(), 1, &region);
+
+	// TODO: This could be combined with the cmdTransitionImageLayout barrier.
+	((Buffer *)dest)->postGPUWriteBarrier(commandBuffer);
 }
 
 } // vulkan

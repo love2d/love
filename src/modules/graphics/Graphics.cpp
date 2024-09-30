@@ -110,7 +110,7 @@ namespace opengl { extern love::graphics::Graphics *createInstance(); }
 namespace metal { extern love::graphics::Graphics *createInstance(); }
 #endif
 #ifdef LOVE_GRAPHICS_VULKAN
-namespace vulkan { extern love::graphics::Graphics* createInstance(); }
+namespace vulkan { extern love::graphics::Graphics *createInstance(); }
 #endif
 
 static const Renderer rendererOrder[] = {
