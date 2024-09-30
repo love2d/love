@@ -337,8 +337,6 @@ void Shader::attach()
 			Vulkan::shaderSwitch();
 		}
 	}
-	else
-		vgfx->setComputeShader(this);
 }
 
 int Shader::getVertexAttributeIndex(const std::string &name)
@@ -777,12 +775,18 @@ void Shader::compileShaders()
 	descriptorBufferViews.clear();
 	descriptorBufferViews.reserve(numBufferViews);
 
+	allTextureInfo.clear();
+	allTextureInfo.reserve(numTextures);
+	storageBufferInfo.clear();
+	storageBufferInfo.reserve(numBuffers);
+
 	if (localUniformData.size() > 0)
 	{
 		VkDescriptorBufferInfo bufferInfo{};
 		bufferInfo.range = localUniformData.size();
 
 		descriptorBuffers.push_back(bufferInfo);
+		storageBufferInfo.push_back({ nullptr, ACCESS_READ }); // Dummy value.
 
 		VkWriteDescriptorSet write{};
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -806,6 +810,8 @@ void Shader::compileShaders()
 		{
 			VkDescriptorImageInfo imageInfo{};
 			descriptorImages.push_back(imageInfo);
+
+			allTextureInfo.push_back({ nullptr, info.access });
 
 			auto texture = activeTextures[info.resourceIndex + i];
 			if (texture != nullptr)
@@ -835,6 +841,8 @@ void Shader::compileShaders()
 		{
 			VkDescriptorImageInfo imageInfo{};
 			descriptorImages.push_back(imageInfo);
+
+			allTextureInfo.push_back({ nullptr, info.access });
 
 			auto texture = activeTextures[info.resourceIndex + i];
 			if (texture != nullptr)
@@ -892,6 +900,8 @@ void Shader::compileShaders()
 		{
 			VkDescriptorBufferInfo bufferInfo{};
 			descriptorBuffers.push_back(bufferInfo);
+
+			storageBufferInfo.push_back({ nullptr, info.access });
 
 			auto buffer = activeBuffers[info.resourceIndex + i];
 			if (buffer != nullptr)
@@ -1039,6 +1049,7 @@ void Shader::setTextureDescriptor(const UniformInfo *info, love::graphics::Textu
 	{
 		imageInfo.imageLayout = vkTexture != nullptr ? vkTexture->getImageLayout() : VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.imageView = view;
+		allTextureInfo[info->bindingStartIndex + index].texture = texture;
 		resourceDescriptorsDirty = true;
 	}
 }
@@ -1055,6 +1066,7 @@ void Shader::setBufferDescriptor(const UniformInfo *info, love::graphics::Buffer
 			bufferInfo.buffer = vkbuffer;
 			bufferInfo.offset = 0;
 			bufferInfo.range = range;
+			storageBufferInfo[info->bindingStartIndex + index].buffer = buffer;
 			resourceDescriptorsDirty = true;
 		}
 	}

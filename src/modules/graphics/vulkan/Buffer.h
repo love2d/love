@@ -56,7 +56,9 @@ public:
 	ptrdiff_t getTexelBufferHandle() const override;
 
 	void postGPUWriteBarrier(VkCommandBuffer cmd);
-	void addPostGPUWriteBarrierFlags(VkAccessFlags &dstAccessFlags, VkPipelineStageFlags &dstStageFlags);
+
+	VkAccessFlags getBarrierDstAccessFlags() const { return barrierDstAccessFlags; }
+	VkPipelineStageFlags getBarrierDstStageFlags() const { return barrierDstStageFlags; }
 
 private:
 
@@ -76,6 +78,9 @@ private:
 	BufferUsageFlags usageFlags;
 	Range mappedRange;
 	bool coherent;
+
+	VkAccessFlags barrierDstAccessFlags = 0;
+	VkPipelineStageFlags barrierDstStageFlags = 0;
 };
 
 } // vulkan

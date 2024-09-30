@@ -351,7 +351,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 				Vulkan::cmdTransitionImageLayout(
 					commandBuffers.at(currentFrame),
 					backbufferImage,
-					swapChainPixelFormat,
+					swapChainPixelFormat, true,
 					VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 					VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 			}
@@ -382,7 +382,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				backbufferImage,
-				swapChainPixelFormat,
+				swapChainPixelFormat, true,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
@@ -405,7 +405,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				backbufferImage,
-				swapChainPixelFormat,
+				swapChainPixelFormat, true,
 				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				fakeBackbuffer == nullptr ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 		}
@@ -1194,8 +1194,56 @@ graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
 	return new StreamBuffer(this, type, size);
 }
 
+static bool computeDispatchBarrierFlags(Shader *shader, VkAccessFlags &dstAccessFlags, VkPipelineStageFlags &dstStageFlags)
+{
+	for (const auto &info : shader->getActiveTextureInfo())
+	{
+		if ((info.access & Shader::ACCESS_WRITE) == 0)
+			continue;
+
+		if (info.texture == nullptr)
+			return false;
+
+		auto tex = (Texture *) info.texture;
+
+		// All writable images use the GENERAL layout.
+		// TODO: this is pretty messy.
+		VkAccessFlags texAccessFlags = 0;
+		VkPipelineStageFlags texStageFlags = 0;
+		const PixelFormatInfo &info = getPixelFormatInfo(tex->getPixelFormat());
+		Vulkan::setImageLayoutTransitionOptions(false, tex->isRenderTarget(), info, VK_IMAGE_LAYOUT_GENERAL, texAccessFlags, texStageFlags);
+		
+		dstAccessFlags |= texAccessFlags;
+		dstStageFlags |= texStageFlags;
+	}
+
+	for (const auto &info : shader->getActiveStorageBufferInfo())
+	{
+		if ((info.access & Shader::ACCESS_WRITE) == 0)
+			continue;
+
+		if (info.buffer == nullptr)
+			return false;
+
+		auto b = (Buffer *) info.buffer;
+		dstAccessFlags |= b->getBarrierDstAccessFlags();
+		dstStageFlags |= b->getBarrierDstStageFlags();
+	}
+
+	return true;
+}
+
 bool Graphics::dispatch(love::graphics::Shader *shader, int x, int y, int z)
 {
+	auto computeShader = (Shader *) shader;
+
+	VkMemoryBarrier barrier{};
+	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+	barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+	VkPipelineStageFlags dstStageMask = 0;
+	if (!computeDispatchBarrierFlags(computeShader, barrier.dstAccessMask, dstStageMask))
+		return false;
+
 	usedShadersInFrame.insert(computeShader);
 
 	if (renderPassState.active)
@@ -1205,14 +1253,26 @@ bool Graphics::dispatch(love::graphics::Shader *shader, int x, int y, int z)
 
 	computeShader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE);
 
-	// TODO: does this need any layout transitions?
 	vkCmdDispatch(commandBuffers.at(currentFrame), (uint32) x, (uint32) y, (uint32) z);
+
+	// Image layout transitions aren't needed, every writable image will be in the GENERAL layout.
+	if (barrier.dstAccessMask != 0 || dstStageMask != 0)
+		vkCmdPipelineBarrier(commandBuffers.at(currentFrame), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, dstStageMask, 0, 1, &barrier, 0, nullptr, 0, nullptr);
 
 	return true;
 }
 
 bool Graphics::dispatch(love::graphics::Shader *shader, love::graphics::Buffer *indirectargs, size_t argsoffset)
 {
+	auto computeShader = (Shader *) shader;
+
+	VkMemoryBarrier barrier{};
+	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+	barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+	VkPipelineStageFlags dstStageMask = 0;
+	if (!computeDispatchBarrierFlags(computeShader, barrier.dstAccessMask, dstStageMask))
+		return false;
+
 	usedShadersInFrame.insert(computeShader);
 
 	if (renderPassState.active)
@@ -1222,8 +1282,11 @@ bool Graphics::dispatch(love::graphics::Shader *shader, love::graphics::Buffer *
 
 	computeShader->cmdPushDescriptorSets(commandBuffers.at(currentFrame), VK_PIPELINE_BIND_POINT_COMPUTE);
 
-	// TODO: does this need any layout transitions?
 	vkCmdDispatchIndirect(commandBuffers.at(currentFrame), (VkBuffer) indirectargs->getHandle(), argsoffset);
+
+	// Image layout transitions aren't needed, every writable image will be in the GENERAL layout.
+	if (barrier.dstAccessMask != 0 || dstStageMask != 0)
+		vkCmdPipelineBarrier(commandBuffers.at(currentFrame), VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, dstStageMask, 0, 1, &barrier, 0, nullptr, 0, nullptr);
 
 	return true;
 }
@@ -1315,7 +1378,7 @@ void Graphics::beginFrame()
 		Vulkan::cmdTransitionImageLayout(
 			commandBuffers.at(currentFrame),
 			swapChainImages[imageIndex],
-			swapChainPixelFormat,
+			swapChainPixelFormat, true,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 	}
@@ -1326,7 +1389,7 @@ void Graphics::beginFrame()
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				depthImage,
-				depthStencilPixelFormat,
+				depthStencilPixelFormat, true,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
@@ -1334,7 +1397,7 @@ void Graphics::beginFrame()
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
 				colorImage,
-				swapChainPixelFormat,
+				swapChainPixelFormat, true,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -2503,7 +2566,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 
 	FramebufferConfiguration configuration{};
 
-	std::vector<std::tuple<VkImage, PixelFormat, VkImageLayout, VkImageLayout, int, int>> transitionImages;
+	std::vector<std::tuple<VkImage, PixelFormat, bool, VkImageLayout, VkImageLayout, int, int>> transitionImages;
 
 	for (const auto &color : rts.colors)
 	{
@@ -2513,7 +2576,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 		VkImageLayout imagelayout = tex->getImageLayout();
 		if (imagelayout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 		{
-			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), imagelayout, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), tex->isRenderTarget(), imagelayout, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 				viewinfo.startMipmap + color.mipmap, viewinfo.startLayer + color.slice });
 		}
 	}
@@ -2525,7 +2588,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 		VkImageLayout imagelayout = tex->getImageLayout();
 		if (imagelayout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 		{
-			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), imagelayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), tex->isRenderTarget(), imagelayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 				viewinfo.startMipmap + rts.depthStencil.mipmap, viewinfo.startLayer + rts.depthStencil.slice });
 		}
 	}
@@ -2581,8 +2644,8 @@ void Graphics::startRenderPass()
 	renderPassState.framebufferConfiguration.staticData.renderPass = renderPassState.beginInfo.renderPass;
 	renderPassState.beginInfo.framebuffer = getFramebuffer(renderPassState.framebufferConfiguration);
 
-	for (const auto &[image, format, imageLayout, renderLayout, rootmip, rootlayer] : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, imageLayout, renderLayout, rootmip, 1, rootlayer, 1);
+	for (const auto &[image, format, renderTarget, imageLayout, renderLayout, rootmip, rootlayer] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, renderTarget, imageLayout, renderLayout, rootmip, 1, rootlayer, 1);
 
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -2595,8 +2658,8 @@ void Graphics::endRenderPass()
 
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
 
-	for (const auto &[image, format, imageLayout, renderLayout, rootmip, rootlayer] : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, renderLayout, imageLayout, rootmip, 1, rootlayer, 1);
+	for (const auto &[image, format, renderTarget, imageLayout, renderLayout, rootmip, rootlayer] : renderPassState.transitionImages)
+		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, renderTarget, renderLayout, imageLayout, rootmip, 1, rootlayer, 1);
 
 	for (auto &colorAttachment : renderPassState.renderPassConfiguration.colorAttachments)
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -2684,11 +2747,6 @@ void Graphics::requestSwapchainRecreation()
 	{
 		swapChainRecreationRequested = true;
 	}
-}
-
-void Graphics::setComputeShader(Shader *shader)
-{
-	computeShader = shader;
 }
 
 VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)

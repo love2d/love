@@ -196,7 +196,7 @@ struct RenderpassState
 	RenderPassConfiguration renderPassConfiguration{};
 	FramebufferConfiguration framebufferConfiguration{};
 	VkPipeline pipeline = VK_NULL_HANDLE;
-	std::vector<std::tuple<VkImage, PixelFormat, VkImageLayout, VkImageLayout, int, int>> transitionImages;
+	std::vector<std::tuple<VkImage, PixelFormat, bool, VkImageLayout, VkImageLayout, int, int>> transitionImages;
 	uint32_t numColorAttachments = 0;
 	uint64 packedColorAttachmentFormats = 0;
 	float width = 0.0f;
@@ -267,7 +267,6 @@ public:
 	void addReadbackCallback(std::function<void()> callback);
 	void submitGpuCommands(SubmitMode, void *screenshotCallbackData = nullptr);
 	VkSampler getCachedSampler(const SamplerState &sampler);
-	void setComputeShader(Shader *computeShader);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	const OptionalDeviceExtensions &getEnabledOptionalDeviceExtensions() const;
 	const OptionalInstanceExtensions &getEnabledOptionalInstanceExtensions() const;
@@ -377,7 +376,6 @@ private:
 	std::unordered_map<uint64, VkSampler> samplers;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers;
-	Shader *computeShader = nullptr;
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
 	std::vector<VkFence> inFlightFences;

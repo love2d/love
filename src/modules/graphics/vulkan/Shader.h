@@ -124,6 +124,18 @@ public:
 		DataBaseType baseType;
 	};
 
+	struct TextureInfo
+	{
+		love::graphics::Texture *texture;
+		Access access;
+	};
+
+	struct BufferInfo
+	{
+		love::graphics::Buffer *buffer;
+		Access access;
+	};
+
 	Shader(StrongRef<love::graphics::ShaderStage> stages[], const CompileOptions &options);
 	virtual ~Shader();
 
@@ -158,6 +170,9 @@ public:
 	VkPipeline getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfigurationCore &configuration);
 	VkPipeline getCachedGraphicsPipeline(Graphics *vgfx, const GraphicsPipelineConfigurationFull &configuration);
 
+	const std::vector<TextureInfo> &getActiveTextureInfo() const { return allTextureInfo; }
+	const std::vector<BufferInfo> &getActiveStorageBufferInfo() const { return storageBufferInfo; }
+
 private:
 	void compileShaders();
 	void createDescriptorSetLayout();
@@ -188,6 +203,9 @@ private:
 
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	std::vector<VkShaderModule> shaderModules;
+
+	std::vector<TextureInfo> allTextureInfo;
+	std::vector<BufferInfo> storageBufferInfo;
 
 	Graphics *vgfx = nullptr;
 	VkDevice device = VK_NULL_HANDLE;

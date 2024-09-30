@@ -169,7 +169,7 @@ bool Texture::loadVolatile()
 		else // TODO: is there a better layout for this situation?
 			imageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, renderTarget,
 			VK_IMAGE_LAYOUT_UNDEFINED, imageLayout,
 			0, VK_REMAINING_MIP_LEVELS,
 			0, VK_REMAINING_ARRAY_LAYERS);
@@ -383,7 +383,7 @@ void Texture::clear()
 
 	if (clearLayout != imageLayout)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, renderTarget,
 			imageLayout, clearLayout,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
@@ -403,7 +403,7 @@ void Texture::clear()
 
 	if (clearLayout != imageLayout)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, renderTarget,
 			clearLayout, imageLayout,
 			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 	}
@@ -451,7 +451,7 @@ void Texture::generateMipmapsInternal()
 	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, renderTarget,
 			imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			rootView.startMipmap, static_cast<uint32_t>(getMipmapCount()),
 			rootView.startLayer, static_cast<uint32_t>(layerCount));
@@ -589,7 +589,7 @@ void Texture::uploadByteData(const void *data, size_t size, int level, int slice
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, renderTarget,
 			imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			level, 1, baseLayer, 1);
 
@@ -602,7 +602,7 @@ void Texture::uploadByteData(const void *data, size_t size, int level, int slice
 			&region
 		);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format,
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, renderTarget,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout,
 			level, 1, baseLayer, 1);
 	}
@@ -643,11 +643,11 @@ void Texture::copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int 
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, layers.mipLevel, 1, layers.baseArrayLayer, 1);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, renderTarget, imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, layers.mipLevel, 1, layers.baseArrayLayer, 1);
 
 		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout, layers.mipLevel, 1, layers.baseArrayLayer, 1);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, renderTarget, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout, layers.mipLevel, 1, layers.baseArrayLayer, 1);
 	}
 	else
 		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), textureImage, VK_IMAGE_LAYOUT_GENERAL, 1, &region);
@@ -676,11 +676,11 @@ void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const 
 
 	if (imageLayout != VK_IMAGE_LAYOUT_GENERAL)
 	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, imageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, layers.mipLevel, 1, layers.baseArrayLayer, 1);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, renderTarget, imageLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, layers.mipLevel, 1, layers.baseArrayLayer, 1);
 
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageLayout, layers.mipLevel, 1, layers.baseArrayLayer, 1);
+		Vulkan::cmdTransitionImageLayout(commandBuffer, textureImage, format, renderTarget, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageLayout, layers.mipLevel, 1, layers.baseArrayLayer, 1);
 	}
 	else
 		vkCmdCopyImageToBuffer(commandBuffer, textureImage, VK_IMAGE_LAYOUT_GENERAL, (VkBuffer)dest->getHandle(), 1, &region);
