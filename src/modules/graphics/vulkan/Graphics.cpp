@@ -1210,8 +1210,8 @@ static bool computeDispatchBarrierFlags(Shader *shader, VkAccessFlags &dstAccess
 		// TODO: this is pretty messy.
 		VkAccessFlags texAccessFlags = 0;
 		VkPipelineStageFlags texStageFlags = 0;
-		const PixelFormatInfo &info = getPixelFormatInfo(tex->getPixelFormat());
-		Vulkan::setImageLayoutTransitionOptions(false, tex->isRenderTarget(), info, VK_IMAGE_LAYOUT_GENERAL, texAccessFlags, texStageFlags);
+		const PixelFormatInfo &formatInfo = getPixelFormatInfo(tex->getPixelFormat());
+		Vulkan::setImageLayoutTransitionOptions(false, tex->isRenderTarget(), formatInfo, VK_IMAGE_LAYOUT_GENERAL, texAccessFlags, texStageFlags);
 		
 		dstAccessFlags |= texAccessFlags;
 		dstStageFlags |= texStageFlags;
