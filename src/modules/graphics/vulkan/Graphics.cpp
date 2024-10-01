@@ -1210,8 +1210,8 @@ static bool computeDispatchBarrierFlags(Shader *shader, VkAccessFlags &dstAccess
 		// TODO: this is pretty messy.
 		VkAccessFlags texAccessFlags = 0;
 		VkPipelineStageFlags texStageFlags = 0;
-		const PixelFormatInfo &formatInfo = getPixelFormatInfo(tex->getPixelFormat());
-		Vulkan::setImageLayoutTransitionOptions(false, tex->isRenderTarget(), formatInfo, VK_IMAGE_LAYOUT_GENERAL, texAccessFlags, texStageFlags);
+		bool depthStencil  = isPixelFormatDepthStencil(tex->getPixelFormat());
+		Vulkan::setImageLayoutTransitionOptions(false, tex->isRenderTarget(), depthStencil, VK_IMAGE_LAYOUT_GENERAL, texAccessFlags, texStageFlags);
 		
 		dstAccessFlags |= texAccessFlags;
 		dstStageFlags |= texStageFlags;
@@ -2197,6 +2197,25 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 	VkSubpassDescription subPass{};
 	subPass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
+	VkSubpassDependency beginDependency{};
+	beginDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	beginDependency.dstSubpass = 0;
+	beginDependency.srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	beginDependency.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	beginDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+		| VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+	beginDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+		| VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+	VkSubpassDependency endDependency{};
+	endDependency.srcSubpass = 0;
+	endDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
+	endDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+	endDependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+		| VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	endDependency.dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	endDependency.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
 	std::vector<VkAttachmentDescription> attachments;
 	std::vector<VkAttachmentReference> colorAttachmentRefs;
 
@@ -2215,9 +2234,21 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorDescription.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		colorDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorDescription.initialLayout = colorAttachment.layout;
+		colorDescription.finalLayout = colorAttachment.layout;
 		attachments.push_back(colorDescription);
+
+		VkAccessFlags texBeginAccessFlags = 0;
+		VkPipelineStageFlags texBeginStageFlags = 0;
+		Vulkan::setImageLayoutTransitionOptions(true, true, false, colorAttachment.layout, texBeginAccessFlags, texBeginStageFlags);
+		beginDependency.srcAccessMask |= texBeginAccessFlags;
+		beginDependency.srcStageMask |= texBeginStageFlags;
+
+		VkAccessFlags texEndAccessFlags = 0;
+		VkPipelineStageFlags texEndStageFlags = 0;
+		Vulkan::setImageLayoutTransitionOptions(false, true, false, colorAttachment.layout, texEndAccessFlags, texEndStageFlags);
+		endDependency.dstAccessMask |= texEndAccessFlags;
+		endDependency.dstStageMask |= texEndStageFlags;
 	}
 
 	subPass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
@@ -2237,9 +2268,21 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		depthStencilAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		depthStencilAttachment.stencilLoadOp = configuration.staticData.depthStencilAttachment.stencilLoadOp;
 		depthStencilAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-		depthStencilAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		depthStencilAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+		depthStencilAttachment.initialLayout = configuration.staticData.depthStencilAttachment.layout;
+		depthStencilAttachment.finalLayout = configuration.staticData.depthStencilAttachment.layout;
 		attachments.push_back(depthStencilAttachment);
+
+		VkAccessFlags texBeginAccessFlags = 0;
+		VkPipelineStageFlags texBeginStageFlags = 0;
+		Vulkan::setImageLayoutTransitionOptions(true, true, true, configuration.staticData.depthStencilAttachment.layout, texBeginAccessFlags, texBeginStageFlags);
+		beginDependency.srcAccessMask |= texBeginAccessFlags;
+		beginDependency.srcStageMask |= texBeginStageFlags;
+
+		VkAccessFlags texEndAccessFlags = 0;
+		VkPipelineStageFlags texEndStageFlags = 0;
+		Vulkan::setImageLayoutTransitionOptions(false, true, true, configuration.staticData.depthStencilAttachment.layout, texEndAccessFlags, texEndStageFlags);
+		endDependency.dstAccessMask |= texEndAccessFlags;
+		endDependency.dstStageMask |= texEndStageFlags;
 	}
 
 	VkAttachmentReference colorAttachmentResolveRef{};
@@ -2261,23 +2304,7 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		attachments.push_back(colorAttachmentResolve);
 	}
 
-	VkSubpassDependency dependency{};
-	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency.dstSubpass = 0;
-	dependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
-	dependency.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	dependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	dependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-	VkSubpassDependency readbackDependency{};
-	readbackDependency.srcSubpass = 0;
-	readbackDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
-	readbackDependency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-	readbackDependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-	readbackDependency.dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	readbackDependency.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
-	std::array<VkSubpassDependency, 2> dependencies = { dependency, readbackDependency };
+	std::array<VkSubpassDependency, 2> dependencies = { beginDependency, endDependency };
 
 	VkRenderPassCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -2486,14 +2513,13 @@ void Graphics::setDefaultRenderPass()
 	renderPassState.msaa = msaaSamples;
 	renderPassState.numColorAttachments = 1;
 	renderPassState.packedColorAttachmentFormats = (uint8)swapChainPixelFormat;
-	renderPassState.transitionImages.clear();
 
 	RenderPassConfiguration renderPassConfiguration{};
 
-	renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples });
+	renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples });
 
 	VkFormat dsformat = backbufferHasDepth || backbufferHasStencil ? depthStencilFormat : VK_FORMAT_UNDEFINED;
-	renderPassConfiguration.staticData.depthStencilAttachment = { dsformat, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples };
+	renderPassConfiguration.staticData.depthStencilAttachment = { dsformat, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples };
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
 		renderPassConfiguration.staticData.resolve = false;
 	else
@@ -2555,42 +2581,28 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	for (const auto &color : rts.colors)
 		renderPassConfiguration.colorAttachments.push_back({ 
 			Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat,
+			((Texture*)color.texture)->getImageLayout(),
 			VK_ATTACHMENT_LOAD_OP_LOAD,
 			dynamic_cast<Texture*>(color.texture)->getMsaaSamples() });
 	if (rts.depthStencil.texture != nullptr)
 		renderPassConfiguration.staticData.depthStencilAttachment = {
 			Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat,
+			((Texture*)rts.depthStencil.texture)->getImageLayout(),
 			VK_ATTACHMENT_LOAD_OP_LOAD,
 			VK_ATTACHMENT_LOAD_OP_LOAD,
 			dynamic_cast<Texture*>(rts.depthStencil.texture)->getMsaaSamples() };
 
 	FramebufferConfiguration configuration{};
 
-	std::vector<std::tuple<VkImage, PixelFormat, bool, VkImageLayout, VkImageLayout, int, int>> transitionImages;
-
 	for (const auto &color : rts.colors)
 	{
 		auto tex = (Texture*)color.texture;
 		configuration.colorViews.push_back(tex->getRenderTargetView(color.mipmap, color.slice));
-		const Texture::ViewInfo &viewinfo = tex->getRootViewInfo();
-		VkImageLayout imagelayout = tex->getImageLayout();
-		if (imagelayout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-		{
-			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), tex->isRenderTarget(), imagelayout, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-				viewinfo.startMipmap + color.mipmap, viewinfo.startLayer + color.slice });
-		}
 	}
 	if (rts.depthStencil.texture != nullptr)
 	{
 		auto tex = (Texture*)rts.depthStencil.texture;
 		configuration.staticData.depthView = tex->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
-		const Texture::ViewInfo &viewinfo = tex->getRootViewInfo();
-		VkImageLayout imagelayout = tex->getImageLayout();
-		if (imagelayout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-		{
-			transitionImages.push_back({ (VkImage)tex->getHandle(), tex->getPixelFormat(), tex->isRenderTarget(), imagelayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-				viewinfo.startMipmap + rts.depthStencil.mipmap, viewinfo.startLayer + rts.depthStencil.slice });
-		}
 	}
 
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
@@ -2619,7 +2631,6 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	renderPassState.packedColorAttachmentFormats = 0;
 	for (size_t i = 0; i < rts.colors.size(); i++)
 		renderPassState.packedColorAttachmentFormats |= ((uint64)rts.colors[i].texture->getPixelFormat()) << (i * 8ull);
-	renderPassState.transitionImages = std::move(transitionImages);
 }
 
 void Graphics::startRenderPass()
@@ -2644,9 +2655,6 @@ void Graphics::startRenderPass()
 	renderPassState.framebufferConfiguration.staticData.renderPass = renderPassState.beginInfo.renderPass;
 	renderPassState.beginInfo.framebuffer = getFramebuffer(renderPassState.framebufferConfiguration);
 
-	for (const auto &[image, format, renderTarget, imageLayout, renderLayout, rootmip, rootlayer] : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, renderTarget, imageLayout, renderLayout, rootmip, 1, rootlayer, 1);
-
 	vkCmdBeginRenderPass(commandBuffers.at(currentFrame), &renderPassState.beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 	applyScissor();
@@ -2657,9 +2665,6 @@ void Graphics::endRenderPass()
 	renderPassState.active = false;
 
 	vkCmdEndRenderPass(commandBuffers.at(currentFrame));
-
-	for (const auto &[image, format, renderTarget, imageLayout, renderLayout, rootmip, rootlayer] : renderPassState.transitionImages)
-		Vulkan::cmdTransitionImageLayout(commandBuffers.at(currentFrame), image, format, renderTarget, renderLayout, imageLayout, rootmip, 1, rootlayer, 1);
 
 	for (auto &colorAttachment : renderPassState.renderPassConfiguration.colorAttachments)
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;

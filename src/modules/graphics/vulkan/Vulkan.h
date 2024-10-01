@@ -81,7 +81,7 @@ public:
 	static VkIndexType getVulkanIndexBufferType(IndexDataType type);
 
 	static void setImageLayoutTransitionOptions(
-		bool previous, bool renderTarget, const PixelFormatInfo &info, VkImageLayout layout, VkAccessFlags &accessMask, VkPipelineStageFlags &stageFlags);
+		bool previous, bool renderTarget, bool depthStencil, VkImageLayout layout, VkAccessFlags &accessMask, VkPipelineStageFlags &stageFlags);
 
 	static void cmdTransitionImageLayout(
 		VkCommandBuffer, VkImage, PixelFormat format, bool renderTarget, VkImageLayout oldLayout, VkImageLayout newLayout,

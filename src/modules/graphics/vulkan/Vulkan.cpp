@@ -822,7 +822,7 @@ VkIndexType Vulkan::getVulkanIndexBufferType(IndexDataType type)
 	}
 }
 
-void Vulkan::setImageLayoutTransitionOptions(bool previous, bool renderTarget, const PixelFormatInfo &info, VkImageLayout layout, VkAccessFlags &accessMask, VkPipelineStageFlags &stageFlags)
+void Vulkan::setImageLayoutTransitionOptions(bool previous, bool renderTarget, bool depthStencil, VkImageLayout layout, VkAccessFlags &accessMask, VkPipelineStageFlags &stageFlags)
 {
 	switch (layout)
 	{
@@ -840,15 +840,15 @@ void Vulkan::setImageLayoutTransitionOptions(bool previous, bool renderTarget, c
 		stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
 		if (renderTarget)
 		{
-			if (info.color)
-			{
-				accessMask |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				stageFlags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-			}
-			if (info.depth || info.stencil)
+			if (depthStencil)
 			{
 				accessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 				stageFlags |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			}
+			else
+			{
+				accessMask |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				stageFlags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			}
 		}
 		break;
@@ -900,8 +900,8 @@ void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage ima
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
 
-	setImageLayoutTransitionOptions(true, renderTarget, info, oldLayout, barrier.srcAccessMask, sourceStage);
-	setImageLayoutTransitionOptions(false, renderTarget, info, newLayout, barrier.dstAccessMask, destinationStage);
+	setImageLayoutTransitionOptions(true, renderTarget, info.depth || info.stencil, oldLayout, barrier.srcAccessMask, sourceStage);
+	setImageLayoutTransitionOptions(false, renderTarget, info.depth || info.stencil, newLayout, barrier.dstAccessMask, destinationStage);
 
 	if (info.color)
 		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
