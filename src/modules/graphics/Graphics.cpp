@@ -2907,7 +2907,7 @@ STRINGMAP_CLASS_END(Graphics, Graphics::LineJoin, Graphics::LINE_JOIN_MAX_ENUM, 
 
 STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)
 {
-	{ "multirendertargetformats", Graphics::FEATURE_MULTI_RENDER_TARGET_FORMATS },
+	{ "multicanvasformats",       Graphics::FEATURE_MULTI_RENDER_TARGET_FORMATS },
 	{ "clampzero",                Graphics::FEATURE_CLAMP_ZERO           },
 	{ "clampone",                 Graphics::FEATURE_CLAMP_ONE            },
 	{ "lighten",                  Graphics::FEATURE_LIGHTEN              },
@@ -2935,7 +2935,7 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::SystemLimit, Graphics::LIMIT_MAX_ENUM,
 	{ "threadgroupsx",           Graphics::LIMIT_THREADGROUPS_X             },
 	{ "threadgroupsy",           Graphics::LIMIT_THREADGROUPS_Y             },
 	{ "threadgroupsz",           Graphics::LIMIT_THREADGROUPS_Z             },
-	{ "rendertargets",           Graphics::LIMIT_RENDER_TARGETS             },
+	{ "multicanvas",             Graphics::LIMIT_RENDER_TARGETS             },
 	{ "texturemsaa",             Graphics::LIMIT_TEXTURE_MSAA               },
 	{ "anisotropy",              Graphics::LIMIT_ANISOTROPY                 },
 }

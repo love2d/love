@@ -2806,7 +2806,7 @@ love.test.graphics.getSupported = function(test)
   local gfs = {
     'clampzero', 'lighten', 'glsl3', 'instancing', 'fullnpot', 
     'pixelshaderhighp', 'shaderderivatives', 'indirectdraw',
-    'copytexturetobuffer', 'multirendertargetformats', 
+    'copytexturetobuffer', 'multicanvasformats', 
     'clampone', 'glsl4'
   }
   local features = love.graphics.getSupported()
@@ -2823,7 +2823,7 @@ love.test.graphics.getSystemLimits = function(test)
   local glimits = {
     'texelbuffersize', 'shaderstoragebuffersize', 'threadgroupsx', 
     'threadgroupsy', 'pointsize', 'texturesize', 'texturelayers', 'volumetexturesize',
-    'cubetexturesize', 'anisotropy', 'texturemsaa', 'rendertargets', 'threadgroupsz'
+    'cubetexturesize', 'anisotropy', 'texturemsaa', 'multicanvas', 'threadgroupsz'
   }
   local limits = love.graphics.getSystemLimits()
   for g=1,#glimits do
