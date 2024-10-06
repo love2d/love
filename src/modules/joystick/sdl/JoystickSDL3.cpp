@@ -29,6 +29,8 @@
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 
+#include <SDL_guid.h>
+
 // C++
 #include <algorithm>
 #include <limits>
@@ -62,13 +64,13 @@ bool Joystick::open(int64 deviceid)
 
 	if (joyhandle)
 	{
-		instanceid = SDL_GetJoystickInstanceID(joyhandle);
+		instanceid = SDL_GetJoystickID(joyhandle);
 
 		// SDL_JoystickGetGUIDString uses 32 bytes plus the null terminator.
 		char cstr[33];
 
-		SDL_JoystickGUID sdlguid = SDL_GetJoystickGUID(joyhandle);
-		SDL_GetJoystickGUIDString(sdlguid, cstr, (int) sizeof(cstr));
+		SDL_GUID sdlguid = SDL_GetJoystickGUID(joyhandle);
+		SDL_GUIDToString(sdlguid, cstr, (int) sizeof(cstr));
 
 		pguid = std::string(cstr);
 
@@ -212,7 +214,7 @@ bool Joystick::isDown(const std::vector<int> &buttonlist) const
 		if (button < 0 || button >= numbuttons)
 			continue;
 
-		if (SDL_GetJoystickButton(joyhandle, button) == 1)
+		if (SDL_GetJoystickButton(joyhandle, button))
 			return true;
 	}
 
@@ -304,7 +306,7 @@ bool Joystick::isGamepadDown(const std::vector<GamepadButton> &blist) const
 		if (!getConstant(button, sdlbutton))
 			continue;
 
-		if (SDL_GetGamepadButton(controller, sdlbutton) == 1)
+		if (SDL_GetGamepadButton(controller, sdlbutton))
 			return true;
 	}
 
@@ -382,7 +384,7 @@ std::string Joystick::getGamepadMappingString() const
 
 	if (sdlmapping == nullptr)
 	{
-		SDL_JoystickGUID sdlguid = SDL_GetJoystickGUIDFromString(pguid.c_str());
+		SDL_GUID sdlguid = SDL_StringToGUID(pguid.c_str());
 		sdlmapping = SDL_GetGamepadMappingForGUID(sdlguid);
 	}
 
@@ -445,7 +447,7 @@ bool Joystick::isVibrationSupported()
 		return false;
 
 	SDL_PropertiesID props = SDL_GetJoystickProperties(joyhandle);
-	return SDL_GetBooleanProperty(props, SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, SDL_FALSE);
+	return SDL_GetBooleanProperty(props, SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, false);
 }
 
 bool Joystick::setVibration(float left, float right, float duration)
@@ -489,7 +491,7 @@ bool Joystick::hasSensor(Sensor::SensorType type) const
 	if (!isGamepad())
 		return false;
 
-	return SDL_GamepadHasSensor(controller, SDLSensor::convert(type)) == SDL_TRUE;
+	return SDL_GamepadHasSensor(controller, SDLSensor::convert(type));
 #else
 	return false;
 #endif
@@ -503,7 +505,7 @@ bool Joystick::isSensorEnabled(Sensor::SensorType type) const
 	if (!isGamepad())
 		return false;
 
-	return SDL_GamepadSensorEnabled(controller, SDLSensor::convert(type)) == SDL_TRUE;
+	return SDL_GamepadSensorEnabled(controller, SDLSensor::convert(type));
 #else
 	return false;
 #endif
@@ -517,7 +519,7 @@ void Joystick::setSensorEnabled(Sensor::SensorType type, bool enabled)
 	if (!isGamepad())
 		throw love::Exception("Sensor is only supported on gamepad");
 
-	if (SDL_SetGamepadSensorEnabled(controller, SDLSensor::convert(type), enabled ? SDL_TRUE : SDL_FALSE) != 0)
+	if (!SDL_SetGamepadSensorEnabled(controller, SDLSensor::convert(type), enabled))
 	{
 		const char *name = nullptr;
 		SDLSensor::getConstant(type, name);
@@ -547,7 +549,7 @@ std::vector<float> Joystick::getSensorData(Sensor::SensorType type) const
 		throw love::Exception("\"%s\" gamepad sensor is not enabled", name);
 	}
 
-	if (SDL_GetGamepadSensorData(controller, SDLSensor::convert(type), data.data(), (int) data.size()) != 0)
+	if (!SDL_GetGamepadSensorData(controller, SDLSensor::convert(type), data.data(), (int) data.size()))
 	{
 		const char *name = nullptr;
 		SDLSensor::getConstant(type, name);

@@ -101,7 +101,11 @@ Window::Window()
 	, displayedWindowError(false)
 	, contextAttribs()
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+#else
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
+#endif
 		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
 
 	// Make sure the screensaver doesn't activate by default.
@@ -317,7 +321,11 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 	{
 		if (glcontext)
 		{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+			SDL_GL_DestroyContext(glcontext);
+#else
 			SDL_GL_DeleteContext(glcontext);
+#endif
 			glcontext = nullptr;
 		}
 
@@ -370,7 +378,11 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 			// Make sure the context's version is at least what we requested.
 			if (glcontext && !checkGLVersion(*attribs, glversion))
 			{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+				SDL_GL_DestroyContext(glcontext);
+#else
 				SDL_GL_DeleteContext(glcontext);
+#endif
 				glcontext = nullptr;
 			}
 
@@ -580,7 +592,7 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	Uint32 sdlflags = 0;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	const SDL_DisplayMode *fsmode = nullptr;
+	SDL_DisplayMode fsmode = {};
 #else
 	SDL_DisplayMode fsmode = {0, width, height, 0, nullptr};
 #endif
@@ -593,17 +605,17 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		if (f.fstype == FULLSCREEN_EXCLUSIVE)
 		{
 			SDL_DisplayID display = displays.ids[f.displayindex];
-			fsmode = SDL_GetClosestFullscreenDisplayMode(display, width, height, 0, isHighDPIAllowed());
-			if (fsmode == nullptr)
+			if (!SDL_GetClosestFullscreenDisplayMode(display, width, height, 0, isHighDPIAllowed(), &fsmode))
 			{
 				// GetClosestDisplayMode will fail if we request a size larger
 				// than the largest available display mode, so we'll try to use
 				// the largest (first) mode in that case.
 				int modecount = 0;
-				const SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display, &modecount);
-				fsmode = modecount > 0 ? modes[0] : nullptr;
+				SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display, &modecount);
+				if (modecount > 0)
+					fsmode = *modes[0];
 				SDL_free(modes);
-				if (fsmode == nullptr)
+				if (fsmode.w == 0 || fsmode.h == 0)
 					return false;
 			}
 		}
@@ -639,8 +651,11 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	if (isOpen())
 	{
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-		SDL_SetWindowFullscreenMode(window, fsmode);
-		if (SDL_SetWindowFullscreen(window, (sdlflags & SDL_WINDOW_FULLSCREEN) != 0) == 0 && renderer == graphics::RENDERER_OPENGL)
+		if (fsmode.w > 0 && fsmode.h > 0)
+			SDL_SetWindowFullscreenMode(window, &fsmode);
+		else
+			SDL_SetWindowFullscreenMode(window, nullptr);
+		if (SDL_SetWindowFullscreen(window, (sdlflags & SDL_WINDOW_FULLSCREEN) != 0) && renderer == graphics::RENDERER_OPENGL)
 #else
 		if (f.fullscreen && f.fstype == FULLSCREEN_EXCLUSIVE)
 			SDL_SetWindowDisplayMode(window, &fsmode);
@@ -651,10 +666,10 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		SDL_SetWindowSize(window, width, height);
 
 		if (this->settings.resizable != f.resizable)
-			SDL_SetWindowResizable(window, f.resizable ? SDL_TRUE : SDL_FALSE);
+			SDL_SetWindowResizable(window, f.resizable);
 
 		if (this->settings.borderless != f.borderless)
-			SDL_SetWindowBordered(window, f.borderless ? SDL_FALSE : SDL_TRUE);
+			SDL_SetWindowBordered(window, f.borderless);
 	}
 	else
 	{
@@ -691,8 +706,11 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 		if (f.fullscreen)
 		{
-			SDL_SetWindowFullscreenMode(window, fsmode);
-			SDL_SetWindowFullscreen(window, SDL_TRUE);
+			if (fsmode.w > 0 && fsmode.h > 0)
+				SDL_SetWindowFullscreenMode(window, &fsmode);
+			else
+				SDL_SetWindowFullscreenMode(window, nullptr);
+			SDL_SetWindowFullscreen(window, true);
 		}
 #else
 		if (!createWindowAndContext(x, y, width, height, sdlflags, renderer))
@@ -774,7 +792,7 @@ bool Window::onSizeChanged(int width, int height)
 #endif
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	if (SDL_GetWindowSizeInPixels(window, &pixelWidth, &pixelHeight) < 0)
+	if (SDL_GetWindowSizeInPixels(window, &pixelWidth, &pixelHeight))
 #else
 	// TODO: Use SDL_GetWindowSizeInPixels here when supported.
 	if (glcontext != nullptr)
@@ -938,7 +956,11 @@ void Window::close(bool allowExceptions)
 
 	if (glcontext)
 	{
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		SDL_GL_DestroyContext(glcontext);
+#else
 		SDL_GL_DeleteContext(glcontext);
+#endif
 		glcontext = nullptr;
 	}
 
@@ -980,7 +1002,7 @@ bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 	newsettings.fstype = fstype;
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	SDL_bool sdlflags = fullscreen;
+	bool sdlflags = fullscreen;
 	if (fullscreen)
 	{
 		if (fstype == FULLSCREEN_DESKTOP)
@@ -988,9 +1010,9 @@ bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 		else
 		{
 			SDL_DisplayID displayid = SDL_GetDisplayForWindow(window);
-			const SDL_DisplayMode *mode = SDL_GetClosestFullscreenDisplayMode(displayid, windowWidth, windowHeight, 0, isHighDPIAllowed());
-			if (mode != nullptr)
-				SDL_SetWindowFullscreenMode(window, mode);
+			SDL_DisplayMode mode = {};
+			if (SDL_GetClosestFullscreenDisplayMode(displayid, windowWidth, windowHeight, 0, isHighDPIAllowed(), &mode))
+				SDL_SetWindowFullscreenMode(window, &mode);
 		}
 	}
 #else
@@ -1018,7 +1040,11 @@ bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 	love::android::setImmersive(fullscreen);
 #endif
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (SDL_SetWindowFullscreen(window, sdlflags))
+#else
 	if (SDL_SetWindowFullscreen(window, sdlflags) == 0)
+#endif
 	{
 		if (glcontext)
 			SDL_GL_MakeCurrent(window, glcontext);
@@ -1083,7 +1109,7 @@ std::vector<Window::WindowSize> Window::getFullscreenSizes(int displayindex) con
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 	int count = 0;
-	const SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(GetSDLDisplayIDForIndex(displayindex), &count);
+	SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(GetSDLDisplayIDForIndex(displayindex), &count);
 
 	for (int i = 0; i < count; i++)
 	{
@@ -1283,7 +1309,7 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	int pitch = w * bytesperpixel;
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	SDL_Surface *sdlicon = SDL_CreateSurfaceFrom(imgd->getData(), w, h, pitch, SDL_PIXELFORMAT_RGBA8888);
+	SDL_Surface *sdlicon = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA8888, imgd->getData(), pitch);
 #else
 	SDL_Surface *sdlicon = SDL_CreateRGBSurfaceFrom(imgd->getData(), w, h, bytesperpixel * 8, pitch, rmask, gmask, bmask, amask);
 #endif
@@ -1392,7 +1418,7 @@ void Window::setDisplaySleepEnabled(bool enable)
 bool Window::isDisplaySleepEnabled() const
 {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	return SDL_ScreenSaverEnabled() != SDL_FALSE;
+	return SDL_ScreenSaverEnabled();
 #else
 	return SDL_IsScreenSaverEnabled() != SDL_FALSE;
 #endif
@@ -1535,7 +1561,7 @@ void Window::setMouseGrab(bool grab)
 	mouseGrabbed = grab;
 	if (window)
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-		SDL_SetWindowMouseGrab(window, (SDL_bool) grab);
+		SDL_SetWindowMouseGrab(window, grab);
 #else
 		SDL_SetWindowGrab(window, (SDL_bool) grab);
 #endif
@@ -1694,7 +1720,11 @@ bool Window::showMessageBox(const std::string &title, const std::string &message
 	SDL_MessageBoxFlags flags = convertMessageBoxType(type);
 	SDL_Window *sdlwindow = attachtowindow ? window : nullptr;
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	return SDL_ShowSimpleMessageBox(flags, title.c_str(), message.c_str(), sdlwindow);
+#else
 	return SDL_ShowSimpleMessageBox(flags, title.c_str(), message.c_str(), sdlwindow) >= 0;
+#endif
 }
 
 int Window::showMessageBox(const MessageBoxData &data)

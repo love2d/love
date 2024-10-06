@@ -41,7 +41,7 @@ Cursor::Cursor(image::ImageData *data, int hotx, int hoty)
 	int pitch = w * 4;
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	SDL_Surface *surface = SDL_CreateSurfaceFrom(data->getData(), w, h, pitch, SDL_PIXELFORMAT_RGBA8888);
+	SDL_Surface *surface = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA8888, data->getData(), pitch);
 #else
 	Uint32 rmask, gmask, bmask, amask;
 #ifdef LOVE_BIG_ENDIAN
@@ -117,6 +117,20 @@ Cursor::SystemCursor Cursor::getSystemType() const
 
 EnumMap<Cursor::SystemCursor, SDL_SystemCursor, Cursor::CURSOR_MAX_ENUM>::Entry Cursor::systemCursorEntries[] =
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	{Cursor::CURSOR_ARROW, SDL_SYSTEM_CURSOR_DEFAULT},
+	{Cursor::CURSOR_IBEAM, SDL_SYSTEM_CURSOR_TEXT},
+	{Cursor::CURSOR_WAIT, SDL_SYSTEM_CURSOR_WAIT},
+	{Cursor::CURSOR_CROSSHAIR, SDL_SYSTEM_CURSOR_CROSSHAIR},
+	{Cursor::CURSOR_WAITARROW, SDL_SYSTEM_CURSOR_PROGRESS},
+	{Cursor::CURSOR_SIZENWSE, SDL_SYSTEM_CURSOR_NWSE_RESIZE},
+	{Cursor::CURSOR_SIZENESW, SDL_SYSTEM_CURSOR_NW_RESIZE},
+	{Cursor::CURSOR_SIZEWE, SDL_SYSTEM_CURSOR_EW_RESIZE},
+	{Cursor::CURSOR_SIZENS, SDL_SYSTEM_CURSOR_NS_RESIZE},
+	{Cursor::CURSOR_SIZEALL, SDL_SYSTEM_CURSOR_MOVE},
+	{Cursor::CURSOR_NO, SDL_SYSTEM_CURSOR_NOT_ALLOWED},
+	{Cursor::CURSOR_HAND, SDL_SYSTEM_CURSOR_POINTER},
+#else
 	{Cursor::CURSOR_ARROW, SDL_SYSTEM_CURSOR_ARROW},
 	{Cursor::CURSOR_IBEAM, SDL_SYSTEM_CURSOR_IBEAM},
 	{Cursor::CURSOR_WAIT, SDL_SYSTEM_CURSOR_WAIT},
@@ -129,6 +143,7 @@ EnumMap<Cursor::SystemCursor, SDL_SystemCursor, Cursor::CURSOR_MAX_ENUM>::Entry 
 	{Cursor::CURSOR_SIZEALL, SDL_SYSTEM_CURSOR_SIZEALL},
 	{Cursor::CURSOR_NO, SDL_SYSTEM_CURSOR_NO},
 	{Cursor::CURSOR_HAND, SDL_SYSTEM_CURSOR_HAND},
+#endif
 };
 
 EnumMap<Cursor::SystemCursor, SDL_SystemCursor, Cursor::CURSOR_MAX_ENUM> Cursor::systemCursors(Cursor::systemCursorEntries, sizeof(Cursor::systemCursorEntries));

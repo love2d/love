@@ -24,8 +24,9 @@
 #include "common/config.h"
 #include "thread/threads.h"
 
-#include <SDL_thread.h>
 #include <SDL_version.h>
+#include <SDL_thread.h>
+#include <SDL_mutex.h>
 
 namespace love
 {

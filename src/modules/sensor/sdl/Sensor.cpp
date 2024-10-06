@@ -36,7 +36,11 @@ Sensor::Sensor()
 	: love::sensor::Sensor("love.sensor.sdl")
 	, sensors()
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (!SDL_InitSubSystem(SDL_INIT_SENSOR))
+#else
 	if (SDL_InitSubSystem(SDL_INIT_SENSOR) < 0)
+#endif
 		throw love::Exception("Could not initialize SDL sensor subsystem (%s)", SDL_GetError());
 }
 
@@ -52,7 +56,7 @@ bool Sensor::hasSensor(SensorType type)
 	SDL_SensorID *sensorIDs = SDL_GetSensors(&count);
 	for (int i = 0; i < count; i++)
 	{
-		if (convert(SDL_GetSensorInstanceType(sensorIDs[i])) == type)
+		if (convert(SDL_GetSensorTypeForID(sensorIDs[i])) == type)
 		{
 			SDL_free(sensorIDs);
 			return true;
@@ -93,7 +97,7 @@ void Sensor::setEnabled(SensorType type, bool enable)
 		SDL_SensorID *sensorIDs = SDL_GetSensors(&count);
 		for (int i = 0; i < count; i++)
 		{
-			if (convert(SDL_GetSensorInstanceType(sensorIDs[i])) == type)
+			if (convert(SDL_GetSensorTypeForID(sensorIDs[i])) == type)
 			{
 				SDL_Sensor *sensorHandle = SDL_OpenSensor(sensorIDs[i]);
 
@@ -144,7 +148,7 @@ std::vector<float> Sensor::getData(SensorType type)
 	std::vector<float> values(3);
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	if (SDL_GetSensorData(sensors[type], values.data(), (int) values.size()) != 0)
+	if (!SDL_GetSensorData(sensors[type], values.data(), (int) values.size()))
 #else
 	if (SDL_SensorGetData(sensors[type], values.data(), (int) values.size()) != 0)
 #endif

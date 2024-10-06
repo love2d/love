@@ -934,7 +934,11 @@ int extloader(lua_State *L)
 		}
 	}
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_SharedObject *handle = nullptr;
+#else
 	void *handle = nullptr;
+#endif
 	auto *inst = instance();
 
 #ifdef LOVE_ANDROID

@@ -92,9 +92,12 @@ bool Conditional::wait(thread::Mutex *_mutex, int timeout)
 	Mutex *mutex = (Mutex *) _mutex;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 	if (timeout < 0)
-		return !SDL_WaitCondition(cond, mutex->mutex);
+	{
+		SDL_WaitCondition(cond, mutex->mutex);
+		return true;
+	}
 	else
-		return (SDL_WaitConditionTimeout(cond, mutex->mutex, timeout) == 0);
+		return SDL_WaitConditionTimeout(cond, mutex->mutex, timeout);
 #else
 	if (timeout < 0)
 		return !SDL_CondWait(cond, mutex->mutex);

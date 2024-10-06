@@ -45,7 +45,11 @@ System::System()
 
 int System::getProcessorCount() const
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	return SDL_GetNumLogicalCPUCores();
+#else
 	return SDL_GetCPUCount();
+#endif
 }
 
 bool System::isWindowOpen() const
@@ -95,7 +99,19 @@ std::vector<std::string> System::getPreferredLocales() const
 {
 	std::vector<std::string> result;
 
-#if SDL_VERSION_ATLEAST(2, 0, 14)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	int count = 0;
+	SDL_Locale **locales = SDL_GetPreferredLocales(&count);
+	for (int i = 0; i < count; i++)
+	{
+		SDL_Locale *locale = locales[i];
+		if (locale->country)
+			result.push_back(std::string(locale->language) + "_" + std::string(locale->country));
+		else
+			result.push_back(locale->language);
+	}
+	SDL_free(locales);
+#elif SDL_VERSION_ATLEAST(2, 0, 14)
 	SDL_Locale *locales = SDL_GetPreferredLocales();
 
 	if (locales)

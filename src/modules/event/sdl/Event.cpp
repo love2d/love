@@ -135,7 +135,12 @@ static void normalizedToDPICoords(double *x, double *y)
 // SDL's event watch callbacks trigger when the event is actually posted inside
 // SDL, unlike with SDL_PollEvents. This is useful for some events which require
 // handling inside the function which triggered them on some backends.
-static int SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static bool
+#else
+static int
+#endif
+SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
 {
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 
@@ -159,7 +164,11 @@ static int SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
 Event::Event()
 	: love::event::Event("love.event.sdl")
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (!SDL_InitSubSystem(SDL_INIT_EVENTS))
+#else
 	if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
+#endif
 		throw love::Exception("Could not initialize SDL events subsystem (%s)", SDL_GetError());
 
 	SDL_AddEventWatch(watchAppEvents, this);
@@ -167,7 +176,11 @@ Event::Event()
 
 Event::~Event()
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_RemoveEventWatch(watchAppEvents, this);
+#else
 	SDL_DelEventWatch(watchAppEvents, this);
+#endif
 	SDL_QuitSubSystem(SDL_INIT_EVENTS);
 }
 
@@ -194,7 +207,11 @@ Message *Event::wait()
 
 	SDL_Event e;
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (!SDL_WaitEvent(&e))
+#else
 	if (SDL_WaitEvent(&e) != 1)
+#endif
 		return nullptr;
 
 	return convert(e);
@@ -256,11 +273,19 @@ Message *Event::convert(const SDL_Event &e)
 				break;
 		}
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		love::keyboard::sdl::Keyboard::getConstant(e.key.key, key);
+#else
 		love::keyboard::sdl::Keyboard::getConstant(e.key.keysym.sym, key);
+#endif
 		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		love::keyboard::sdl::Keyboard::getConstant(e.key.scancode, scancode);
+#else
 		love::keyboard::sdl::Keyboard::getConstant(e.key.keysym.scancode, scancode);
+#endif
 		if (!love::keyboard::Keyboard::getConstant(scancode, txt2))
 			txt2 = "unknown";
 
@@ -270,11 +295,19 @@ Message *Event::convert(const SDL_Event &e)
 		msg = new Message("keypressed", vargs);
 		break;
 	case SDL_EVENT_KEY_UP:
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		love::keyboard::sdl::Keyboard::getConstant(e.key.key, key);
+#else
 		love::keyboard::sdl::Keyboard::getConstant(e.key.keysym.sym, key);
+#endif
 		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+		love::keyboard::sdl::Keyboard::getConstant(e.key.scancode, scancode);
+#else
 		love::keyboard::sdl::Keyboard::getConstant(e.key.keysym.scancode, scancode);
+#endif
 		if (!love::keyboard::Keyboard::getConstant(scancode, txt2))
 			txt2 = "unknown";
 
@@ -551,7 +584,7 @@ Message *Event::convert(const SDL_Event &e)
 			{
 				SDL_Sensor *sensor = (SDL_Sensor *) s;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-				SDL_SensorID id = SDL_GetSensorInstanceID(sensor);
+				SDL_SensorID id = SDL_GetSensorID(sensor);
 #else
 				SDL_SensorID id = SDL_SensorGetInstanceID(sensor);
 #endif
