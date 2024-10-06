@@ -666,10 +666,18 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		SDL_SetWindowSize(window, width, height);
 
 		if (this->settings.resizable != f.resizable)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
 			SDL_SetWindowResizable(window, f.resizable);
+#else
+			SDL_SetWindowResizable(window, f.resizable ? SDL_TRUE : SDL_FALSE);
+#endif
 
 		if (this->settings.borderless != f.borderless)
-			SDL_SetWindowBordered(window, f.borderless);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+			SDL_SetWindowBordered(window, !f.borderless);
+#else
+			SDL_SetWindowBordered(window, f.borderless ? SDL_FALSE : SDL_TRUE);
+#endif
 	}
 	else
 	{
