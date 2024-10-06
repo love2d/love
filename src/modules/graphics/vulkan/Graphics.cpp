@@ -1875,7 +1875,7 @@ void Graphics::createSurface()
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 	const void *handle = window->getHandle();
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	if (SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, nullptr, &surface) != SDL_TRUE)
+	if (!SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, nullptr, &surface))
 		throw love::Exception("failed to create window surface");
 #else
 	if (SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, &surface) != SDL_TRUE)

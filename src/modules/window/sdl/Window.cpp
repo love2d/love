@@ -118,7 +118,11 @@ Window::Window()
 #ifdef LOVE_WINDOWS
 	// Turned off by default, because it (ironically) causes stuttering issues
 	// on some setups. More investigation is needed before enabling it.
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	canUseDwmFlush = SDL_GetHintBoolean("LOVE_GRAPHICS_VSYNC_DWM", false);
+#else
 	canUseDwmFlush = SDL_GetHintBoolean("LOVE_GRAPHICS_VSYNC_DWM", SDL_FALSE) != SDL_FALSE;
+#endif
 #endif
 }
 
@@ -1790,7 +1794,7 @@ void Window::requestAttention(bool continuous)
 	FLASHWINFO flashinfo = { sizeof(FLASHWINFO) };
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-	flashinfo.hwnd = (HWND)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+	flashinfo.hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
 #else
 	SDL_SysWMinfo wminfo = {};
 	SDL_VERSION(&wminfo.version);
