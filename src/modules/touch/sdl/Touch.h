@@ -25,7 +25,11 @@
 #include "touch/Touch.h"
 
 // SDL
+#if __has_include(<SDL3/SDL_events.h>)
+#include <SDL3/SDL_events.h>
+#else
 #include <SDL_events.h>
+#endif
 
 namespace love
 {

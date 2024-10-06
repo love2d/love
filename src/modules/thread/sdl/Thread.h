@@ -26,7 +26,11 @@
 #include "threads.h"
 
 // SDL
+#if __has_include(<SDL3/SDL_thread.h>)
+#include <SDL3/SDL_thread.h>
+#else
 #include <SDL_thread.h>
+#endif
 
 namespace love
 {

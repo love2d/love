@@ -23,7 +23,11 @@
 #include "common/Exception.h"
 #include "Touch.h"
 
+#if __has_include(<SDL3/SDL_version.h>)
+#include <SDL3/SDL_version.h>
+#else
 #include <SDL_version.h>
+#endif
 
 // C++
 #include <algorithm>

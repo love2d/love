@@ -27,7 +27,11 @@
 #include "common/int.h"
 
 // SDL
+#if __has_include(<SDL3/SDL.h>)
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
+#endif
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 

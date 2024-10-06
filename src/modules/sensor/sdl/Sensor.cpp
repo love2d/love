@@ -22,8 +22,13 @@
 #include "Sensor.h"
 
 // SDL
+#if __has_include(<SDL3/SDL.h>)
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_sensor.h>
+#else
 #include <SDL.h>
 #include <SDL_sensor.h>
+#endif
 
 namespace love
 {

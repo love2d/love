@@ -49,7 +49,11 @@
 #endif
 
 #ifdef LOVE_GRAPHICS_VULKAN
+#if __has_include(<SDL3/SDL_vulkan.h>)
+#include <SDL3/SDL_vulkan.h>
+#else
 #include <SDL_vulkan.h>
+#endif
 #endif
 
 #if defined(LOVE_WINDOWS)

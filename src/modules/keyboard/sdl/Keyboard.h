@@ -26,8 +26,13 @@
 #include "common/EnumMap.h"
 
 // SDL
+#if __has_include(<SDL3/SDL_keyboard.h>)
+#include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_version.h>
+#else
 #include <SDL_keyboard.h>
 #include <SDL_version.h>
+#endif
 
 #include <map>
 

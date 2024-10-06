@@ -25,7 +25,11 @@
 #include "sensor/Sensor.h"
 
 // SDL
+#if __has_include(<SDL3/SDL_sensor.h>)
+#include <SDL3/SDL_sensor.h>
+#else
 #include <SDL_sensor.h>
+#endif
 
 // std
 #include <map>

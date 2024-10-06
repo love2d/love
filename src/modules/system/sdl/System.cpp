@@ -23,12 +23,19 @@
 #include "window/Window.h"
 
 // SDL
+#if __has_include(<SDL3/SDL_clipboard.h>)
+#include <SDL3/SDL_clipboard.h>
+#include <SDL3/SDL_cpuinfo.h>
+#include <SDL3/SDL_version.h>
+#include <SDL3/SDL_locale.h>
+#else
 #include <SDL_clipboard.h>
 #include <SDL_cpuinfo.h>
 #include <SDL_version.h>
 
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #include <SDL_locale.h>
+#endif
 #endif
 
 namespace love

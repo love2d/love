@@ -25,11 +25,15 @@
 #include "sensor/sdl/Sensor.h"
 
 // SDL
+#if __has_include(<SDL3/SDL_version.h>)
+#include <SDL3/SDL_version.h>
+#else
 #include <SDL_version.h>
+#endif
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 
-#include <SDL_guid.h>
+#include <SDL3/SDL_guid.h>
 
 // C++
 #include <algorithm>

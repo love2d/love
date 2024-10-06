@@ -29,8 +29,13 @@
 #include "Shader.h"
 #include "Vulkan.h"
 
+#if __has_include(<SDL3/SDL_version.h>)
+#include <SDL3/SDL_version.h>
+#include <SDL3/SDL_vulkan.h>
+#else
 #include <SDL_version.h>
 #include <SDL_vulkan.h>
+#endif
 
 #include <algorithm>
 #include <vector>

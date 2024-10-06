@@ -26,7 +26,11 @@
 #include "common/EnumMap.h"
 
 // SDL
+#if __has_include(<SDL3/SDL_mouse.h>)
+#include <SDL3/SDL_mouse.h>
+#else
 #include <SDL_mouse.h>
+#endif
 
 namespace love
 {

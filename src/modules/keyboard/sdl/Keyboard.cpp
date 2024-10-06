@@ -18,7 +18,11 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
+#if __has_include(<SDL3/SDL_version.h>)
+#include <SDL3/SDL_version.h>
+#else
 #include <SDL_version.h>
+#endif
 
 #include "Keyboard.h"
 #include "window/Window.h"
