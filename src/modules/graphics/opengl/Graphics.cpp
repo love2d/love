@@ -45,7 +45,13 @@
 #include <cstdio>
 
 #ifdef LOVE_IOS
+#if __has_include(<SDL3/SDL_video.h>)
+#include <SDL3/SDL_video.h>
+#include <SDL3/SDL_version.h>
+#else
 #include <SDL_syswm.h>
+#include <SDL_version.h>
+#endif
 #endif
 
 namespace love
@@ -282,6 +288,14 @@ GLuint Graphics::getSystemBackbufferFBO() const
 {
 #ifdef LOVE_IOS
 	// Hack: iOS uses a custom FBO.
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_PropertiesID props = SDL_GetWindowProperties(SDL_GL_GetCurrentWindow());
+	GLuint resolveframebuffer = (GLuint)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER, 0);
+	if (resolveframebuffer != 0)
+		return resolveframebuffer;
+	else
+		return (GLuint)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER, 0);
+#else
 	SDL_SysWMinfo info = {};
 	SDL_VERSION(&info.version);
 	SDL_GetWindowWMInfo(SDL_GL_GetCurrentWindow(), &info);
@@ -290,6 +304,7 @@ GLuint Graphics::getSystemBackbufferFBO() const
 		return info.info.uikit.resolveFramebuffer;
 	else
 		return info.info.uikit.framebuffer;
+#endif
 #else
 	return 0;
 #endif
@@ -1291,10 +1306,16 @@ void Graphics::present(void *screenshotCallbackData)
 
 #ifdef LOVE_IOS
 	// Hack: SDL's color renderbuffer must be bound when swapBuffers is called.
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_PropertiesID props = SDL_GetWindowProperties(SDL_GL_GetCurrentWindow());
+	GLuint colorbuffer = (GLuint)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, colorbuffer);
+#else
 	SDL_SysWMinfo info = {};
 	SDL_VERSION(&info.version);
 	SDL_GetWindowWMInfo(SDL_GL_GetCurrentWindow(), &info);
 	glBindRenderbuffer(GL_RENDERBUFFER, info.info.uikit.colorbuffer);
+#endif
 #endif
 
 	for (StreamBuffer *buffer : batchedDrawState.vb)
