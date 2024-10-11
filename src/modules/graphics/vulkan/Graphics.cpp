@@ -102,7 +102,11 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext)
 Graphics::Graphics()
 	: love::graphics::Graphics("love.graphics.vulkan")
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (!SDL_Vulkan_LoadLibrary(nullptr))
+#else
 	if (SDL_Vulkan_LoadLibrary(nullptr))
+#endif
 		throw love::Exception("could not find vulkan");
 
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
