@@ -62,7 +62,11 @@
 #include <string>
 
 #ifdef LOVE_ANDROID
+#if __has_include(<SDL3/SDL.h>)
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
+#endif
 #include "common/android.h"
 #endif
 
@@ -630,10 +634,17 @@ std::string Filesystem::getFullCommonPath(CommonPath path)
 #elif defined(LOVE_ANDROID)
 
 	std::string storagepath;
-	if (isAndroidSaveExternal())
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (isAndroidSaveExternal())
+        storagepath = SDL_GetAndroidExternalStoragePath();
+    else
+        storagepath = SDL_GetAndroidInternalStoragePath();
+#else
+    if (isAndroidSaveExternal())
 		storagepath = SDL_AndroidGetExternalStoragePath();
 	else
 		storagepath = SDL_AndroidGetInternalStoragePath();
+#endif
 
 	switch (path)
 	{

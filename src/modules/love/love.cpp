@@ -37,7 +37,11 @@
 #endif // LOVE_WINDOWS
 
 #ifdef LOVE_ANDROID
+#if __has_include(<SDL3/SDL.h>)
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
+#endif
 #endif // LOVE_ANDROID
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
