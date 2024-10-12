@@ -15,6 +15,9 @@
 		A93E6EED10420BA8007D418B /* love.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A93E6A3410420AC0007D418B /* love.cpp */; };
 		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		CE73F8001EEB64150052DAB3 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE73F7FF1EEB64150052DAB3 /* AVFoundation.framework */; };
+		D9596F642CBAC98B00BE58C1 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F632CBAC98B00BE58C1 /* SDL3.xcframework */; };
+		D9596F652CBAC98B00BE58C1 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F632CBAC98B00BE58C1 /* SDL3.xcframework */; };
+		D9596F662CBAC99F00BE58C1 /* SDL3.xcframework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F632CBAC98B00BE58C1 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D9DAB9372963CF6900C64820 /* harfbuzz.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = D9DAB9352963CF5F00C64820 /* harfbuzz.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FA0797991BF480A200034B7C /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA0797981BF480A200034B7C /* GameController.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		FA08F69616C766E000F007B5 /* love.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA08F69116C765A200F007B5 /* love.framework */; };
@@ -36,8 +39,6 @@
 		FA5D24D11A96E73300C6FC8F /* liblove.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA0B7EEF1A95924A000E1D17 /* liblove.a */; };
 		FA7C636A1A9C49570000FD29 /* Launch Screen.xib in Resources */ = {isa = PBXBuildFile; fileRef = FA7C63691A9C49570000FD29 /* Launch Screen.xib */; };
 		FA84DE78277CB55B002674C6 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA84DE77277CB55B002674C6 /* CoreHaptics.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		FA9B4A0A16E1579F00074F42 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; };
-		FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FA9B4A0916E1579F00074F42 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FAAFF04716CB120000CCDE45 /* OpenAL-Soft.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FAAFF04616CB120000CCDE45 /* OpenAL-Soft.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FAC1A449196F5DC600125284 /* license.txt in Resources */ = {isa = PBXBuildFile; fileRef = FAC1A448196F5DC600125284 /* license.txt */; };
 		FAD43ED01FF3136500831BB8 /* freetype.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = FAD43ECF1FF3133700831BB8 /* freetype.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -84,7 +85,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				FA08F69716C766E700F007B5 /* love.framework in Copy Frameworks */,
-				FA9B4A0B16E157B500074F42 /* SDL2.framework in Copy Frameworks */,
+				D9596F662CBAC99F00BE58C1 /* SDL3.xcframework in Copy Frameworks */,
 				FAD4B1731C1F50A3004CF150 /* theora.framework in Copy Frameworks */,
 				FAAFF04716CB120000CCDE45 /* OpenAL-Soft.framework in Copy Frameworks */,
 				FAD43ED01FF3136500831BB8 /* freetype.framework in Copy Frameworks */,
@@ -110,6 +111,7 @@
 		A97E3842132A9EDE00198A2F /* love-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "love-macosx.plist"; path = "macosx/love-macosx.plist"; sourceTree = "<group>"; };
 		A9F16926109E7BAD00FC83D1 /* libmodplug.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = libmodplug.framework; path = macosx/Frameworks/libmodplug.framework; sourceTree = "<group>"; };
 		CE73F7FF1EEB64150052DAB3 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.3.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
+		D9596F632CBAC98B00BE58C1 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = shared/Frameworks/SDL3.xcframework; sourceTree = "<group>"; };
 		D9DAB9352963CF5F00C64820 /* harfbuzz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = harfbuzz.framework; path = macosx/Frameworks/harfbuzz.framework; sourceTree = "<group>"; };
 		FA0797981BF480A200034B7C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.1.sdk/System/Library/Frameworks/GameController.framework; sourceTree = DEVELOPER_DIR; };
 		FA08F69116C765A200F007B5 /* love.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,10 +146,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				FA08F69616C766E000F007B5 /* love.framework in Frameworks */,
+				D9596F642CBAC98B00BE58C1 /* SDL3.xcframework in Frameworks */,
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				A93E6E5510420B57007D418B /* Lua.framework in Frameworks */,
 				FA27B3CB1B498696008A9DCE /* theora.framework in Frameworks */,
-				FA9B4A0A16E1579F00074F42 /* SDL2.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,6 +170,7 @@
 				FA5D248C1A96CA9E00C6FC8F /* QuartzCore.framework in Frameworks */,
 				FA5D248A1A96CA9600C6FC8F /* AudioToolbox.framework in Frameworks */,
 				FA5D24881A96CA8A00C6FC8F /* UIKit.framework in Frameworks */,
+				D9596F652CBAC98B00BE58C1 /* SDL3.xcframework in Frameworks */,
 				FA5D24841A96CA2700C6FC8F /* OpenGLES.framework in Frameworks */,
 				FA5D24821A96CA1800C6FC8F /* OpenAL.framework in Frameworks */,
 			);
@@ -179,6 +182,7 @@
 		1058C7A0FEA54F0111CA2CBB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D9596F632CBAC98B00BE58C1 /* SDL3.xcframework */,
 				FA84DE77277CB55B002674C6 /* CoreHaptics.framework */,
 				FAE64A9C2072738600BC7981 /* Metal.framework */,
 				FA15DFB31F9B8D9E0042AB22 /* libbz2.tbd */,

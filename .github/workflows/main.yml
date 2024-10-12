@@ -429,6 +429,7 @@ jobs:
     - name: Move Dependencies
       run:
         mv apple-dependencies/macOS/Frameworks platform/xcode/macosx
+        mv apple-dependencies/shared platform/xcode
     - name: Build
       run:
         xcodebuild clean archive -project platform/xcode/love.xcodeproj -scheme love-macosx -configuration Release -destination generic/platform=macOS -archivePath love-macos.xcarchive
@@ -514,6 +515,7 @@ jobs:
     - name: Move Dependencies
       run: |
         mv apple-dependencies/iOS/libraries platform/xcode/ios
+        mv apple-dependencies/shared platform/xcode
     - name: Build
       run:
         xcodebuild -project platform/xcode/love.xcodeproj -scheme love-ios -configuration Release -destination 'platform=iOS Simulator,name=iPhone 15'

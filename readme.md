@@ -63,7 +63,7 @@ Because in-tree builds are not allowed, the Makefiles needs to be generated in a
 > CMake 3.15 and earlier doesn't support `--install-prefix`. In that case, use `-DCMAKE_INSTALL_PREFIX=` instead.
 
 ### macOS
-Download or clone [this repository][dependencies-apple] and copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder.
+Download or clone [this repository][dependencies-apple] and copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder and the `shared` subfolder into love's `platform/xcode` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
 
@@ -71,9 +71,9 @@ Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the
 Building for iOS requires macOS and Xcode.
 
 Download the `love-apple-dependencies` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
-unzip it, and place the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder.
+unzip it, and place the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder and the `shared` subfolder into love's `platform/xcode` folder.
 
-Or, download or clone [this repository][dependencies-apple] and copy, move, or symlink the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder.
+Or, download or clone [this repository][dependencies-apple] and copy, move, or symlink the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder and the `shared` subfolder into love's `platform/xcode` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
 
@@ -85,11 +85,12 @@ Visit the [Android build repository][android-repository] for build instructions.
 Dependencies
 ------------
 
-- SDL2
-- OpenGL 2.1+ / OpenGL ES 2+
+- SDL3
+- OpenGL 3.3+ / OpenGL ES 3.0+ / Vulkan / Metal
 - OpenAL
 - Lua / LuaJIT / LLVM-lua
 - FreeType
+- harfbuzz
 - ModPlug
 - Vorbisfile
 - Theora
