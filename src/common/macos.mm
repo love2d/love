@@ -26,8 +26,10 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
 
+#if __has_include(<SDL3/SDL.h>)
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
 #include <SDL_syswm.h>
 #endif
 
