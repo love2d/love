@@ -2052,6 +2052,10 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 	###################################
 	install(TARGETS love lovec liblove RUNTIME DESTINATION .)
 
+	if(LOVE_USE_SDL3)
+		install(PROGRAMS $<TARGET_FILE:${MEGA_SDL3}> DESTINATION .)
+	endif()
+
 	# Our install script (and NSIS) doesn't fully support Windows ARM64 yet.
 	if(MEGA_ARM64)
 		set(CPACK_GENERATOR ZIP)
