@@ -33,7 +33,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: love2d/love-appimage-source
-        ref: 12.x
+        ref: main
     - name: Checkout LÖVE
       uses: actions/checkout@v4
       with:
