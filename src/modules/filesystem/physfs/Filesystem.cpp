@@ -284,14 +284,14 @@ bool Filesystem::setSource(const char *source)
 	if (!isAAssetMounted)
 	{
 		// Is this love2d://fd/ URIs?
-		int fd = love::android::getFDFromLoveProtocol(new_search_path.c_str());
+		int fd = love::android::getFDFromLoveProtocol(source);
 		if (fd != -1)
 		{
 			PHYSFS_Io *io = (PHYSFS_Io *) love::android::getIOFromFD(fd);
 
 			if (PHYSFS_mountIo(io, "LOVE.FD", nullptr, 0))
 			{
-				gameSource = new_search_path;
+				gameSource = source;
 				return true;
 			}
 

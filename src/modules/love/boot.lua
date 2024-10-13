@@ -87,18 +87,23 @@ function love.boot()
 	local identity = ""
 	if not can_has_game and o.game.set and o.game.arg[1] then
 		local nouri = o.game.arg[1]
+		local full_source = nouri
 
-		if nouri:sub(1, 7) == "file://" then
-			nouri = uridecode(nouri:sub(8))
-		end
+		-- Ignore "love2d://" uri as it's used to open a file-descriptor
+		-- directly for Android.
+		if nouri:sub(1, 9) ~= "love2d://" then
+			if nouri:sub(1, 7) == "file://" then
+				nouri = uridecode(nouri:sub(8))
+			end
 
-		local full_source = love.path.getFull(nouri)
-		local source_leaf = love.path.leaf(full_source)
+			full_source = love.path.getFull(nouri)
+			local source_leaf = love.path.leaf(full_source)
 
-		if source_leaf:match("%.lua$") then
-			main_file = source_leaf
-			custom_main_file = true
-			full_source = love.path.getFull(full_source:sub(1, -(#source_leaf + 1)))
+			if source_leaf:match("%.lua$") then
+				main_file = source_leaf
+				custom_main_file = true
+				full_source = love.path.getFull(full_source:sub(1, -(#source_leaf + 1)))
+			end
 		end
 
 		can_has_game = pcall(love.filesystem.setSource, full_source)
