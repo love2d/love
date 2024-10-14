@@ -186,9 +186,15 @@ Please see https://github.com/love2d/megasource
 	# required for enet
 	add_definitions(-D HAS_SOCKLEN_T)
 
-	find_package(SDL2 2.0.9 REQUIRED CONFIG COMPONENTS SDL2main)
-	target_include_directories(lovedep::SDL INTERFACE ${SDL2_INCLUDE_DIRS})
-	target_link_libraries(lovedep::SDL INTERFACE ${SDL2_LIBRARIES})
+	if(LOVE_USE_SDL3)
+		find_package(SDL3 3.1.3 REQUIRED CONFIG)
+		target_include_directories(lovedep::SDL INTERFACE ${SDL3_INCLUDE_DIRS})
+		target_link_libraries(lovedep::SDL INTERFACE ${SDL3_LIBRARIES})
+	else()
+		find_package(SDL2 2.0.9 REQUIRED CONFIG COMPONENTS SDL2main)
+		target_include_directories(lovedep::SDL INTERFACE ${SDL2_INCLUDE_DIRS})
+		target_link_libraries(lovedep::SDL INTERFACE ${SDL2_LIBRARIES})
+	endif()
 
 	find_package(Freetype REQUIRED)
 	target_include_directories(lovedep::Freetype INTERFACE ${FREETYPE_INCLUDE_DIRS})
