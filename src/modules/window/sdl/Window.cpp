@@ -1443,7 +1443,10 @@ bool Window::isDisplaySleepEnabled() const
 void Window::minimize()
 {
 	if (window != nullptr)
+	{
 		SDL_MinimizeWindow(window);
+		updateSettings(settings, true);
+	}
 }
 
 void Window::maximize()
