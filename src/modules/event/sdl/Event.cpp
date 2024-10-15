@@ -822,6 +822,37 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 		vargs.emplace_back(event == SDL_EVENT_WINDOW_SHOWN);
 		msg = new Message("visible", vargs);
 		break;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+		{
+			double width = e.window.data1;
+			double height = e.window.data2;
+
+			gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+			win = Module::getInstance<window::Window>(Module::M_WINDOW);
+			if (win)
+				win->onSizeChanged(e.window.data1, e.window.data2);
+
+			// The size values in the Window aren't necessarily the same as the
+			// graphics size, which is what we want to output.
+			if (gfx)
+			{
+				width = gfx->getWidth();
+				height = gfx->getHeight();
+			}
+			else if (win)
+			{
+				width = win->getWidth();
+				height = win->getHeight();
+				windowToDPICoords(&width, &height);
+			}
+
+			vargs.emplace_back(width);
+			vargs.emplace_back(height);
+			msg = new Message("resize", vargs);
+		}
+		break;
+#else
 	case SDL_EVENT_WINDOW_RESIZED:
 		{
 			double width  = e.window.data1;
@@ -855,6 +886,7 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 		if (win)
 			win->onSizeChanged(e.window.data1, e.window.data2);
 		break;
+#endif
 	case SDL_EVENT_WINDOW_MINIMIZED:
 	case SDL_EVENT_WINDOW_RESTORED:
 #ifdef LOVE_ANDROID
