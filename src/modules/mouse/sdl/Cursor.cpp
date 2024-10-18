@@ -22,12 +22,6 @@
 #include "Cursor.h"
 #include "common/config.h"
 
-#if __has_include(<SDL3/SDL_version.h>)
-#include <SDL3/SDL_version.h>
-#else
-#include <SDL_version.h>
-#endif
-
 namespace love
 {
 namespace mouse
@@ -44,34 +38,12 @@ Cursor::Cursor(image::ImageData *data, int hotx, int hoty)
 	int h = data->getHeight();
 	int pitch = w * 4;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	SDL_Surface *surface = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA8888, data->getData(), pitch);
-#else
-	Uint32 rmask, gmask, bmask, amask;
-#ifdef LOVE_BIG_ENDIAN
-	rmask = 0xFF000000;
-	gmask = 0x00FF0000;
-	bmask = 0x0000FF00;
-	amask = 0x000000FF;
-#else
-	rmask = 0x000000FF;
-	gmask = 0x0000FF00;
-	bmask = 0x00FF0000;
-	amask = 0xFF000000;
-#endif
-
-	SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(data->getData(), w, h, 32, pitch, rmask, gmask, bmask, amask);
-#endif
 	if (!surface)
-		throw love::Exception("Cannot create cursor: out of memory!");
+		throw love::Exception("Cannot create cursor: out of memory.");
 
 	cursor = SDL_CreateColorCursor(surface, hotx, hoty);
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	SDL_DestroySurface(surface);
-#else
-	SDL_FreeSurface(surface);
-
-#endif
 
 	if (!cursor)
 		throw love::Exception("Cannot create cursor: %s", SDL_GetError());
@@ -95,13 +67,8 @@ Cursor::Cursor(mouse::Cursor::SystemCursor cursortype)
 
 Cursor::~Cursor()
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	if (cursor)
 		SDL_DestroyCursor(cursor);
-#else
-	if (cursor)
-		SDL_FreeCursor(cursor);
-#endif
 }
 
 void *Cursor::getHandle() const
@@ -121,7 +88,6 @@ Cursor::SystemCursor Cursor::getSystemType() const
 
 EnumMap<Cursor::SystemCursor, SDL_SystemCursor, Cursor::CURSOR_MAX_ENUM>::Entry Cursor::systemCursorEntries[] =
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	{Cursor::CURSOR_ARROW, SDL_SYSTEM_CURSOR_DEFAULT},
 	{Cursor::CURSOR_IBEAM, SDL_SYSTEM_CURSOR_TEXT},
 	{Cursor::CURSOR_WAIT, SDL_SYSTEM_CURSOR_WAIT},
@@ -134,20 +100,6 @@ EnumMap<Cursor::SystemCursor, SDL_SystemCursor, Cursor::CURSOR_MAX_ENUM>::Entry 
 	{Cursor::CURSOR_SIZEALL, SDL_SYSTEM_CURSOR_MOVE},
 	{Cursor::CURSOR_NO, SDL_SYSTEM_CURSOR_NOT_ALLOWED},
 	{Cursor::CURSOR_HAND, SDL_SYSTEM_CURSOR_POINTER},
-#else
-	{Cursor::CURSOR_ARROW, SDL_SYSTEM_CURSOR_ARROW},
-	{Cursor::CURSOR_IBEAM, SDL_SYSTEM_CURSOR_IBEAM},
-	{Cursor::CURSOR_WAIT, SDL_SYSTEM_CURSOR_WAIT},
-	{Cursor::CURSOR_CROSSHAIR, SDL_SYSTEM_CURSOR_CROSSHAIR},
-	{Cursor::CURSOR_WAITARROW, SDL_SYSTEM_CURSOR_WAITARROW},
-	{Cursor::CURSOR_SIZENWSE, SDL_SYSTEM_CURSOR_SIZENWSE},
-	{Cursor::CURSOR_SIZENESW, SDL_SYSTEM_CURSOR_SIZENESW},
-	{Cursor::CURSOR_SIZEWE, SDL_SYSTEM_CURSOR_SIZEWE},
-	{Cursor::CURSOR_SIZENS, SDL_SYSTEM_CURSOR_SIZENS},
-	{Cursor::CURSOR_SIZEALL, SDL_SYSTEM_CURSOR_SIZEALL},
-	{Cursor::CURSOR_NO, SDL_SYSTEM_CURSOR_NO},
-	{Cursor::CURSOR_HAND, SDL_SYSTEM_CURSOR_HAND},
-#endif
 };
 
 EnumMap<Cursor::SystemCursor, SDL_SystemCursor, Cursor::CURSOR_MAX_ENUM> Cursor::systemCursors(Cursor::systemCursorEntries, sizeof(Cursor::systemCursorEntries));

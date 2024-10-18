@@ -69,10 +69,10 @@ private:
 	std::string getDeviceGUID(int64 deviceid) const;
 
 	// Lists of currently connected Joysticks.
-	std::vector<Joystick *> activeSticks;
+	std::vector<love::joystick::Joystick *> activeSticks;
 
 	// Persistent list of all Joysticks which have been connected at some point.
-	std::list<Joystick *> joysticks;
+	std::list<love::joystick::Joystick *> joysticks;
 
 	// Persistent map indicating GUIDs for Gamepads which have been connected or
 	// modified at some point.

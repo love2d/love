@@ -802,8 +802,6 @@ target_link_libraries(love_joystick_root PUBLIC
 add_library(love_joystick_sdl STATIC
 	src/modules/joystick/sdl/Joystick.cpp
 	src/modules/joystick/sdl/Joystick.h
-	src/modules/joystick/sdl/JoystickSDL3.cpp
-	src/modules/joystick/sdl/JoystickSDL3.h
 	src/modules/joystick/sdl/JoystickModule.cpp
 	src/modules/joystick/sdl/JoystickModule.h
 )
@@ -1982,7 +1980,7 @@ love_group_projects(NAME "liblove" NESTED TARGETS ${LIBLOVE_DEPENDENCIES})
 love_group_projects(NAME "liblove/libraries" NESTED TARGETS ${LIBLOVE_LIBRARIES})
 love_group_projects(NAME "liblove" TARGETS liblove ${LOVE_EXTRA_DEPENDECIES})
 
-love_group_projects(NAME "lovedep" TARGETS lovedep::SDL2 lovedep::Freetype lovedep::Harfbuzz lovedep::OpenAL lovedep::Modplug lovedep::Theora lovedep::Vorbis lovedep::Ogg lovedep::Zlib lovedep::Lua)
+love_group_projects(NAME "lovedep" TARGETS lovedep::SDL lovedep::Freetype lovedep::Harfbuzz lovedep::OpenAL lovedep::Modplug lovedep::Theora lovedep::Vorbis lovedep::Ogg lovedep::Zlib lovedep::Lua)
 love_group_projects(NAME "lovedep" TARGETS lua51 alcommon al-excommon harfbuzz-subset zlib)
 
 

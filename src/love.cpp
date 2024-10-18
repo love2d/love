@@ -23,17 +23,11 @@
 #include "common/Variant.h"
 #include "modules/love/love.h"
 
-#if __has_include(<SDL3/SDL.h>)
 #include <SDL3/SDL.h>
-#else
-#include <SDL.h>
-#endif
 
 #ifdef LOVE_BUILD_EXE
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 #include <SDL3/SDL_main.h>
-#endif
 
 // Lua
 extern "C" {

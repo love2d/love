@@ -210,7 +210,6 @@ function love.init()
 		identity = false,
 		appendidentity = false,
 		externalstorage = false, -- Only relevant for Android.
-		accelerometerjoystick = nil, -- Only relevant for Android / iOS, deprecated.
 		gammacorrect = false,
 		highdpi = false,
 		renderers = nil,
@@ -241,11 +240,6 @@ function love.init()
 	-- Console hack, part 2.
 	if c.console and love._openConsole and not openedconsole then
 		love._openConsole()
-	end
-
-	-- Hack for disabling accelerometer-as-joystick on Android / iOS.
-	if love._setAccelerometerAsJoystick then
-		love._setAccelerometerAsJoystick(c.accelerometerjoystick)
 	end
 
 	if love._setGammaCorrect then
@@ -380,7 +374,7 @@ function love.init()
 			y = c.window.y,
 		}), "Could not set window mode")
 		if c.window.icon then
-			assert(love.image, "If an icon is set in love.conf, love.image must be loaded!")
+			assert(love.image, "If an icon is set in love.conf, love.image must be loaded.")
 			love.window.setIcon(love.image.newImageData(c.window.icon))
 		end
 	end

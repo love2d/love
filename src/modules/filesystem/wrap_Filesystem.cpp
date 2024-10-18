@@ -34,13 +34,7 @@
 #endif
 
 // SDL
-#if __has_include(<SDL3/SDL_loadso.h>)
 #include <SDL3/SDL_loadso.h>
-#include <SDL3/SDL_version.h>
-#else
-#include <SDL_loadso.h>
-#include <SDL_version.h>
-#endif
 
 // STL
 #include <vector>
@@ -939,11 +933,7 @@ int extloader(lua_State *L)
 		}
 	}
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	SDL_SharedObject *handle = nullptr;
-#else
-	void *handle = nullptr;
-#endif
 	auto *inst = instance();
 
 #ifdef LOVE_ANDROID
@@ -1004,12 +994,7 @@ int extloader(lua_State *L)
 
 	// We look for both loveopen_ and luaopen_, so libraries with specific love support
 	// can tell when they've been loaded by love.
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-	SDL_FunctionPointer func = nullptr;
-#else
-	void *func = nullptr;
-#endif
-	func = SDL_LoadFunction(handle, ("loveopen_" + tokenized_function).c_str());
+	SDL_FunctionPointer func = SDL_LoadFunction(handle, ("loveopen_" + tokenized_function).c_str());
 	if (!func)
 		func = SDL_LoadFunction(handle, ("luaopen_" + tokenized_function).c_str());
 

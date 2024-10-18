@@ -37,11 +37,7 @@
 #endif // LOVE_WINDOWS
 
 #ifdef LOVE_ANDROID
-#if __has_include(<SDL3/SDL.h>)
 #include <SDL3/SDL.h>
-#else
-#include <SDL.h>
-#endif
 #endif // LOVE_ANDROID
 
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
@@ -50,14 +46,6 @@
 #include <iostream>
 #include <fstream>
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
-
-#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
-#if __has_include(<SDL3/SDL_version.h>)
-#undef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
-#else
-#include <SDL_hints.h>
-#endif
-#endif // LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
 
 // Libraries.
 #ifdef LOVE_ENABLE_LUASOCKET
@@ -258,10 +246,6 @@ static const luaL_Reg modules[] = {
 #ifdef LOVE_LEGENDARY_CONSOLE_IO_HACK
 int w__openConsole(lua_State *L);
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
-
-#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
-int w__setAccelerometerAsJoystick(lua_State *L);
-#endif
 
 #ifdef LOVE_ANDROID
 static int w_print_sdl_log(lua_State *L)
@@ -560,11 +544,6 @@ int luaopen_love(lua_State *L)
 	lua_setfield(L, -2, "_openConsole");
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
 
-#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
-	lua_pushcfunction(L, w__setAccelerometerAsJoystick);
-	lua_setfield(L, -2, "_setAccelerometerAsJoystick");
-#endif
-
 	lua_pushcfunction(L, w__setGammaCorrect);
 	lua_setfield(L, -2, "_setGammaCorrect");
 
@@ -771,19 +750,6 @@ int w__openConsole(lua_State *L)
 }
 
 #endif // LOVE_LEGENDARY_CONSOLE_IO_HACK
-
-#ifdef LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
-int w__setAccelerometerAsJoystick(lua_State *L)
-{
-	bool enable = (bool) lua_toboolean(L, 1);
-	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, enable ? "1" : "0");
-
-	if (enable)
-		love::luax_markdeprecated(L, 1, "accelerometerjoystick", love::API_FIELD, love::DEPRECATED_REPLACED, "love.sensor module");
-
-	return 0;
-}
-#endif // LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
 
 int luaopen_love_nogame(lua_State *L)
 {

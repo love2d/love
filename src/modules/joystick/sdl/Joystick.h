@@ -24,15 +24,10 @@
 // LOVE
 #include "joystick/Joystick.h"
 #include "common/EnumMap.h"
+#include "common/int.h"
 
 // SDL
-#if __has_include(<SDL3/SDL.h>)
 #include <SDL3/SDL.h>
-#else
-#include <SDL.h>
-#endif
-
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
 
 namespace love
 {
@@ -46,7 +41,6 @@ class Joystick : public love::joystick::Joystick
 public:
 
 	Joystick(int id);
-	Joystick(int id, int joyindex);
 
 	virtual ~Joystick();
 
@@ -104,22 +98,18 @@ public:
 	static bool getConstant(Hat in, Uint8 &out);
 	static bool getConstant(Uint8 in, Hat &out);
 
-	static bool getConstant(SDL_GameControllerAxis in, GamepadAxis &out);
-	static bool getConstant(GamepadAxis in, SDL_GameControllerAxis &out);
+	static bool getConstant(SDL_GamepadAxis in, GamepadAxis &out);
+	static bool getConstant(GamepadAxis in, SDL_GamepadAxis &out);
 
-	static bool getConstant(SDL_GameControllerButton in, GamepadButton &out);
-	static bool getConstant(GamepadButton in, SDL_GameControllerButton &out);
+	static bool getConstant(SDL_GamepadButton in, GamepadButton &out);
+	static bool getConstant(GamepadButton in, SDL_GamepadButton &out);
 
 private:
 
 	Joystick() {}
 
-	bool checkCreateHaptic();
-	bool runVibrationEffect();
-
 	SDL_Joystick *joyhandle;
-	SDL_GameController *controller;
-	SDL_Haptic *haptic;
+	SDL_Gamepad *controller;
 
 	JoystickType joystickType;
 
@@ -129,38 +119,19 @@ private:
 
 	std::string name;
 
-	struct Vibration
-	{
-		float left  = 0.0f;
-		float right = 0.0f;
-		SDL_HapticEffect effect;
-		Uint16 data[4];
-		int id = -1;
-		Uint32 endtime = SDL_HAPTIC_INFINITY;
-
-		// Old versions of VS2013 have trouble with initializing these in-line.
-		Vibration()
-			: effect()
-			, data()
-		{}
-
-	} vibration;
-
 	static EnumMap<Hat, Uint8, Joystick::HAT_MAX_ENUM>::Entry hatEntries[];
 	static EnumMap<Hat, Uint8, Joystick::HAT_MAX_ENUM> hats;
 
-	static EnumMap<GamepadAxis, SDL_GameControllerAxis, GAMEPAD_AXIS_MAX_ENUM>::Entry gpAxisEntries[];
-	static EnumMap<GamepadAxis, SDL_GameControllerAxis, GAMEPAD_AXIS_MAX_ENUM> gpAxes;
+	static EnumMap<GamepadAxis, SDL_GamepadAxis, GAMEPAD_AXIS_MAX_ENUM>::Entry gpAxisEntries[];
+	static EnumMap<GamepadAxis, SDL_GamepadAxis, GAMEPAD_AXIS_MAX_ENUM> gpAxes;
 
-	static EnumMap<GamepadButton, SDL_GameControllerButton, GAMEPAD_BUTTON_MAX_ENUM>::Entry gpButtonEntries[];
-	static EnumMap<GamepadButton, SDL_GameControllerButton, GAMEPAD_BUTTON_MAX_ENUM> gpButtons;
+	static EnumMap<GamepadButton, SDL_GamepadButton, GAMEPAD_BUTTON_MAX_ENUM>::Entry gpButtonEntries[];
+	static EnumMap<GamepadButton, SDL_GamepadButton, GAMEPAD_BUTTON_MAX_ENUM> gpButtons;
 
 };
 
 } // sdl
 } // joystick
 } // love
-
-#endif // !SDL_VERSION_ATLEAST(3, 0, 0)
 
 #endif // LOVE_JOYSTICK_SDL_JOYSTICK_H

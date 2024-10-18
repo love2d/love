@@ -26,13 +26,7 @@
 #include "common/EnumMap.h"
 
 // SDL
-#if __has_include(<SDL3/SDL_keyboard.h>)
 #include <SDL3/SDL_keyboard.h>
-#include <SDL3/SDL_version.h>
-#else
-#include <SDL_keyboard.h>
-#include <SDL_version.h>
-#endif
 
 #include <map>
 
@@ -78,13 +72,8 @@ private:
 	static std::map<Key, SDL_Keycode> keyToSDLKey;
 	static std::map<SDL_Keycode, Key> sdlKeyToKey;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	static EnumMap<Scancode, SDL_Scancode, SDL_SCANCODE_COUNT>::Entry scancodeEntries[];
 	static EnumMap<Scancode, SDL_Scancode, SDL_SCANCODE_COUNT> scancodes;
-#else
-	static EnumMap<Scancode, SDL_Scancode, SDL_NUM_SCANCODES>::Entry scancodeEntries[];
-	static EnumMap<Scancode, SDL_Scancode, SDL_NUM_SCANCODES> scancodes;
-#endif
 
 }; // Keyboard
 

@@ -37,20 +37,10 @@
 #include <cstdio>
 
 // For SDL_GL_GetProcAddress.
-#if __has_include(<SDL3/SDL_video.h>)
 #include <SDL3/SDL_video.h>
-#else
-#include <SDL_video.h>
-#endif
 
 #ifdef LOVE_IOS
-#if __has_include(<SDL3/SDL_video.h>)
 #include <SDL3/SDL_video.h>
-#include <SDL3/SDL_version.h>
-#else
-#include <SDL_syswm.h>
-#include <SDL_version.h>
-#endif
 #endif
 
 #ifdef LOVE_ANDROID
@@ -972,15 +962,8 @@ GLuint OpenGL::getDefaultFBO() const
 {
 #ifdef LOVE_IOS
 	// Hack: iOS uses a custom FBO.
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	SDL_PropertiesID props = SDL_GetWindowProperties(SDL_GL_GetCurrentWindow());
 	return (GLuint)SDL_GetNumberProperty(props, SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER, 0);
-#else
-	SDL_SysWMinfo info = {};
-	SDL_VERSION(&info.version);
-	SDL_GetWindowWMInfo(SDL_GL_GetCurrentWindow(), &info);
-	return info.info.uikit.framebuffer;
-#endif
 #else
 	return 0;
 #endif

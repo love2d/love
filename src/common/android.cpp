@@ -27,11 +27,7 @@
 #include <set>
 #include <unordered_map>
 
-#if __has_include(<SDL3/SDL.h>)
 #include <SDL3/SDL.h>
-#else
-#include <SDL.h>
-#endif
 
 #include <jni.h>
 #include <android/asset_manager.h>
@@ -43,14 +39,6 @@
 
 #include "libraries/physfs/physfs.h"
 #include "filesystem/physfs/PhysfsIo.h"
-
-// Backward compatibility
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
-#define SDL_GetAndroidJNIEnv SDL_AndroidGetJNIEnv
-#define SDL_GetAndroidActivity SDL_AndroidGetActivity
-#define SDL_GetAndroidInternalStoragePath SDL_AndroidGetInternalStoragePath
-#define SDL_GetAndroidExternalStoragePath SDL_AndroidGetExternalStoragePath
-#endif
 
 namespace love
 {

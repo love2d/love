@@ -23,13 +23,7 @@
 #include "window/sdl/Window.h"
 
 // SDL
-#if __has_include(<SDL3/SDL_version.h>)
 #include <SDL3/SDL_mouse.h>
-#include <SDL3/SDL_version.h>
-#else
-#include <SDL_mouse.h>
-#include <SDL_version.h>
-#endif
 
 namespace love
 {
@@ -38,7 +32,6 @@ namespace mouse
 namespace sdl
 {
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 static SDL_Window *getSDLWindow()
 {
 	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
@@ -46,7 +39,6 @@ static SDL_Window *getSDLWindow()
 		return (SDL_Window *) window->getHandle();
 	return nullptr;
 }
-#endif
 
 // SDL reports mouse coordinates in the window coordinate system in OS X, but
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
@@ -138,13 +130,8 @@ bool Mouse::isCursorSupported() const
 
 void Mouse::getPosition(double &x, double &y) const
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	float mx, my;
 	SDL_GetMouseState(&mx, &my);
-#else
-	int mx, my;
-	SDL_GetMouseState(&mx, &my);
-#endif
 
 	x = (double) mx;
 	y = (double) my;
@@ -178,17 +165,12 @@ void Mouse::setPosition(double x, double y)
 
 void Mouse::getGlobalPosition(double &x, double &y, int &displayindex) const
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	float globalx, globaly;
-#else
-	int globalx, globaly;
-#endif
 	SDL_GetGlobalMouseState(&globalx, &globaly);
 
 	auto mx = globalx;
 	auto my = globaly;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	int displaycount = 0;
 	SDL_DisplayID *displays = SDL_GetDisplays(&displaycount);
 
@@ -206,22 +188,6 @@ void Mouse::getGlobalPosition(double &x, double &y, int &displayindex) const
 		if (SDL_PointInRectFloat(&p, &frect))
 			break;
 	}
-#else
-	int displaycount = SDL_GetNumVideoDisplays();
-
-	for (displayindex = 0; displayindex < displaycount; displayindex++)
-	{
-		SDL_Rect rect = {};
-		SDL_GetDisplayBounds(displayindex, &rect);
-
-		mx -= rect.x;
-		my -= rect.y;
-
-		SDL_Point p = { globalx, globaly };
-		if (SDL_PointInRect(&p, &rect))
-			break;
-	}
-#endif
 
 	if (displayindex >= displaycount)
 		displayindex = 0;
@@ -232,14 +198,10 @@ void Mouse::getGlobalPosition(double &x, double &y, int &displayindex) const
 
 void Mouse::setVisible(bool visible)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	if (visible)
 		SDL_ShowCursor();
 	else
 		SDL_HideCursor();
-#else
-	SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
-#endif
 }
 
 bool Mouse::isDown(const std::vector<int> &buttons) const
@@ -263,11 +225,7 @@ bool Mouse::isDown(const std::vector<int> &buttons) const
 			break;
 		}
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 		if (buttonstate & SDL_BUTTON_MASK(button))
-#else
-		if (buttonstate & SDL_BUTTON(button))
-#endif
 			return true;
 	}
 
@@ -276,11 +234,7 @@ bool Mouse::isDown(const std::vector<int> &buttons) const
 
 bool Mouse::isVisible() const
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	return SDL_CursorVisible();
-#else
-	return SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE;
-#endif
 }
 
 void Mouse::setGrabbed(bool grab)
@@ -301,26 +255,18 @@ bool Mouse::isGrabbed() const
 
 bool Mouse::setRelativeMode(bool relative)
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	SDL_Window *sdlwindow = getSDLWindow();
 	if (sdlwindow == nullptr)
 		return false;
 	return SDL_SetWindowRelativeMouseMode(sdlwindow, relative);
-#else
-	return SDL_SetRelativeMouseMode(relative ? SDL_TRUE : SDL_FALSE) == 0;
-#endif
 }
 
 bool Mouse::getRelativeMode() const
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	SDL_Window *sdlwindow = getSDLWindow();
 	if (sdlwindow == nullptr)
 		return false;
 	return SDL_GetWindowRelativeMouseMode(sdlwindow);
-#else
-	return SDL_GetRelativeMouseMode() != SDL_FALSE;
-#endif
 }
 
 } // sdl

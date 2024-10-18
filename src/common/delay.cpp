@@ -20,13 +20,7 @@
 
 #include "delay.h"
 
-#if __has_include(<SDL3/SDL_timer.h>)
 #include <SDL3/SDL_timer.h>
-#include <SDL3/SDL_version.h>
-#else
-#include <SDL_timer.h>
-#include <SDL_version.h>
-#endif
 
 namespace love
 {

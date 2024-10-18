@@ -307,10 +307,6 @@ std::map<std::string, uint32> Keyboard::stringToKey =
 	{"audioplay", Keyboard::KEY_AUDIOPLAY},
 	{"audiomute", Keyboard::KEY_AUDIOMUTE},
 	{"mediaselect", Keyboard::KEY_MEDIASELECT},
-	{"www", Keyboard::KEY_WWW},
-	{"mail", Keyboard::KEY_MAIL},
-	{"calculator", Keyboard::KEY_CALCULATOR},
-	{"computer", Keyboard::KEY_COMPUTER},
 	{"appsearch", Keyboard::KEY_APP_SEARCH},
 	{"apphome", Keyboard::KEY_APP_HOME},
 	{"appback", Keyboard::KEY_APP_BACK},
@@ -319,12 +315,6 @@ std::map<std::string, uint32> Keyboard::stringToKey =
 	{"apprefresh", Keyboard::KEY_APP_REFRESH},
 	{"appbookmarks", Keyboard::KEY_APP_BOOKMARKS},
 
-	{"brightnessdown", Keyboard::KEY_BRIGHTNESSDOWN},
-	{"brightnessup", Keyboard::KEY_BRIGHTNESSUP},
-	{"displayswitch", Keyboard::KEY_DISPLAYSWITCH},
-	{"kbdillumtoggle", Keyboard::KEY_KBDILLUMTOGGLE},
-	{"kbdillumdown", Keyboard::KEY_KBDILLUMDOWN},
-	{"kbdillumup", Keyboard::KEY_KBDILLUMUP},
 	{"eject", Keyboard::KEY_EJECT},
 	{"sleep", Keyboard::KEY_SLEEP},
 };
@@ -568,10 +558,6 @@ StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM>::Entry Keyboard::scan
 	{"audioplay", SCANCODE_AUDIOPLAY},
 	{"audiomute", SCANCODE_AUDIOMUTE},
 	{"mediaselect", SCANCODE_MEDIASELECT},
-	{"www", SCANCODE_WWW},
-	{"mail", SCANCODE_MAIL},
-	{"calculator", SCANCODE_CALCULATOR},
-	{"computer", SCANCODE_COMPUTER},
 	{"acsearch", SCANCODE_AC_SEARCH},
 	{"achome", SCANCODE_AC_HOME},
 	{"acback", SCANCODE_AC_BACK},
@@ -580,17 +566,8 @@ StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM>::Entry Keyboard::scan
 	{"acrefresh", SCANCODE_AC_REFRESH},
 	{"acbookmarks", SCANCODE_AC_BOOKMARKS},
 
-	{"brightnessdown", SCANCODE_BRIGHTNESSDOWN},
-	{"brightnessup", SCANCODE_BRIGHTNESSUP},
-	{"displayswitch", SCANCODE_DISPLAYSWITCH},
-	{"kbdillumtoggle", SCANCODE_KBDILLUMTOGGLE},
-	{"kbdillumdown", SCANCODE_KBDILLUMDOWN},
-	{"kbdillumup", SCANCODE_KBDILLUMUP},
 	{"eject", SCANCODE_EJECT},
 	{"sleep", SCANCODE_SLEEP},
-
-	{"app1", SCANCODE_APP1},
-	{"app2", SCANCODE_APP2},
 };
 
 StringMap<Keyboard::Scancode, Keyboard::SCANCODE_MAX_ENUM> Keyboard::scancodes(Keyboard::scancodeEntries, sizeof(Keyboard::scancodeEntries));

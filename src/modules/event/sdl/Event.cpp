@@ -35,63 +35,7 @@
 
 #include <cmath>
 
-#if __has_include(<SDL3/SDL_version.h>)
-#include <SDL3/SDL_version.h>
-#else
-#include <SDL_version.h>
-#endif
-
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-#include "joystick/sdl/JoystickSDL3.h"
-#else
 #include "joystick/sdl/Joystick.h"
-#endif
-
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
-#define SDL_EVENT_DID_ENTER_BACKGROUND SDL_APP_DIDENTERBACKGROUND
-#define SDL_EVENT_WILL_ENTER_FOREGROUND SDL_APP_WILLENTERFOREGROUND
-#define SDL_EVENT_KEY_DOWN SDL_KEYDOWN
-#define SDL_EVENT_KEY_UP SDL_KEYUP
-#define SDL_EVENT_TEXT_INPUT SDL_TEXTINPUT
-#define SDL_EVENT_TEXT_EDITING SDL_TEXTEDITING
-#define SDL_EVENT_MOUSE_MOTION SDL_MOUSEMOTION
-#define SDL_EVENT_MOUSE_BUTTON_DOWN SDL_MOUSEBUTTONDOWN
-#define SDL_EVENT_MOUSE_BUTTON_UP SDL_MOUSEBUTTONUP
-#define SDL_EVENT_MOUSE_WHEEL SDL_MOUSEWHEEL
-#define SDL_EVENT_FINGER_DOWN SDL_FINGERDOWN
-#define SDL_EVENT_FINGER_UP SDL_FINGERUP
-#define SDL_EVENT_FINGER_MOTION SDL_FINGERMOTION
-
-#define SDL_EVENT_DROP_FILE SDL_DROPFILE
-#define SDL_EVENT_QUIT SDL_QUIT
-#define SDL_EVENT_TERMINATING SDL_APP_TERMINATING
-#define SDL_EVENT_LOW_MEMORY SDL_APP_LOWMEMORY
-#define SDL_EVENT_LOCALE_CHANGED SDL_LOCALECHANGED
-#define SDL_EVENT_SENSOR_UPDATE SDL_SENSORUPDATE
-
-#define SDL_EVENT_JOYSTICK_BUTTON_DOWN SDL_JOYBUTTONDOWN
-#define SDL_EVENT_JOYSTICK_BUTTON_UP SDL_JOYBUTTONUP
-#define SDL_EVENT_JOYSTICK_AXIS_MOTION SDL_JOYAXISMOTION
-#define SDL_EVENT_JOYSTICK_HAT_MOTION SDL_JOYHATMOTION
-#define SDL_EVENT_JOYSTICK_ADDED SDL_JOYDEVICEADDED
-#define SDL_EVENT_JOYSTICK_REMOVED SDL_JOYDEVICEREMOVED
-#define SDL_EVENT_GAMEPAD_BUTTON_DOWN SDL_CONTROLLERBUTTONDOWN
-#define SDL_EVENT_GAMEPAD_BUTTON_UP SDL_CONTROLLERBUTTONUP
-#define SDL_EVENT_GAMEPAD_AXIS_MOTION SDL_CONTROLLERAXISMOTION
-#define SDL_EVENT_GAMEPAD_SENSOR_UPDATE SDL_CONTROLLERSENSORUPDATE
-
-#define SDL_EVENT_WINDOW_FOCUS_GAINED SDL_WINDOWEVENT_FOCUS_GAINED
-#define SDL_EVENT_WINDOW_FOCUS_LOST SDL_WINDOWEVENT_FOCUS_LOST
-#define SDL_EVENT_WINDOW_MOUSE_ENTER SDL_WINDOWEVENT_ENTER
-#define SDL_EVENT_WINDOW_MOUSE_LEAVE SDL_WINDOWEVENT_LEAVE
-#define SDL_EVENT_WINDOW_SHOWN SDL_WINDOWEVENT_SHOWN
-#define SDL_EVENT_WINDOW_HIDDEN SDL_WINDOWEVENT_HIDDEN
-#define SDL_EVENT_WINDOW_RESIZED SDL_WINDOWEVENT_RESIZED
-#define SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED SDL_WINDOWEVENT_SIZE_CHANGED
-#define SDL_EVENT_WINDOW_MINIMIZED SDL_WINDOWEVENT_MINIMIZED
-#define SDL_EVENT_WINDOW_RESTORED SDL_WINDOWEVENT_RESTORED
-
-#endif
 
 namespace love
 {
@@ -139,12 +83,7 @@ static void normalizedToDPICoords(double *x, double *y)
 // SDL's event watch callbacks trigger when the event is actually posted inside
 // SDL, unlike with SDL_PollEvents. This is useful for some events which require
 // handling inside the function which triggered them on some backends.
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-static bool
-#else
-static int
-#endif
-SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
+static bool SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
 {
 	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
 
@@ -168,11 +107,7 @@ SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
 Event::Event()
 	: love::event::Event("love.event.sdl")
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	if (!SDL_InitSubSystem(SDL_INIT_EVENTS))
-#else
-	if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0)
-#endif
 		throw love::Exception("Could not initialize SDL events subsystem (%s)", SDL_GetError());
 
 	SDL_AddEventWatch(watchAppEvents, this);
@@ -180,11 +115,7 @@ Event::Event()
 
 Event::~Event()
 {
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	SDL_RemoveEventWatch(watchAppEvents, this);
-#else
-	SDL_DelEventWatch(watchAppEvents, this);
-#endif
 	SDL_QuitSubSystem(SDL_INIT_EVENTS);
 }
 
@@ -211,11 +142,7 @@ Message *Event::wait()
 
 	SDL_Event e;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	if (!SDL_WaitEvent(&e))
-#else
-	if (SDL_WaitEvent(&e) != 1)
-#endif
 		return nullptr;
 
 	return convert(e);
@@ -277,19 +204,11 @@ Message *Event::convert(const SDL_Event &e)
 				break;
 		}
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 		love::keyboard::sdl::Keyboard::getConstant(e.key.key, key);
-#else
-		love::keyboard::sdl::Keyboard::getConstant(e.key.keysym.sym, key);
-#endif
 		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 		love::keyboard::sdl::Keyboard::getConstant(e.key.scancode, scancode);
-#else
-		love::keyboard::sdl::Keyboard::getConstant(e.key.keysym.scancode, scancode);
-#endif
 		if (!love::keyboard::Keyboard::getConstant(scancode, txt2))
 			txt2 = "unknown";
 
@@ -299,19 +218,11 @@ Message *Event::convert(const SDL_Event &e)
 		msg = new Message("keypressed", vargs);
 		break;
 	case SDL_EVENT_KEY_UP:
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 		love::keyboard::sdl::Keyboard::getConstant(e.key.key, key);
-#else
-		love::keyboard::sdl::Keyboard::getConstant(e.key.keysym.sym, key);
-#endif
 		if (!love::keyboard::Keyboard::getConstant(key, txt))
 			txt = "unknown";
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 		love::keyboard::sdl::Keyboard::getConstant(e.key.scancode, scancode);
-#else
-		love::keyboard::sdl::Keyboard::getConstant(e.key.keysym.scancode, scancode);
-#endif
 		if (!love::keyboard::Keyboard::getConstant(scancode, txt2))
 			txt2 = "unknown";
 
@@ -389,16 +300,6 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_EVENT_MOUSE_WHEEL:
 		vargs.emplace_back((double) e.wheel.x);
 		vargs.emplace_back((double) e.wheel.y);
-#if SDL_VERSION_ATLEAST(2, 0, 18) && !SDL_VERSION_ATLEAST(3, 0, 0)
-		// These values will be garbage if 2.0.18+ headers are used but a lower
-		// version of SDL is used at runtime, but other bits of code already
-		// prevent running in that situation.
-		vargs.emplace_back((double) e.wheel.preciseX);
-		vargs.emplace_back((double) e.wheel.preciseY);
-#else
-		vargs.emplace_back((double) e.wheel.x);
-		vargs.emplace_back((double) e.wheel.y);
-#endif
 
 		txt = e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? "flipped" : "standard";
 		vargs.emplace_back(txt, strlen(txt));
@@ -413,11 +314,7 @@ Message *Event::convert(const SDL_Event &e)
 		// (and SDL doesn't differentiate.) Non-screen touch devices like Mac
 		// trackpads won't give touch coords in the window's coordinate-space.
 #ifndef LOVE_MACOS
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 		touchinfo.id = (int64) e.tfinger.fingerID;
-#else
-		touchinfo.id = (int64)e.tfinger.fingerId;
-#endif
 		touchinfo.x = e.tfinger.x;
 		touchinfo.y = e.tfinger.y;
 		touchinfo.dx = e.tfinger.dx;
@@ -463,12 +360,11 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
 	case SDL_EVENT_GAMEPAD_BUTTON_UP:
 	case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+#if defined(LOVE_ENABLE_SENSOR)
 	case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
 #endif
 		msg = convertJoystickEvent(e);
 		break;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	case SDL_EVENT_WINDOW_FOCUS_GAINED:
 	case SDL_EVENT_WINDOW_FOCUS_LOST:
 	case SDL_EVENT_WINDOW_MOUSE_ENTER:
@@ -479,17 +375,9 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 	case SDL_EVENT_WINDOW_MINIMIZED:
 	case SDL_EVENT_WINDOW_RESTORED:
-#else
-	case SDL_WINDOWEVENT:
-#endif
 		msg = convertWindowEvent(e);
 		break;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	case SDL_EVENT_DISPLAY_ORIENTATION:
-#else
-	case SDL_DISPLAYEVENT:
-		if (e.display.event == SDL_DISPLAYEVENT_ORIENTATION)
-#endif
 		{
 			auto orientation = window::Window::ORIENTATION_UNKNOWN;
 			switch ((SDL_DisplayOrientation) e.display.data1)
@@ -515,7 +403,6 @@ Message *Event::convert(const SDL_Event &e)
 			if (!window::Window::getConstant(orientation, txt))
 				txt = "unknown";
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 			int count = 0;
 			int displayindex = 0;
 			SDL_DisplayID *displays = SDL_GetDisplays(&count);
@@ -529,9 +416,6 @@ Message *Event::convert(const SDL_Event &e)
 			}
 			SDL_free(displays);
 			vargs.emplace_back((double)(displayindex + 1));
-#else
-			vargs.emplace_back((double)(e.display.display + 1));
-#endif
 			vargs.emplace_back(txt, strlen(txt));
 
 			msg = new Message("displayrotated", vargs);
@@ -541,11 +425,7 @@ Message *Event::convert(const SDL_Event &e)
 		filesystem = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
 		if (filesystem != nullptr)
 		{
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 			const char *filepath = e.drop.data;
-#else
-			const char *filepath = e.drop.file;
-#endif
 			// Allow mounting any dropped path, so zips or dirs can be mounted.
 			filesystem->allowMountingForPath(filepath);
 
@@ -562,9 +442,6 @@ Message *Event::convert(const SDL_Event &e)
 				file->release();
 			}
 		}
-#if !SDL_VERSION_ATLEAST(3, 0, 0)
-		SDL_free(e.drop.file);
-#endif
 		break;
 	case SDL_EVENT_QUIT:
 	case SDL_EVENT_TERMINATING:
@@ -573,11 +450,9 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_EVENT_LOW_MEMORY:
 		msg = new Message("lowmemory");
 		break;
-#if SDL_VERSION_ATLEAST(2, 0, 14)
 	case SDL_EVENT_LOCALE_CHANGED:
 		msg = new Message("localechanged");
 		break;
-#endif
 	case SDL_EVENT_SENSOR_UPDATE:
 		sensorInstance = Module::getInstance<sensor::Sensor>(M_SENSOR);
 		if (sensorInstance)
@@ -587,21 +462,13 @@ Message *Event::convert(const SDL_Event &e)
 			for (void *s: sensors)
 			{
 				SDL_Sensor *sensor = (SDL_Sensor *) s;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 				SDL_SensorID id = SDL_GetSensorID(sensor);
-#else
-				SDL_SensorID id = SDL_SensorGetInstanceID(sensor);
-#endif
 
 				if (e.sensor.which == id)
 				{
 					// Found sensor
 					const char *sensorType;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 					auto sdltype = SDL_GetSensorType(sensor);
-#else
-					auto sdltype = SDL_SensorGetType(sensor);
-#endif
 					if (!sensor::Sensor::getConstant(sensor::sdl::Sensor::convert(sdltype), sensorType))
 						sensorType = "unknown";
 
@@ -686,13 +553,8 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 	case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
 	case SDL_EVENT_GAMEPAD_BUTTON_UP:
 		{
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 			const auto &b = e.gbutton;
 			if (!joystick::sdl::Joystick::getConstant((SDL_GamepadButton) b.button, padbutton))
-#else
-			const auto &b = e.cbutton;
-			if (!joystick::sdl::Joystick::getConstant((SDL_GameControllerButton) b.button, padbutton))
-#endif
 				break;
 
 			if (!joystick::Joystick::getConstant(padbutton, txt))
@@ -709,21 +571,12 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 		}
 		break;
 	case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 		if (joystick::sdl::Joystick::getConstant((SDL_GamepadAxis) e.gaxis.axis, padaxis))
-#else
-		if (joystick::sdl::Joystick::getConstant((SDL_GameControllerAxis) e.caxis.axis, padaxis))
-#endif
 		{
 			if (!joystick::Joystick::getConstant(padaxis, txt))
 				break;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 			const auto &a = e.gaxis;
-#else
-			const auto &a = e.caxis;
-#endif
-
 			stick = joymodule->getJoystickFromID(a.which);
 			if (!stick)
 				break;
@@ -754,14 +607,10 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			msg = new Message("joystickremoved", vargs);
 		}
 		break;
-#if SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+#if defined(LOVE_ENABLE_SENSOR)
 	case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
 		{
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 			const auto &sens = e.gsensor;
-#else
-			const auto &sens = e.csensor;
-#endif
 			stick = joymodule->getJoystickFromID(sens.which);
 			if (stick)
 			{
@@ -781,7 +630,7 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 			}
 		}
 		break;
-#endif // SDL_VERSION_ATLEAST(2, 0, 14) && defined(LOVE_ENABLE_SENSOR)
+#endif // defined(LOVE_ENABLE_SENSOR)
 	default:
 		break;
 	}
@@ -799,11 +648,7 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 	window::Window *win = nullptr;
 	graphics::Graphics *gfx = nullptr;
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	auto event = e.type;
-#else
-	auto event = e.window.event;
-#endif
 
 	switch (event)
 	{
@@ -822,7 +667,6 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 		vargs.emplace_back(event == SDL_EVENT_WINDOW_SHOWN);
 		msg = new Message("visible", vargs);
 		break;
-#if SDL_VERSION_ATLEAST(3, 0, 0)
 	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 		{
 			double width = e.window.data1;
@@ -852,41 +696,6 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 			msg = new Message("resize", vargs);
 		}
 		break;
-#else
-	case SDL_EVENT_WINDOW_RESIZED:
-		{
-			double width  = e.window.data1;
-			double height = e.window.data2;
-
-			gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-			win = Module::getInstance<window::Window>(Module::M_WINDOW);
-
-			// WINDOWEVENT_SIZE_CHANGED will always occur before RESIZED.
-			// The size values in the Window aren't necessarily the same as the
-			// graphics size, which is what we want to output.
-			if (gfx)
-			{
-				width  = gfx->getWidth();
-				height = gfx->getHeight();
-			}
-			else if (win)
-			{
-				width  = win->getWidth();
-				height = win->getHeight();
-				windowToDPICoords(&width, &height);
-			}
-
-			vargs.emplace_back(width);
-			vargs.emplace_back(height);
-			msg = new Message("resize", vargs);
-		}
-		break;
-	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-		win = Module::getInstance<window::Window>(Module::M_WINDOW);
-		if (win)
-			win->onSizeChanged(e.window.data1, e.window.data2);
-		break;
-#endif
 	case SDL_EVENT_WINDOW_MINIMIZED:
 	case SDL_EVENT_WINDOW_RESTORED:
 #ifdef LOVE_ANDROID

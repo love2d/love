@@ -123,10 +123,6 @@
 #	define LOVE_LEGENDARY_APP_ARGV_HACK
 #endif
 
-#if defined(LOVE_ANDROID) || defined(LOVE_IOS)
-#	define LOVE_LEGENDARY_ACCELEROMETER_AS_JOYSTICK_HACK
-#endif
-
 #if defined(LOVE_WINDOWS) || defined(LOVE_LINUX) || defined(LOVE_ANDROID)
 #	define LOVE_GRAPHICS_VULKAN
 #endif
