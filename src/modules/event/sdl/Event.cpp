@@ -664,7 +664,20 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 		break;
 	case SDL_EVENT_WINDOW_SHOWN:
 	case SDL_EVENT_WINDOW_HIDDEN:
-		vargs.emplace_back(event == SDL_EVENT_WINDOW_SHOWN);
+	case SDL_EVENT_WINDOW_MINIMIZED:
+	case SDL_EVENT_WINDOW_RESTORED:
+#ifdef LOVE_ANDROID
+		if (auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO))
+		{
+			if (event == SDL_EVENT_WINDOW_MINIMIZED)
+				audio->pauseContext();
+			else if (event == SDL_EVENT_WINDOW_RESTORED)
+				audio->resumeContext();
+		}
+#endif
+		// WINDOW_RESTORED can also happen when going from maximized -> unmaximized,
+		// but there isn't a nice way to avoid sending our event in that situation.
+		vargs.emplace_back(event == SDL_EVENT_WINDOW_SHOWN || event == SDL_EVENT_WINDOW_RESTORED);
 		msg = new Message("visible", vargs);
 		break;
 	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
@@ -695,18 +708,6 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 			vargs.emplace_back(height);
 			msg = new Message("resize", vargs);
 		}
-		break;
-	case SDL_EVENT_WINDOW_MINIMIZED:
-	case SDL_EVENT_WINDOW_RESTORED:
-#ifdef LOVE_ANDROID
-		if (auto audio = Module::getInstance<audio::Audio>(Module::M_AUDIO))
-		{
-			if (event == SDL_EVENT_WINDOW_MINIMIZED)
-				audio->pauseContext();
-			else if (event == SDL_EVENT_WINDOW_RESTORED)
-				audio->resumeContext();
-		}
-#endif
 		break;
 	}
 
