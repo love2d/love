@@ -360,9 +360,7 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
 	case SDL_EVENT_GAMEPAD_BUTTON_UP:
 	case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-#if defined(LOVE_ENABLE_SENSOR)
 	case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
-#endif
 		msg = convertJoystickEvent(e);
 		break;
 	case SDL_EVENT_WINDOW_FOCUS_GAINED:
@@ -375,6 +373,8 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 	case SDL_EVENT_WINDOW_MINIMIZED:
 	case SDL_EVENT_WINDOW_RESTORED:
+	case SDL_EVENT_WINDOW_EXPOSED:
+	case SDL_EVENT_WINDOW_OCCLUDED:
 		msg = convertWindowEvent(e);
 		break;
 	case SDL_EVENT_DISPLAY_ORIENTATION:
@@ -679,6 +679,12 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 		// but there isn't a nice way to avoid sending our event in that situation.
 		vargs.emplace_back(event == SDL_EVENT_WINDOW_SHOWN || event == SDL_EVENT_WINDOW_RESTORED);
 		msg = new Message("visible", vargs);
+		break;
+	case SDL_EVENT_WINDOW_EXPOSED:
+		msg = new Message("exposed");
+		break;
+	case SDL_EVENT_WINDOW_OCCLUDED:
+		msg = new Message("occluded");
 		break;
 	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 		{

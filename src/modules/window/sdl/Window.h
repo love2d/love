@@ -98,6 +98,7 @@ public:
 	bool hasMouseFocus() const override;
 
 	bool isVisible() const override;
+	bool isOccluded() const override;
 
 	void setMouseGrab(bool grab) override;
 	bool isMouseGrabbed() const override;

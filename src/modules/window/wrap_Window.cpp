@@ -486,6 +486,12 @@ int w_isVisible(lua_State *L)
 	return 1;
 }
 
+int w_isOccluded(lua_State *L)
+{
+	luax_pushboolean(L, instance()->isOccluded());
+	return 1;
+}
+
 int w_getDPIScale(lua_State *L)
 {
 	lua_pushnumber(L, instance()->getDPIScale());
@@ -683,6 +689,7 @@ static const luaL_Reg functions[] =
 	{ "hasFocus", w_hasFocus },
 	{ "hasMouseFocus", w_hasMouseFocus },
 	{ "isVisible", w_isVisible },
+	{ "isOccluded", w_isOccluded },
 	{ "getDPIScale", w_getDPIScale },
 	{ "getNativeDPIScale", w_getNativeDPIScale },
 	{ "toPixels", w_toPixels },

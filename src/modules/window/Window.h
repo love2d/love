@@ -187,6 +187,7 @@ public:
 	virtual bool hasMouseFocus() const = 0;
 
 	virtual bool isVisible() const = 0;
+	virtual bool isOccluded() const = 0;
 
 	virtual void setMouseGrab(bool grab) = 0;
 	virtual bool isMouseGrabbed() const = 0;

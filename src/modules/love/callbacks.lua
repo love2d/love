@@ -100,6 +100,12 @@ function love.createhandlers()
 		visible = function (v)
 			if love.visible then return love.visible(v) end
 		end,
+		exposed = function ()
+			if love.exposed then return love.exposed() end
+		end,
+		occluded = function ()
+			if love.occluded then return love.occluded() end
+		end,
 		quit = function ()
 			return
 		end,

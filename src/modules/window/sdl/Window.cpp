@@ -1298,6 +1298,11 @@ bool Window::isVisible() const
 	return window && (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED)) == 0;
 }
 
+bool Window::isOccluded() const
+{
+	return window && (SDL_GetWindowFlags(window) & SDL_WINDOW_OCCLUDED) != 0;
+}
+
 void Window::setMouseGrab(bool grab)
 {
 	mouseGrabbed = grab;

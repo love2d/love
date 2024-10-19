@@ -198,6 +198,13 @@ love.test.window.isMinimized = function(test)
 end
 
 
+-- love.window.isOccluded
+love.test.window.isOccluded = function(test)
+  love.window.focus()
+  test:assertFalse(love.window.isOccluded(), 'check window not occluded')
+end
+
+
 -- love.window.isOpen
 love.test.window.isOpen = function(test)
   -- check open initially
@@ -210,7 +217,6 @@ end
 love.test.window.isVisible = function(test)
   -- check visible initially
   test:assertTrue(love.window.isVisible(), 'check window visible')
-  -- we check closing in test.window.close
 end
 
 
