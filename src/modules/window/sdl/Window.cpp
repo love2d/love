@@ -1295,7 +1295,7 @@ bool Window::hasMouseFocus() const
 
 bool Window::isVisible() const
 {
-	return window && (SDL_GetWindowFlags(window) & SDL_WINDOW_HIDDEN) == 0;
+	return window && (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED)) == 0;
 }
 
 void Window::setMouseGrab(bool grab)
