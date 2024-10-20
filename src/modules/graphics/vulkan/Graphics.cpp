@@ -324,10 +324,10 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 	VmaAllocation screenshotAllocation = VK_NULL_HANDLE;
 	VmaAllocationInfo screenshotAllocationInfo = {};
 
-	VkImage backbufferImage = fakeBackbuffer != nullptr ? (VkImage)fakeBackbuffer->getHandle() : swapChainImages.at(imageIndex);
-
 	if (submitMode == SUBMIT_PRESENT)
 	{
+		VkImage backbufferImage = fakeBackbuffer != nullptr ? (VkImage)fakeBackbuffer->getHandle() : swapChainImages.at(imageIndex);
+
 		if (pendingScreenshotCallbacks.empty())
 		{
 			if (fakeBackbuffer == nullptr)
@@ -766,7 +766,8 @@ void Graphics::getAPIStats(int &shaderswitches) const
 
 void Graphics::unSetMode()
 {
-	submitGpuCommands(SUBMIT_NOPRESENT);
+	if (created)
+		submitGpuCommands(SUBMIT_NOPRESENT);
 
 	created = false;
 
@@ -3162,14 +3163,22 @@ void Graphics::cleanup()
 	cleanUpFunctions.clear();
 
 	vmaDestroyAllocator(vmaAllocator);
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-		vkDestroyFence(device, inFlightFences[i], nullptr);
-	}
 
-	vkFreeCommandBuffers(device, commandPool, MAX_FRAMES_IN_FLIGHT, commandBuffers.data());
+	for (const auto &s : renderFinishedSemaphores)
+		vkDestroySemaphore(device, s, nullptr);
+	renderFinishedSemaphores.clear();
+
+	for (const auto &s : imageAvailableSemaphores)
+		vkDestroySemaphore(device, s, nullptr);
+	imageAvailableSemaphores.clear();
+
+	for (const auto &f : inFlightFences)
+		vkDestroyFence(device, f, nullptr);
+	inFlightFences.clear();
+
+	if (!commandBuffers.empty())
+		vkFreeCommandBuffers(device, commandPool, (uint32)commandBuffers.size(), commandBuffers.data());
+	commandBuffers.clear();
 
 	for (auto const &p : samplers)
 		vkDestroySampler(device, p.second, nullptr);
