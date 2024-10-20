@@ -20,6 +20,7 @@
 
 #include "Event.h"
 
+#include "common/int.h"
 #include "filesystem/NativeFile.h"
 #include "filesystem/Filesystem.h"
 #include "keyboard/sdl/Keyboard.h"
@@ -124,7 +125,7 @@ void Event::pump(float waitTimeout)
 	exceptionIfInRenderPass("love.event.pump");
 
 	int waitTimeoutMS = 0;
-	if (isinf(waitTimeout) || waitTimeout < 0.0f)
+	if (std::isinf(waitTimeout) || waitTimeout < 0.0f)
 		waitTimeoutMS = -1; // Wait forever.
 	else if (waitTimeout > 0.0f)
 		waitTimeoutMS = (int)std::min<int64>(LOVE_INT32_MAX, 1000LL * waitTimeout);
