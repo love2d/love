@@ -47,19 +47,15 @@ public:
 	 * from devices and places it on the event queue. Normally not needed if you poll
 	 * for events.
 	 **/
-	void pump();
+	void pump(float waitTimeout = 0.0f) override;
 
-	/**
-	 * Waits for the next event (indefinitely). Useful for creating games where
-	 * the screen and game state only needs updating when the user interacts with
-	 * the window.
-	 **/
-	Message *wait();
+	// Deprecated.
+	Message *wait() override;
 
 	/**
 	 * Clears the event queue.
 	 */
-	void clear();
+	void clear() override;
 
 private:
 

@@ -119,19 +119,30 @@ Event::~Event()
 	SDL_QuitSubSystem(SDL_INIT_EVENTS);
 }
 
-void Event::pump()
+void Event::pump(float waitTimeout)
 {
 	exceptionIfInRenderPass("love.event.pump");
 
-	SDL_Event e;
+	int waitTimeoutMS = 0;
+	if (isinf(waitTimeout) || waitTimeout < 0.0f)
+		waitTimeoutMS = -1; // Wait forever.
+	else if (waitTimeout > 0.0f)
+		waitTimeoutMS = (int)std::min<int64>(LOVE_INT32_MAX, 1000LL * waitTimeout);
 
-	while (SDL_PollEvent(&e))
+	// Wait for the first event, if requested.
+	SDL_Event e;
+	if (SDL_WaitEventTimeout(&e, waitTimeoutMS))
 	{
-		Message *msg = convert(e);
+		StrongRef<Message> msg(convert(e), Acquire::NORETAIN);
 		if (msg)
-		{
 			push(msg);
-			msg->release();
+
+		// Fetch any extra events that came in during WaitEvent.
+		while (SDL_PollEvent(&e))
+		{
+			msg.set(convert(e), Acquire::NORETAIN);
+			if (msg)
+				push(msg);
 		}
 	}
 }

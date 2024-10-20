@@ -61,7 +61,7 @@ public:
 	bool poll(Message *&msg);
 	virtual void clear();
 
-	virtual void pump() = 0;
+	virtual void pump(float waitTimeout = 0.0f) = 0;
 	virtual Message *wait() = 0;
 
 protected:

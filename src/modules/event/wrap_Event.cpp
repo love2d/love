@@ -65,12 +65,15 @@ static int w_poll_i(lua_State *L)
 
 int w_pump(lua_State *L)
 {
-	luax_catchexcept(L, [&]() { instance()->pump(); });
+	float waitTimeout = (float)luaL_optnumber(L, 1, 0.0f);
+	luax_catchexcept(L, [&]() { instance()->pump(waitTimeout); });
 	return 0;
 }
 
 int w_wait(lua_State *L)
 {
+	luax_markdeprecated(L, 1, "love.event.wait", API_FUNCTION, DEPRECATED_REPLACED, "waitTimeout parameter in love.event.pump");
+
 	Message *m = nullptr;
 	luax_catchexcept(L, [&]() { m = instance()->wait(); });
 	if (m != nullptr)
