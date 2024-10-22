@@ -61,7 +61,6 @@ static void clampToWindow(double *x, double *y)
 		window->clampPositionInWindow(x, y);
 }
 
-#ifndef LOVE_MACOS
 static void normalizedToDPICoords(double *x, double *y)
 {
 	double w = 1.0, h = 1.0;
@@ -79,7 +78,6 @@ static void normalizedToDPICoords(double *x, double *y)
 	if (y)
 		*y = ((*y) * h);
 }
-#endif
 
 // SDL's event watch callbacks trigger when the event is actually posted inside
 // SDL, unlike with SDL_PollEvents. This is useful for some events which require
@@ -201,10 +199,8 @@ Message *Event::convert(const SDL_Event &e)
 	const char *txt;
 	const char *txt2;
 
-#ifndef LOVE_MACOS
 	love::touch::sdl::Touch *touchmodule = nullptr;
 	love::touch::Touch::TouchInfo touchinfo = {};
-#endif
 
 	switch (e.type)
 	{
@@ -321,47 +317,45 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_EVENT_FINGER_DOWN:
 	case SDL_EVENT_FINGER_UP:
 	case SDL_EVENT_FINGER_MOTION:
-		// Touch events are disabled in OS X because we only actually want touch
-		// screen events, but most touch devices in OS X aren't touch screens
-		// (and SDL doesn't differentiate.) Non-screen touch devices like Mac
-		// trackpads won't give touch coords in the window's coordinate-space.
-#ifndef LOVE_MACOS
-		touchinfo.id = (int64) e.tfinger.fingerID;
-		touchinfo.x = e.tfinger.x;
-		touchinfo.y = e.tfinger.y;
-		touchinfo.dx = e.tfinger.dx;
-		touchinfo.dy = e.tfinger.dy;
-		touchinfo.pressure = e.tfinger.pressure;
+		// TODO: Expose APIs to enable different touch device types.
+		if (SDL_GetTouchDeviceType(e.tfinger.touchID) == SDL_TOUCH_DEVICE_DIRECT)
+		{
+			touchinfo.id = (int64) e.tfinger.fingerID;
+			touchinfo.x = e.tfinger.x;
+			touchinfo.y = e.tfinger.y;
+			touchinfo.dx = e.tfinger.dx;
+			touchinfo.dy = e.tfinger.dy;
+			touchinfo.pressure = e.tfinger.pressure;
 
-		// SDL's coords are normalized to [0, 1], but we want screen coords.
-		normalizedToDPICoords(&touchinfo.x, &touchinfo.y);
-		normalizedToDPICoords(&touchinfo.dx, &touchinfo.dy);
+			// SDL's coords are normalized to [0, 1], but we want screen coords.
+			normalizedToDPICoords(&touchinfo.x, &touchinfo.y);
+			normalizedToDPICoords(&touchinfo.dx, &touchinfo.dy);
 
-		// We need to update the love.touch.sdl internal state from here.
-		touchmodule = (touch::sdl::Touch *) Module::getInstance("love.touch.sdl");
-		if (touchmodule)
-			touchmodule->onEvent(e.type, touchinfo);
+			// We need to update the love.touch.sdl internal state from here.
+			touchmodule = (touch::sdl::Touch *) Module::getInstance("love.touch.sdl");
+			if (touchmodule)
+				touchmodule->onEvent(e.type, touchinfo);
 
-		// This is a bit hackish and we lose the higher 32 bits of the id on
-		// 32-bit systems, but SDL only ever gives id's that at most use as many
-		// bits as can fit in a pointer (for now.)
-		// We use lightuserdata instead of a lua_Number (double) because doubles
-		// can't represent all possible id values on 64-bit systems.
-		vargs.emplace_back((void *) (intptr_t) touchinfo.id);
-		vargs.emplace_back(touchinfo.x);
-		vargs.emplace_back(touchinfo.y);
-		vargs.emplace_back(touchinfo.dx);
-		vargs.emplace_back(touchinfo.dy);
-		vargs.emplace_back(touchinfo.pressure);
+			// This is a bit hackish and we lose the higher 32 bits of the id on
+			// 32-bit systems, but SDL only ever gives id's that at most use as many
+			// bits as can fit in a pointer (for now.)
+			// We use lightuserdata instead of a lua_Number (double) because doubles
+			// can't represent all possible id values on 64-bit systems.
+			vargs.emplace_back((void *) (intptr_t) touchinfo.id);
+			vargs.emplace_back(touchinfo.x);
+			vargs.emplace_back(touchinfo.y);
+			vargs.emplace_back(touchinfo.dx);
+			vargs.emplace_back(touchinfo.dy);
+			vargs.emplace_back(touchinfo.pressure);
 
-		if (e.type == SDL_EVENT_FINGER_DOWN)
-			txt = "touchpressed";
-		else if (e.type == SDL_EVENT_FINGER_UP)
-			txt = "touchreleased";
-		else
-			txt = "touchmoved";
-		msg = new Message(txt, vargs);
-#endif
+			if (e.type == SDL_EVENT_FINGER_DOWN)
+				txt = "touchpressed";
+			else if (e.type == SDL_EVENT_FINGER_UP)
+				txt = "touchreleased";
+			else
+				txt = "touchmoved";
+			msg = new Message(txt, vargs);
+		}
 		break;
 	case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 	case SDL_EVENT_JOYSTICK_BUTTON_UP:
