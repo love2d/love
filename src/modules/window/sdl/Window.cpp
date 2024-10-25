@@ -539,16 +539,16 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	{
 		// The position needs to be in the global coordinate space.
 		SDL_Rect displaybounds = {};
-		SDL_GetDisplayBounds(f.displayindex, &displaybounds);
+		SDL_GetDisplayBounds(displays.ids[f.displayindex], &displaybounds);
 		x += displaybounds.x;
 		y += displaybounds.y;
 	}
 	else
 	{
 		if (f.centered)
-			x = y = SDL_WINDOWPOS_CENTERED_DISPLAY(f.displayindex);
+			x = y = SDL_WINDOWPOS_CENTERED_DISPLAY(displays.ids[f.displayindex]);
 		else
-			x = y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(f.displayindex);
+			x = y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(displays.ids[f.displayindex]);
 	}
 
 	Uint32 sdlflags = 0;
@@ -969,10 +969,12 @@ void Window::setPosition(int x, int y, int displayindex)
 	if (!window)
 		return;
 
-	displayindex = std::min(std::max(displayindex, 0), getDisplayCount() - 1);
+	SDLDisplayIDs displayids;
+
+	displayindex = std::min(std::max(displayindex, 0), displayids.count - 1);
 
 	SDL_Rect displaybounds = {};
-	SDL_GetDisplayBounds(displayindex, &displaybounds);
+	SDL_GetDisplayBounds(displayids.ids[displayindex], &displaybounds);
 
 	// The position needs to be in the global coordinate space.
 	x += displaybounds.x;
