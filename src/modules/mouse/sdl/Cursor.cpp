@@ -38,7 +38,7 @@ Cursor::Cursor(image::ImageData *data, int hotx, int hoty)
 	int h = data->getHeight();
 	int pitch = w * 4;
 
-	SDL_Surface *surface = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA8888, data->getData(), pitch);
+	SDL_Surface *surface = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_ABGR8888, data->getData(), pitch);
 	if (!surface)
 		throw love::Exception("Cannot create cursor: out of memory.");
 

@@ -1085,7 +1085,7 @@ bool Window::setIcon(love::image::ImageData *imgd)
 	int bytesperpixel = (int) getPixelFormatBlockSize(imgd->getFormat());
 	int pitch = w * bytesperpixel;
 
-	SDL_Surface *sdlicon = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA8888, imgd->getData(), pitch);
+	SDL_Surface *sdlicon = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_ABGR8888, imgd->getData(), pitch);
 
 	if (!sdlicon)
 		return false;
