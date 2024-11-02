@@ -1,0 +1,23 @@
+# Loosely based on https://love2d.org/wiki/Code_Style and other existing code.
+# Ref: https://learn.microsoft.com/en-us/visualstudio/ide/cpp-editorconfig-properties?view=vs-2022
+
+root = true
+
+[*]
+insert_final_newline = true
+indent_style = tab
+
+[*.{cpp,mm,h}]
+cpp_space_pointer_reference_alignment = right
+cpp_indent_namespace_contents = false
+cpp_new_line_before_open_brace_namespace = new_line
+cpp_new_line_before_open_brace_type = new_line
+cpp_new_line_before_open_brace_function = new_line
+cpp_new_line_before_open_brace_block = new_line
+cpp_new_line_before_else = true
+cpp_space_before_function_open_parenthesis = remove
+cpp_space_within_parameter_list_parentheses = false
+cpp_space_between_empty_parameter_list_parentheses = false
+cpp_space_after_keywords_in_control_flow_statements = true
+cpp_space_within_control_flow_statement_parentheses = false
+
