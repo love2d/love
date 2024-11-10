@@ -256,6 +256,8 @@ void SpriteBatch::setBufferSize(int newsize)
 
 	size = newsize;
 	next = new_next;
+
+	attributesID.invalidate();
 }
 
 int SpriteBatch::getBufferSize() const
@@ -293,8 +295,7 @@ void SpriteBatch::attachAttribute(const std::string &name, Buffer *buffer, Mesh 
 
 	attached_attributes[name] = newattrib;
 
-	// Invalidate attributes ID.
-	attributesID = VertexAttributesID();
+	attributesID.invalidate();
 }
 
 void SpriteBatch::setDrawRange(int start, int count)
