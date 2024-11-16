@@ -155,6 +155,8 @@ private:
 
 	void setDebug(bool enable);
 
+	void setScissor(const Rect &rect, bool rtActive);
+
 	uint32 computePixelFormatUsage(PixelFormat format, bool readable);
 
 	std::unordered_map<RenderTargets, GLuint, CachedFBOHasher> framebufferObjects;

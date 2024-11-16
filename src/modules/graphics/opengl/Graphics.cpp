@@ -789,7 +789,7 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, in
 	// Re-apply the scissor if it was active, since the rectangle passed to
 	// glScissor is affected by the viewport dimensions.
 	if (state.scissor)
-		setScissor(state.scissorRect);
+		setScissor(state.scissorRect, !iswindow);
 
 	// Make sure the correct sRGB setting is used when drawing to the textures.
 	if (GLAD_VERSION_1_0 || GLAD_EXT_sRGB_write_control)
@@ -1324,7 +1324,7 @@ int Graphics::getBackbufferMSAA() const
 	return internalBackbuffer.get() ? internalBackbuffer->getMSAA() : 0;
 }
 
-void Graphics::setScissor(const Rect &rect)
+void Graphics::setScissor(const Rect &rect, bool rtActive)
 {
 	flushBatchedDraws();
 
@@ -1342,10 +1342,15 @@ void Graphics::setScissor(const Rect &rect)
 	glrect.h = (int) (rect.h * dpiscale);
 
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
-	gl.setScissor(glrect, isRenderTargetActive());
+	gl.setScissor(glrect, rtActive);
 
 	state.scissor = true;
 	state.scissorRect = rect;
+}
+
+void Graphics::setScissor(const Rect &rect)
+{
+	setScissor(rect, isRenderTargetActive());
 }
 
 void Graphics::setScissor()
