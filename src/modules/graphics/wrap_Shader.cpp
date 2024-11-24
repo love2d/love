@@ -519,7 +519,7 @@ int w_Shader_getBufferFormat(lua_State *L)
 	Shader *shader = luax_checkshader(L, 1);
 	const char *name = luaL_checkstring(L, 2);
 	const std::vector<Buffer::DataDeclaration> *format = shader->getBufferFormat(name);
-	if (name != nullptr)
+	if (format != nullptr)
 	{
 		lua_createtable(L, (int)format->size(), 0);
 
