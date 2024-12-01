@@ -57,7 +57,9 @@ void luax_checkcoloredstring(lua_State *L, int idx, std::vector<love::font::Colo
 			}
 			else
 			{
-				coloredstr.str = luaL_checkstring(L, -1);
+				size_t strl = 0;
+				const char *str = luaL_checklstring(L, -1, &strl);
+				coloredstr.str.assign(str, strl);
 				strings.push_back(coloredstr);
 			}
 
@@ -66,7 +68,9 @@ void luax_checkcoloredstring(lua_State *L, int idx, std::vector<love::font::Colo
 	}
 	else
 	{
-		coloredstr.str = luaL_checkstring(L, idx);
+		size_t strl = 0;
+		const char *str = luaL_checklstring(L, idx, &strl);
+		coloredstr.str.assign(str, strl);
 		strings.push_back(coloredstr);
 	}
 }
