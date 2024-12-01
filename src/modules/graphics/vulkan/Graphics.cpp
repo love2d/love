@@ -326,7 +326,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 
 	if (submitMode == SUBMIT_PRESENT)
 	{
-		VkImage backbufferImage = fakeBackbuffer != nullptr ? (VkImage)fakeBackbuffer->getHandle() : swapChainImages.at(imageIndex);
+		VkImage backbufferImage = fakeBackbuffer != nullptr ? (VkImage)fakeBackbuffer->getRenderTargetHandle() : swapChainImages.at(imageIndex);
 
 		if (pendingScreenshotCallbacks.empty())
 		{
@@ -1193,13 +1193,8 @@ static bool computeDispatchBarrierFlags(Shader *shader, VkAccessFlags &dstAccess
 
 		// All writable images use the GENERAL layout.
 		// TODO: this is pretty messy.
-		VkAccessFlags texAccessFlags = 0;
-		VkPipelineStageFlags texStageFlags = 0;
 		bool depthStencil  = isPixelFormatDepthStencil(tex->getPixelFormat());
-		Vulkan::setImageLayoutTransitionOptions(false, tex->isRenderTarget(), depthStencil, VK_IMAGE_LAYOUT_GENERAL, texAccessFlags, texStageFlags);
-		
-		dstAccessFlags |= texAccessFlags;
-		dstStageFlags |= texStageFlags;
+		Vulkan::addImageLayoutTransitionOptions(false, tex->isRenderTarget(), depthStencil, VK_IMAGE_LAYOUT_GENERAL, dstAccessFlags, dstStageFlags);
 	}
 
 	for (const auto &info : shader->getActiveStorageBufferInfo())
@@ -1285,7 +1280,7 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int pixelw, in
 	if (isWindow)
 		setDefaultRenderPass();
 	else
-		setRenderPass(rts, pixelw, pixelh, hasSRGBtexture);
+		setRenderPass(rts, pixelw, pixelh);
 }
 
 // END IMPLEMENTATION OVERRIDDEN FUNCTIONS
@@ -2120,8 +2115,9 @@ VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration &configuratio
 	if (configuration.staticData.depthView)
 		attachments.push_back(configuration.staticData.depthView);
 
-	if (configuration.staticData.resolveView)
-		attachments.push_back(configuration.staticData.resolveView);
+	// Resolve attachments after everything else to match createRenderPass.
+	for (const auto &colorResolveView : configuration.colorResolveViews)
+		attachments.push_back(colorResolveView);
 
 	VkFramebufferCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -2198,6 +2194,7 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 
 	std::vector<VkAttachmentDescription> attachments;
 	std::vector<VkAttachmentReference> colorAttachmentRefs;
+	std::vector<VkAttachmentReference> colorResolveAttachmentRefs;
 
 	uint32_t attachment = 0;
 	for (const auto &colorAttachment : configuration.colorAttachments)
@@ -2214,24 +2211,33 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		colorDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorDescription.initialLayout = colorAttachment.layout;
-		colorDescription.finalLayout = colorAttachment.layout;
+		if (colorAttachment.msaaSamples > 1)
+		{
+			colorDescription.initialLayout = colorAttachment.msaaLayout;
+			colorDescription.finalLayout = colorAttachment.msaaLayout;
+		}
+		else
+		{
+			colorDescription.initialLayout = colorAttachment.layout;
+			colorDescription.finalLayout = colorAttachment.layout;
+		}
 		attachments.push_back(colorDescription);
 
-		VkAccessFlags texBeginAccessFlags = 0;
-		VkPipelineStageFlags texBeginStageFlags = 0;
-		Vulkan::setImageLayoutTransitionOptions(true, true, false, colorAttachment.layout, texBeginAccessFlags, texBeginStageFlags);
-		beginDependency.srcAccessMask |= texBeginAccessFlags;
-		beginDependency.srcStageMask |= texBeginStageFlags;
+		// I had a TODO here, but I don't remember why...
+		if (colorAttachment.layout != VK_IMAGE_LAYOUT_UNDEFINED)
+		{
+			Vulkan::addImageLayoutTransitionOptions(true, true, false, colorAttachment.layout, beginDependency.srcAccessMask, beginDependency.srcStageMask);
+			Vulkan::addImageLayoutTransitionOptions(false, true, false, colorAttachment.layout, endDependency.dstAccessMask, endDependency.dstStageMask);
+		}
 
-		VkAccessFlags texEndAccessFlags = 0;
-		VkPipelineStageFlags texEndStageFlags = 0;
-		Vulkan::setImageLayoutTransitionOptions(false, true, false, colorAttachment.layout, texEndAccessFlags, texEndStageFlags);
-		endDependency.dstAccessMask |= texEndAccessFlags;
-		endDependency.dstStageMask |= texEndStageFlags;
+		if (colorAttachment.msaaLayout != VK_IMAGE_LAYOUT_UNDEFINED)
+		{
+			Vulkan::addImageLayoutTransitionOptions(true, true, false, colorAttachment.msaaLayout, beginDependency.srcAccessMask, beginDependency.srcStageMask);
+			Vulkan::addImageLayoutTransitionOptions(false, true, false, colorAttachment.msaaLayout, endDependency.dstAccessMask, endDependency.dstStageMask);
+		}
 	}
 
-	subPass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
+	subPass.colorAttachmentCount = static_cast<uint32_t>(configuration.colorAttachments.size());
 	subPass.pColorAttachments = colorAttachmentRefs.data();
 
 	VkAttachmentReference depthStencilAttachmentRef{};
@@ -2252,36 +2258,43 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 		depthStencilAttachment.finalLayout = configuration.staticData.depthStencilAttachment.layout;
 		attachments.push_back(depthStencilAttachment);
 
-		VkAccessFlags texBeginAccessFlags = 0;
-		VkPipelineStageFlags texBeginStageFlags = 0;
-		Vulkan::setImageLayoutTransitionOptions(true, true, true, configuration.staticData.depthStencilAttachment.layout, texBeginAccessFlags, texBeginStageFlags);
-		beginDependency.srcAccessMask |= texBeginAccessFlags;
-		beginDependency.srcStageMask |= texBeginStageFlags;
-
-		VkAccessFlags texEndAccessFlags = 0;
-		VkPipelineStageFlags texEndStageFlags = 0;
-		Vulkan::setImageLayoutTransitionOptions(false, true, true, configuration.staticData.depthStencilAttachment.layout, texEndAccessFlags, texEndStageFlags);
-		endDependency.dstAccessMask |= texEndAccessFlags;
-		endDependency.dstStageMask |= texEndStageFlags;
+		Vulkan::addImageLayoutTransitionOptions(true, true, true, configuration.staticData.depthStencilAttachment.layout, beginDependency.srcAccessMask, beginDependency.srcStageMask);
+		Vulkan::addImageLayoutTransitionOptions(false, true, true, configuration.staticData.depthStencilAttachment.layout, endDependency.dstAccessMask, endDependency.dstStageMask);
 	}
 
-	VkAttachmentReference colorAttachmentResolveRef{};
+	// Add resolve attachments after everything else to make pClearValues simpler to implement.
 	if (configuration.staticData.resolve)
 	{
-		colorAttachmentResolveRef.attachment = attachment++;
-		colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		subPass.pResolveAttachments = &colorAttachmentResolveRef;
+		for (const auto &colorAttachment : configuration.colorAttachments)
+		{
+			VkAttachmentReference reference{};
+			reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-		VkAttachmentDescription colorAttachmentResolve{};
-		colorAttachmentResolve.format = configuration.colorAttachments.at(0).format;
-		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		attachments.push_back(colorAttachmentResolve);
+			if (colorAttachment.layout == VK_IMAGE_LAYOUT_UNDEFINED)
+			{
+				reference.attachment = VK_ATTACHMENT_UNUSED;
+				colorResolveAttachmentRefs.push_back(reference);
+			}
+			else
+			{
+				reference.attachment = attachment++;
+				colorResolveAttachmentRefs.push_back(reference);
+
+				VkAttachmentDescription resolveDescription{};
+				resolveDescription.format = colorAttachment.format;
+				resolveDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+				resolveDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				resolveDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+				resolveDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				resolveDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				resolveDescription.initialLayout = colorAttachment.layout;
+				resolveDescription.finalLayout = colorAttachment.layout;
+
+				attachments.push_back(resolveDescription);
+			}
+		}
+
+		subPass.pResolveAttachments = colorResolveAttachmentRefs.data();
 	}
 
 	std::array<VkSubpassDependency, 2> dependencies = { beginDependency, endDependency };
@@ -2496,8 +2509,6 @@ void Graphics::setDefaultRenderPass()
 
 	RenderPassConfiguration renderPassConfiguration{};
 
-	renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples });
-
 	VkFormat dsformat = backbufferHasDepth || backbufferHasStencil ? depthStencilFormat : VK_FORMAT_UNDEFINED;
 	renderPassConfiguration.staticData.depthStencilAttachment = { dsformat, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples };
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
@@ -2512,19 +2523,22 @@ void Graphics::setDefaultRenderPass()
 
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
 	{
+		renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples });
+
 		if (!swapChainImageViews.empty())
 			framebufferConfiguration.colorViews.push_back(swapChainImageViews.at(imageIndex));
 		else
 			framebufferConfiguration.colorViews.push_back(fakeBackbuffer->getRenderTargetView(0, 0));
-		framebufferConfiguration.staticData.resolveView = VK_NULL_HANDLE;
 	}
 	else
 	{
+		renderPassConfiguration.colorAttachments.push_back({ swapChainImageFormat, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples });
+
 		framebufferConfiguration.colorViews.push_back(colorImageView);
 		if (!swapChainImageViews.empty())
-			framebufferConfiguration.staticData.resolveView = swapChainImageViews.at(imageIndex);
+			framebufferConfiguration.colorResolveViews.push_back(swapChainImageViews.at(imageIndex));
 		else
-			framebufferConfiguration.staticData.resolveView = fakeBackbuffer->getRenderTargetView(0, 0);
+			framebufferConfiguration.colorResolveViews.push_back(fakeBackbuffer->getRenderTargetView(0, 0));
 	}
 
 	renderPassState.renderPassConfiguration = std::move(renderPassConfiguration);
@@ -2554,35 +2568,62 @@ void Graphics::setDefaultRenderPass()
 	}
 }
 
-void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture)
+void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh)
 {
-	// fixme: hasSRGBtexture
 	RenderPassConfiguration renderPassConfiguration{};
+	VkSampleCountFlagBits msaa = VK_SAMPLE_COUNT_1_BIT;
+
 	for (const auto &color : rts.colors)
+	{
+		auto tex = (Texture *)color.texture;
 		renderPassConfiguration.colorAttachments.push_back({ 
-			Vulkan::getTextureFormat(color.texture->getPixelFormat()).internalFormat,
-			((Texture*)color.texture)->getImageLayout(),
+			Vulkan::getTextureFormat(tex->getPixelFormat()).internalFormat,
+			tex->getImageLayout(),
+			tex->getMSAAImageLayout(),
 			VK_ATTACHMENT_LOAD_OP_LOAD,
-			dynamic_cast<Texture*>(color.texture)->getMsaaSamples() });
+			tex->getMsaaSamples() });
+
+		if (tex->getMSAAImageLayout() != VK_IMAGE_LAYOUT_UNDEFINED && tex->getImageLayout() != VK_IMAGE_LAYOUT_UNDEFINED)
+			renderPassConfiguration.staticData.resolve = true;
+
+		msaa = tex->getMsaaSamples();
+	}
+
 	if (rts.depthStencil.texture != nullptr)
+	{
+		auto tex = (Texture *)rts.depthStencil.texture;
 		renderPassConfiguration.staticData.depthStencilAttachment = {
 			Vulkan::getTextureFormat(rts.depthStencil.texture->getPixelFormat()).internalFormat,
-			((Texture*)rts.depthStencil.texture)->getImageLayout(),
+			tex->getImageLayout(),
 			VK_ATTACHMENT_LOAD_OP_LOAD,
 			VK_ATTACHMENT_LOAD_OP_LOAD,
-			dynamic_cast<Texture*>(rts.depthStencil.texture)->getMsaaSamples() };
+			tex->getMsaaSamples() };
+
+		msaa = tex->getMsaaSamples();
+	}
 
 	FramebufferConfiguration configuration{};
 
 	for (const auto &color : rts.colors)
 	{
 		auto tex = (Texture*)color.texture;
-		configuration.colorViews.push_back(tex->getRenderTargetView(color.mipmap, color.slice));
+		if (tex->getMSAA() > 1)
+		{
+			configuration.colorViews.push_back(tex->getMSAARenderTargetView(color.mipmap, color.slice));
+			configuration.colorResolveViews.push_back(tex->getRenderTargetView(color.mipmap, color.slice));
+		}
+		else
+		{
+			configuration.colorViews.push_back(tex->getRenderTargetView(color.mipmap, color.slice));
+		}
 	}
 	if (rts.depthStencil.texture != nullptr)
 	{
 		auto tex = (Texture*)rts.depthStencil.texture;
-		configuration.staticData.depthView = tex->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
+		if (tex->getMSAA() > 1)
+			configuration.staticData.depthView = tex->getMSAARenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
+		else
+			configuration.staticData.depthView = tex->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
 	}
 
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
@@ -2606,7 +2647,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, b
 	renderPassState.pipeline = VK_NULL_HANDLE;
 	renderPassState.width = static_cast<float>(pixelw);
 	renderPassState.height = static_cast<float>(pixelh);
-	renderPassState.msaa = VK_SAMPLE_COUNT_1_BIT;
+	renderPassState.msaa = msaa;
 	renderPassState.numColorAttachments = static_cast<uint32_t>(rts.colors.size());
 	renderPassState.packedColorAttachmentFormats = 0;
 	for (size_t i = 0; i < rts.colors.size(); i++)

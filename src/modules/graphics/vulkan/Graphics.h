@@ -50,6 +50,7 @@ struct ColorAttachment
 {
 	VkFormat format = VK_FORMAT_UNDEFINED;
 	VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
+	VkImageLayout msaaLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
@@ -57,6 +58,7 @@ struct ColorAttachment
 	{
 		return format == attachment.format &&
 			layout == attachment.layout &&
+			msaaLayout == attachment.msaaLayout &&
 			loadOp == attachment.loadOp &&
 			msaaSamples == attachment.msaaSamples;
 	}
@@ -112,11 +114,11 @@ struct RenderPassConfigurationHasher
 struct FramebufferConfiguration
 {
 	std::vector<VkImageView> colorViews;
+	std::vector<VkImageView> colorResolveViews;
 
 	struct StaticFramebufferConfiguration
 	{
 		VkImageView depthView = VK_NULL_HANDLE;
-		VkImageView resolveView = VK_NULL_HANDLE;
 
 		uint32_t width = 0;
 		uint32_t height = 0;
@@ -126,7 +128,7 @@ struct FramebufferConfiguration
 
 	bool operator==(const FramebufferConfiguration &conf) const
 	{
-		return colorViews == conf.colorViews &&
+		return colorViews == conf.colorViews && colorResolveViews == conf.colorResolveViews &&
 			(memcmp(&staticData, &conf.staticData, sizeof(StaticFramebufferConfiguration)) == 0);
 	}
 };
@@ -137,6 +139,7 @@ struct FramebufferConfigurationHasher
 	{
 		size_t hashes[] = {
 			XXH32(configuration.colorViews.data(), configuration.colorViews.size() * sizeof(VkImageView), 0),
+			XXH32(configuration.colorResolveViews.data(), configuration.colorResolveViews.size() * sizeof(VkImageView), 0),
 			XXH32(&configuration.staticData, sizeof(configuration.staticData), 0),
 		};
 
@@ -337,7 +340,7 @@ private:
 		VertexAttributesID attributesID,
 		const BufferBindings &buffers, graphics::Texture *texture,
 		PrimitiveType, CullMode);
-	void setRenderPass(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture);
+	void setRenderPass(const RenderTargets &rts, int pixelw, int pixelh);
 	void setDefaultRenderPass();
 	void startRenderPass();
 	void endRenderPass();

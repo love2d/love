@@ -51,6 +51,7 @@ public:
 	void setSamplerState(const SamplerState &s) override;
 
 	VkImageLayout getImageLayout() const;
+	VkImageLayout getMSAAImageLayout() const;
 
 	void copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int sourcewidth, size_t size, int slice, int mipmap, const Rect &rect) override;
 	void copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size) override;
@@ -59,6 +60,7 @@ public:
 	ptrdiff_t getSamplerHandle() const override;
 
 	VkImageView getRenderTargetView(int mip, int layer);
+	VkImageView getMSAARenderTargetView(int mip, int layer);
 	VkSampleCountFlagBits getMsaaSamples() const;
 
 	void uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r) override;
@@ -71,18 +73,26 @@ public:
 	static VkClearColorValue getClearColor(love::graphics::Texture *texture, const ColorD &color);
 
 private:
+
+	struct VulkanImageData
+	{
+		VkImage image = VK_NULL_HANDLE;
+		VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
+		VmaAllocation allocation = VK_NULL_HANDLE;
+		VkImageView imageView = VK_NULL_HANDLE;
+		std::vector<std::vector<VkImageView>> renderTargetImageViews;
+	};
+
 	void createTextureImageView();
-	void clear();
+	void createRenderTargetImageViews(VulkanImageData &data);
+	void clear(const VulkanImageData &data);
 
 	Graphics *vgfx = nullptr;
 	VkDevice device = VK_NULL_HANDLE;
 	VkImageAspectFlags imageAspect;
 	VmaAllocator allocator = VK_NULL_HANDLE;
-	VkImage textureImage = VK_NULL_HANDLE;
-	VkImageLayout imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	VmaAllocation textureImageAllocation = VK_NULL_HANDLE;
-	VkImageView textureImageView = VK_NULL_HANDLE;
-	std::vector<std::vector<VkImageView>> renderTargetImageViews;
+	VulkanImageData imageData;
+	VulkanImageData msaaImageData;
 	VkSampler textureSampler = VK_NULL_HANDLE;
 	Slices slices;
 	int layerCount = 0;

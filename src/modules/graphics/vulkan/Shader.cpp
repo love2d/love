@@ -1044,7 +1044,7 @@ void Shader::setTextureDescriptor(const UniformInfo *info, love::graphics::Textu
 
 	// Samplers may change after this call, so they're set just before the
 	// descriptor set is used instead of here.
-	VkImageView view = vkTexture != nullptr ? (VkImageView)vkTexture->getRenderTargetHandle() : VK_NULL_HANDLE;
+	VkImageView view = vkTexture != nullptr ? (VkImageView)vkTexture->getHandle() : VK_NULL_HANDLE;
 	if (view != imageInfo.imageView)
 	{
 		imageInfo.imageLayout = vkTexture != nullptr ? vkTexture->getImageLayout() : VK_IMAGE_LAYOUT_UNDEFINED;

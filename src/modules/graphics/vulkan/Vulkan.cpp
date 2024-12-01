@@ -822,22 +822,22 @@ VkIndexType Vulkan::getVulkanIndexBufferType(IndexDataType type)
 	}
 }
 
-void Vulkan::setImageLayoutTransitionOptions(bool previous, bool renderTarget, bool depthStencil, VkImageLayout layout, VkAccessFlags &accessMask, VkPipelineStageFlags &stageFlags)
+void Vulkan::addImageLayoutTransitionOptions(bool previous, bool renderTarget, bool depthStencil, VkImageLayout layout, VkAccessFlags &accessMask, VkPipelineStageFlags &stageFlags)
 {
 	switch (layout)
 	{
 	case VK_IMAGE_LAYOUT_UNDEFINED:
-		accessMask = 0;
+		accessMask |= 0;
 		if (previous)
-			stageFlags = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			stageFlags |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		else
-			stageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+			stageFlags |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_GENERAL:
 		// We use the general image layout for images that are both compute write and readable.
 		// todo: can we optimize this?
-		accessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
-		stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
+		accessMask |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT | VK_ACCESS_TRANSFER_READ_BIT;
+		stageFlags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
 		if (renderTarget)
 		{
 			if (depthStencil)
@@ -853,28 +853,28 @@ void Vulkan::setImageLayoutTransitionOptions(bool previous, bool renderTarget, b
 		}
 		break;
 	case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-		accessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		accessMask |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		stageFlags |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-		accessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
-		stageFlags = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		accessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+		stageFlags |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-		accessMask = VK_ACCESS_SHADER_READ_BIT;
-		stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		accessMask |= VK_ACCESS_SHADER_READ_BIT;
+		stageFlags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-		accessMask = VK_ACCESS_TRANSFER_READ_BIT;
-		stageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		accessMask |= VK_ACCESS_TRANSFER_READ_BIT;
+		stageFlags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-		accessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		stageFlags = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		accessMask |= VK_ACCESS_TRANSFER_WRITE_BIT;
+		stageFlags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		break;
 	case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-		accessMask = 0;
-		stageFlags = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		accessMask |= 0;
+		stageFlags |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 		break;
 	default:
 		throw love::Exception("unimplemented image layout");
@@ -897,11 +897,11 @@ void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage ima
 
 	const PixelFormatInfo &info = getPixelFormatInfo(format);
 
-	VkPipelineStageFlags sourceStage;
-	VkPipelineStageFlags destinationStage;
+	VkPipelineStageFlags sourceStage = 0;
+	VkPipelineStageFlags destinationStage = 0;
 
-	setImageLayoutTransitionOptions(true, renderTarget, info.depth || info.stencil, oldLayout, barrier.srcAccessMask, sourceStage);
-	setImageLayoutTransitionOptions(false, renderTarget, info.depth || info.stencil, newLayout, barrier.dstAccessMask, destinationStage);
+	addImageLayoutTransitionOptions(true, renderTarget, info.depth || info.stencil, oldLayout, barrier.srcAccessMask, sourceStage);
+	addImageLayoutTransitionOptions(false, renderTarget, info.depth || info.stencil, newLayout, barrier.dstAccessMask, destinationStage);
 
 	if (info.color)
 		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
