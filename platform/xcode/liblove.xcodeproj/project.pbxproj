@@ -50,11 +50,11 @@
 		217DFC101D9F6D490055D849 /* url.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD41D9F6D490055D849 /* url.lua.h */; };
 		217DFC111D9F6D490055D849 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		217DFC121D9F6D490055D849 /* usocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD61D9F6D490055D849 /* usocket.h */; };
+		4BED97412CFE3E7C0003F8B2 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F602CBAC93800BE58C1 /* SDL3.xcframework */; };
 		D923E7D3296B85B9002FF1B3 /* harfbuzz.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */; };
 		D943E58E2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
 		D943E58F2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
 		D943E5902A24D56000D80361 /* PhysfsIo.h in Headers */ = {isa = PBXBuildFile; fileRef = D943E58D2A24D56000D80361 /* PhysfsIo.h */; };
-		D9596F612CBAC93800BE58C1 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F602CBAC93800BE58C1 /* SDL3.xcframework */; };
 		D9596F622CBAC93800BE58C1 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F602CBAC93800BE58C1 /* SDL3.xcframework */; };
 		D9DAB9222961F0EE00C64820 /* HarfbuzzShaper.h in Headers */ = {isa = PBXBuildFile; fileRef = D9DAB9202961F0EE00C64820 /* HarfbuzzShaper.h */; };
 		D9DAB9232961F0EE00C64820 /* HarfbuzzShaper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9DAB9212961F0EE00C64820 /* HarfbuzzShaper.cpp */; };
@@ -2345,7 +2345,7 @@
 				FA577AB016C7507900860150 /* Cocoa.framework in Frameworks */,
 				FA577AC516C7513400860150 /* libmodplug.framework in Frameworks */,
 				FADF4CC62663D0EC004F95C1 /* libz.tbd in Frameworks */,
-				D9596F612CBAC93800BE58C1 /* SDL3.xcframework in Frameworks */,
+				4BED97412CFE3E7C0003F8B2 /* SDL3.xcframework in Frameworks */,
 				FA577AC816C7513C00860150 /* ogg.framework in Frameworks */,
 				D9DAB9322963CD7500C64820 /* harfbuzz.framework in Frameworks */,
 				FA577ACA16C7514100860150 /* OpenGL.framework in Frameworks */,

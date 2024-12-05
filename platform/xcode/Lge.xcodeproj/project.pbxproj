@@ -3,10 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4BED97442CFE3EB10003F8B2 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F632CBAC98B00BE58C1 /* SDL3.xcframework */; };
+		4BED97452CFE3EB10003F8B2 /* SDL3.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F632CBAC98B00BE58C1 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		A9255DD31043183600BA1496 /* Lua.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A93E6E5310420B57007D418B /* Lua.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		A9255E031043195A00BA1496 /* vorbis.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9255E021043195A00BA1496 /* vorbis.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -16,7 +18,6 @@
 		A9F169AD109E825000FC83D1 /* libmodplug.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = A9F16926109E7BAD00FC83D1 /* libmodplug.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		CE73F8001EEB64150052DAB3 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE73F7FF1EEB64150052DAB3 /* AVFoundation.framework */; };
 		D9596F642CBAC98B00BE58C1 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F632CBAC98B00BE58C1 /* SDL3.xcframework */; };
-		D9596F652CBAC98B00BE58C1 /* SDL3.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F632CBAC98B00BE58C1 /* SDL3.xcframework */; };
 		D9596F662CBAC99F00BE58C1 /* SDL3.xcframework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = D9596F632CBAC98B00BE58C1 /* SDL3.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D9DAB9372963CF6900C64820 /* harfbuzz.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = D9DAB9352963CF5F00C64820 /* harfbuzz.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		FA0797991BF480A200034B7C /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA0797981BF480A200034B7C /* GameController.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -78,6 +79,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		4BED97462CFE3EB10003F8B2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				4BED97452CFE3EB10003F8B2 /* SDL3.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A9255DDE1043185300BA1496 /* Copy Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -102,7 +114,7 @@
 
 /* Begin PBXFileReference section */
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		8D1107320486CEB800E47090 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D1107320486CEB800E47090 /* Lge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9255E021043195A00BA1496 /* vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = vorbis.framework; path = macosx/Frameworks/vorbis.framework; sourceTree = "<group>"; };
 		A9255F51104324D700BA1496 /* ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ogg.framework; path = macosx/Frameworks/ogg.framework; sourceTree = "<group>"; };
 		A93E6A3410420AC0007D418B /* love.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = love.cpp; path = ../../src/love.cpp; sourceTree = "<group>"; };
@@ -115,7 +127,7 @@
 		D9DAB9352963CF5F00C64820 /* harfbuzz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = harfbuzz.framework; path = macosx/Frameworks/harfbuzz.framework; sourceTree = "<group>"; };
 		FA0797981BF480A200034B7C /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.1.sdk/System/Library/Frameworks/GameController.framework; sourceTree = DEVELOPER_DIR; };
 		FA08F69116C765A200F007B5 /* love.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = love.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FA0B7F061A95AAF3000E1D17 /* love.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = love.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA0B7F061A95AAF3000E1D17 /* Lge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA15DFB31F9B8D9E0042AB22 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS11.0.sdk/usr/lib/libbz2.tbd; sourceTree = DEVELOPER_DIR; };
 		FA27B3CA1B498696008A9DCE /* theora.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = theora.framework; path = macosx/Frameworks/theora.framework; sourceTree = "<group>"; };
 		FA577A9316C7217800860150 /* liblove.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = liblove.xcodeproj; sourceTree = "<group>"; };
@@ -170,7 +182,7 @@
 				FA5D248C1A96CA9E00C6FC8F /* QuartzCore.framework in Frameworks */,
 				FA5D248A1A96CA9600C6FC8F /* AudioToolbox.framework in Frameworks */,
 				FA5D24881A96CA8A00C6FC8F /* UIKit.framework in Frameworks */,
-				D9596F652CBAC98B00BE58C1 /* SDL3.xcframework in Frameworks */,
+				4BED97442CFE3EB10003F8B2 /* SDL3.xcframework in Frameworks */,
 				FA5D24841A96CA2700C6FC8F /* OpenGLES.framework in Frameworks */,
 				FA5D24821A96CA1800C6FC8F /* OpenAL.framework in Frameworks */,
 			);
@@ -196,8 +208,8 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* love.app */,
-				FA0B7F061A95AAF3000E1D17 /* love.app */,
+				8D1107320486CEB800E47090 /* Lge.app */,
+				FA0B7F061A95AAF3000E1D17 /* Lge.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -292,9 +304,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8D1107260486CEB800E47090 /* love-macosx */ = {
+		8D1107260486CEB800E47090 /* Lge-macosx */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "love-macosx" */;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Lge-macosx" */;
 			buildPhases = (
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
@@ -306,28 +318,29 @@
 			dependencies = (
 				FAA287721B0ABF1400B82827 /* PBXTargetDependency */,
 			);
-			name = "love-macosx";
+			name = "Lge-macosx";
 			productInstallPath = "$(HOME)/Applications";
 			productName = love;
-			productReference = 8D1107320486CEB800E47090 /* love.app */;
+			productReference = 8D1107320486CEB800E47090 /* Lge.app */;
 			productType = "com.apple.product-type.application";
 		};
-		FA0B7F051A95AAF3000E1D17 /* love-ios */ = {
+		FA0B7F051A95AAF3000E1D17 /* Lge-ios */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FA0B7F2E1A95AAF4000E1D17 /* Build configuration list for PBXNativeTarget "love-ios" */;
+			buildConfigurationList = FA0B7F2E1A95AAF4000E1D17 /* Build configuration list for PBXNativeTarget "Lge-ios" */;
 			buildPhases = (
 				FA0B7F021A95AAF3000E1D17 /* Sources */,
 				FA0B7F031A95AAF3000E1D17 /* Frameworks */,
 				FA0B7F041A95AAF3000E1D17 /* Resources */,
+				4BED97462CFE3EB10003F8B2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				FA5D24BB1A96D6FC00C6FC8F /* PBXTargetDependency */,
 			);
-			name = "love-ios";
+			name = "Lge-ios";
 			productName = "love-ios";
-			productReference = FA0B7F061A95AAF3000E1D17 /* love.app */;
+			productReference = FA0B7F061A95AAF3000E1D17 /* Lge.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -336,14 +349,15 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1340;
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					FA0B7F051A95AAF3000E1D17 = {
 						CreatedOnToolsVersion = 6.1.1;
 					};
 				};
 			};
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "love" */;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Lge" */;
 			compatibilityVersion = "Xcode 11.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 1;
@@ -364,8 +378,8 @@
 			);
 			projectRoot = "";
 			targets = (
-				8D1107260486CEB800E47090 /* love-macosx */,
-				FA0B7F051A95AAF3000E1D17 /* love-ios */,
+				8D1107260486CEB800E47090 /* Lge-macosx */,
+				FA0B7F051A95AAF3000E1D17 /* Lge-ios */,
 			);
 		};
 /* End PBXProject section */
@@ -446,8 +460,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
 				CODE_SIGN_ENTITLEMENTS = love.entitlements;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = M34KWJ4NCL;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -463,14 +480,17 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 				);
 				INFOPLIST_FILE = "macosx/love-macosx.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INSTALL_PATH = /Applications;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 12.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.love2d.love;
-				PRODUCT_NAME = love;
+				PRODUCT_BUNDLE_IDENTIFIER = Lge;
+				PRODUCT_NAME = Lge;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
@@ -479,9 +499,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
 				CODE_SIGN_ENTITLEMENTS = love.entitlements;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = M34KWJ4NCL;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -495,14 +518,17 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 				);
 				INFOPLIST_FILE = "macosx/love-macosx.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INSTALL_PATH = /Applications;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 12.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.love2d.love;
-				PRODUCT_NAME = love;
+				PRODUCT_BUNDLE_IDENTIFIER = Lge;
+				PRODUCT_NAME = Lge;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};
@@ -527,13 +553,16 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_INCREASE_PRECOMPILED_HEADER_SHARING = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -600,13 +629,16 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -659,7 +691,6 @@
 		FA0B7F261A95AAF4000E1D17 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "iOS AppIcon";
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -673,7 +704,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = M34KWJ4NCL;
 				ENABLE_BITCODE = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -697,14 +728,17 @@
 					ios/include,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Lge;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.love2d.love;
-				PRODUCT_NAME = love;
+				PRODUCT_BUNDLE_IDENTIFIER = Lge;
+				PRODUCT_NAME = Lge;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -714,7 +748,6 @@
 		FA0B7F271A95AAF4000E1D17 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "iOS AppIcon";
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -728,7 +761,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = M34KWJ4NCL;
 				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -747,14 +780,17 @@
 					ios/include,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Lge;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = org.love2d.love;
-				PRODUCT_NAME = love;
+				PRODUCT_BUNDLE_IDENTIFIER = Lge;
+				PRODUCT_NAME = Lge;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -765,7 +801,6 @@
 		FA0B7F281A95AAF4000E1D17 /* Distribution */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "iOS AppIcon";
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -779,7 +814,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = M34KWJ4NCL;
 				ENABLE_BITCODE = NO;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -798,14 +833,17 @@
 					ios/include,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/ios/love-ios.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Lge;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = org.love2d.love;
-				PRODUCT_NAME = love;
+				PRODUCT_BUNDLE_IDENTIFIER = Lge;
+				PRODUCT_NAME = Lge;
 				PROVISIONING_PROFILE = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -834,13 +872,16 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -895,9 +936,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "OS X AppIcon";
 				CODE_SIGN_ENTITLEMENTS = love.entitlements;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = M34KWJ4NCL;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -911,21 +955,24 @@
 					"$(PROJECT_DIR)/macosx/Frameworks/SDL2.framework/Headers",
 				);
 				INFOPLIST_FILE = "macosx/love-macosx.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
 				INSTALL_PATH = /Applications;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 12.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.love2d.love;
-				PRODUCT_NAME = love;
+				PRODUCT_BUNDLE_IDENTIFIER = Lge;
+				PRODUCT_NAME = Lge;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Distribution;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "love-macosx" */ = {
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Lge-macosx" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4B08A954540054247B /* Debug */,
@@ -935,7 +982,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "love" */ = {
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Lge" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
@@ -945,7 +992,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FA0B7F2E1A95AAF4000E1D17 /* Build configuration list for PBXNativeTarget "love-ios" */ = {
+		FA0B7F2E1A95AAF4000E1D17 /* Build configuration list for PBXNativeTarget "Lge-ios" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FA0B7F261A95AAF4000E1D17 /* Debug */,

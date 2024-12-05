@@ -52,7 +52,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>love</string>
+	<string>Lge</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>

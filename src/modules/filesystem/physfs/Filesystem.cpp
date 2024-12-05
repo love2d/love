@@ -545,7 +545,9 @@ std::string Filesystem::getFullCommonPath(CommonPath path)
 		switch (path)
 		{
 		case COMMONPATH_APP_SAVEDIR:
-			rootpath = getFullCommonPath(COMMONPATH_USER_APPDATA);
+			// LMI
+			//rootpath = getFullCommonPath(COMMONPATH_USER_APPDATA);
+			rootpath = getFullCommonPath(COMMONPATH_USER_DOCUMENTS);
 			break;
 		case COMMONPATH_APP_DOCUMENTS:
 			rootpath = getFullCommonPath(COMMONPATH_USER_DOCUMENTS);

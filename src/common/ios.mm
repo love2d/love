@@ -350,7 +350,14 @@ std::string getLoveInResources(bool &fused)
 		NSArray *filepaths = getLovesInDocuments();
 
 		// Let the user select a game from the un-fused list.
-		NSString *selectedfile = showGameList(filepaths);
+		// LMI
+		NSString *selectedfile;
+		if (filepaths.count == 1) {
+			selectedfile = [(NSString *)(filepaths[0]) copy];
+		} else {
+			// Let the user select a game from the un-fused list.
+			selectedfile = showGameList(filepaths);
+		}
 
 		// The string length might be 0 if the no-game screen was selected.
 		if (selectedfile != nil && selectedfile.length > 0)
