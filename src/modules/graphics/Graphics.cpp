@@ -115,15 +115,21 @@ namespace vulkan { extern love::graphics::Graphics *createInstance(); }
 
 static const Renderer rendererOrder[] = {
 	RENDERER_METAL,
+#ifdef LOVE_ANDROID
+	// Don't enable vulkan by default yet on android - it needs more testing.
 	RENDERER_OPENGL,
 	RENDERER_VULKAN,
+#else
+	RENDERER_VULKAN,
+	RENDERER_OPENGL,
+#endif
 };
 
 static std::vector<Renderer> defaultRenderers =
 {
 	RENDERER_METAL,
-	RENDERER_OPENGL,
 	RENDERER_VULKAN,
+	RENDERER_OPENGL,
 };
 
 static std::vector<Renderer> _renderers = defaultRenderers;
