@@ -508,7 +508,7 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const love::font:
 				auto end = start + range.getSize();
 				float numspaces = std::count(start, end, ' ');
 				if (width < wrap && numspaces >= 1)
-					extraspacing = floorf((wrap - width) / numspaces);
+					extraspacing = (wrap - width) / (numspaces - 1);
 				else
 					extraspacing = 0.0f;
 				break;
