@@ -60,10 +60,6 @@
 #define APIENTRY
 #endif
 
-#ifndef SDL_HINT_WINDOWS_DPI_SCALING
-#define SDL_HINT_WINDOWS_DPI_SCALING "SDL_WINDOWS_DPI_SCALING"
-#endif
-
 namespace love
 {
 namespace window
@@ -72,14 +68,7 @@ namespace window
 // See src/modules/window/Window.cpp.
 void setHighDPIAllowedImplementation(bool enable)
 {
-#if defined(LOVE_WINDOWS)
-	// Windows uses a different API than SDL_WINDOW_ALLOW_HIGHDPI.
-	// This must be set before the video subsystem is initialized.
-	// FIXME: How does this work in SDL3?
-	SDL_SetHint(SDL_HINT_WINDOWS_DPI_SCALING, enable ? "1" : "0");
-#else
 	LOVE_UNUSED(enable);
-#endif
 }
 
 namespace sdl
@@ -1409,7 +1398,7 @@ double Window::getNativeDPIScale() const
 #ifdef LOVE_ANDROID
 	return love::android::getScreenScale();
 #else
-	return (double) pixelHeight / (double) windowHeight;
+	return window != nullptr ? SDL_GetWindowDisplayScale(window) : 1.0;
 #endif
 }
 
