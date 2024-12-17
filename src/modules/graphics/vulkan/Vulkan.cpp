@@ -277,7 +277,7 @@ TextureFormat Vulkan::getTextureFormat(PixelFormat format)
 		textureFormat.internalFormat = VK_FORMAT_R5G6B5_UNORM_PACK16;
 		break;
 	case PIXELFORMAT_RGB10A2_UNORM:  // LSB->MSB: [r: g: b: a]
-		textureFormat.internalFormat = VK_FORMAT_A2R10G10B10_UNORM_PACK32;
+		textureFormat.internalFormat = VK_FORMAT_A2B10G10R10_UNORM_PACK32;
 		break;
 	case PIXELFORMAT_RG11B10_FLOAT:  // LSB->MSB: [r: g: b]
 		textureFormat.internalFormat = VK_FORMAT_B10G11R11_UFLOAT_PACK32;
