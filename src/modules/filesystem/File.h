@@ -47,6 +47,8 @@ public:
 
 	static love::Type type;
 
+	static const int64 SIZE_ALL = -1;
+
 	/**
 	 * File open mode.
 	 **/
