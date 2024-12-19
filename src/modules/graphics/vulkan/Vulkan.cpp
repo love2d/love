@@ -883,41 +883,61 @@ void Vulkan::addImageLayoutTransitionOptions(bool previous, bool renderTarget, b
 
 void Vulkan::cmdTransitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, PixelFormat format, bool renderTarget, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t baseLevel, uint32_t levelCount, uint32_t baseLayer, uint32_t layerCount)
 {
-	VkImageMemoryBarrier barrier{};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = oldLayout;
-	barrier.newLayout = newLayout;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = image;
-	barrier.subresourceRange.baseMipLevel = baseLevel;
-	barrier.subresourceRange.levelCount = levelCount;
-	barrier.subresourceRange.baseArrayLayer = baseLayer;
-	barrier.subresourceRange.layerCount = layerCount;
+	VkImageMemoryBarrier imageBarrier{};
+	imageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	imageBarrier.oldLayout = oldLayout;
+	imageBarrier.newLayout = newLayout;
+	imageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	imageBarrier.image = image;
+	imageBarrier.subresourceRange.baseMipLevel = baseLevel;
+	imageBarrier.subresourceRange.levelCount = levelCount;
+	imageBarrier.subresourceRange.baseArrayLayer = baseLayer;
+	imageBarrier.subresourceRange.layerCount = layerCount;
 
 	const PixelFormatInfo &info = getPixelFormatInfo(format);
 
 	VkPipelineStageFlags sourceStage = 0;
 	VkPipelineStageFlags destinationStage = 0;
 
-	addImageLayoutTransitionOptions(true, renderTarget, info.depth || info.stencil, oldLayout, barrier.srcAccessMask, sourceStage);
-	addImageLayoutTransitionOptions(false, renderTarget, info.depth || info.stencil, newLayout, barrier.dstAccessMask, destinationStage);
+	addImageLayoutTransitionOptions(true, renderTarget, info.depth || info.stencil, oldLayout, imageBarrier.srcAccessMask, sourceStage);
+	addImageLayoutTransitionOptions(false, renderTarget, info.depth || info.stencil, newLayout, imageBarrier.dstAccessMask, destinationStage);
 
 	if (info.color)
-		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
+		imageBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_COLOR_BIT;
 	if (info.depth)
-		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+		imageBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
 	if (info.stencil)
-		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		imageBarrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-	vkCmdPipelineBarrier(
-		commandBuffer,
-		sourceStage, destinationStage,
-		0,
-		0, nullptr,
-		0, nullptr,
-		1, &barrier
-	);
+	if (oldLayout != newLayout)
+	{
+		vkCmdPipelineBarrier(
+			commandBuffer,
+			sourceStage, destinationStage,
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &imageBarrier
+		);
+	}
+	else
+	{
+		// No layout transition needed, but we do still need a memory barrier.
+		VkMemoryBarrier memoryBarrier{};
+		memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		memoryBarrier.srcAccessMask = imageBarrier.srcAccessMask;
+		memoryBarrier.dstAccessMask = imageBarrier.dstAccessMask;
+
+		vkCmdPipelineBarrier(
+			commandBuffer,
+			sourceStage, destinationStage,
+			0,
+			1, &memoryBarrier,
+			0, nullptr,
+			0, nullptr
+		);
+	}
 }
 
 } // vulkan

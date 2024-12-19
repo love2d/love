@@ -462,12 +462,9 @@ void Texture::clear(const VulkanImageData &data)
 
 	VkImageLayout clearLayout = data.layout == VK_IMAGE_LAYOUT_GENERAL ? data.layout : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-	if (clearLayout != data.layout)
-	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, data.image, format, renderTarget,
-			data.layout, clearLayout,
-			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
-	}
+	Vulkan::cmdTransitionImageLayout(commandBuffer, data.image, format, renderTarget,
+		data.layout, clearLayout,
+		0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 
 	if (isPixelFormatDepthStencil(format))
 	{
@@ -482,12 +479,9 @@ void Texture::clear(const VulkanImageData &data)
 		vkCmdClearColorImage(commandBuffer, data.image, clearLayout, &clearColor, 1, &range);
 	}
 
-	if (clearLayout != data.layout)
-	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, data.image, format, renderTarget,
-			clearLayout, data.layout,
-			0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
-	}
+	Vulkan::cmdTransitionImageLayout(commandBuffer, data.image, format, renderTarget,
+		clearLayout, data.layout,
+		0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS);
 }
 
 VkClearColorValue Texture::getClearColor(love::graphics::Texture *texture, const ColorD &color)
@@ -531,11 +525,13 @@ void Texture::generateMipmapsInternal()
 {
 	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
-	if (imageData.layout != VK_IMAGE_LAYOUT_GENERAL)
-		Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget,
-			imageData.layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			rootView.startMipmap, static_cast<uint32_t>(getMipmapCount()),
-			rootView.startLayer, static_cast<uint32_t>(layerCount));
+	auto dstPipelineStages = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
+		| VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT;
+
+	Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget,
+		imageData.layout, imageData.layout == VK_IMAGE_LAYOUT_GENERAL ? imageData.layout : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		rootView.startMipmap, static_cast<uint32_t>(getMipmapCount()),
+		rootView.startLayer, static_cast<uint32_t>(layerCount));
 
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -559,10 +555,23 @@ void Texture::generateMipmapsInternal()
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
 		if (imageData.layout != VK_IMAGE_LAYOUT_GENERAL)
+		{
 			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
 				0, nullptr,
 				0, nullptr,
 				1, &barrier);
+		}
+		else
+		{
+			VkMemoryBarrier memoryBarrier{};
+			memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+			memoryBarrier.srcAccessMask = barrier.srcAccessMask;
+			memoryBarrier.dstAccessMask = barrier.dstAccessMask;
+			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+				1, &memoryBarrier,
+				0, nullptr,
+				0, nullptr);
+		}
 
 		VkImageBlit blit{};
 		blit.srcOffsets[0] = { 0, 0, 0 };
@@ -596,30 +605,27 @@ void Texture::generateMipmapsInternal()
 				VK_FILTER_LINEAR);
 		}
 
-		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-		barrier.newLayout = imageData.layout;
-		barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		// This sucks, but we want the whole texture to be VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL because we
+		// transition the whole thing back to the original layout after the loop.
+		if (i == mipLevels - 1 && imageData.layout != VK_IMAGE_LAYOUT_GENERAL)
+		{
+			barrier.subresourceRange.baseMipLevel = rootView.startMipmap + i;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
-		if (imageData.layout != VK_IMAGE_LAYOUT_GENERAL)
-			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
 				0, nullptr,
 				0, nullptr,
 				1, &barrier);
+		}
 	}
 
-	barrier.subresourceRange.baseMipLevel = rootView.startMipmap + mipLevels - 1;
-	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	barrier.newLayout = imageData.layout;
-	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-	if (imageData.layout != VK_IMAGE_LAYOUT_GENERAL)
-		vkCmdPipelineBarrier(commandBuffer,
-			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-			0, nullptr,
-			0, nullptr,
-			1, &barrier);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget,
+		imageData.layout == VK_IMAGE_LAYOUT_GENERAL ? imageData.layout : VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageData.layout,
+		rootView.startMipmap, static_cast<uint32_t>(getMipmapCount()),
+		rootView.startLayer, static_cast<uint32_t>(layerCount));
 }
 
 void Texture::uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r)
@@ -668,34 +674,24 @@ void Texture::uploadByteData(const void *data, size_t size, int level, int slice
 
 	auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
 
-	if (imageData.layout != VK_IMAGE_LAYOUT_GENERAL)
-	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget,
-			imageData.layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			level, 1, baseLayer, 1);
+	VkImageLayout copyDstLayout = imageData.layout == VK_IMAGE_LAYOUT_GENERAL ? imageData.layout : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-		vkCmdCopyBufferToImage(
-			commandBuffer,
-			stagingBuffer,
-			imageData.image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			1,
-			&region
-		);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget,
+		imageData.layout, copyDstLayout,
+		level, 1, baseLayer, 1);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageData.layout,
-			level, 1, baseLayer, 1);
-	}
-	else
-		vkCmdCopyBufferToImage(
-			commandBuffer,
-			stagingBuffer,
-			imageData.image,
-			imageData.layout,
-			1,
-			&region
-		);
+	vkCmdCopyBufferToImage(
+		commandBuffer,
+		stagingBuffer,
+		imageData.image,
+		copyDstLayout,
+		1,
+		&region
+	);
+
+	Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget,
+		copyDstLayout, imageData.layout,
+		level, 1, baseLayer, 1);
 
 	vgfx->queueCleanUp([allocator = allocator, stagingBuffer, vmaAllocation]() {
 		vmaDestroyBuffer(allocator, stagingBuffer, vmaAllocation);
@@ -722,16 +718,12 @@ void Texture::copyFromBuffer(graphics::Buffer *source, size_t sourceoffset, int 
 	region.imageExtent.width = static_cast<uint32_t>(rect.w);
 	region.imageExtent.height = static_cast<uint32_t>(rect.h);
 
-	if (imageData.layout != VK_IMAGE_LAYOUT_GENERAL)
-	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget, imageData.layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, layers.mipLevel, 1, layers.baseArrayLayer, 1);
+	VkImageLayout copyDstLayout = imageData.layout == VK_IMAGE_LAYOUT_GENERAL ? imageData.layout : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget, imageData.layout, copyDstLayout, layers.mipLevel, 1, layers.baseArrayLayer, 1);
 
-		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), imageData.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+	vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), imageData.image, copyDstLayout, 1, &region);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageData.layout, layers.mipLevel, 1, layers.baseArrayLayer, 1);
-	}
-	else
-		vkCmdCopyBufferToImage(commandBuffer, (VkBuffer)source->getHandle(), imageData.image, VK_IMAGE_LAYOUT_GENERAL, 1, &region);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget, copyDstLayout, imageData.layout, layers.mipLevel, 1, layers.baseArrayLayer, 1);
 }
 
 void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size)
@@ -755,16 +747,12 @@ void Texture::copyToBuffer(graphics::Buffer *dest, int slice, int mipmap, const 
 	region.imageExtent.height = static_cast<uint32_t>(rect.h);
 	region.imageExtent.depth = 1;
 
-	if (imageData.layout != VK_IMAGE_LAYOUT_GENERAL)
-	{
-		Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget, imageData.layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, layers.mipLevel, 1, layers.baseArrayLayer, 1);
+	VkImageLayout copySrcLayout = imageData.layout == VK_IMAGE_LAYOUT_GENERAL ? imageData.layout : VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+	Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget, imageData.layout, copySrcLayout, layers.mipLevel, 1, layers.baseArrayLayer, 1);
 
-		vkCmdCopyImageToBuffer(commandBuffer, imageData.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, (VkBuffer) dest->getHandle(), 1, &region);
+	vkCmdCopyImageToBuffer(commandBuffer, imageData.image, copySrcLayout, (VkBuffer) dest->getHandle(), 1, &region);
 
-		Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, imageData.layout, layers.mipLevel, 1, layers.baseArrayLayer, 1);
-	}
-	else
-		vkCmdCopyImageToBuffer(commandBuffer, imageData.image, VK_IMAGE_LAYOUT_GENERAL, (VkBuffer)dest->getHandle(), 1, &region);
+	Vulkan::cmdTransitionImageLayout(commandBuffer, imageData.image, format, renderTarget, copySrcLayout, imageData.layout, layers.mipLevel, 1, layers.baseArrayLayer, 1);
 
 	// TODO: This could be combined with the cmdTransitionImageLayout barrier.
 	((Buffer *)dest)->postGPUWriteBarrier(commandBuffer);
