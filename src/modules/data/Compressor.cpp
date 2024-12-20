@@ -341,7 +341,7 @@ public:
 			{
 				// For any error other than "not enough room", throw an exception.
 				delete[] rawbytes;
-				throw love::Exception("Could not decompress zlib/gzip-compressed data.");
+				throw love::Exception("Could not decompress zlib/gzip-compressed data (error code: %d).", status);
 			}
 
 			// Not enough room in the output buffer: try again with a larger size.
