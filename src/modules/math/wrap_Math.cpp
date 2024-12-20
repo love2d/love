@@ -179,7 +179,7 @@ int w_triangulate(lua_State *L)
 	}
 
 	if (vertices.size() < 3)
-		return luaL_error(L, "Need at least 3 vertices to triangulate");
+		return luaL_error(L, "Need at least 3 vertices to triangulate (got %d).", (int)vertices.size());
 
 	std::vector<Triangle> triangles;
 
