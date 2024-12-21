@@ -289,7 +289,21 @@ Graphics::Graphics()
 	if (@available(macOS 10.15, iOS 13.0, *))
 	{
 		graphicsInstance = this;
-		device = MTLCreateSystemDefaultDevice();
+#ifdef LOVE_MACOS
+		if (isLowPowerPreferred())
+		{
+			for (id<MTLDevice> dev in MTLCopyAllDevices())
+			{
+				if (dev.isLowPower)
+				{
+					device = dev;
+					break;
+				}
+			}
+		}
+#endif
+		if (device == nil)
+			device = MTLCreateSystemDefaultDevice();
 		if (device == nil)
 			throw love::Exception("Metal is not supported on this system.");
 	}
