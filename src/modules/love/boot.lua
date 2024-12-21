@@ -256,7 +256,7 @@ function love.init()
 			love.markDeprecated(2, "t.gammacorrect in love.conf", "field", "replaced", "t.graphics.gammacorrect")
 			gammacorrect = c.gammacorrect
 		end
-		love._setGammaCorrect(c.gammacorrect)
+		love._setGammaCorrect(gammacorrect)
 	end
 
 	if love._setRenderers then
