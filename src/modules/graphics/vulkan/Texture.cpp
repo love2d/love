@@ -301,9 +301,16 @@ void Texture::unloadVolatile()
 		vgfx->queueCleanUp([
 			device = device,
 			allocator = allocator,
-			imageData = std::move(*data)] () {
+			imageData = *data,
+			vgfx = vgfx,
+			renderTarget = renderTarget,
+			format = format] () {
 			if (imageData.imageView != VK_NULL_HANDLE)
+			{
+				if (renderTarget)
+					vgfx->cleanupFramebuffers(imageData.imageView, format);
 				vkDestroyImageView(device, imageData.imageView, nullptr);
+			}
 			if (imageData.allocation != VK_NULL_HANDLE)
 				vmaDestroyImage(allocator, imageData.image, imageData.allocation);
 			for (const auto &views : imageData.renderTargetImageViews)

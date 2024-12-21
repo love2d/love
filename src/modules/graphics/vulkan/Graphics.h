@@ -281,6 +281,8 @@ public:
 	int getVsync() const;
 	void mapLocalUniformData(void *data, size_t size, VkDescriptorBufferInfo &bufferInfo);
 
+	void cleanupFramebuffers(VkImageView imageView, PixelFormat format);
+
 	VkPipeline createGraphicsPipeline(Shader *shader, const GraphicsPipelineConfigurationCore &configuration, const GraphicsPipelineConfigurationNoDynamicState *noDynamicStateConfiguration);
 
 	uint32 getDeviceApiVersion() const { return deviceApiVersion; }
@@ -346,7 +348,6 @@ private:
 	void endRenderPass();
 	void applyScissor();
 	VkSampler createSampler(const SamplerState &sampler);
-	void cleanupUnusedObjects();
 	void requestSwapchainRecreation();
 
 	VkInstance instance = VK_NULL_HANDLE;
@@ -389,7 +390,6 @@ private:
 	int vsync = 1;
 	VkDeviceSize minUniformBufferOffsetAlignment = 0;
 	bool imageRequested = false;
-	uint32_t frameCounter = 0;
 	size_t currentFrame = 0;
 	uint32_t imageIndex = 0;
 	bool swapChainRecreationRequested = false;

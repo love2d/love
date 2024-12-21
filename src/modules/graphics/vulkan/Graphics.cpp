@@ -59,8 +59,6 @@ static const std::vector<const char*> deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 
-constexpr uint32_t USAGES_POLL_INTERVAL = 5000;
-
 constexpr int DEFAULT_VERTEX_BUFFER_BINDING = 0;
 constexpr int VERTEX_BUFFER_BINDING_START = 1;
 
@@ -577,7 +575,6 @@ void Graphics::present(void *screenshotCallbackdata)
 	updatePendingReadbacks();
 	updateTemporaryResources();
 
-	frameCounter++;
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 	beginFrame();
@@ -703,7 +700,6 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 		createQuadIndexBuffer();
 		createFanIndexBuffer();
 
-		frameCounter = 0;
 		currentFrame = 0;
 	}
 
@@ -1313,12 +1309,6 @@ void Graphics::initDynamicState()
 void Graphics::beginFrame()
 {
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-
-	if (frameCounter >= USAGES_POLL_INTERVAL)
-	{
-		cleanupUnusedObjects();
-		frameCounter = 0;
-	}
 
 	if (swapChain != VK_NULL_HANDLE)
 	{
@@ -2152,6 +2142,54 @@ VkFramebuffer Graphics::getFramebuffer(FramebufferConfiguration &configuration)
 	return framebuffer;
 }
 
+void Graphics::cleanupFramebuffers(VkImageView imageView, PixelFormat format)
+{
+	bool depthstencil = isPixelFormatDepthStencil(format);
+
+	for (auto it = framebuffers.begin(); it != framebuffers.end();)
+	{
+		bool foundView = false;
+
+		if (depthstencil)
+		{
+			if (it->first.staticData.depthView == imageView)
+				foundView = true;
+		}
+		else
+		{
+			for (VkImageView view : it->first.colorViews)
+			{
+				if (view == imageView)
+				{
+					foundView = true;
+					break;
+				}
+			}
+			if (!foundView)
+			{
+				for (VkImageView view : it->first.colorResolveViews)
+				{
+					if (view == imageView)
+					{
+						foundView = true;
+						break;
+					}
+				}
+			}
+		}
+
+		if (foundView)
+		{
+			vkDestroyFramebuffer(device, it->second, nullptr);
+			it = framebuffers.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+}
+
 void Graphics::createDefaultShaders()
 {
 	for (int i = 0; i < Shader::STANDARD_MAX_ENUM; i++)
@@ -2737,36 +2775,6 @@ VkSampler Graphics::createSampler(const SamplerState &samplerState)
 	return sampler;
 }
 
-template<typename Configuration, typename ObjectHandle, typename ConfigurationHasher, typename Deleter>
-static void eraseUnusedObjects(
-	std::unordered_map<Configuration, ObjectHandle, ConfigurationHasher> &objects,
-	std::unordered_map<ObjectHandle, bool> &usages,
-	Deleter deleter,
-	VkDevice device)
-{
-	std::vector<Configuration> deletionKeys;
-
-	for (const auto &entry : objects)
-	{
-		if (!usages[entry.second])
-		{
-			deletionKeys.push_back(entry.first);
-			usages.erase(entry.second);
-			deleter(device, entry.second, nullptr);
-		}
-		else
-			usages[entry.second] = false;
-	}
-
-	for (const auto &key : deletionKeys)
-		objects.erase(key);
-}
-
-void Graphics::cleanupUnusedObjects()
-{
-	eraseUnusedObjects(framebuffers, framebufferUsages, vkDestroyFramebuffer, device);
-}
-
 void Graphics::requestSwapchainRecreation()
 {
 	if (swapChain != VK_NULL_HANDLE)
@@ -3242,16 +3250,21 @@ void Graphics::cleanupSwapChain()
 {
 	if (colorImage)
 	{
+		cleanupFramebuffers(colorImageView, swapChainPixelFormat);
 		vkDestroyImageView(device, colorImageView, nullptr);
 		vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
 	}
 	if (depthImage)
 	{
+		cleanupFramebuffers(depthImageView, swapChainPixelFormat);
 		vkDestroyImageView(device, depthImageView, nullptr);
 		vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
 	}
 	for (const auto &swapChainImageView : swapChainImageViews)
+	{
+		cleanupFramebuffers(swapChainImageView, swapChainPixelFormat);
 		vkDestroyImageView(device, swapChainImageView, nullptr);
+	}
 	swapChainImageViews.clear();
 	vkDestroySwapchainKHR(device, swapChain, nullptr);
 	swapChainImages.clear();
