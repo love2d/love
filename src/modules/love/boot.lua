@@ -181,6 +181,11 @@ function love.init()
 			centered = true,
 			usedpiscale = true,
 		},
+		graphics = {
+			gammacorrect = false,
+			renderers = nil,
+			excluderenderers = nil,
+		},
 		modules = {
 			data = true,
 			event = true,
@@ -210,10 +215,10 @@ function love.init()
 		identity = false,
 		appendidentity = false,
 		externalstorage = false, -- Only relevant for Android.
-		gammacorrect = false,
+		gammacorrect = nil, -- Moved to t.graphics.
 		highdpi = false,
-		renderers = nil,
-		excluderenderers = nil,
+		renderers = nil, -- Moved to t.graphics.
+		excluderenderers = nil, -- Moved to t.graphics.
 	}
 
 	-- Console hack, part 1.
@@ -243,18 +248,26 @@ function love.init()
 	end
 
 	if love._setGammaCorrect then
+		local gammacorrect = false
+		if type(c.graphics) == "table" then
+			gammacorrect = c.graphics.gammacorrect
+		end
+		if c.gammacorrect ~= nil then
+			love.markDeprecated(2, "t.gammacorrect in love.conf", "field", "replaced", "t.graphics.gammacorrect")
+			gammacorrect = c.gammacorrect
+		end
 		love._setGammaCorrect(c.gammacorrect)
 	end
 
 	if love._setRenderers then
 		local renderers = love._getDefaultRenderers()
 		if type(c.renderers) == "table" then
-			renderers = {}
-			for i,v in ipairs(c.renderers) do
-				renderers[i] = v
-			end
+			love.markDeprecated(2, "t.renderers in love.conf", "field", "replaced", "t.graphics.renderers")
+			renderers = c.renderers
 		end
-
+		if type(c.graphics) == "table" and type(c.graphics.renderers) == "table" then
+			renderers = c.graphics.renderers
+		end
 		if love.arg.options.renderers.set then
 			local renderersstr = love.arg.options.renderers.arg[1]
 			renderers = {}
@@ -262,7 +275,15 @@ function love.init()
 				table.insert(renderers, r)
 			end
 		end
-		local excluderenderers = c.excluderenderers
+
+		local excluderenderers = nil
+		if type(c.excluderenderers) == "table" then
+			love.markDeprecated(2, "t.excluderenderers in love.conf", "field", "replaced", "t.graphics.excluderenderers")
+			excluderenderers = c.excluderenderers
+		end
+		if type(c.graphics) == "table" and type(c.graphics.excluderenderers) == "table" then
+			excluderenderers = c.graphics.excluderenderers
+		end
 		if love.arg.options.excluderenderers.set then
 			local excludestr = love.arg.options.excluderenderers.arg[1]
 			excluderenderers = {}
