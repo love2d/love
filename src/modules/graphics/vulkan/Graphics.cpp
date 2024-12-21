@@ -3256,7 +3256,7 @@ void Graphics::cleanupSwapChain()
 	}
 	if (depthImage)
 	{
-		cleanupFramebuffers(depthImageView, swapChainPixelFormat);
+		cleanupFramebuffers(depthImageView, depthStencilPixelFormat);
 		vkDestroyImageView(device, depthImageView, nullptr);
 		vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
 	}
