@@ -423,6 +423,14 @@ static int w__setRenderers(lua_State *L)
 	return 0;
 }
 
+static int w__setLowPowerPreferred(lua_State *L)
+{
+#ifdef LOVE_ENABLE_GRAPHICS
+	love::graphics::setLowPowerPreferred(love::luax_checkboolean(L, 1));
+#endif
+	return 0;
+}
+
 static int w__setHighDPIAllowed(lua_State *L)
 {
 #ifdef LOVE_ENABLE_WINDOW
@@ -555,6 +563,9 @@ int luaopen_love(lua_State *L)
 
 	lua_pushcfunction(L, w__setRenderers);
 	lua_setfield(L, -2, "_setRenderers");
+
+	lua_pushcfunction(L, w__setLowPowerPreferred);
+	lua_setfield(L, -2, "_setLowPowerPreferred");
 
 	lua_pushcfunction(L, w__setHighDPIAllowed);
 	lua_setfield(L, -2, "_setHighDPIAllowed");

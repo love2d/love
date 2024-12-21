@@ -44,6 +44,7 @@ namespace graphics
 {
 
 static bool gammaCorrect = false;
+static bool lowPowerPreferred = false;
 static bool debugMode = false;
 static bool debugModeQueried = false;
 
@@ -147,6 +148,16 @@ const std::vector<Renderer> &getRenderers()
 void setRenderers(const std::vector<Renderer> &renderers)
 {
 	_renderers = renderers;
+}
+
+void setLowPowerPreferred(bool preferred)
+{
+	lowPowerPreferred = preferred;
+}
+
+bool isLowPowerPreferred()
+{
+	return lowPowerPreferred;
 }
 
 Graphics *Graphics::createInstance()

@@ -183,6 +183,7 @@ function love.init()
 		},
 		graphics = {
 			gammacorrect = false,
+			lowpower = false,
 			renderers = nil,
 			excluderenderers = nil,
 		},
@@ -257,6 +258,10 @@ function love.init()
 			gammacorrect = c.gammacorrect
 		end
 		love._setGammaCorrect(gammacorrect)
+	end
+
+	if love._setLowPowerPreferred and type(c.graphics) == "table" then
+		love._setLowPowerPreferred(c.graphics.lowpower)
 	end
 
 	if love._setRenderers then

@@ -1605,9 +1605,9 @@ int Graphics::rateDeviceSuitability(VkPhysicalDevice device)
 	// optional
 
 	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-		score += 1000;
+		score += isLowPowerPreferred() ? 100 : 1000;
 	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
-		score += 100;
+		score += isLowPowerPreferred() ? 1000 : 100;
 	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU)
 		score += 10;
 

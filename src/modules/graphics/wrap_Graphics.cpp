@@ -198,6 +198,12 @@ int w_isGammaCorrect(lua_State *L)
 	return 1;
 }
 
+int w_isLowPowerPreferred(lua_State *L)
+{
+	luax_pushboolean(L, graphics::isLowPowerPreferred());
+	return 1;
+}
+
 int w_getWidth(lua_State *L)
 {
 	lua_pushinteger(L, instance()->getWidth());
@@ -4112,6 +4118,7 @@ static const luaL_Reg functions[] =
 	{ "isCreated", w_isCreated },
 	{ "isActive", w_isActive },
 	{ "isGammaCorrect", w_isGammaCorrect },
+	{ "isLowPowerPreferred", w_isLowPowerPreferred },
 	{ "getWidth", w_getWidth },
 	{ "getHeight", w_getHeight },
 	{ "getDimensions", w_getDimensions },

@@ -109,6 +109,9 @@ const std::vector<Renderer> &getDefaultRenderers();
 const std::vector<Renderer> &getRenderers();
 void setRenderers(const std::vector<Renderer> &renderers);
 
+void setLowPowerPreferred(bool preferred);
+bool isLowPowerPreferred();
+
 class Graphics : public Module
 {
 public:
