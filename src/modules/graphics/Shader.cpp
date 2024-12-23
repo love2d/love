@@ -1094,7 +1094,7 @@ static DataFormat getDataFormat(glslang::TBasicType basictype, int components, i
 		else if (components == 4)
 			return DATAFORMAT_INT32_VEC4;
 	}
-	else if (basictype == glslang::EbtUint)
+	else if (basictype == glslang::EbtUint || basictype == glslang::EbtBool)
 	{
 		if (components == 1)
 			return DATAFORMAT_UINT32;
@@ -1196,6 +1196,7 @@ static T convertData(const glslang::TConstUnion &data)
 		case glslang::EbtUint8: return (T) data.getU8Const();
 		case glslang::EbtUint16: return (T) data.getU16Const();
 		case glslang::EbtUint64: return (T) data.getU64Const();
+		case glslang::EbtBool: return (T)data.getBConst();
 		default: return 0;
 	}
 }
