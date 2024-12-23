@@ -1079,9 +1079,9 @@ static DataFormat getDataFormat(glslang::TBasicType basictype, int components, i
 		else if (components == 2)
 			return DATAFORMAT_FLOAT_VEC2;
 		else if (components == 3)
-			return DATAFORMAT_FLOAT_VEC2;
+			return DATAFORMAT_FLOAT_VEC3;
 		else if (components == 4)
-			return DATAFORMAT_FLOAT_VEC2;
+			return DATAFORMAT_FLOAT_VEC4;
 	}
 	else if (basictype == glslang::EbtInt)
 	{
@@ -1090,9 +1090,9 @@ static DataFormat getDataFormat(glslang::TBasicType basictype, int components, i
 		else if (components == 2)
 			return DATAFORMAT_INT32_VEC2;
 		else if (components == 3)
-			return DATAFORMAT_INT32_VEC2;
+			return DATAFORMAT_INT32_VEC3;
 		else if (components == 4)
-			return DATAFORMAT_INT32_VEC2;
+			return DATAFORMAT_INT32_VEC4;
 	}
 	else if (basictype == glslang::EbtUint)
 	{
@@ -1101,9 +1101,9 @@ static DataFormat getDataFormat(glslang::TBasicType basictype, int components, i
 		else if (components == 2)
 			return DATAFORMAT_UINT32_VEC2;
 		else if (components == 3)
-			return DATAFORMAT_UINT32_VEC2;
+			return DATAFORMAT_UINT32_VEC3;
 		else if (components == 4)
-			return DATAFORMAT_UINT32_VEC2;
+			return DATAFORMAT_UINT32_VEC4;
 	}
 
 	return DATAFORMAT_MAX_ENUM;
