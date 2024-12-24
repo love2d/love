@@ -988,7 +988,7 @@ void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 	}
 
 	if (!isResourceBaseTypeCompatible(info->dataBaseType, getDataBaseType(maintex->getPixelFormat())))
-		throw love::Exception("Texture's data format base type must match the uniform variable declared in the shader (float, int, or uint).");
+		throw love::Exception("Main texture's data format base type must match the MainTex declaration in the shader (float, int, or uint).");
 
 	if (info->isDepthSampler != maintex->getSamplerState().depthSampleMode.hasValue)
 	{
