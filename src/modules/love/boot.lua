@@ -454,9 +454,12 @@ return function()
 		local handler = (not inerror and errhand) or error_printer
 		inerror = true
 		func = handler(...)
+		inerror = false
 	end
 
 	local function earlyinit()
+		func = nil
+
 		-- If love.boot fails, return 1 and finish immediately
 		local result = xpcall(love.boot, error_printer)
 		if not result then return 1 end
@@ -472,6 +475,8 @@ return function()
 		result, main = xpcall(love.run, deferErrhand)
 		if result then
 			func = main
+		elseif inerror then -- Error in error handler
+			print("Error: " .. tostring(main))
 		end
 	end
 
