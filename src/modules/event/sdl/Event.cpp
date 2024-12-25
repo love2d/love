@@ -433,6 +433,29 @@ Message *Event::convert(const SDL_Event &e)
 			msg = new Message("displayrotated", vargs);
 		}
 		break;
+	case SDL_EVENT_DROP_BEGIN:
+		msg = new Message("dropbegan", vargs);
+		break;
+	case SDL_EVENT_DROP_COMPLETE:
+		{
+			double x = e.drop.x;
+			double y = e.drop.y;
+			windowToDPICoords(&x, &y);
+			vargs.emplace_back(x);
+			vargs.emplace_back(y);
+			msg = new Message("dropcompleted", vargs);
+		}
+		break;
+	case SDL_EVENT_DROP_POSITION:
+		{
+			double x = e.drop.x;
+			double y = e.drop.y;
+			windowToDPICoords(&x, &y);
+			vargs.emplace_back(x);
+			vargs.emplace_back(y);
+			msg = new Message("dropmoved", vargs);
+		}
+		break;
 	case SDL_EVENT_DROP_FILE:
 		filesystem = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
 		if (filesystem != nullptr)
@@ -441,15 +464,23 @@ Message *Event::convert(const SDL_Event &e)
 			// Allow mounting any dropped path, so zips or dirs can be mounted.
 			filesystem->allowMountingForPath(filepath);
 
+			double x = e.drop.x;
+			double y = e.drop.y;
+			windowToDPICoords(&x, &y);
+
 			if (filesystem->isRealDirectory(filepath))
 			{
 				vargs.emplace_back(filepath, strlen(filepath));
+				vargs.emplace_back(x);
+				vargs.emplace_back(y);
 				msg = new Message("directorydropped", vargs);
 			}
 			else
 			{
 				auto *file = new love::filesystem::NativeFile(filepath, love::filesystem::File::MODE_CLOSED);
 				vargs.emplace_back(&love::filesystem::NativeFile::type, file);
+				vargs.emplace_back(x);
+				vargs.emplace_back(y);
 				msg = new Message("filedropped", vargs);
 				file->release();
 			}

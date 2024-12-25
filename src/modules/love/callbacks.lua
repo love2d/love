@@ -115,11 +115,20 @@ function love.createhandlers()
 		resize = function (w, h)
 			if love.resize then return love.resize(w, h) end
 		end,
-		filedropped = function (f)
-			if love.filedropped then return love.filedropped(f) end
+		filedropped = function (f, x, y)
+			if love.filedropped then return love.filedropped(f, x, y) end
 		end,
-		directorydropped = function (dir)
-			if love.directorydropped then return love.directorydropped(dir) end
+		directorydropped = function (dir, x, y)
+			if love.directorydropped then return love.directorydropped(dir, x, y) end
+		end,
+		dropbegan = function ()
+			if love.dropbegan then return love.dropbegan() end
+		end,
+		dropmoved = function (x, y)
+			if love.dropmoved then return love.dropmoved(x, y) end
+		end,
+		dropcompleted = function (x, y)
+			if love.dropcompleted then return love.dropcompleted(x, y) end
 		end,
 		lowmemory = function ()
 			if love.lowmemory then love.lowmemory() end
