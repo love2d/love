@@ -26,10 +26,19 @@
 // C++
 #include <algorithm>
 
+#include <SDL3/SDL_hints.h>
+
 namespace love
 {
 namespace touch
 {
+
+// See src/modules/touch/Touch.cpp.
+void setTrackpadTouchImplementation(bool enable)
+{
+	SDL_SetHint(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, enable ? "1" : "0");
+}
+
 namespace sdl
 {
 
@@ -81,6 +90,17 @@ void Touch::onEvent(Uint32 eventtype, const TouchInfo &info)
 		break;
 	default:
 		break;
+	}
+}
+
+Touch::DeviceType Touch::getDeviceType(SDL_TouchDeviceType sdltype)
+{
+	switch (sdltype)
+	{
+		case SDL_TOUCH_DEVICE_DIRECT: return DEVICE_TOUCHSCREEN;
+		case SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE: return DEVICE_TOUCHPAD;
+		case SDL_TOUCH_DEVICE_INDIRECT_RELATIVE: return DEVICE_TOUCHPAD_RELATIVE;
+		default: return DEVICE_TOUCHSCREEN;
 	}
 }
 

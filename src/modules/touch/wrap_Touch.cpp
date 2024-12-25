@@ -24,6 +24,7 @@
 #include "wrap_Touch.h"
 
 #include "sdl/Touch.h"
+#include "common/Optional.h"
 
 namespace love
 {
@@ -42,19 +43,33 @@ int64 luax_checktouchid(lua_State *L, int idx)
 
 int w_getTouches(lua_State *L)
 {
+	Optional<Touch::DeviceType> typefilter;
+	if (!lua_isnoneornil(L, 1))
+	{
+		const char *typestr = luaL_checkstring(L, 1);
+		if (!Touch::getConstant(typestr, typefilter.value))
+			return luax_enumerror(L, "touch device type", Touch::getConstants(typefilter.value), typestr);
+		typefilter.hasValue = true;
+	}
+
 	const std::vector<Touch::TouchInfo> &touches = instance()->getTouches();
 
 	lua_createtable(L, (int) touches.size(), 0);
 
-	for (size_t i = 0; i < touches.size(); i++)
+	int filteredindex = 1;
+	for (const Touch::TouchInfo &touch : touches)
 	{
-		// This is a bit hackish and we lose the higher 32 bits of the id on
-		// 32-bit systems, but SDL only ever gives id's that at most use as many
-		// bits as can fit in a pointer (for now.)
-		// We use lightuserdata instead of a lua_Number (double) because doubles
-		// can't represent all possible id values on 64-bit systems.
-		lua_pushlightuserdata(L, (void *) (intptr_t) touches[i].id);
-		lua_rawseti(L, -2, (int) i + 1);
+		if (!typefilter.hasValue || typefilter.value == touch.deviceType)
+		{
+			// This is a bit hackish and we lose the higher 32 bits of the id on
+			// 32-bit systems, but SDL only ever gives id's that at most use as many
+			// bits as can fit in a pointer (for now.)
+			// We use lightuserdata instead of a lua_Number (double) because doubles
+			// can't represent all possible id values on 64-bit systems.
+			lua_pushlightuserdata(L, (void *)(intptr_t)touch.id);
+			lua_rawseti(L, -2, filteredindex);
+			filteredindex++;
+		}
 	}
 
 	return 1;
@@ -84,11 +99,39 @@ int w_getPressure(lua_State *L)
 	return 1;
 }
 
+int w_getDeviceType(lua_State *L)
+{
+	int64 id = luax_checktouchid(L, 1);
+
+	Touch::TouchInfo touch = {};
+	luax_catchexcept(L, [&]() { touch = instance()->getTouch(id); });
+
+	const char *typestr = nullptr;
+	if (!Touch::getConstant(touch.deviceType, typestr))
+		return luaL_error(L, "Unknown touch device type.");
+
+	lua_pushstring(L, typestr);
+	return 1;
+}
+
+int w_isMouse(lua_State *L)
+{
+	int64 id = luax_checktouchid(L, 1);
+
+	Touch::TouchInfo touch = {};
+	luax_catchexcept(L, [&]() { touch = instance()->getTouch(id); });
+
+	luax_pushboolean(L, touch.mouse);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getTouches", w_getTouches },
 	{ "getPosition", w_getPosition },
 	{ "getPressure", w_getPressure },
+	{ "getDeviceType", w_getDeviceType },
+	{ "isMouse", w_isMouse },
 	{ 0, 0 }
 };
 

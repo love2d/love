@@ -317,45 +317,51 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_EVENT_FINGER_DOWN:
 	case SDL_EVENT_FINGER_UP:
 	case SDL_EVENT_FINGER_MOTION:
-		// TODO: Expose APIs to enable different touch device types.
-		if (SDL_GetTouchDeviceType(e.tfinger.touchID) == SDL_TOUCH_DEVICE_DIRECT)
-		{
-			touchinfo.id = (int64) e.tfinger.fingerID;
-			touchinfo.x = e.tfinger.x;
-			touchinfo.y = e.tfinger.y;
-			touchinfo.dx = e.tfinger.dx;
-			touchinfo.dy = e.tfinger.dy;
-			touchinfo.pressure = e.tfinger.pressure;
+		touchinfo.id = (int64)e.tfinger.fingerID;
+		touchinfo.x = e.tfinger.x;
+		touchinfo.y = e.tfinger.y;
+		touchinfo.dx = e.tfinger.dx;
+		touchinfo.dy = e.tfinger.dy;
+		touchinfo.pressure = e.tfinger.pressure;
+		touchinfo.deviceType = love::touch::sdl::Touch::getDeviceType(SDL_GetTouchDeviceType(e.tfinger.touchID));
+		touchinfo.mouse = e.tfinger.touchID == SDL_MOUSE_TOUCHID;
 
-			// SDL's coords are normalized to [0, 1], but we want screen coords.
+		// SDL's coords are normalized to [0, 1], but we want screen coords for direct touches.
+		if (touchinfo.deviceType == love::touch::Touch::DEVICE_TOUCHSCREEN)
+		{
 			normalizedToDPICoords(&touchinfo.x, &touchinfo.y);
 			normalizedToDPICoords(&touchinfo.dx, &touchinfo.dy);
-
-			// We need to update the love.touch.sdl internal state from here.
-			touchmodule = (touch::sdl::Touch *) Module::getInstance("love.touch.sdl");
-			if (touchmodule)
-				touchmodule->onEvent(e.type, touchinfo);
-
-			// This is a bit hackish and we lose the higher 32 bits of the id on
-			// 32-bit systems, but SDL only ever gives id's that at most use as many
-			// bits as can fit in a pointer (for now.)
-			// We use lightuserdata instead of a lua_Number (double) because doubles
-			// can't represent all possible id values on 64-bit systems.
-			vargs.emplace_back((void *) (intptr_t) touchinfo.id);
-			vargs.emplace_back(touchinfo.x);
-			vargs.emplace_back(touchinfo.y);
-			vargs.emplace_back(touchinfo.dx);
-			vargs.emplace_back(touchinfo.dy);
-			vargs.emplace_back(touchinfo.pressure);
-
-			if (e.type == SDL_EVENT_FINGER_DOWN)
-				txt = "touchpressed";
-			else if (e.type == SDL_EVENT_FINGER_UP)
-				txt = "touchreleased";
-			else
-				txt = "touchmoved";
-			msg = new Message(txt, vargs);
 		}
+
+		// We need to update the love.touch.sdl internal state from here.
+		touchmodule = (touch::sdl::Touch *) Module::getInstance("love.touch.sdl");
+		if (touchmodule)
+			touchmodule->onEvent(e.type, touchinfo);
+
+		if (!love::touch::Touch::getConstant(touchinfo.deviceType, txt))
+			txt = "unknown";
+
+		// This is a bit hackish and we lose the higher 32 bits of the id on
+		// 32-bit systems, but SDL only ever gives id's that at most use as many
+		// bits as can fit in a pointer (for now.)
+		// We use lightuserdata instead of a lua_Number (double) because doubles
+		// can't represent all possible id values on 64-bit systems.
+		vargs.emplace_back((void *)(intptr_t)touchinfo.id);
+		vargs.emplace_back(touchinfo.x);
+		vargs.emplace_back(touchinfo.y);
+		vargs.emplace_back(touchinfo.dx);
+		vargs.emplace_back(touchinfo.dy);
+		vargs.emplace_back(touchinfo.pressure);
+		vargs.emplace_back(txt, strlen(txt));
+		vargs.emplace_back(touchinfo.mouse);
+
+		if (e.type == SDL_EVENT_FINGER_DOWN)
+			txt = "touchpressed";
+		else if (e.type == SDL_EVENT_FINGER_UP)
+			txt = "touchreleased";
+		else
+			txt = "touchmoved";
+		msg = new Message(txt, vargs);
 		break;
 	case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
 	case SDL_EVENT_JOYSTICK_BUTTON_UP:

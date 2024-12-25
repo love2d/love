@@ -1182,6 +1182,7 @@ target_link_libraries(love_timer PUBLIC
 #
 
 add_library(love_touch_root STATIC
+	src/modules/touch/Touch.cpp
 	src/modules/touch/Touch.h
 	src/modules/touch/wrap_Touch.cpp
 	src/modules/touch/wrap_Touch.h

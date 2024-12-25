@@ -18,50 +18,29 @@
  * 3. This notice may not be removed or altered from any source distribution.
  **/
 
-#ifndef LOVE_TOUCH_SDL_TOUCH_H
-#define LOVE_TOUCH_SDL_TOUCH_H
-
-// LOVE
-#include "touch/Touch.h"
-
-// SDL
-#include <SDL3/SDL_events.h>
+#include "Touch.h"
 
 namespace love
 {
 namespace touch
 {
-namespace sdl
+
+// TODO: find a cleaner way to do this...
+// The touch backend (e.g. love.touch.sdl) is expected to implement this.
+void setTrackpadTouchImplementation(bool enable);
+
+void setTrackpadTouch(bool enable)
 {
+	setTrackpadTouchImplementation(enable);
+}
 
-class Touch : public love::touch::Touch
+STRINGMAP_CLASS_BEGIN(Touch, Touch::DeviceType, Touch::DEVICE_MAX_ENUM, deviceType)
 {
-public:
+	{ "touchscreen",      Touch::DEVICE_TOUCHSCREEN       },
+	{ "touchpad",         Touch::DEVICE_TOUCHPAD          },
+	{ "touchpadrelative", Touch::DEVICE_TOUCHPAD_RELATIVE },
+}
+STRINGMAP_CLASS_END(Touch, Touch::DeviceType, Touch::DEVICE_MAX_ENUM, deviceType)
 
-	Touch();
-	virtual ~Touch() {}
-
-	const std::vector<TouchInfo> &getTouches() const override;
-	const TouchInfo &getTouch(int64 id) const override;
-
-	// SDL has functions to query the state of touch presses, but unfortunately
-	// they are updated on a different thread in some backends, which causes
-	// issues especially if the user is iterating through the current touches
-	// when they're updated. So we only update our touch press state in
-	// love::event::sdl::Event::convert.
-	void onEvent(Uint32 eventtype, const TouchInfo &info);
-
-	static DeviceType getDeviceType(SDL_TouchDeviceType sdltype);
-
-private:
-
-	// All current touches.
-	std::vector<TouchInfo> touches;
-
-}; // Touch
-
-} // sdl
 } // touch
 } // love
-
-#endif // LOVE_TOUCH_SDL_TOUCH_H

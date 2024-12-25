@@ -220,6 +220,7 @@ function love.init()
 		highdpi = false,
 		renderers = nil, -- Moved to t.graphics.
 		excluderenderers = nil, -- Moved to t.graphics.
+		trackpadtouch = false,
 	}
 
 	-- Console hack, part 1.
@@ -313,6 +314,10 @@ function love.init()
 
 	if love._setHighDPIAllowed then
 		love._setHighDPIAllowed(c.highdpi)
+	end
+
+	if love._setTrackpadTouch then
+		love._setTrackpadTouch(c.trackpadtouch)
 	end
 
 	if love._setAudioMixWithSystem then

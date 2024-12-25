@@ -78,6 +78,11 @@
 #	include "system/System.h"
 #endif
 
+// For love::touch::setTrackpadTouch.
+#ifdef LOVE_ENABLE_TOUCH
+#	include "touch/Touch.h"
+#endif
+
 // Scripts.
 #include "scripts/nogame.lua.h"
 
@@ -439,6 +444,14 @@ static int w__setHighDPIAllowed(lua_State *L)
 	return 0;
 }
 
+static int w__setTrackpadTouch(lua_State *L)
+{
+#ifdef LOVE_ENABLE_TOUCH
+	love::touch::setTrackpadTouch((bool) lua_toboolean(L, 1));
+#endif
+	return 0;
+}
+
 static int w__setAudioMixWithSystem(lua_State *L)
 {
 	bool success = false;
@@ -569,6 +582,9 @@ int luaopen_love(lua_State *L)
 
 	lua_pushcfunction(L, w__setHighDPIAllowed);
 	lua_setfield(L, -2, "_setHighDPIAllowed");
+
+	lua_pushcfunction(L, w__setTrackpadTouch);
+	lua_setfield(L, -2, "_setTrackpadTouch");
 
 	// Exposed here because we need to be able to call it before the audio
 	// module is initialized.

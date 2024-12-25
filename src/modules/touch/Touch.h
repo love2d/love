@@ -25,6 +25,7 @@
 #include "common/int.h"
 #include "common/Object.h"
 #include "common/Module.h"
+#include "common/StringMap.h"
 
 // C++
 #include <vector>
@@ -35,18 +36,30 @@ namespace love
 namespace touch
 {
 
+void setTrackpadTouch(bool enable);
+
 class Touch : public Module
 {
 public:
 
+	enum DeviceType
+	{
+		DEVICE_TOUCHSCREEN,
+		DEVICE_TOUCHPAD,
+		DEVICE_TOUCHPAD_RELATIVE,
+		DEVICE_MAX_ENUM
+	};
+
 	struct TouchInfo
 	{
 		int64 id;  // Identifier. Only unique for the duration of the touch-press.
-		double x;  // Position in pixels along the x-axis.
-		double y;  // Position in pixels along the y-axis.
-		double dx; // Amount in pixels moved along the x-axis.
-		double dy; // Amount in pixels moved along the y-axis.
+		double x;  // Position in pixels (for touchscreens) or normalized [0, 1] position (for touchpads) along the x-axis.
+		double y;  // Position in pixels (for touchscreens) or normalized [0, 1] position (for touchpads) along the y-axis.
+		double dx; // Amount moved along the x-axis.
+		double dy; // Amount moved along the y-axis.
 		double pressure;
+		DeviceType deviceType;
+		bool mouse;
 	};
 
 	virtual ~Touch() {}
@@ -60,6 +73,8 @@ public:
 	 * Gets a specific touch, using its ID.
 	 **/
 	virtual const TouchInfo &getTouch(int64 id) const = 0;
+
+	STRINGMAP_CLASS_DECLARE(DeviceType);
 
 protected:
 
