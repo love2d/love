@@ -49,6 +49,7 @@ void GenericShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, R
 
 	// Spacing counter and newline handling.
 	Vector2 curpos = offset;
+	float spacingremainder = 0;
 
 	float maxwidth = 0;
 	uint32 prevglyph = 0;
@@ -125,7 +126,11 @@ void GenericShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, R
 
 		// Account for extra spacing given to space characters.
 		if (g == ' ' && extraspacing != 0.0f)
-			curpos.x += extraspacing;
+		{
+			spacingremainder += fmod(extraspacing, 1);
+			curpos.x += floorf(extraspacing) + floorf(spacingremainder);
+			spacingremainder = fmod(spacingremainder, 1);
+		}
 
 		prevglyph = g;
 	}
