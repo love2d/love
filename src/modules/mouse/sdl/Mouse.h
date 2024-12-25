@@ -42,7 +42,7 @@ public:
 	Mouse();
 	virtual ~Mouse();
 
-	love::mouse::Cursor *newCursor(love::image::ImageData *data, int hotx, int hoty) override;
+	love::mouse::Cursor *newCursor(const std::vector<image::ImageData *> &data, int hotx, int hoty) override;
 	love::mouse::Cursor *getSystemCursor(Cursor::SystemCursor cursortype) override;
 
 	void setCursor(love::mouse::Cursor *cursor) override;

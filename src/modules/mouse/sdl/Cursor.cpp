@@ -29,23 +29,49 @@ namespace mouse
 namespace sdl
 {
 
-Cursor::Cursor(image::ImageData *data, int hotx, int hoty)
+Cursor::Cursor(const std::vector<image::ImageData *> &imageData, int hotx, int hoty)
 	: cursor(nullptr)
 	, type(CURSORTYPE_IMAGE)
 	, systemType(CURSOR_MAX_ENUM)
 {
-	int w = data->getWidth();
-	int h = data->getHeight();
-	int pitch = w * 4;
+	if (imageData.empty())
+		throw love::Exception("At least one ImageData must be provided for a custom cursor.");
 
-	SDL_Surface *surface = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_ABGR8888, data->getData(), pitch);
-	if (!surface)
-		throw love::Exception("Cannot create cursor: out of memory.");
+	std::vector<SDL_Surface *> surfaces;
 
-	cursor = SDL_CreateColorCursor(surface, hotx, hoty);
-	SDL_DestroySurface(surface);
+	for (image::ImageData *data : imageData)
+	{
+		int w = data->getWidth();
+		int h = data->getHeight();
+		int pitch = w * 4;
 
-	if (!cursor)
+		if (getLinearPixelFormat(data->getFormat()) != PIXELFORMAT_RGBA8_UNORM)
+		{
+			for (SDL_Surface *surface : surfaces)
+				SDL_DestroySurface(surface);
+			throw love::Exception("Cannot create cursor: ImageData pixel format must be rgba8.");
+		}
+
+		surfaces.push_back(SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_ABGR8888, data->getData(), pitch));
+
+		if (surfaces.back() == nullptr)
+		{
+			for (SDL_Surface *surface : surfaces)
+				SDL_DestroySurface(surface);
+			throw love::Exception("Cannot create cursor: out of memory.");
+		}
+	}
+
+	// Add alternate representations for the OS to use in different DPI scales.
+	for (size_t i = 1; i < surfaces.size(); i++)
+		SDL_AddSurfaceAlternateImage(surfaces[0], surfaces[i]);
+
+	cursor = SDL_CreateColorCursor(surfaces[0], hotx, hoty);
+
+	for (SDL_Surface *surface : surfaces)
+		SDL_DestroySurface(surface);
+
+	if (cursor == nullptr)
 		throw love::Exception("Cannot create cursor: %s", SDL_GetError());
 }
 
@@ -61,7 +87,7 @@ Cursor::Cursor(mouse::Cursor::SystemCursor cursortype)
 	else
 		throw love::Exception("Cannot create system cursor: invalid type.");
 
-	if (!cursor)
+	if (cursor == nullptr)
 		throw love::Exception("Cannot create system cursor: %s", SDL_GetError());
 }
 

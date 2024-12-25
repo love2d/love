@@ -43,7 +43,7 @@ public:
 	// Implements Module.
 	virtual ModuleType getModuleType() const { return M_MOUSE; }
 
-	virtual Cursor *newCursor(love::image::ImageData *data, int hotx, int hoty) = 0;
+	virtual Cursor *newCursor(const std::vector<image::ImageData *> &data, int hotx, int hoty) = 0;
 	virtual Cursor *getSystemCursor(Cursor::SystemCursor cursortype) = 0;
 
 	virtual void setCursor(Cursor *cursor) = 0;

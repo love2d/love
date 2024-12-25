@@ -84,7 +84,7 @@ Mouse::~Mouse()
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
-love::mouse::Cursor *Mouse::newCursor(love::image::ImageData *data, int hotx, int hoty)
+love::mouse::Cursor *Mouse::newCursor(const std::vector<image::ImageData *> &data, int hotx, int hoty)
 {
 	return new Cursor(data, hotx, hoty);
 }
