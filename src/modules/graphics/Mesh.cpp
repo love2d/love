@@ -227,7 +227,7 @@ void Mesh::finalizeAttribute(BufferAttribute &attrib) const
 			attrib.bindingLocation = (int)builtinattrib;
 	}
 
-	if (attrib.bindingLocation >= VertexAttributes::MAX || (attrib.bindingLocation < 0 && attrib.name.empty()))
+	if (attrib.bindingLocation >= (int) VertexAttributes::MAX || (attrib.bindingLocation < 0 && attrib.name.empty()))
 		throw love::Exception("Vertex attributes must have a valid binding location value within [0, %d).", VertexAttributes::MAX);
 }
 

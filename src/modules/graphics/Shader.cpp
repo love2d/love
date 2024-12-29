@@ -1232,7 +1232,7 @@ static bool AddFieldsToFormat(std::vector<Buffer::DataDeclaration> &format, int 
 		DataFormat dataformat = getDataFormat(type->getBasicType(), type->getVectorSize(), type->getMatrixRows(), type->getMatrixCols(), type->isMatrix());
 		if (dataformat == DATAFORMAT_MAX_ENUM)
 		{
-			err = "Shader validation error:\nUnhandled data format for type " + (int)type->getBasicType() + std::string(" with name ") + basename;
+			err = "Shader validation error:\nUnhandled data format for type " + std::to_string((int)type->getBasicType()) + std::string(" with name ") + basename;
 			return false;
 		}
 

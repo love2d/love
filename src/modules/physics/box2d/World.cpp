@@ -126,9 +126,8 @@ bool World::ContactFilter::process(Shape *a, Shape *b)
 	return true;
 }
 
-World::QueryCallback::QueryCallback(World *world, lua_State *L, int idx)
-	: world(world)
-	, L(L)
+World::QueryCallback::QueryCallback(lua_State *L, int idx)
+	: L(L)
 	, funcidx(idx)
 {
 	luaL_checktype(L, funcidx, LUA_TFUNCTION);
@@ -159,9 +158,8 @@ bool World::QueryCallback::ReportFixture(b2Fixture *fixture)
 	return true;
 }
 
-World::CollectCallback::CollectCallback(World *world, uint16 categoryMask, lua_State *L)
-	: world(world)
-	, categoryMask(categoryMask)
+World::CollectCallback::CollectCallback(uint16 categoryMask, lua_State *L)
+	: categoryMask(categoryMask)
 	, L(L)
 {
 	lua_newtable(L);
@@ -185,9 +183,8 @@ bool World::CollectCallback::ReportFixture(b2Fixture *f)
 	return true;
 }
 
-World::RayCastCallback::RayCastCallback(World *world, lua_State *L, int idx)
-	: world(world)
-	, L(L)
+World::RayCastCallback::RayCastCallback(lua_State *L, int idx)
+	: L(L)
 	, funcidx(idx)
 {
 	luaL_checktype(L, funcidx, LUA_TFUNCTION);
@@ -605,7 +602,7 @@ int World::queryShapesInArea(lua_State *L)
 	box.lowerBound = Physics::scaleDown(b2Vec2(lx, ly));
 	box.upperBound = Physics::scaleDown(b2Vec2(ux, uy));
 	luaL_checktype(L, 5, LUA_TFUNCTION);
-	QueryCallback query(this, L, 5);
+	QueryCallback query(L, 5);
 	world->QueryAABB(&query, box);
 	return 0;
 }
@@ -620,7 +617,7 @@ int World::getShapesInArea(lua_State *L)
 	b2AABB box;
 	box.lowerBound = Physics::scaleDown(b2Vec2(lx, ly));
 	box.upperBound = Physics::scaleDown(b2Vec2(ux, uy));
-	CollectCallback query(this, categoryMaskBits, L);
+	CollectCallback query(categoryMaskBits, L);
 	world->QueryAABB(&query, box);
 	return 1;
 }
@@ -634,7 +631,7 @@ int World::rayCast(lua_State *L)
 	b2Vec2 v1 = Physics::scaleDown(b2Vec2(x1, y1));
 	b2Vec2 v2 = Physics::scaleDown(b2Vec2(x2, y2));
 	luaL_checktype(L, 5, LUA_TFUNCTION);
-	RayCastCallback raycast(this, L, 5);
+	RayCastCallback raycast(L, 5);
 	world->RayCast(&raycast, v1, v2);
 	return 0;
 }

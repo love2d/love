@@ -52,6 +52,7 @@ size_t getFormatStride(CommonFormat format)
 		case CommonFormat::XYf_STf_RGBAub: return sizeof(XYf_STf_RGBAub);
 		case CommonFormat::XYf_STus_RGBAub: return sizeof(XYf_STus_RGBAub);
 		case CommonFormat::XYf_STPf_RGBAub: return sizeof(XYf_STPf_RGBAub);
+		case CommonFormat::COUNT: return 0;
 	}
 	return 0;
 }
@@ -77,6 +78,8 @@ uint32 getFormatFlags(CommonFormat format)
 	case CommonFormat::XYf_STus_RGBAub:
 	case CommonFormat::XYf_STPf_RGBAub:
 		return ATTRIBFLAG_POS | ATTRIBFLAG_TEXCOORD | ATTRIBFLAG_COLOR;
+	case CommonFormat::COUNT:
+		return 0;
 	}
 	return 0;
 }
@@ -99,6 +102,8 @@ int getFormatPositionComponents(CommonFormat format)
 		return 2;
 	case CommonFormat::XYZf:
 		return 3;
+	case CommonFormat::COUNT:
+		return 0;
 	}
 	return 0;
 }
@@ -320,6 +325,8 @@ void VertexAttributes::setCommonFormat(CommonFormat format, uint8 bufferindex)
 		set(ATTRIB_POS, DATAFORMAT_FLOAT_VEC2, 0, bufferindex);
 		set(ATTRIB_TEXCOORD, DATAFORMAT_FLOAT_VEC3, uint16(sizeof(float) * 2), bufferindex);
 		set(ATTRIB_COLOR, DATAFORMAT_UNORM8_VEC4, uint16(sizeof(float) * 5), bufferindex);
+		break;
+	case CommonFormat::COUNT:
 		break;
 	}
 }
