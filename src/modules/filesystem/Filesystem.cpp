@@ -20,6 +20,7 @@
 
 // LOVE
 #include "Filesystem.h"
+#include "NativeFile.h"
 #include "common/utf8.h"
 
 // Assume POSIX or Visual Studio.
@@ -65,6 +66,11 @@ void Filesystem::setAndroidSaveExternal(bool useExternal)
 bool Filesystem::isAndroidSaveExternal() const
 { 
 	return useExternal;
+}
+
+NativeFile *Filesystem::openNativeFile(const char *path, File::Mode mode) const
+{
+	return new NativeFile(path, mode);
 }
 
 FileData *Filesystem::newFileData(const void *data, size_t size, const char *filename) const

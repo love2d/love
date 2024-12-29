@@ -58,6 +58,8 @@ namespace love
 namespace filesystem
 {
 
+class NativeFile;
+
 class Filesystem : public Module
 {
 public:
@@ -172,6 +174,8 @@ public:
 	 * Opens a new File object from the specified path, using the given mode.
 	 **/
 	virtual File *openFile(const char *filename, File::Mode mode) const = 0;
+
+	NativeFile *openNativeFile(const char *path, File::Mode mode) const;
 
 	/**
 	 * Creates a new FileData object. Data will be copied.
@@ -328,7 +332,7 @@ private:
 	bool getRealPathType(const std::string &path, FileType &ftype) const;
 
 	// Should we save external or internal for Android
-	bool useExternal;
+	bool useExternal = false;
 
 }; // Filesystem
 

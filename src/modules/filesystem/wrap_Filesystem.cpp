@@ -251,6 +251,30 @@ int w_openFile(lua_State *L)
 	return 1;
 }
 
+int w_openNativeFile(lua_State *L)
+{
+	const char *path = luaL_checkstring(L, 1);
+	const char *modestr = luaL_checkstring(L, 2);
+
+	File::Mode mode = File::MODE_CLOSED;
+	if (!File::getConstant(modestr, mode))
+		return luax_enumerror(L, "file open mode", File::getConstants(mode), modestr);
+
+	File *t = nullptr;
+	try
+	{
+		t = instance()->openNativeFile(path, mode);
+	}
+	catch (love::Exception &e)
+	{
+		return luax_ioError(L, "%s", e.what());
+	}
+
+	luax_pushtype(L, t);
+	t->release();
+	return 1;
+}
+
 int w_newFile(lua_State* L)
 {
 	luax_markdeprecated(L, 1, "love.filesystem.newFile", API_FUNCTION, DEPRECATED_RENAMED, "love.filesystem.openFile");
@@ -1027,6 +1051,7 @@ static const luaL_Reg functions[] =
 	{ "unmountFullPath", w_unmountFullPath },
 	{ "unmountCommonPath", w_unmountCommonPath },
 	{ "openFile", w_openFile },
+	{ "openNativeFile", w_openNativeFile },
 	{ "getFullCommonPath", w_getFullCommonPath },
 	{ "getWorkingDirectory", w_getWorkingDirectory },
 	{ "getUserDirectory", w_getUserDirectory },
