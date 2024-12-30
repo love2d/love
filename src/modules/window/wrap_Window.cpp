@@ -678,7 +678,7 @@ static void fileDialogCallback(void *context, const std::vector<std::string> &fi
 
 	// Unfortunately, this eats the stack trace, too bad.
 	if (err != 0)
-		throw love::Exception("Error in file dialog callback: %s", luax_tostring(L, -1));
+		throw love::Exception("Error in file dialog callback: %s", lua_tostring(L, -1));
 }
 
 int w_showFileDialog(lua_State *L)
