@@ -26,6 +26,7 @@
 #	include "graphics/vulkan/Vulkan.h"
 #endif
 #include "Window.h"
+#include "filesystem/Filesystem.h"
 
 #ifdef LOVE_ANDROID
 #include "common/android.h"
@@ -86,7 +87,7 @@ Window::Window()
 	, displayedWindowError(false)
 	, contextAttribs()
 {
-	if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+	if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
 		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
 
 	// Make sure the screensaver doesn't activate by default.
@@ -97,13 +98,15 @@ Window::Window()
 	// on some setups. More investigation is needed before enabling it.
 	canUseDwmFlush = SDL_GetHintBoolean("LOVE_GRAPHICS_VSYNC_DWM", false);
 #endif
+
+	dialogEventId = SDL_RegisterEvents(1);
 }
 
 Window::~Window()
 {
 	close(false);
 	graphics.set(nullptr);
-	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+	SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 }
 
 void Window::setGraphics(graphics::Graphics *graphics)
@@ -1488,6 +1491,139 @@ int Window::showMessageBox(const MessageBoxData &data)
 	SDL_ShowMessageBox(&sdldata, &pressedbutton);
 
 	return pressedbutton;
+}
+
+// As of a SDL3 prerelease, a lot of SDL file dialog parameters need to persist
+// until the callback completes, so we store them here.
+// This is also used to retrieve some useful info to pass to love's own callback,
+// and to send that along to SDL events (see below).
+class FileDialogState : public love::Object
+{
+public:
+
+	void *context;
+	Window::FileDialogCallback callback;
+	Uint32 dialogEventId;
+	Window::FileDialogData data;
+	std::vector<SDL_DialogFileFilter> sdlFilters;
+	SDL_PropertiesID props;
+
+	Optional<std::string> err;
+	std::vector<std::string> files;
+	int filterIndex;
+};
+
+static void SDLCALL fileDialogCallbackSDL(void *userdata, const char *const *filelist, int filter)
+{
+	auto state = (FileDialogState *) userdata;
+	if (state == nullptr)
+		return;
+
+	auto fs = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
+
+	if (filelist != nullptr)
+	{
+		// SDL's file list only lasts until the end of the callback, so we copy it.
+		for (int i = 0; filelist[i] != nullptr; i++)
+		{
+			std::string file(filelist[i]);
+			if (fs != nullptr)
+				file = fs->canonicalizeRealPath(file);
+			state->files.push_back(file);
+		}
+	}
+	else
+	{
+		state->err.set(SDL_GetError());
+	}
+
+	state->filterIndex = filter;
+
+	SDL_DestroyProperties(state->props);
+
+	// The SDL dialog callback isn't guaranteed to be called on the main thread,
+	// whereas SDL event polling will happen there. This is needed because Lua states
+	// aren't thread safe.
+	SDL_Event event = {};
+	event.type = state->dialogEventId;
+	event.user.data1 = state;
+
+	SDL_PushEvent(&event);
+}
+
+void Window::handleSDLEvent(const SDL_Event &event)
+{
+	if (event.type == dialogEventId)
+	{
+		// Releases itself when it goes out of scope.
+		StrongRef<FileDialogState> state((FileDialogState *) event.user.data1, Acquire::NORETAIN);
+
+		const char *filtername = state->filterIndex >= 0
+			? state->data.filters[state->filterIndex].name.c_str()
+			: nullptr;
+
+		state->callback(state->context, state->files, filtername, state->err.hasValue ? state->err.value.c_str() : nullptr);
+	}
+}
+
+void Window::showFileDialog(const FileDialogData &data, FileDialogCallback callback, void *context)
+{
+	SDL_FileDialogType sdltype = SDL_FILEDIALOG_OPENFILE;
+	switch (data.type)
+	{
+	case FILEDIALOG_OPENFILE:
+	default:
+		sdltype = SDL_FILEDIALOG_OPENFILE;
+		break;
+	case FILEDIALOG_OPENFOLDER:
+		sdltype = SDL_FILEDIALOG_OPENFOLDER;
+		break;
+	case FILEDIALOG_SAVEFILE:
+		sdltype = SDL_FILEDIALOG_SAVEFILE;
+		break;
+	}
+
+	auto state = new FileDialogState();
+	state->callback = callback;
+	state->context = context;
+	state->dialogEventId = dialogEventId;
+	state->data = data;
+
+	for (const auto &filter : state->data.filters)
+	{
+		SDL_DialogFileFilter f = {};
+		f.name = filter.name.c_str();
+		f.pattern = filter.pattern.c_str();
+		state->sdlFilters.push_back(f);
+	}
+
+	// We destroy this in the dialog callback, since it needs to persist until then (until that's fixed in SDL code).
+	state->props = SDL_CreateProperties();
+
+	if (!data.title.empty())
+		SDL_SetStringProperty(state->props, SDL_PROP_FILE_DIALOG_TITLE_STRING, state->data.title.c_str());
+
+	if (!data.acceptLabel.empty())
+		SDL_SetStringProperty(state->props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, state->data.acceptLabel.c_str());
+
+	if (!data.cancelLabel.empty())
+		SDL_SetStringProperty(state->props, SDL_PROP_FILE_DIALOG_CANCEL_STRING, state->data.cancelLabel.c_str());
+
+	if (!data.defaultName.empty())
+		SDL_SetStringProperty(state->props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, state->data.defaultName.c_str());
+
+	if (data.attachToWindow)
+		SDL_SetPointerProperty(state->props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, window);
+
+	if (!state->sdlFilters.empty())
+	{
+		SDL_SetPointerProperty(state->props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, state->sdlFilters.data());
+		SDL_SetNumberProperty(state->props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, state->sdlFilters.size());
+	}
+
+	SDL_SetBooleanProperty(state->props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, data.multiSelect);
+
+	SDL_ShowFileDialogWithProperties(sdltype, fileDialogCallbackSDL, state, state->props);
 }
 
 void Window::requestAttention(bool continuous)

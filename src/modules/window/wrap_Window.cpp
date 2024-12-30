@@ -20,6 +20,7 @@
 
 #include "wrap_Window.h"
 #include "sdl/Window.h"
+#include "common/Reference.h"
 
 namespace love
 {
@@ -647,6 +648,110 @@ int w_showMessageBox(lua_State *L)
 	return 1;
 }
 
+static void fileDialogCallback(void *context, const std::vector<std::string> &files, const char *filtername, const char *errstr)
+{
+	auto r = (Reference *)context;
+	lua_State *L = r->getPinnedL();
+
+	r->push(L);
+
+	lua_createtable(L, (int)files.size(), 0);
+	for (size_t i = 0; i < files.size(); i++)
+	{
+		lua_pushstring(L, files[i].c_str());
+		lua_rawseti(L, -2, (int)i + 1);
+	}
+
+	if (filtername != nullptr)
+		lua_pushstring(L, filtername);
+	else
+		lua_pushnil(L);
+
+	if (errstr != nullptr)
+		lua_pushstring(L, errstr);
+	else
+		lua_pushnil(L);
+
+	int err = lua_pcall(L, 3, 0, 0);
+
+	delete r;
+
+	// Unfortunately, this eats the stack trace, too bad.
+	if (err != 0)
+		throw love::Exception("Error in file dialog callback: %s", luax_tostring(L, -1));
+}
+
+int w_showFileDialog(lua_State *L)
+{
+	Window::FileDialogData data = {};
+
+	const char *typestr = luaL_checkstring(L, 1);
+	if (!Window::getConstant(typestr, data.type))
+		return luax_enumerror(L, "file dialog type", Window::getConstants(data.type), typestr);
+
+	luaL_checktype(L, 2, LUA_TFUNCTION);
+
+	if (!lua_isnoneornil(L, 3))
+	{
+		luaL_checktype(L, 3, LUA_TTABLE);
+
+		lua_getfield(L, 3, "title");
+		if (!lua_isnoneornil(L, -1))
+			data.title = luax_checkstring(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, 3, "acceptlabel");
+		if (!lua_isnoneornil(L, -1))
+			data.acceptLabel = luax_checkstring(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, 3, "cancellabel");
+		if (!lua_isnoneornil(L, -1))
+			data.cancelLabel = luax_checkstring(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, 3, "defaultname");
+		if (!lua_isnoneornil(L, -1))
+			data.defaultName = luax_checkstring(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, 3, "filters");
+		if (!lua_isnoneornil(L, -1))
+		{
+			luaL_checktype(L, -1, LUA_TTABLE);
+
+			lua_pushnil(L);
+			while (lua_next(L, -2))
+			{
+				Window::FileDialogFilter filter = {};
+				filter.name = luax_checkstring(L, -2);
+				filter.pattern = luax_checkstring(L, -1);
+				data.filters.push_back(filter);
+				lua_pop(L, 1);
+			}
+		}
+		lua_pop(L, 1);
+
+		lua_getfield(L, 3, "multiselect");
+		if (!lua_isnoneornil(L, -1))
+			data.multiSelect = luax_checkboolean(L, -1);
+		lua_pop(L, 1);
+
+		lua_getfield(L, 3, "attachtowindow");
+		if (!lua_isnoneornil(L, -1))
+			data.attachToWindow = luax_checkboolean(L, -1);
+		lua_pop(L, 1);
+	}
+
+	// Save the callback function as a Reference.
+	lua_pushvalue(L, 2);
+	Reference *r = new Reference(L);
+	lua_pop(L, 1);
+
+	instance()->showFileDialog(data, fileDialogCallback, r);
+	return 0;
+}
+
 int w_requestAttention(lua_State *L)
 {
 	bool continuous = luax_optboolean(L, 1, false);
@@ -701,6 +806,7 @@ static const luaL_Reg functions[] =
 	{ "isMaximized", w_isMaximized },
 	{ "isMinimized", w_isMinimized },
 	{ "showMessageBox", w_showMessageBox },
+	{ "showFileDialog", w_showFileDialog },
 	{ "requestAttention", w_requestAttention },
 	{ "getPointer", w_getPointer },
 	{ 0, 0 }

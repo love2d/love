@@ -129,7 +129,11 @@ public:
 	bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) override;
 	int showMessageBox(const MessageBoxData &data) override;
 
+	void showFileDialog(const FileDialogData &data, FileDialogCallback callback, void *context) override;
+
 	void requestAttention(bool continuous) override;
+
+	void handleSDLEvent(const SDL_Event &event);
 
 private:
 
@@ -184,6 +188,8 @@ private:
 	ContextAttribs contextAttribs;
 
 	StrongRef<graphics::Graphics> graphics;
+
+	Uint32 dialogEventId;
 
 }; // Window
 

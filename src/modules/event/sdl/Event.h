@@ -28,6 +28,11 @@
 // SDL
 #include <SDL3/SDL_events.h>
 
+namespace love::window
+{
+class Window;
+}
+
 namespace love
 {
 namespace event
@@ -63,7 +68,7 @@ private:
 
 	Message *convert(const SDL_Event &e);
 	Message *convertJoystickEvent(const SDL_Event &e) const;
-	Message *convertWindowEvent(const SDL_Event &e);
+	Message *convertWindowEvent(const SDL_Event &e, love::window::Window *win);
 
 }; // Event
 

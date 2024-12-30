@@ -37,6 +37,7 @@
 #include <cmath>
 
 #include "joystick/sdl/Joystick.h"
+#include "window/sdl/Window.h"
 
 namespace love
 {
@@ -47,25 +48,22 @@ namespace sdl
 
 // SDL reports mouse coordinates in the window coordinate system in OS X, but
 // we want them in pixel coordinates (may be different with high-DPI enabled.)
-static void windowToDPICoords(double *x, double *y)
+static void windowToDPICoords(love::window::Window *window, double *x, double *y)
 {
-	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 		window->windowToDPICoords(x, y);
 }
 
-static void clampToWindow(double *x, double *y)
+static void clampToWindow(love::window::Window *window, double *x, double *y)
 {
-	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 		window->clampPositionInWindow(x, y);
 }
 
-static void normalizedToDPICoords(double *x, double *y)
+static void normalizedToDPICoords(love::window::Window *window, double *x, double *y)
 {
 	double w = 1.0, h = 1.0;
 
-	auto window = Module::getInstance<window::Window>(Module::M_WINDOW);
 	if (window)
 	{
 		w = window->getWidth();
@@ -192,6 +190,7 @@ Message *Event::convert(const SDL_Event &e)
 
 	love::filesystem::Filesystem *filesystem = nullptr;
 	love::sensor::Sensor *sensorInstance = nullptr;
+	love::window::Window *win = Module::getInstance<window::Window>(Module::M_WINDOW);
 
 	love::keyboard::Keyboard::Key key = love::keyboard::Keyboard::KEY_UNKNOWN;
 	love::keyboard::Keyboard::Scancode scancode = love::keyboard::Keyboard::SCANCODE_UNKNOWN;
@@ -201,6 +200,15 @@ Message *Event::convert(const SDL_Event &e)
 
 	love::touch::sdl::Touch *touchmodule = nullptr;
 	love::touch::Touch::TouchInfo touchinfo = {};
+
+	if (win)
+	{
+		// Dubious cast, but it's not like having an SDL event backend
+		// with a non-SDL window backend will be a thing.
+		auto sdlwin = dynamic_cast<love::window::sdl::Window *>(win);
+		if (sdlwin != nullptr)
+			sdlwin->handleSDLEvent(e);
+	}
 
 	switch (e.type)
 	{
@@ -262,9 +270,9 @@ Message *Event::convert(const SDL_Event &e)
 			// able to handle out-of-bounds coordinates. SDL has a hint to turn off
 			// auto capture, but it doesn't report the mouse's position at the edge of
 			// the window if the mouse moves fast enough when it's off.
-			clampToWindow(&x, &y);
-			windowToDPICoords(&x, &y);
-			windowToDPICoords(&xrel, &yrel);
+			clampToWindow(win, &x, &y);
+			windowToDPICoords(win, &x, &y);
+			windowToDPICoords(win, &xrel, &yrel);
 
 			vargs.emplace_back(x);
 			vargs.emplace_back(y);
@@ -292,8 +300,8 @@ Message *Event::convert(const SDL_Event &e)
 			double px = (double) e.button.x;
 			double py = (double) e.button.y;
 
-			clampToWindow(&px, &py);
-			windowToDPICoords(&px, &py);
+			clampToWindow(win, &px, &py);
+			windowToDPICoords(win, &px, &py);
 
 			vargs.emplace_back(px);
 			vargs.emplace_back(py);
@@ -329,8 +337,8 @@ Message *Event::convert(const SDL_Event &e)
 		// SDL's coords are normalized to [0, 1], but we want screen coords for direct touches.
 		if (touchinfo.deviceType == love::touch::Touch::DEVICE_TOUCHSCREEN)
 		{
-			normalizedToDPICoords(&touchinfo.x, &touchinfo.y);
-			normalizedToDPICoords(&touchinfo.dx, &touchinfo.dy);
+			normalizedToDPICoords(win, &touchinfo.x, &touchinfo.y);
+			normalizedToDPICoords(win, &touchinfo.dx, &touchinfo.dy);
 		}
 
 		// We need to update the love.touch.sdl internal state from here.
@@ -387,7 +395,7 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_EVENT_WINDOW_RESTORED:
 	case SDL_EVENT_WINDOW_EXPOSED:
 	case SDL_EVENT_WINDOW_OCCLUDED:
-		msg = convertWindowEvent(e);
+		msg = convertWindowEvent(e, win);
 		break;
 	case SDL_EVENT_DISPLAY_ORIENTATION:
 		{
@@ -440,7 +448,7 @@ Message *Event::convert(const SDL_Event &e)
 		{
 			double x = e.drop.x;
 			double y = e.drop.y;
-			windowToDPICoords(&x, &y);
+			windowToDPICoords(win, &x, &y);
 			vargs.emplace_back(x);
 			vargs.emplace_back(y);
 			msg = new Message("dropcompleted", vargs);
@@ -450,7 +458,7 @@ Message *Event::convert(const SDL_Event &e)
 		{
 			double x = e.drop.x;
 			double y = e.drop.y;
-			windowToDPICoords(&x, &y);
+			windowToDPICoords(win, &x, &y);
 			vargs.emplace_back(x);
 			vargs.emplace_back(y);
 			msg = new Message("dropmoved", vargs);
@@ -466,7 +474,7 @@ Message *Event::convert(const SDL_Event &e)
 
 			double x = e.drop.x;
 			double y = e.drop.y;
-			windowToDPICoords(&x, &y);
+			windowToDPICoords(win, &x, &y);
 
 			if (filesystem->isRealDirectory(filepath))
 			{
@@ -681,14 +689,13 @@ Message *Event::convertJoystickEvent(const SDL_Event &e) const
 	return msg;
 }
 
-Message *Event::convertWindowEvent(const SDL_Event &e)
+Message *Event::convertWindowEvent(const SDL_Event &e, love::window::Window *win)
 {
 	Message *msg = nullptr;
 
 	std::vector<Variant> vargs;
 	vargs.reserve(4);
 
-	window::Window *win = nullptr;
 	graphics::Graphics *gfx = nullptr;
 
 	auto event = e.type;
@@ -735,7 +742,6 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 			double height = e.window.data2;
 
 			gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
-			win = Module::getInstance<window::Window>(Module::M_WINDOW);
 			if (win)
 				win->onSizeChanged(e.window.data1, e.window.data2);
 
@@ -750,7 +756,7 @@ Message *Event::convertWindowEvent(const SDL_Event &e)
 			{
 				width = win->getWidth();
 				height = win->getHeight();
-				windowToDPICoords(&width, &height);
+				windowToDPICoords(win, &width, &height);
 			}
 
 			vargs.emplace_back(width);

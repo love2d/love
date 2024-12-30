@@ -55,6 +55,8 @@ class Window : public Module
 {
 public:
 
+	typedef void (*FileDialogCallback)(void *context, const std::vector<std::string> &files, const char *filtername, const char *err);
+
 	// Different window settings.
 	enum Setting
 	{
@@ -94,6 +96,14 @@ public:
 		MESSAGEBOX_MAX_ENUM
 	};
 
+	enum FileDialogType
+	{
+		FILEDIALOG_OPENFILE,
+		FILEDIALOG_OPENFOLDER,
+		FILEDIALOG_SAVEFILE,
+		FILEDIALOG_MAX_ENUM
+	};
+
 	enum DisplayOrientation
 	{
 		ORIENTATION_UNKNOWN,
@@ -126,6 +136,24 @@ public:
 		int enterButtonIndex;
 		int escapeButtonIndex;
 
+		bool attachToWindow;
+	};
+
+	struct FileDialogFilter
+	{
+		std::string name;
+		std::string pattern;
+	};
+
+	struct FileDialogData
+	{
+		FileDialogType type;
+		std::string title;
+		std::string acceptLabel;
+		std::string cancelLabel;
+		std::string defaultName;
+		std::vector<FileDialogFilter> filters;
+		bool multiSelect;
 		bool attachToWindow;
 	};
 
@@ -220,40 +248,19 @@ public:
 	virtual bool showMessageBox(const std::string &title, const std::string &message, MessageBoxType type, bool attachtowindow) = 0;
 	virtual int showMessageBox(const MessageBoxData &data) = 0;
 
+	virtual void showFileDialog(const FileDialogData &data, FileDialogCallback callback, void *context) = 0;
+
 	virtual void requestAttention(bool continuous) = 0;
 
-	static bool getConstant(const char *in, Setting &out);
-	static bool getConstant(Setting in, const char *&out);
-
-	static bool getConstant(const char *in, FullscreenType &out);
-	static bool getConstant(FullscreenType in, const char *&out);
-	static std::vector<std::string> getConstants(FullscreenType);
-
-	static bool getConstant(const char *in, MessageBoxType &out);
-	static bool getConstant(MessageBoxType in, const char *&out);
-	static std::vector<std::string> getConstants(MessageBoxType);
-
-	static bool getConstant(const char *in, DisplayOrientation &out);
-	static bool getConstant(DisplayOrientation in, const char *&out);
-	static std::vector<std::string> getConstants(DisplayOrientation);
+	STRINGMAP_CLASS_DECLARE(Setting);
+	STRINGMAP_CLASS_DECLARE(FullscreenType);
+	STRINGMAP_CLASS_DECLARE(MessageBoxType);
+	STRINGMAP_CLASS_DECLARE(FileDialogType);
+	STRINGMAP_CLASS_DECLARE(DisplayOrientation);
 
 protected:
 
 	Window(const char *name);
-
-private:
-
-	static StringMap<Setting, SETTING_MAX_ENUM>::Entry settingEntries[];
-	static StringMap<Setting, SETTING_MAX_ENUM> settings;
-
-	static StringMap<FullscreenType, FULLSCREEN_MAX_ENUM>::Entry fullscreenTypeEntries[];
-	static StringMap<FullscreenType, FULLSCREEN_MAX_ENUM> fullscreenTypes;
-
-	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM>::Entry messageBoxTypeEntries[];
-	static StringMap<MessageBoxType, MESSAGEBOX_MAX_ENUM> messageBoxTypes;
-
-	static StringMap<DisplayOrientation, ORIENTATION_MAX_ENUM>::Entry orientationEntries[];
-	static StringMap<DisplayOrientation, ORIENTATION_MAX_ENUM> orientations;
 
 }; // Window
 

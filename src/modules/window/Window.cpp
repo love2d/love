@@ -56,112 +56,61 @@ void Window::swapBuffers()
 {
 }
 
-bool Window::getConstant(const char *in, FullscreenType &out)
+STRINGMAP_CLASS_BEGIN(Window, Window::Setting, Window::SETTING_MAX_ENUM, setting)
 {
-	return fullscreenTypes.find(in, out);
+	{"fullscreen", Window::SETTING_FULLSCREEN},
+	{"fullscreentype", Window::SETTING_FULLSCREEN_TYPE},
+	{"vsync", Window::SETTING_VSYNC},
+	{"msaa", Window::SETTING_MSAA},
+	{"stencil", Window::SETTING_STENCIL},
+	{"depth", Window::SETTING_DEPTH},
+	{"resizable", Window::SETTING_RESIZABLE},
+	{"minwidth", Window::SETTING_MIN_WIDTH},
+	{"minheight", Window::SETTING_MIN_HEIGHT},
+	{"borderless", Window::SETTING_BORDERLESS},
+	{"centered", Window::SETTING_CENTERED},
+	{"displayindex", Window::SETTING_DISPLAYINDEX},
+	{"display", Window::SETTING_DISPLAY},
+	{"highdpi", Window::SETTING_HIGHDPI},
+	{"usedpiscale", Window::SETTING_USE_DPISCALE},
+	{"refreshrate", Window::SETTING_REFRESHRATE},
+	{"x", Window::SETTING_X},
+	{"y", Window::SETTING_Y},
 }
+STRINGMAP_CLASS_END(Window, Window::Setting, Window::SETTING_MAX_ENUM, setting)
 
-bool Window::getConstant(FullscreenType in, const char *&out)
+STRINGMAP_CLASS_BEGIN(Window, Window::FullscreenType, Window::FULLSCREEN_MAX_ENUM, fullscreenType)
 {
-	return fullscreenTypes.find(in, out);
+	{"exclusive", Window::FULLSCREEN_EXCLUSIVE},
+	{"desktop", Window::FULLSCREEN_DESKTOP},
 }
+STRINGMAP_CLASS_END(Window, Window::FullscreenType, Window::FULLSCREEN_MAX_ENUM, fullscreenType)
 
-std::vector<std::string> Window::getConstants(FullscreenType)
+STRINGMAP_CLASS_BEGIN(Window, Window::MessageBoxType, Window::MESSAGEBOX_MAX_ENUM, messageBoxType)
 {
-	return fullscreenTypes.getNames();
+	{"error", Window::MESSAGEBOX_ERROR},
+	{"warning", Window::MESSAGEBOX_WARNING},
+	{"info", Window::MESSAGEBOX_INFO},
 }
+STRINGMAP_CLASS_END(Window, Window::MessageBoxType, Window::MESSAGEBOX_MAX_ENUM, messageBoxType)
 
-bool Window::getConstant(const char *in, Setting &out)
+STRINGMAP_CLASS_BEGIN(Window, Window::FileDialogType, Window::FILEDIALOG_MAX_ENUM, fileDialogType)
 {
-	return settings.find(in, out);
+	{ "openfile", Window::FILEDIALOG_OPENFILE },
+	{ "openfolder", Window::FILEDIALOG_OPENFOLDER },
+	{ "savefile", Window::FILEDIALOG_SAVEFILE },
 }
+STRINGMAP_CLASS_END(Window, Window::FileDialogType, Window::FILEDIALOG_MAX_ENUM, fileDialogType)
 
-bool Window::getConstant(Setting in, const char *&out)
+STRINGMAP_CLASS_BEGIN(Window, Window::DisplayOrientation, Window::ORIENTATION_MAX_ENUM, orientation)
 {
-	return settings.find(in, out);
+	{"unknown", Window::ORIENTATION_UNKNOWN},
+	{"landscape", Window::ORIENTATION_LANDSCAPE},
+	{"landscapeflipped", Window::ORIENTATION_LANDSCAPE_FLIPPED},
+	{"portrait", Window::ORIENTATION_PORTRAIT},
+	{"portraitflipped", Window::ORIENTATION_PORTRAIT_FLIPPED},
 }
-
-bool Window::getConstant(const char *in, MessageBoxType &out)
-{
-	return messageBoxTypes.find(in, out);
-}
-
-bool Window::getConstant(MessageBoxType in, const char *&out)
-{
-	return messageBoxTypes.find(in, out);
-}
-
-std::vector<std::string> Window::getConstants(MessageBoxType)
-{
-	return messageBoxTypes.getNames();
-}
-
-bool Window::getConstant(const char *in, DisplayOrientation &out)
-{
-	return orientations.find(in, out);
-}
-
-bool Window::getConstant(DisplayOrientation in, const char *&out)
-{
-	return orientations.find(in, out);
-}
-
-std::vector<std::string> Window::getConstants(DisplayOrientation)
-{
-	return orientations.getNames();
-}
-
-StringMap<Window::Setting, Window::SETTING_MAX_ENUM>::Entry Window::settingEntries[] =
-{
-	{"fullscreen", SETTING_FULLSCREEN},
-	{"fullscreentype", SETTING_FULLSCREEN_TYPE},
-	{"vsync", SETTING_VSYNC},
-	{"msaa", SETTING_MSAA},
-	{"stencil", SETTING_STENCIL},
-	{"depth", SETTING_DEPTH},
-	{"resizable", SETTING_RESIZABLE},
-	{"minwidth", SETTING_MIN_WIDTH},
-	{"minheight", SETTING_MIN_HEIGHT},
-	{"borderless", SETTING_BORDERLESS},
-	{"centered", SETTING_CENTERED},
-	{"displayindex", SETTING_DISPLAYINDEX},
-	{"display", SETTING_DISPLAY},
-	{"highdpi", SETTING_HIGHDPI},
-	{"usedpiscale", SETTING_USE_DPISCALE},
-	{"refreshrate", SETTING_REFRESHRATE},
-	{"x", SETTING_X},
-	{"y", SETTING_Y},
-};
-
-StringMap<Window::Setting, Window::SETTING_MAX_ENUM> Window::settings(Window::settingEntries, sizeof(Window::settingEntries));
-
-StringMap<Window::FullscreenType, Window::FULLSCREEN_MAX_ENUM>::Entry Window::fullscreenTypeEntries[] =
-{
-	{"exclusive", FULLSCREEN_EXCLUSIVE},
-	{"desktop", FULLSCREEN_DESKTOP},
-};
-
-StringMap<Window::FullscreenType, Window::FULLSCREEN_MAX_ENUM> Window::fullscreenTypes(Window::fullscreenTypeEntries, sizeof(Window::fullscreenTypeEntries));
-
-StringMap<Window::MessageBoxType, Window::MESSAGEBOX_MAX_ENUM>::Entry Window::messageBoxTypeEntries[] =
-{
-	{"error", MESSAGEBOX_ERROR},
-	{"warning", MESSAGEBOX_WARNING},
-	{"info", MESSAGEBOX_INFO},
-};
-
-StringMap<Window::MessageBoxType, Window::MESSAGEBOX_MAX_ENUM> Window::messageBoxTypes(Window::messageBoxTypeEntries, sizeof(Window::messageBoxTypeEntries));
-
-StringMap<Window::DisplayOrientation, Window::ORIENTATION_MAX_ENUM>::Entry Window::orientationEntries[] =
-{
-	{"unknown", ORIENTATION_UNKNOWN},
-	{"landscape", ORIENTATION_LANDSCAPE},
-	{"landscapeflipped", ORIENTATION_LANDSCAPE_FLIPPED},
-	{"portrait", ORIENTATION_PORTRAIT},
-	{"portraitflipped", ORIENTATION_PORTRAIT_FLIPPED},
-};
-
-StringMap<Window::DisplayOrientation, Window::ORIENTATION_MAX_ENUM> Window::orientations(Window::orientationEntries, sizeof(Window::orientationEntries));
+STRINGMAP_CLASS_END(Window, Window::DisplayOrientation, Window::ORIENTATION_MAX_ENUM, orientation)
 
 } // window
 } // love

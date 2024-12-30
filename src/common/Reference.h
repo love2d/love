@@ -69,6 +69,8 @@ public:
 	 **/
 	void push(lua_State *L);
 
+	lua_State *getPinnedL() const { return pinnedL; }
+
 private:
 
 	// A pinned coroutine (probably the main thread) belonging to the Lua state
