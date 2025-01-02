@@ -61,6 +61,7 @@ namespace spv {
 #include <set>
 #include <sstream>
 #include <stack>
+#include <cstdint>
 #include <unordered_map>
 #include <map>
 
