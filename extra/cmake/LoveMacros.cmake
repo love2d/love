@@ -16,6 +16,12 @@ function(love_group_projects)
 				foreach(TARGET_LIB ${TARGET_LIBS})
 					# Is this a target? (Could also be a .lib file)
 					if (TARGET ${TARGET_LIB})
+						# Resolve aliased target
+						get_target_property(ORIGINAL_TARGET ${TARGET_LIB} ALIASED_TARGET)
+						if (ORIGINAL_TARGET)
+							set(TARGET_LIB ${ORIGINAL_TARGET})
+						endif()
+
 						# Do we want to nest per-project?
 						if (LOVE_GROUP_NESTED)
 							set_target_properties(${TARGET_LIB} PROPERTIES FOLDER "${LOVE_GROUP_NAME}/${TARGET_NAME}")
