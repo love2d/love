@@ -25,6 +25,9 @@
 // C
 #include <cstdio>
 
+// SDL
+#include <SDL3/SDL_iostream.h>
+
 namespace love
 {
 namespace filesystem
@@ -69,7 +72,7 @@ private:
 
 	std::string filename;
 
-	FILE *file;
+	SDL_IOStream *file;
 
 	Mode mode;
 
