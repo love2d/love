@@ -117,16 +117,6 @@ if(MEGA)
 	# binary (in e.g. the installer). Example: msvcp140.dll.
 	set(LOVE_MSVC_DLLS ${MEGA_MSVC_DLLS})
 
-	if(APPLE)
-		# Some files do #include <SDL2/SDL.h>, but building with megasource
-		# requires #include <SDL.h>.
-		add_definitions(-DLOVE_MACOSX_SDL_DIRECT_INCLUDE)
-	endif ()
-
-	# SDL2 links with some DirectX libraries, and we apparently also
-	# pull those libraries in for linkage because we link with SDL2.
-	set(LOVE_LINK_DIRS ${SDL_LINK_DIR})
-
 	# These DLLs are moved next to the love binary in a post-build step to
 	# love runnable from inside Visual Studio.
 	#
@@ -135,7 +125,6 @@ if(MEGA)
 	# We detect whether or not each item is a target, and take the appropriate
 	# action.
 	set(LOVE_MOVE_DLLS
-		${MEGA_SDL2}
 		${MEGA_SDL3}
 		${MEGA_OPENAL}
 	)
@@ -147,7 +136,7 @@ if(MEGA)
 		set(LOVE_EXTRA_DLLS)
 	endif()
 
-	target_link_libraries(lovedep::SDL INTERFACE ${MEGA_SDL2} ${MEGA_SDL2MAIN} ${MEGA_SDL3})
+	target_link_libraries(lovedep::SDL INTERFACE ${MEGA_SDL3})
 	target_link_libraries(lovedep::Freetype INTERFACE ${MEGA_FREETYPE})
 	target_link_libraries(lovedep::Harfbuzz INTERFACE ${MEGA_HARFBUZZ})
 	target_link_libraries(lovedep::OpenAL INTERFACE ${MEGA_OPENAL})
@@ -186,15 +175,9 @@ Please see https://github.com/love2d/megasource
 	# required for enet
 	add_definitions(-D HAS_SOCKLEN_T)
 
-	if(LOVE_USE_SDL3)
-		find_package(SDL3 3.1.3 REQUIRED CONFIG)
-		target_include_directories(lovedep::SDL INTERFACE ${SDL3_INCLUDE_DIRS})
-		target_link_libraries(lovedep::SDL INTERFACE ${SDL3_LIBRARIES})
-	else()
-		find_package(SDL2 2.0.9 REQUIRED CONFIG COMPONENTS SDL2main)
-		target_include_directories(lovedep::SDL INTERFACE ${SDL2_INCLUDE_DIRS})
-		target_link_libraries(lovedep::SDL INTERFACE ${SDL2_LIBRARIES})
-	endif()
+	find_package(SDL3 3.1.3 REQUIRED CONFIG)
+	target_include_directories(lovedep::SDL INTERFACE ${SDL3_INCLUDE_DIRS})
+	target_link_libraries(lovedep::SDL INTERFACE ${SDL3_LIBRARIES})
 
 	find_package(Freetype REQUIRED)
 	target_include_directories(lovedep::Freetype INTERFACE ${FREETYPE_INCLUDE_DIRS})
@@ -1904,8 +1887,6 @@ include_directories(
 	src/modules
 )
 
-link_directories(${LOVE_LINK_DIRS})
-
 if(MINGW)
 	# UTF-16 flags passed to windres. windres invokes gcc as preprocessor
 	# -> gcc outputs utf8, so windres must read-in codepage 65001 (utf8)
@@ -2056,10 +2037,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 	# CPack
 	###################################
 	install(TARGETS love lovec liblove RUNTIME DESTINATION .)
-
-	if(LOVE_USE_SDL3)
-		install(PROGRAMS $<TARGET_FILE:${MEGA_SDL3}> DESTINATION .)
-	endif()
+	install(PROGRAMS $<TARGET_FILE:${MEGA_SDL3}> DESTINATION .)
 
 	# Our install script (and NSIS) doesn't fully support Windows ARM64 yet.
 	if(MEGA_ARM64)
