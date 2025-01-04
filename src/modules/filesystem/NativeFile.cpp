@@ -91,14 +91,9 @@ bool NativeFile::open(Mode newmode)
 
 	file = SDL_IOFromFile(filename.c_str(), getModeString(newmode));
 	if (file == nullptr)
-	{
-		std::string err = SDL_GetError();
+		throw love::Exception("Could not open file %s: %s", filename.c_str(), SDL_GetError());
 
-		if (err != "")
-			throw love::Exception("Could not open file %s: %s", filename.c_str(), err.c_str());
-	}
-	else
-		mode = newmode;
+	mode = newmode;
 
 	return file != nullptr;
 }
