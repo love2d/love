@@ -21,7 +21,6 @@
 #include "Event.h"
 
 #include "common/int.h"
-#include "filesystem/NativeFile.h"
 #include "filesystem/Filesystem.h"
 #include "keyboard/sdl/Keyboard.h"
 #include "joystick/JoystickModule.h"

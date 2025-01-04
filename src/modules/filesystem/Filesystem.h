@@ -58,8 +58,6 @@ namespace love
 namespace filesystem
 {
 
-class NativeFile;
-
 class Filesystem : public Module
 {
 public:

@@ -690,7 +690,9 @@ std::string Filesystem::getFullCommonPath(CommonPath path)
 
 #endif
 
-	fullPaths[path] = canonicalizeRealPath(fullPaths[path].c_str());
+	if (!fullPaths[path].empty())
+		fullPaths[path] = canonicalizeRealPath(fullPaths[path].c_str());
+
 	return fullPaths[path];
 }
 
