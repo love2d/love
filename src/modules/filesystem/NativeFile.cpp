@@ -41,8 +41,6 @@ namespace love
 namespace filesystem
 {
 
-love::Type NativeFile::type("NativeFile", &File::type);
-
 NativeFile::NativeFile(const std::string &filename, Mode mode)
 	: filename(filename)
 	, file(nullptr)

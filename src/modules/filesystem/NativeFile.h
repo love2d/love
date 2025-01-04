@@ -37,8 +37,6 @@ class NativeFile : public File
 {
 public:
 
-	static love::Type type;
-
 	NativeFile(const std::string &filename, Mode mode);
 	virtual ~NativeFile();
 

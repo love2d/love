@@ -175,7 +175,7 @@ public:
 	 **/
 	virtual File *openFile(const char *filename, File::Mode mode) const = 0;
 
-	NativeFile *openNativeFile(const char *path, File::Mode mode) const;
+	File *openNativeFile(const char *path, File::Mode mode) const;
 
 	/**
 	 * Creates a new FileData object. Data will be copied.

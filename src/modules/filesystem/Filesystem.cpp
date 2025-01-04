@@ -68,7 +68,7 @@ bool Filesystem::isAndroidSaveExternal() const
 	return useExternal;
 }
 
-NativeFile *Filesystem::openNativeFile(const char *path, File::Mode mode) const
+File *Filesystem::openNativeFile(const char *path, File::Mode mode) const
 {
 	return new NativeFile(path, mode);
 }

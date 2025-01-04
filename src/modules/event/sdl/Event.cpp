@@ -485,8 +485,8 @@ Message *Event::convert(const SDL_Event &e)
 			}
 			else
 			{
-				auto *file = new love::filesystem::NativeFile(filepath, love::filesystem::File::MODE_CLOSED);
-				vargs.emplace_back(&love::filesystem::NativeFile::type, file);
+				auto *file = filesystem->openNativeFile(filepath, love::filesystem::File::MODE_CLOSED);
+				vargs.emplace_back(&love::filesystem::File::type, file);
 				vargs.emplace_back(x);
 				vargs.emplace_back(y);
 				msg = new Message("filedropped", vargs);
