@@ -3241,9 +3241,23 @@ void Graphics::cleanup()
 		vkDestroyFramebuffer(device, entry.second, nullptr);
 	framebuffers.clear();
 
-	vkDestroyCommandPool(device, commandPool, nullptr);
-	vkDestroyPipelineCache(device, pipelineCache, nullptr);
-	vkDestroyDevice(device, nullptr);
+	if (commandPool != VK_NULL_HANDLE)
+	{
+		vkDestroyCommandPool(device, commandPool, nullptr);
+		commandPool = VK_NULL_HANDLE;
+	}
+
+	if (pipelineCache != VK_NULL_HANDLE)
+	{
+		vkDestroyPipelineCache(device, pipelineCache, nullptr);
+		pipelineCache = VK_NULL_HANDLE;
+	}
+
+	if (device != VK_NULL_HANDLE)
+	{
+		vkDestroyDevice(device, nullptr);
+		device = VK_NULL_HANDLE;
+	}
 }
 
 void Graphics::cleanupSwapChain()
