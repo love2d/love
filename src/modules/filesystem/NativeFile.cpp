@@ -36,6 +36,9 @@
 #include <unistd.h> // POSIX.
 #endif
 
+// SDL
+#include <SDL3/SDL_iostream.h>
+
 namespace love
 {
 namespace filesystem

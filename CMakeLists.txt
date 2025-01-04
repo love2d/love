@@ -482,9 +482,11 @@ add_library(love_filesystem_physfs STATIC
 	src/modules/filesystem/physfs/PhysfsIo.h
 	src/modules/filesystem/physfs/PhysfsIo.cpp
 )
-target_link_libraries(love_filesystem_physfs PUBLIC
-	lovedep::SDL
-)
+if(ANDROID)
+	target_link_libraries(love_filesystem_physfs PUBLIC
+		lovedep::SDL
+	)
+endif()
 
 add_library(love_filesystem INTERFACE)
 target_link_libraries(love_filesystem INTERFACE

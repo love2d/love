@@ -25,8 +25,7 @@
 // C
 #include <cstdio>
 
-// SDL
-#include <SDL3/SDL_iostream.h>
+typedef struct SDL_IOStream SDL_IOStream;
 
 namespace love
 {
