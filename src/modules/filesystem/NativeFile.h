@@ -66,6 +66,9 @@ public:
 private:
 
 	NativeFile(const NativeFile &other);
+	bool setupBuffering(BufferMode mode, int64 bufferSize);
+	int64 bufferedRead(void* dst, int64 size);
+	bool bufferedWrite(const void* data, int64 size);
 
 	static const char *getModeString(Mode mode);
 
@@ -75,8 +78,10 @@ private:
 
 	Mode mode;
 
+	int8 *buffer;
 	BufferMode bufferMode;
 	int64 bufferSize;
+	int64 bufferUsed;
 
 }; // NativeFile
 
