@@ -121,10 +121,16 @@ bool NativeFile::isOpen() const
 
 int64 NativeFile::getSize()
 {
+	int64 size = -1;
 	if (!file)
-		return -1;
+	{
+		open(MODE_READ);
+		size = SDL_GetIOSize(file);
+		close();
+	}
+	else
+		size = SDL_GetIOSize(file);
 
-	int64 size = SDL_GetIOSize(file);
 	return std::max<int64>(size, -1);
 }
 
