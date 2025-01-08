@@ -632,6 +632,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		needsetmode = true;
 	}
 
+	windowRenderer = renderer;
+
 	// Make sure the window keeps any previously set icon.
 	setIcon(icon.get());
 
@@ -649,8 +651,6 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 	setVSync(f.vsync);
 
 	updateSettings(f, false);
-
-	windowRenderer = renderer;
 
 	if (graphics.get())
 	{
