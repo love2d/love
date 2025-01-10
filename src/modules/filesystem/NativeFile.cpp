@@ -284,6 +284,10 @@ bool NativeFile::seek(int64 pos, SeekOrigin origin)
 
 bool NativeFile::setBuffer(BufferMode bufmode, int64 size)
 {
+	// BUFSIZ in Windows is too low on 512 bytes.
+	// Make sure the default buffer size is at least 4KiB.
+	constexpr int64 DEFAULT_BUFFER_SIZE = std::max<int64>(BUFSIZ, 4096);
+
 	if (size < 0)
 		return false;
 	else if (sizeof(uintptr_t) == 4 && size > 0x80000000LL)
@@ -293,8 +297,7 @@ bool NativeFile::setBuffer(BufferMode bufmode, int64 size)
 	if (bufmode == BUFFER_NONE)
 		size = 0;
 	else if (size == 0)
-		// This should do for now
-		size = BUFSIZ;
+		size = DEFAULT_BUFFER_SIZE;
 
 	// If there's no file handle, we'll setup the buffering later in open()
 	if (file)
