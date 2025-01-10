@@ -386,17 +386,57 @@ int64 NativeFile::bufferedRead(void *dst, int64 size)
 
 bool NativeFile::bufferedWrite(const void *data, int64 size)
 {
-	if ((size + bufferUsed) < bufferSize)
+	const int8 *ptr = (const int8 *) data;
+
+	int64 inBuffer = std::min<int64>(size, bufferSize - bufferUsed);
+	if (inBuffer > 0)
 	{
-		// Entire data fits in the buffer.
-		memcpy(buffer + bufferUsed, data, size);
-		bufferUsed += size;
-		return true;
+		// Put the data into buffer
+		memcpy(buffer + bufferUsed, ptr, (size_t) inBuffer);
+		bufferUsed += inBuffer;
+		size -= inBuffer;
+		ptr += (size_t) inBuffer;
 	}
 
-	// Could overflow. Write directly.
-	size_t writeSize = (size_t) size;
-	return flush() && (SDL_WriteIO(file, data, writeSize) == writeSize);
+	if (size > 0)
+	{
+		// This means the buffer is full. Soft-flush the buffers.
+		size_t bufferWritten = SDL_WriteIO(file, buffer, bufferSize);
+		bufferUsed -= bufferWritten;
+
+		if (bufferWritten < (size_t) bufferSize)
+		{
+			memmove(buffer, buffer + bufferWritten, (size_t) bufferSize - bufferWritten);
+			return false;
+		}
+
+		int64 directWriteCount = size / bufferSize;
+		if (directWriteCount > 0)
+		{
+			// Batch write from the source pointer directly, bypassing
+			// our buffer.
+			size_t targetDirectBuffer = (size_t) (directWriteCount * bufferSize);
+			if (SDL_WriteIO(file, ptr, targetDirectBuffer) < targetDirectBuffer)
+				return false;
+
+			ptr += targetDirectBuffer;
+			size -= targetDirectBuffer;
+		}
+
+		if (size > 0)
+		{
+			// Store the rest in our buffer.
+			// Note that bufferUsed will always be 0 here.
+			memcpy(buffer, ptr, size);
+			bufferUsed = size;
+		}
+
+		return SDL_FlushIO(file);
+	}
+
+	// If above codeblock is not taken, it means the
+	// whole data goes into our buffer. Report success.
+	return true;
 }
 
 const char *NativeFile::getModeString(Mode mode)
