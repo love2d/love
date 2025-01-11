@@ -3356,7 +3356,8 @@ love::graphics::Graphics *createInstance()
 	}
 	catch (love::Exception &e)
 	{
-		printf("Cannot create Vulkan renderer: %s\n", e.what());
+		if (isDebugEnabled())
+			printf("Cannot create Vulkan renderer: %s\n", e.what());
 	}
 
 	return instance;
