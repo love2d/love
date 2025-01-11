@@ -300,7 +300,7 @@ protected:
 private:
 	bool checkValidationSupport();
 	void pickPhysicalDevice();
-	int rateDeviceSuitability(VkPhysicalDevice device);
+	int rateDeviceSuitability(VkPhysicalDevice device, bool querySwapChain);
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 	void createLogicalDevice();
 	void createPipelineCache();

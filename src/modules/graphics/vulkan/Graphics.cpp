@@ -30,6 +30,7 @@
 #include "Vulkan.h"
 
 #include <SDL3/SDL_vulkan.h>
+#include <SDL3/SDL_hints.h>
 
 #include <algorithm>
 #include <vector>
@@ -100,7 +101,10 @@ Graphics::Graphics()
 	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
 
 	if (isDebugEnabled() && !checkValidationSupport())
+	{
+		SDL_Vulkan_UnloadLibrary();
 		throw love::Exception("validation layers requested, but not available");
+	}
 
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -120,7 +124,10 @@ Graphics::Graphics()
 	unsigned int count = 0;
 	char const* const* extensions_string = SDL_Vulkan_GetInstanceExtensions(&count);
 	if (extensions_string == nullptr)
+	{
+		SDL_Vulkan_UnloadLibrary();
 		throw love::Exception("couldn't retrieve sdl vulkan extensions");
+	}
 
 	std::vector<const char*> extensions(extensions_string, extensions_string + count);
 
@@ -141,9 +148,38 @@ Graphics::Graphics()
 	}
 
 	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+	{
+		SDL_Vulkan_UnloadLibrary();
 		throw love::Exception("couldn't create vulkan instance");
+	}
 
 	volkLoadInstance(instance);
+
+	uint32_t deviceCount = 0;
+	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+
+	int maxScore = 0;
+
+	if (deviceCount > 0)
+	{
+		std::vector<VkPhysicalDevice> devices(deviceCount);
+		vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+		// This is imperfect because we can't query a swap chain at this point.
+		// In theory it could cause a device to have a non-zero score here and
+		// no devices to have a non-zero score later in setMode, but hopefully
+		// that won't happen in practice...
+		for (const auto &device : devices)
+			maxScore = std::max(maxScore, rateDeviceSuitability(device, false));
+	}
+
+	// Exit here if there are no suitable devices, to let other backends take over.
+	if (maxScore == 0)
+	{
+		vkDestroyInstance(instance, nullptr);
+		SDL_Vulkan_UnloadLibrary();
+		throw love::Exception("no suitable vulkan physical devices found");
+	}
 }
 
 Graphics::~Graphics()
@@ -1535,7 +1571,7 @@ void Graphics::pickPhysicalDevice()
 
 	for (const auto &device : devices)
 	{
-		int score = rateDeviceSuitability(device);
+		int score = rateDeviceSuitability(device, true);
 		candidates.insert(std::make_pair(score, device));
 	}
 
@@ -1583,7 +1619,7 @@ bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device)
 // if the score is nonzero then the device is suitable.
 // A higher rating means generally better performance
 // if the score is 0 the device is unsuitable
-int Graphics::rateDeviceSuitability(VkPhysicalDevice device)
+int Graphics::rateDeviceSuitability(VkPhysicalDevice device, bool querySwapChain)
 {
 	VkPhysicalDeviceProperties deviceProperties;
 	VkPhysicalDeviceFeatures deviceFeatures;
@@ -1603,15 +1639,21 @@ int Graphics::rateDeviceSuitability(VkPhysicalDevice device)
 
 	// definitely needed
 
+	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU)
+	{
+		if (!SDL_GetHintBoolean("LOVE_GRAPHICS_VULKAN_ALLOW_SOFTWARE", false))
+			score = 0;
+	}
+
 	QueueFamilyIndices indices = findQueueFamilies(device);
-	if (!indices.isComplete())
+	if (!indices.isComplete() && (querySwapChain || !indices.graphicsFamily.hasValue))
 		score = 0;
 
 	bool extensionsSupported = checkDeviceExtensionSupport(device);
 	if (!extensionsSupported)
 		score = 0;
 
-	if (extensionsSupported)
+	if (extensionsSupported && querySwapChain)
 	{
 		auto swapChainSupport = querySwapChainSupport(device);
 		bool swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
@@ -1644,11 +1686,14 @@ QueueFamilyIndices Graphics::findQueueFamilies(VkPhysicalDevice device)
 		if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) && (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT))
 			indices.graphicsFamily = i;
 
-		VkBool32 presentSupport = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+		if (surface != VK_NULL_HANDLE)
+		{
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 
-		if (presentSupport)
-			indices.presentFamily = i;
+			if (presentSupport)
+				indices.presentFamily = i;
+		}
 
 		if (indices.isComplete())
 			break;
