@@ -25,6 +25,8 @@
 // C
 #include <cstdio>
 
+typedef struct SDL_IOStream SDL_IOStream;
+
 namespace love
 {
 namespace filesystem
@@ -64,17 +66,22 @@ public:
 private:
 
 	NativeFile(const NativeFile &other);
+	bool setupBuffering(BufferMode mode, int64 bufferSize);
+	int64 bufferedRead(void* dst, int64 size);
+	bool bufferedWrite(const void* data, int64 size);
 
 	static const char *getModeString(Mode mode);
 
 	std::string filename;
 
-	FILE *file;
+	SDL_IOStream *file;
 
 	Mode mode;
 
+	int8 *buffer;
 	BufferMode bufferMode;
 	int64 bufferSize;
+	int64 bufferUsed;
 
 }; // NativeFile
 

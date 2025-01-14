@@ -20,21 +20,12 @@
 
 // LOVE
 #include "NativeFile.h"
-#include "common/utf8.h"
 
-#ifdef LOVE_ANDROID
-#include "common/android.h"
-#endif
+// C
+#include <cstring>
 
-// Assume POSIX or Visual Studio.
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#ifdef LOVE_WINDOWS
-#include <wchar.h>
-#else
-#include <unistd.h> // POSIX.
-#endif
+// SDL
+#include <SDL3/SDL_iostream.h>
 
 namespace love
 {
@@ -42,22 +33,26 @@ namespace filesystem
 {
 
 NativeFile::NativeFile(const std::string &filename, Mode mode)
-	: filename(filename)
-	, file(nullptr)
-	, mode(MODE_CLOSED)
-	, bufferMode(BUFFER_NONE)
-	, bufferSize(0)
+: filename(filename)
+, file(nullptr)
+, mode(MODE_CLOSED)
+, buffer(nullptr)
+, bufferMode(BUFFER_NONE)
+, bufferSize(0)
+, bufferUsed(0)
 {
 	if (!open(mode))
 		throw love::Exception("Could not open file at path %s", filename.c_str());
 }
 
 NativeFile::NativeFile(const NativeFile &other)
-	: filename(other.filename)
-	, file(nullptr)
-	, mode(MODE_CLOSED)
-	, bufferMode(other.bufferMode)
-	, bufferSize(other.bufferSize)
+: filename(other.filename)
+, file(nullptr)
+, mode(MODE_CLOSED)
+, buffer(nullptr)
+, bufferMode(other.bufferMode)
+, bufferSize(other.bufferSize)
+, bufferUsed(0)
 {
 	if (!open(other.mode))
 		throw love::Exception("Could not open file at path %s", filename.c_str());
@@ -86,41 +81,18 @@ bool NativeFile::open(Mode newmode)
 	if (file != nullptr)
 		return false;
 
-#if defined(LOVE_ANDROID)
-	// Try to handle content:// URI
-	int fd = love::android::getFDFromContentProtocol(filename.c_str());
-	if (fd != -1)
-	{
-		if (newmode != MODE_READ)
-		{
-			::close(fd);
-			throw love::Exception("%s is read-only.", filename.c_str());
-		}
-
-		file = fdopen(fd, "rb");
-	}
-	else
-		file = fopen(filename.c_str(), getModeString(newmode));
-#elif defined(LOVE_WINDOWS)
-	// make sure non-ASCII filenames work.
-	std::wstring modestr = to_widestr(getModeString(newmode));
-	std::wstring wfilename = to_widestr(filename);
-
-	file = _wfopen(wfilename.c_str(), modestr.c_str());
-#else
-	file = fopen(filename.c_str(), getModeString(newmode));
-#endif
-
-	if (newmode == MODE_READ && file == nullptr)
-		throw love::Exception("Could not open file %s. Does not exist.", filename.c_str());
+	file = SDL_IOFromFile(filename.c_str(), getModeString(newmode));
+	if (file == nullptr)
+		throw love::Exception("Could not open file %s: %s", filename.c_str(), SDL_GetError());
 
 	mode = newmode;
 
-	if (file != nullptr && !setBuffer(bufferMode, bufferSize))
+	if (!setupBuffering(bufferMode, bufferSize))
 	{
-		// Revert to buffer defaults if we don't successfully set the buffer.
-		bufferMode = BUFFER_NONE;
-		bufferSize = 0;
+		SDL_CloseIO(file);
+		file = nullptr;
+		mode = MODE_CLOSED;
+		throw love::Exception("Could not open file %s: cannot setup buffering", filename.c_str());
 	}
 
 	return file != nullptr;
@@ -128,13 +100,18 @@ bool NativeFile::open(Mode newmode)
 
 bool NativeFile::close()
 {
-	if (file == nullptr || fclose(file) != 0)
+	if (file == nullptr)
 		return false;
 
+	bool success = flush();
+	success = SDL_CloseIO(file) && success;
+	// Regardless whetever SDL_CloseIO succeeded or failed, the `file`
+	// pointer is no longer valid.
 	mode = MODE_CLOSED;
 	file = nullptr;
+	setupBuffering(BUFFER_NONE, 0);
 
-	return true;
+	return success;
 }
 
 bool NativeFile::isOpen() const
@@ -144,44 +121,17 @@ bool NativeFile::isOpen() const
 
 int64 NativeFile::getSize()
 {
-	int fd = file ? fileno(file) : -1;
-
-#ifdef LOVE_WINDOWS
-	
-	struct _stat64 buf;
-
-	if (fd != -1)
+	int64 size = -1;
+	if (!file)
 	{
-		if (_fstat64(fd, &buf) != 0)
-			return -1;
+		open(MODE_READ);
+		size = SDL_GetIOSize(file);
+		close();
 	}
 	else
-	{
-		// make sure non-ASCII filenames work.
-		std::wstring wfilename = to_widestr(filename);
+		size = SDL_GetIOSize(file);
 
-		if (_wstat64(wfilename.c_str(), &buf) != 0)
-			return -1;
-	}
-
-	return (int64) buf.st_size;
-
-#else
-
-	// Assume POSIX support...
-	struct stat buf;
-
-	if (fd != -1)
-	{
-		if (fstat(fd, &buf) != 0)
-			return -1;
-	}
-	else if (stat(filename.c_str(), &buf) != 0)
-		return -1;
-
-	return (int64) buf.st_size;
-
-#endif
+	return std::max<int64>(size, -1);
 }
 
 int64 NativeFile::read(void *dst, int64 size)
@@ -192,8 +142,12 @@ int64 NativeFile::read(void *dst, int64 size)
 	if (size < 0)
 		throw love::Exception("Invalid read size.");
 
-	size_t read = fread(dst, 1, (size_t) size, file);
+	// Are we using buffers?
+	if (buffer)
+		return bufferedRead(dst, size);
 
+	// No buffering.
+	size_t read = SDL_ReadIO(file, dst, (size_t) size);
 	return (int64) read;
 }
 
@@ -205,17 +159,60 @@ bool NativeFile::write(const void *data, int64 size)
 	if (size < 0)
 		throw love::Exception("Invalid write size.");
 
-	int64 written = (int64) fwrite(data, 1, (size_t) size, file);
+	if (buffer)
+	{
+		if (!bufferedWrite(data, size))
+			return false;
 
-	return written == size;
+		// There's newline? force flush
+		if (bufferMode == BUFFER_LINE && memchr(data, '\n', size) != nullptr)
+		{
+			if (!flush())
+				return false;
+		}
+	}
+	else
+		return SDL_WriteIO(file, data, (size_t) size) == (size_t) size;
+
+	return true;
 }
 
 bool NativeFile::flush()
 {
-	if (!file || (mode != MODE_WRITE && mode != MODE_APPEND))
-		throw love::Exception("File is not opened for writing.");
+	switch (mode)
+	{
+		case MODE_READ:
+		{
+			if (buffer)
+			{
+				// Seek to already consumed buffer
+				if (SDL_SeekIO(file, (size_t) (bufferUsed - bufferSize), SDL_IO_SEEK_CUR) < 0)
+					return false;
 
-	return fflush(file) == 0;
+				// Mark as depleted
+				bufferUsed = bufferSize;
+			}
+			
+			return true;
+		}
+		case MODE_WRITE:
+		case MODE_APPEND:
+		{
+			if (buffer && bufferUsed > 0)
+			{
+				size_t written = SDL_WriteIO(file, buffer, (size_t) bufferUsed);
+				memmove(buffer, buffer + written, (size_t) bufferSize - written);
+				bufferUsed = std::max<int64>(bufferUsed - (int64) written, 0);
+			}
+
+			return SDL_FlushIO(file);
+		}
+		default:
+			throw love::Exception("Invalid file mode.");
+	}
+
+	// Make sure compiler doesn't emit warnings.
+	return true;
 }
 
 bool NativeFile::isEOF()
@@ -228,11 +225,23 @@ int64 NativeFile::tell()
 	if (file == nullptr)
 		return -1;
 
-#ifdef LOVE_WINDOWS
-	return (int64) _ftelli64(file);
-#else
-	return (int64) ftello(file);
-#endif
+	int64 offset = 0;
+	if (buffer)
+	{
+		switch (mode)
+		{
+			case MODE_READ:
+				// Note: We want offset be negative for reading
+				offset = bufferUsed - bufferSize;
+				break;
+			case MODE_WRITE:
+			case MODE_APPEND:
+				offset = bufferUsed;
+				break;
+		}
+	}
+
+	return SDL_TellIO(file) + offset;
 }
 
 bool NativeFile::seek(int64 pos, SeekOrigin origin)
@@ -240,54 +249,67 @@ bool NativeFile::seek(int64 pos, SeekOrigin origin)
 	if (file == nullptr)
 		return false;
 
-	int forigin = SEEK_SET;
-	if (origin == SEEKORIGIN_CURRENT)
-		forigin = SEEK_CUR;
-	else if (origin == SEEKORIGIN_END)
-		forigin = SEEK_END;
+	if (mode == MODE_APPEND)
+		// FIXME: PhysFS "append" allows the user to
+		// seek the write pointer, but it's not possible
+		// to do so with standard fopen-style modes.
+		return false;
 
-	// TODO
-#ifdef LOVE_WINDOWS
-	return _fseeki64(file, pos, forigin) == 0;
-#else
-	return fseeko(file, (off_t) pos, forigin) == 0;
-#endif
+	SDL_IOWhence whence = SDL_IO_SEEK_SET;
+	if (origin == SEEKORIGIN_CURRENT)
+		whence = SDL_IO_SEEK_CUR;
+	else if (origin == SEEKORIGIN_END)
+		whence = SDL_IO_SEEK_END;
+
+	if (mode == MODE_READ && whence == SDL_IO_SEEK_SET && buffer)
+	{
+		// Retain the buffer if it's forward.
+		// TODO: Handle SDL_IO_SEEK_CUR.
+		int64 offset = pos - tell();
+		if (offset >= 0 && (offset + bufferUsed) < bufferSize)
+		{
+			// Seek success
+			bufferUsed += offset;
+			return true;
+		}
+
+		// Note: We don't handle backward seek because the
+		// contents past `bufferUsed` is not necessarily valid.
+	}
+
+	// If the read is buffered, the flush() will ensure
+	// the read pointer is in correct place before doing seek.
+	return flush() && (SDL_SeekIO(file, pos, whence) >= 0);
 }
 
 bool NativeFile::setBuffer(BufferMode bufmode, int64 size)
 {
+	// BUFSIZ in Windows is too low on 512 bytes.
+	// Make sure the default buffer size is at least 4KiB.
+	constexpr int64 DEFAULT_BUFFER_SIZE = std::max<int64>(BUFSIZ, 4096);
+
 	if (size < 0)
+		return false;
+	else if (sizeof(uintptr_t) == 4 && size > 0x80000000LL)
+		// Safeguards against 32-bit integer truncation?
 		return false;
 
 	if (bufmode == BUFFER_NONE)
 		size = 0;
+	else if (size == 0)
+		size = DEFAULT_BUFFER_SIZE;
 
-	// If the file isn't open, we'll make sure the buffer values are set in
-	// NativeFile::open.
-	if (!isOpen())
+	// If there's no file handle, we'll setup the buffering later in open()
+	if (file)
 	{
-		bufferMode = bufmode;
-		bufferSize = size;
-		return true;
-	}
+		// Ideally we don't want to flush if user request larger buffer size
+		// but the added complexity is not worth it for now.
+		if (!flush())
+			return false;
 
-	int vbufmode;
-	switch (bufmode)
-	{
-	case File::BUFFER_NONE:
-	default:
-		vbufmode = _IONBF;
-		break;
-	case File::BUFFER_LINE:
-		vbufmode = _IOLBF;
-		break;
-	case File::BUFFER_FULL:
-		vbufmode = _IOFBF;
-		break;
+		if (!setupBuffering(bufmode, size))
+			return false;
 	}
-
-	if (setvbuf(file, nullptr, vbufmode, (size_t) size) != 0)
-		return false;
 
 	bufferMode = bufmode;
 	bufferSize = size;
@@ -309,6 +331,115 @@ const std::string &NativeFile::getFilename() const
 File::Mode NativeFile::getMode() const
 {
 	return mode;
+}
+
+bool NativeFile::setupBuffering(BufferMode mode, int64 bufferSize)
+{
+	int8 *newbuf = nullptr;
+	if (mode != BUFFER_NONE)
+	{
+		newbuf = new (std::nothrow) int8[(size_t) bufferSize];
+		if (newbuf == nullptr)
+			return false;
+	}
+
+	delete[] buffer;
+	buffer = newbuf;
+	bufferUsed = this->mode == MODE_READ ? bufferSize : 0;
+	return true;
+}
+
+int64 NativeFile::bufferedRead(void *dst, int64 size)
+{
+	int8 *ptr = (int8 *) dst;
+	int64 readed = 0;
+
+	while (size > 0)
+	{
+		int64 available = bufferSize - bufferUsed;
+
+		if (available > 0)
+		{
+			// There's leftover buffers.
+			size_t copy = (size_t) std::min(size, available);
+			memcpy(ptr, buffer + (size_t) bufferUsed, copy);
+
+			ptr += copy;
+			size -= (int64) copy;
+			bufferUsed += (int64) copy;
+			readed += copy;
+		}
+		else
+		{
+			// Buffer is empty. Fill it.
+			size_t ureaded = SDL_ReadIO(file, buffer, (size_t) bufferSize);
+			bufferUsed = bufferSize - (int64) ureaded;
+
+			if (ureaded == 0)
+				break;
+
+			if (bufferUsed > 0)
+				// Shift the buffer so code above can properly index it
+				memmove(buffer + bufferUsed, buffer, ureaded);
+		}
+	}
+
+	return readed;
+}
+
+bool NativeFile::bufferedWrite(const void *data, int64 size)
+{
+	const int8 *ptr = (const int8 *) data;
+
+	int64 inBuffer = std::min<int64>(size, bufferSize - bufferUsed);
+	if (inBuffer > 0)
+	{
+		// Put the data into buffer
+		memcpy(buffer + bufferUsed, ptr, (size_t) inBuffer);
+		bufferUsed += inBuffer;
+		size -= inBuffer;
+		ptr += (size_t) inBuffer;
+	}
+
+	if (size > 0)
+	{
+		// This means the buffer is full. Soft-flush the buffers.
+		size_t bufferWritten = SDL_WriteIO(file, buffer, bufferSize);
+		bufferUsed -= bufferWritten;
+
+		if (bufferWritten < (size_t) bufferSize)
+		{
+			memmove(buffer, buffer + bufferWritten, (size_t) bufferSize - bufferWritten);
+			return false;
+		}
+
+		int64 directWriteCount = size / bufferSize;
+		if (directWriteCount > 0)
+		{
+			// Batch write from the source pointer directly, bypassing
+			// our buffer.
+			size_t targetDirectBuffer = (size_t) (directWriteCount * bufferSize);
+			if (SDL_WriteIO(file, ptr, targetDirectBuffer) < targetDirectBuffer)
+				return false;
+
+			ptr += targetDirectBuffer;
+			size -= targetDirectBuffer;
+		}
+
+		if (size > 0)
+		{
+			// Store the rest in our buffer.
+			// Note that bufferUsed will always be 0 here.
+			memcpy(buffer, ptr, size);
+			bufferUsed = size;
+		}
+
+		return SDL_FlushIO(file);
+	}
+
+	// If above codeblock is not taken, it means the
+	// whole data goes into our buffer. Report success.
+	return true;
 }
 
 const char *NativeFile::getModeString(Mode mode)

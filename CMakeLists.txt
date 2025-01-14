@@ -1962,7 +1962,7 @@ love_group_projects(NAME "liblove" NESTED TARGETS ${LIBLOVE_DEPENDENCIES})
 love_group_projects(NAME "liblove/libraries" NESTED TARGETS ${LIBLOVE_LIBRARIES})
 love_group_projects(NAME "liblove" TARGETS liblove ${LOVE_EXTRA_DEPENDECIES})
 
-love_group_projects(NAME "lovedep" TARGETS lovedep::SDL3 lovedep::Freetype lovedep::Harfbuzz lovedep::OpenAL lovedep::Modplug lovedep::Theora lovedep::Vorbis lovedep::Ogg lovedep::Zlib lovedep::Lua)
+love_group_projects(NAME "lovedep" TARGETS lovedep::SDL lovedep::Freetype lovedep::Harfbuzz lovedep::OpenAL lovedep::Modplug lovedep::Theora lovedep::Vorbis lovedep::Ogg lovedep::Zlib lovedep::Lua)
 love_group_projects(NAME "lovedep" TARGETS lua51 alcommon al-excommon harfbuzz-subset zlib)
 
 
