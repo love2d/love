@@ -434,7 +434,7 @@ struct AssetInfo: public love::filesystem::physfs::PhysfsIo<AssetInfo>
 		return AAsset_getLength64(asset);
 	}
 
-	int64_t flush() const
+	int flush() const
 	{
 		// Do nothing
 		PHYSFS_setErrorCode(PHYSFS_ERR_OK);
@@ -450,7 +450,7 @@ struct AssetInfo: public love::filesystem::physfs::PhysfsIo<AssetInfo>
 		if (asset == nullptr)
 		{
 			PHYSFS_setErrorCode(PHYSFS_ERR_OS_ERROR);
-			throw new love::Exception("Unable to duplicate AssetInfo");
+			throw love::Exception("Unable to duplicate AssetInfo");
 		}
 
 		filename = new (std::nothrow) char[size];
@@ -697,7 +697,80 @@ static PHYSFS_Io *getDummyIO(PHYSFS_Io *io)
 	return &dummyIo;
 }
 
-}
+} // aasset
+
+struct SDLIO: public love::filesystem::physfs::PhysfsIo<SDLIO>
+{
+	static const uint32_t version = 0;
+
+	SDLIO(const std::string &filename)
+	: filename(filename)
+	, io(nullptr)
+	{
+		io = SDL_IOFromFile(filename.c_str(), "rb");
+		if (!io)
+			throw love::Exception("Cannot open %s: %s", filename.c_str(), SDL_GetError());
+	}
+
+	SDLIO(const SDLIO &other)
+	: filename(other.filename)
+	, io(nullptr)
+	{
+		io = SDL_IOFromFile(filename.c_str(), "rb");
+		if (!io)
+			throw love::Exception("Cannot open %s: %s", filename.c_str(), SDL_GetError());
+	}
+
+	int64_t read(void* buf, uint64_t len) const
+	{
+		size_t readed = SDL_ReadIO(io, buf, (size_t) len);
+		return (int64_t) readed;
+	}
+
+	int64_t write(const void* buf, uint64_t len) const
+	{
+		size_t written = SDL_WriteIO(io, buf, (size_t) len);
+		return (int64_t) written;
+	}
+
+	int seek(uint64_t offset) const
+	{
+		int64_t newpos = SDL_SeekIO(io, (Sint64) offset, SDL_IO_SEEK_SET);
+
+		PHYSFS_setErrorCode(newpos >= 0 ? PHYSFS_ERR_OK : PHYSFS_ERR_OS_ERROR);
+		return newpos >= 0;
+	}
+
+	int64_t tell() const
+	{
+		int64_t pos = SDL_TellIO(io);
+		PHYSFS_setErrorCode(pos >= 0 ? PHYSFS_ERR_OK : PHYSFS_ERR_OS_ERROR);
+		return pos;
+	}
+
+	int64_t length() const
+	{
+		int64_t size = SDL_GetIOSize(io);
+		PHYSFS_setErrorCode(size >= 0 ? PHYSFS_ERR_OK : PHYSFS_ERR_OS_ERROR);
+		return size;
+	}
+
+	int flush() const
+	{
+		bool success = SDL_FlushIO(io);
+		PHYSFS_setErrorCode(success ? PHYSFS_ERR_OK : PHYSFS_ERR_OS_ERROR);
+		return success;
+	}
+
+	~SDLIO() override
+	{
+		SDL_CloseIO(io);
+	}
+
+private:
+	std::string filename;
+	SDL_IOStream *io;
+};
 
 static bool isVirtualArchiveInitialized = false;
 
@@ -782,145 +855,10 @@ const char *getCRequirePath()
 	return path.c_str();
 }
 
-int getFDFromContentProtocol(const char *path)
+void *getIOFromContentProtocol(const char *uri)
 {
-	int fd = -1;
-
-	if (strstr(path, "content://") == path)
-	{
-		JNIEnv *env = (JNIEnv*) SDL_GetAndroidJNIEnv();
-		jobject activity = (jobject) SDL_GetAndroidActivity();
-		jclass clazz = env->GetObjectClass(activity);
-
-		static jmethodID converter = env->GetMethodID(clazz, "convertToFileDescriptor", "(Ljava/lang/String;)I");
-
-		jstring uri = env->NewStringUTF(path);
-		fd = (int) env->CallIntMethod(activity, converter, uri);
-
-		env->DeleteLocalRef(uri);
-		env->DeleteLocalRef(clazz);
-		env->DeleteLocalRef(activity);
-	}
-
-	return fd;
-}
-
-int getFDFromLoveProtocol(const char *path)
-{
-	constexpr const char PROTOCOL[] = "love2d://fd/";
-	constexpr size_t PROTOCOL_LEN = sizeof(PROTOCOL) - 1;
-
-	if (*path == '/')
-		path++;
-
-	if (memcmp(path, PROTOCOL, PROTOCOL_LEN) == 0)
-	{
-		try
-		{
-			return std::stoi(path + PROTOCOL_LEN, nullptr, 10);
-		}
-		catch (std::logic_error &)
-		{ }
-	}
-
-	return -1;
-}
-
-class FileDescriptorTracker: public love::Object
-{
-public:
-	explicit FileDescriptorTracker(int fd): Object(), fd(fd) {}
-	~FileDescriptorTracker() override { close(fd); }
-	int getFd() const { return fd; }
-private:
-	int fd;
-};
-
-struct FileDescriptorIO
-{
-	FileDescriptorTracker *fd;
-	off64_t size;
-	off64_t offset;
-};
-
-void *getIOFromFD(int fd)
-{
-	if (fd == -1)
-		return nullptr;
-
-	// Create file descriptor IO structure
-	FileDescriptorIO *fdio = new FileDescriptorIO();
-	fdio->size = lseek64(fd, 0, SEEK_END);
-	fdio->offset = 0;
-	lseek64(fd, 0, SEEK_SET);
-
-	if (fdio->size == -1)
-	{
-		// Cannot get size
-		delete fdio;
-		return nullptr;
-	}
-
-	fdio->fd = new FileDescriptorTracker(fd);
-
-	PHYSFS_Io *io = new PHYSFS_Io();
-	io->version = 0;
-	io->opaque = fdio;
-	io->read = [](PHYSFS_Io *io, void *buf, PHYSFS_uint64 size)
-	{
-		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
-		ssize_t ret = pread64(fdio->fd->getFd(), buf, (size_t) size, fdio->offset);
-
-		if (ret == -1)
-			PHYSFS_setErrorCode(PHYSFS_ERR_OTHER_ERROR);
-		else
-			fdio->offset = std::min(fdio->offset + (off64_t) ret, fdio->size);
-
-		return (PHYSFS_sint64) ret;
-	};
-	io->write = nullptr;
-	io->seek = [](PHYSFS_Io *io, PHYSFS_uint64 offset)
-	{
-		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
-		fdio->offset = std::min(std::max<off64_t>((off64_t) offset, 0), fdio->size);
-		// Always success
-		return 1;
-	};
-	io->tell = [](PHYSFS_Io *io)
-	{
-		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
-		return (PHYSFS_sint64) fdio->offset;
-	};
-	io->length = [](PHYSFS_Io *io)
-	{
-		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
-		return (PHYSFS_sint64) fdio->size;
-	};
-	io->duplicate = [](PHYSFS_Io *io)
-	{
-		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
-		FileDescriptorIO *fdio2 = new FileDescriptorIO();
-		PHYSFS_Io *io2 = new PHYSFS_Io();
-
-		fdio->fd->retain();
-
-		// Copy data
-		*fdio2 = *fdio;
-		*io2 = *io;
-		io2->opaque = fdio2;
-
-		return io2;
-	};
-	io->flush = nullptr;
-	io->destroy = [](PHYSFS_Io *io)
-	{
-		FileDescriptorIO *fdio = (FileDescriptorIO *) io->opaque;
-		fdio->fd->release();
-		delete fdio;
-		delete io;
-	};
-
-	return io;
+	// Note: The static_cast is necessary, otherwise the pointer is shifted.
+	return static_cast<PHYSFS_Io*>(new SDLIO(uri));
 }
 
 const char *getArg0()
