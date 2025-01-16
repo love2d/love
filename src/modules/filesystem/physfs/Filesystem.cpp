@@ -398,6 +398,25 @@ bool Filesystem::mountFullPath(const char *archive, const char *mountpoint, Moun
 
 	std::string canonarchive = canonicalizeRealPath(archive);
 
+#ifdef LOVE_ANDROID
+	if (strncmp(archive, "content://", 10) == 0)
+	{
+		if (permissions == MOUNT_PERMISSIONS_READWRITE)
+			// Currently there's no way content:// URIs we got are for read-write.
+			// TODO: Re-evaluate this in the future, maybe?
+			return false;
+
+		auto io = (PHYSFS_Io *) love::android::getIOFromContentProtocol(archive);
+		if (!io)
+			return false;
+
+		if (PHYSFS_mountIo(io, canonarchive.c_str(), mountpoint, appendToPath))
+			return true;
+
+		io->destroy(io);
+	}
+#endif
+
 	if (permissions == MOUNT_PERMISSIONS_READWRITE)
 		return PHYSFS_mountRW(canonarchive.c_str(), mountpoint, appendToPath) != 0;
 
