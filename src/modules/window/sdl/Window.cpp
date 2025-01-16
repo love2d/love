@@ -1525,12 +1525,7 @@ static void SDLCALL fileDialogCallbackSDL(void *userdata, const char *const *fil
 	{
 		// SDL's file list only lasts until the end of the callback, so we copy it.
 		for (int i = 0; filelist[i] != nullptr; i++)
-		{
-			std::string file(filelist[i]);
-			if (fs != nullptr)
-				file = fs->canonicalizeRealPath(file);
-			state->files.push_back(file);
-		}
+			state->files.push_back(filelist[i]);
 	}
 	else
 	{
