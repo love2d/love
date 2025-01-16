@@ -89,9 +89,9 @@ function love.boot()
 		local nouri = o.game.arg[1]
 		local full_source = nouri
 
-		-- Ignore "love2d://" uri as it's used to open a file-descriptor
+		-- Ignore "content://" uri as it's used to open a file-descriptor
 		-- directly for Android.
-		if nouri:sub(1, 9) ~= "love2d://" then
+		if nouri:sub(1, 10) ~= "content://" then
 			if nouri:sub(1, 7) == "file://" then
 				nouri = uridecode(nouri:sub(8))
 			end
