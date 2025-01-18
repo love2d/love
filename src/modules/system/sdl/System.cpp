@@ -26,6 +26,7 @@
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_cpuinfo.h>
 #include <SDL3/SDL_locale.h>
+#include <SDL3/SDL_misc.h>
 
 namespace love
 {
@@ -85,6 +86,11 @@ love::system::System::PowerState System::getPowerInfo(int &seconds, int &percent
 	powerStates.find(sdlstate, state);
 
 	return state;
+}
+
+bool System::openURL(const std::string &url) const
+{
+	return SDL_OpenURL(url.c_str());
 }
 
 std::vector<std::string> System::getPreferredLocales() const

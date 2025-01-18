@@ -43,12 +43,6 @@ namespace ios
 std::string getLoveInResources(bool &fused);
 
 /**
- * Opens the specified URL with the default program associated with the URL's
- * scheme.
- **/
-bool openURL(const std::string &url);
-
-/**
  * Causes devices with vibration support to vibrate for about 0.5 seconds.
  **/
 void vibrate();

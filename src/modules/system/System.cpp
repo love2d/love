@@ -22,35 +22,10 @@
 #include "common/config.h"
 #include "System.h"
 
-#if defined(LOVE_MACOS)
-#include <CoreServices/CoreServices.h>
-#elif defined(LOVE_IOS)
+#if defined(LOVE_IOS)
 #include "common/ios.h"
-#elif defined(LOVE_LINUX) || defined(LOVE_ANDROID)
-#include <signal.h>
-#include <sys/wait.h>
-#include <errno.h>
-#elif defined(LOVE_WINDOWS)
-#include "common/utf8.h"
-#include <shlobj.h>
-#include <shellapi.h>
-#pragma comment(lib, "shell32.lib")
-#endif
-#if defined(LOVE_ANDROID)
+#elif defined(LOVE_ANDROID)
 #include "common/android.h"
-#elif defined(LOVE_LINUX)
-
-#ifdef __has_include
-#if __has_include(<spawn.h>)
-#define LOVE_HAS_POSIX_SPAWN
-#endif
-#endif
-
-#ifdef LOVE_HAS_POSIX_SPAWN
-#include <spawn.h>
-#else
-#include <unistd.h>
-#endif
 #endif
 
 namespace love
@@ -79,94 +54,6 @@ const char *System::getOS()
 	return "Linux";
 #else
 	return "Unknown";
-#endif
-}
-
-#ifdef LOVE_HAS_POSIX_SPAWN
-extern "C"
-{
-	extern char **environ; // The environment, always available
-}
-#endif
-
-bool System::openURL(const std::string &url) const
-{
-
-#if defined(LOVE_MACOS)
-
-	bool success = false;
-	CFURLRef cfurl = CFURLCreateWithBytes(nullptr,
-	                                      (const UInt8 *) url.c_str(),
-	                                      url.length(),
-	                                      kCFStringEncodingUTF8,
-	                                      nullptr);
-
-	success = LSOpenCFURLRef(cfurl, nullptr) == noErr;
-	CFRelease(cfurl);
-	return success;
-
-#elif defined(LOVE_IOS)
-
-	return love::ios::openURL(url);
-
-#elif defined(LOVE_ANDROID)
-
-	return love::android::openURL(url);
-
-#elif defined(LOVE_LINUX)
-
-	pid_t pid;
-	const char *argv[] = {"xdg-open", url.c_str(), nullptr};
-
-#ifdef LOVE_HAS_POSIX_SPAWN
-	// Note: at the moment this process inherits our file descriptors.
-	// Note: the below const_cast is really ugly as well.
-	if (posix_spawnp(&pid, "xdg-open", nullptr, nullptr, const_cast<char **>(argv), environ) != 0)
-		return false;
-#else
-	pid = fork();
-	if (pid == 0)
-	{
-		execvp("xdg-open", const_cast<char **>(argv));
-		return false;
-	}
-#endif
-
-	// Check if xdg-open already completed (or failed.)
-	int status = 0;
-	if (waitpid(pid, &status, WNOHANG) > 0)
-		return (status == 0);
-	else
-		// We can't tell what actually happens without waiting for
-		// the process to finish, which could take forever (literally).
-		return true;
-
-#elif defined(LOVE_WINDOWS)
-
-	// Unicode-aware WinAPI functions don't accept UTF-8, so we need to convert.
-	std::wstring wurl = to_widestr(url);
-
-	HINSTANCE result = 0;
-
-#if defined(LOVE_WINDOWS_UWP)
-	
-	Platform::String^ urlString = ref new Platform::String(wurl.c_str());
-	auto uwpUri = ref new Windows::Foundation::Uri(urlString);
-	Windows::System::Launcher::LaunchUriAsync(uwpUri);
-
-#else
-
-	result = ShellExecuteW(nullptr,
-		L"open",
-		wurl.c_str(),
-		nullptr,
-		nullptr,
-		SW_SHOW);
-
-#endif
-
-	return (ptrdiff_t) result > 32;
-
 #endif
 }
 

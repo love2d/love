@@ -50,8 +50,6 @@ double getScreenScale();
  **/
 bool getSafeArea(int &top, int &left, int &bottom, int &right);
 
-bool openURL(const std::string &url);
-
 void vibrate(double seconds);
 
 bool directoryExists(const char *path);

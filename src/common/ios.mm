@@ -364,22 +364,6 @@ std::string getLoveInResources(bool &fused)
 	return path;
 }
 
-bool openURL(const std::string &url)
-{
-	bool success = false;
-
-	@autoreleasepool
-	{
-		UIApplication *app = [UIApplication sharedApplication];
-		NSURL *nsurl = [NSURL URLWithString:@(url.c_str())];
-
-		if ([app canOpenURL:nsurl])
-			success = [app openURL:nsurl];
-	}
-
-	return success;
-}
-
 void vibrate()
 {
 	@autoreleasepool

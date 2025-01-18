@@ -118,11 +118,6 @@ bool getSafeArea(int &top, int &left, int &bottom, int &right)
 	return safeArea != nullptr;
 }
 
-bool openURL(const std::string &url)
-{
-	return SDL_OpenURL(url.c_str()) == 0;
-}
-
 void vibrate(double seconds)
 {
 	JNIEnv *env = (JNIEnv*) SDL_GetAndroidJNIEnv();

@@ -94,7 +94,7 @@ public:
 	 *
 	 * @return Whether the URL was opened successfully.
 	 **/
-	virtual bool openURL(const std::string &url) const;
+	virtual bool openURL(const std::string &url) const = 0;
 
 	/**
 	 * Vibrates for the specified amount of seconds.
