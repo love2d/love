@@ -202,6 +202,21 @@ inline float luax_checkfloat(lua_State *L, int idx)
 	return static_cast<float>(luaL_checknumber(L, idx));
 }
 
+inline int luax_toint(lua_State *L, int idx)
+{
+	return (int)lua_tointeger(L, idx);
+}
+
+inline int luax_checkint(lua_State *L, int idx)
+{
+	return (int)luaL_checkinteger(L, idx);
+}
+
+inline int luax_optint(lua_State *L, int idx, int def)
+{
+	return (int)luaL_optinteger(L, idx, (lua_Integer)def);
+}
+
 inline lua_Number luax_checknumberclamped(lua_State *L, int idx, double minv, double maxv)
 {
 	return std::min(std::max(luaL_checknumber(L, idx), minv), maxv);

@@ -1301,22 +1301,22 @@ int w_newTextureView(lua_State *L)
 
 	lua_getfield(L, 2, "mipmapstart");
 	if (!lua_isnoneornil(L, -1))
-		settings.mipmapStart.set(luaL_checkint(L, -1) - 1);
+		settings.mipmapStart.set(luax_checkint(L, -1) - 1);
 	lua_pop(L, 1);
 
 	lua_getfield(L, 2, "mipmapcount");
 	if (!lua_isnoneornil(L, -1))
-		settings.mipmapCount.set(luaL_checkint(L, -1));
+		settings.mipmapCount.set(luax_checkint(L, -1));
 	lua_pop(L, 1);
 
 	lua_getfield(L, 2, "layerstart");
 	if (!lua_isnoneornil(L, -1))
-		settings.layerStart.set(luaL_checkint(L, -1) - 1);
+		settings.layerStart.set(luax_checkint(L, -1) - 1);
 	lua_pop(L, 1);
 
 	lua_getfield(L, 2, "layers");
 	if (!lua_isnoneornil(L, -1))
-		settings.layerCount.set(luaL_checkint(L, -1));
+		settings.layerCount.set(luax_checkint(L, -1));
 	lua_pop(L, 1);
 
 	lua_getfield(L, 2, "debugname");
@@ -1771,7 +1771,7 @@ static Buffer::DataDeclaration luax_checkdatadeclaration(lua_State* L, int forma
 		luaL_argerror(L, formattableidx, str.c_str());
 	}
 	else if (!lua_isnoneornil(L, -1))
-		decl.bindingLocation = luaL_checkint(L, -1);
+		decl.bindingLocation = luax_checkint(L, -1);
 	lua_pop(L, 1);
 
 	return decl;
@@ -2215,7 +2215,7 @@ static Mesh::BufferAttribute luax_checkbufferattributetable(lua_State *L, int id
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "location");
-	attrib.bindingLocation = luaL_checkint(L, -1);
+	attrib.bindingLocation = luax_checkint(L, -1);
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "name");
@@ -2234,7 +2234,7 @@ static Mesh::BufferAttribute luax_checkbufferattributetable(lua_State *L, int id
 
 	lua_getfield(L, idx, "locationinbuffer");
 	if (!lua_isnoneornil(L, -1))
-		attrib.bindingLocationInBuffer = luaL_checkint(L, -1);
+		attrib.bindingLocationInBuffer = luax_checkint(L, -1);
 	else
 		attrib.bindingLocationInBuffer = attrib.bindingLocation;
 	lua_pop(L, 1);

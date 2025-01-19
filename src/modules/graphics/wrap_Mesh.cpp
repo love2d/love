@@ -291,7 +291,7 @@ int w_Mesh_setAttributeEnabled(lua_State *L)
 	}
 	else
 	{
-		int location = luaL_checkint(L, 2);
+		int location = luax_checkint(L, 2);
 		luax_catchexcept(L, [&](){ t->setAttributeEnabled(location, enable); });
 	}
 	return 0;
@@ -308,7 +308,7 @@ int w_Mesh_isAttributeEnabled(lua_State *L)
 	}
 	else
 	{
-		int location = luaL_checkint(L, 2);
+		int location = luax_checkint(L, 2);
 		luax_catchexcept(L, [&](){ enabled = t->isAttributeEnabled(location); });
 	}
 	lua_pushboolean(L, enabled);
@@ -324,7 +324,7 @@ int w_Mesh_attachAttribute(lua_State *L)
 	if (lua_type(L, 2) == LUA_TSTRING)
 		name = luaL_checkstring(L, 2);
 	else
-		location = luaL_checkint(L, 2);
+		location = luax_checkint(L, 2);
 
 	Buffer *buffer = nullptr;
 	Mesh *mesh = nullptr;
@@ -350,7 +350,7 @@ int w_Mesh_attachAttribute(lua_State *L)
 	if (name != nullptr)
 		attachname = luaL_optstring(L, 5, name);
 	else
-		attachlocation = luaL_optint(L, 5, location);
+		attachlocation = luax_optint(L, 5, location);
 
 	int startindex = (int) luaL_optinteger(L, 6, 1) - 1;
 
