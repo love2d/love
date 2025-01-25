@@ -364,7 +364,7 @@ Message *Event::convert(const SDL_Event &e)
 
 		if (e.type == SDL_EVENT_FINGER_DOWN)
 			txt = "touchpressed";
-		else if (e.type == SDL_EVENT_FINGER_UP)
+		else if (e.type == SDL_EVENT_FINGER_UP || e.type == SDL_EVENT_FINGER_CANCELED)
 			txt = "touchreleased";
 		else
 			txt = "touchmoved";

@@ -86,6 +86,7 @@ void Touch::onEvent(Uint32 eventtype, const TouchInfo &info)
 		break;
 	}
 	case SDL_EVENT_FINGER_UP:
+	case SDL_EVENT_FINGER_CANCELED:
 		touches.erase(std::remove_if(touches.begin(), touches.end(), compare), touches.end());
 		break;
 	default:
