@@ -2795,7 +2795,7 @@ VkSampler Graphics::createSampler(const SamplerState &samplerState)
 	samplerInfo.addressModeU = Vulkan::getWrapMode(samplerState.wrapU);
 	samplerInfo.addressModeV = Vulkan::getWrapMode(samplerState.wrapV);
 	samplerInfo.addressModeW = Vulkan::getWrapMode(samplerState.wrapW);
-	samplerInfo.anisotropyEnable = VK_TRUE;
+	samplerInfo.anisotropyEnable = samplerState.maxAnisotropy > 1 ? VK_TRUE : VK_FALSE;
 	samplerInfo.maxAnisotropy = static_cast<float>(samplerState.maxAnisotropy);
 
 	// TODO: This probably needs to branch on a pixel format to determine whether
