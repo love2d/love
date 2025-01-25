@@ -1138,13 +1138,40 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 		PixelFormat dsformat = PIXELFORMAT_STENCIL8;
 		if (wantsdepth && wantsstencil)
-			dsformat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-		else if (wantsdepth && isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
-			dsformat = PIXELFORMAT_DEPTH24_UNORM;
+		{
+			if (isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM_STENCIL8, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+				dsformat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+			else if (isPixelFormatSupported(PIXELFORMAT_DEPTH32_FLOAT_STENCIL8, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+				dsformat = PIXELFORMAT_DEPTH32_FLOAT_STENCIL8;
+			else
+				throw love::Exception("Combined depth and stencil buffers are not supported on this system.");
+		}
 		else if (wantsdepth)
-			dsformat = PIXELFORMAT_DEPTH16_UNORM;
+		{
+			if (isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+				dsformat = PIXELFORMAT_DEPTH24_UNORM;
+			else if (isPixelFormatSupported(PIXELFORMAT_DEPTH32_FLOAT, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+				dsformat = PIXELFORMAT_DEPTH32_FLOAT;
+			else if (isPixelFormatSupported(PIXELFORMAT_DEPTH16_UNORM, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+				dsformat = PIXELFORMAT_DEPTH16_UNORM;
+			else if (isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM_STENCIL8, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+				dsformat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+			else if (isPixelFormatSupported(PIXELFORMAT_DEPTH32_FLOAT_STENCIL8, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+				dsformat = PIXELFORMAT_DEPTH32_FLOAT_STENCIL8;
+			else
+				throw love::Exception("Depth buffers are not supported on this system.");
+		}
 		else if (wantsstencil)
-			dsformat = PIXELFORMAT_STENCIL8;
+		{
+			if (isPixelFormatSupported(PIXELFORMAT_STENCIL8, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+				dsformat = PIXELFORMAT_STENCIL8;
+			else if (isPixelFormatSupported(PIXELFORMAT_DEPTH24_UNORM_STENCIL8, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+				dsformat = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+			else if (isPixelFormatSupported(PIXELFORMAT_DEPTH32_FLOAT_STENCIL8, PIXELFORMATUSAGEFLAGS_RENDERTARGET))
+				dsformat = PIXELFORMAT_DEPTH32_FLOAT_STENCIL8;
+			else
+				throw love::Exception("Stencil buffers are not supported on this system.");
+		}
 
 		// We want setRenderTargetsInternal to have a pointer to the temporary RT,
 		// but we don't want to directly store it in the main graphics state.
