@@ -58,6 +58,7 @@ public:
 	static uint32_t getNumShaderSwitches();
 	static void resetShaderSwitches();
 
+	static const char *getErrorString(VkResult result);
 	static VkFormat getVulkanVertexFormat(DataFormat format);
 	static TextureFormat getTextureFormat(PixelFormat format);
 	static std::string getVendorName(uint32_t vendorId);

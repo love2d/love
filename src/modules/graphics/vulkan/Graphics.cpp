@@ -1426,8 +1426,9 @@ void Graphics::startRecordingGraphicsCommands()
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 	beginInfo.pInheritanceInfo = nullptr;
 
-	if (vkBeginCommandBuffer(commandBuffers.at(currentFrame), &beginInfo) != VK_SUCCESS)
-		throw love::Exception("failed to begin recording command buffer");
+	VkResult result = vkBeginCommandBuffer(commandBuffers.at(currentFrame), &beginInfo);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to begin recording Vulkan command buffer: %s", Vulkan::getErrorString(result));
 
 	initDynamicState();
 
@@ -1460,8 +1461,9 @@ void Graphics::endRecordingGraphicsCommands()
 	if (renderPassState.active)
 		endRenderPass();
 
-	if (vkEndCommandBuffer(commandBuffers.at(currentFrame)) != VK_SUCCESS)
-		throw love::Exception("failed to record command buffer");
+	VkResult result = vkEndCommandBuffer(commandBuffers.at(currentFrame));
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to record Vulkan command buffer: %s", Vulkan::getErrorString(result));
 }
 
 VkCommandBuffer Graphics::getCommandBufferForDataTransfer()
@@ -1808,8 +1810,9 @@ void Graphics::createLogicalDevice()
 	if (optionalDeviceExtensions.extendedDynamicState)
 		createInfo.pNext = &extendedDynamicStateFeatures;
 
-	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
-		throw love::Exception("failed to create logical device");
+	VkResult result = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan logical device: %s", Vulkan::getErrorString(result));
 
 	volkLoadDevice(device);
 
@@ -1822,8 +1825,9 @@ void Graphics::createPipelineCache()
 	VkPipelineCacheCreateInfo cacheInfo{};
 	cacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 
-	if (vkCreatePipelineCache(device, &cacheInfo, nullptr, &pipelineCache) != VK_SUCCESS)
-		throw love::Exception("could not create pipeline cache");
+	VkResult result = vkCreatePipelineCache(device, &cacheInfo, nullptr, &pipelineCache);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Could not create Vulkan pipeline cache: %s", Vulkan::getErrorString(result));
 }
 
 void Graphics::initVMA()
@@ -1876,8 +1880,9 @@ void Graphics::initVMA()
 	if (optionalDeviceExtensions.memoryBudget)
 		allocatorCreateInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
 
-	if (vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator) != VK_SUCCESS)
-		throw love::Exception("failed to create vma allocator");
+	VkResult result = vmaCreateAllocator(&allocatorCreateInfo, &vmaAllocator);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan VMA allocator: %s", Vulkan::getErrorString(result));
 }
 
 void Graphics::createSurface()
@@ -1885,7 +1890,7 @@ void Graphics::createSurface()
 	auto window = Module::getInstance<love::window::Window>(M_WINDOW);
 	const void *handle = window->getHandle();
 	if (!SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, nullptr, &surface))
-		throw love::Exception("failed to create window surface");
+		throw love::Exception("Failed to create Vulkan window surface: %s", SDL_GetError());
 }
 
 SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device)
@@ -1962,8 +1967,9 @@ void Graphics::createSwapChain()
 		createInfo.clipped = VK_TRUE;
 		createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-		if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) != VK_SUCCESS)
-			throw love::Exception("failed to create swap chain");
+		VkResult result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain);
+		if (result != VK_SUCCESS)
+			throw love::Exception("Failed to create Vulkan swap chain: %s", Vulkan::getErrorString(result));
 
 		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
 		swapChainImages.resize(imageCount);
@@ -2135,8 +2141,9 @@ void Graphics::createImageViews()
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews.at(i)) != VK_SUCCESS)
-			throw love::Exception("failed to create image views");
+		VkResult result = vkCreateImageView(device, &createInfo, nullptr, &swapChainImageViews.at(i));
+		if (result != VK_SUCCESS)
+			throw love::Exception("Failed to create Vulkan swap chain image views: %s", Vulkan::getErrorString(result));
 	}
 }
 
@@ -2164,8 +2171,9 @@ VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration &configuratio
 	createInfo.layers = 1;
 
 	VkFramebuffer frameBuffer;
-	if (vkCreateFramebuffer(device, &createInfo, nullptr, &frameBuffer) != VK_SUCCESS)
-		throw love::Exception("failed to create framebuffer");
+	VkResult result = vkCreateFramebuffer(device, &createInfo, nullptr, &frameBuffer);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan framebuffer: %s", Vulkan::getErrorString(result));
 	return frameBuffer;
 }
 
@@ -2392,8 +2400,9 @@ VkRenderPass Graphics::createRenderPass(RenderPassConfiguration &configuration)
 	createInfo.pDependencies = dependencies.data();
 
 	VkRenderPass renderPass;
-	if (vkCreateRenderPass(device, &createInfo, nullptr, &renderPass) != VK_SUCCESS)
-		throw love::Exception("failed to create render pass");
+	VkResult result = vkCreateRenderPass(device, &createInfo, nullptr, &renderPass);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan render pass: %s", Vulkan::getErrorString(result));
 
 	return renderPass;
 }
@@ -2814,8 +2823,9 @@ VkSampler Graphics::createSampler(const SamplerState &samplerState)
 	samplerInfo.maxLod = static_cast<float>(samplerState.maxLod);
 
 	VkSampler sampler;
-	if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
-		throw love::Exception("failed to create sampler");
+	VkResult result = vkCreateSampler(device, &samplerInfo, nullptr, &sampler);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan sampler: %s", Vulkan::getErrorString(result));
 
 	return sampler;
 }
@@ -3006,8 +3016,9 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 	pipelineInfo.renderPass = configuration.renderPass;
 
 	VkPipeline graphicsPipeline;
-	if (vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS)
-		throw love::Exception("failed to create graphics pipeline");
+	VkResult result = vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineInfo, nullptr, &graphicsPipeline);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan graphics pipeline: %s", Vulkan::getErrorString(result));
 	return graphicsPipeline;
 }
 
@@ -3101,8 +3112,9 @@ void Graphics::createColorResources()
 		allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 		allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
-		if (vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &colorImage, &colorImageAllocation, nullptr))
-			throw love::Exception("failed to create color image");
+		VkResult result = vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &colorImage, &colorImageAllocation, nullptr);
+		if (result != VK_SUCCESS)
+			throw love::Exception("Failed to create Vulkan MSAA color image: %s", Vulkan::getErrorString(result));
 
 		VkImageViewCreateInfo imageViewInfo{};
 		imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -3119,8 +3131,9 @@ void Graphics::createColorResources()
 		imageViewInfo.subresourceRange.baseArrayLayer = 0;
 		imageViewInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(device, &imageViewInfo, nullptr, &colorImageView) != VK_SUCCESS)
-			throw love::Exception("failed to create color image view");
+		result = vkCreateImageView(device, &imageViewInfo, nullptr, &colorImageView);
+		if (result != VK_SUCCESS)
+			throw love::Exception("Failed to create Vulkan MSAA color image view: %s", Vulkan::getErrorString(result));
 	}
 }
 
@@ -3176,8 +3189,9 @@ void Graphics::createDepthResources()
 	allocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 	allocationInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
-	if (vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &depthImage, &depthImageAllocation, nullptr) != VK_SUCCESS)
-		throw love::Exception("failed to create depth image");
+	VkResult result = vmaCreateImage(vmaAllocator, &imageInfo, &allocationInfo, &depthImage, &depthImageAllocation, nullptr);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan backbuffer depth image: %s", Vulkan::getErrorString(result));
 
 	VkImageViewCreateInfo imageViewInfo{};
 	imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -3197,8 +3211,9 @@ void Graphics::createDepthResources()
 	imageViewInfo.subresourceRange.baseArrayLayer = 0;
 	imageViewInfo.subresourceRange.layerCount = 1;
 
-	if (vkCreateImageView(device, &imageViewInfo, nullptr, &depthImageView) != VK_SUCCESS)
-		throw love::Exception("failed to create depth image view");
+	result = vkCreateImageView(device, &imageViewInfo, nullptr, &depthImageView);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan backbuffer depth image view: %s", Vulkan::getErrorString(result));
 }
 
 void Graphics::createCommandPool()
@@ -3210,8 +3225,9 @@ void Graphics::createCommandPool()
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value;
 	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
 
-	if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
-		throw love::Exception("failed to create command pool");
+	VkResult result = vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan command pool: %s", Vulkan::getErrorString(result));
 }
 
 void Graphics::createCommandBuffers()
@@ -3224,8 +3240,9 @@ void Graphics::createCommandBuffers()
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
-		throw love::Exception("failed to allocate command buffers");
+	VkResult result = vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data());
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to allocate Vulkan command buffers: %s", Vulkan::getErrorString(result));
 }
 
 void Graphics::createSyncObjects()
@@ -3246,7 +3263,7 @@ void Graphics::createSyncObjects()
 		if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores.at(i)) != VK_SUCCESS ||
 			vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores.at(i)) != VK_SUCCESS ||
 			vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences.at(i)) != VK_SUCCESS)
-			throw love::Exception("failed to create synchronization objects for a frame!");
+			throw love::Exception("Failed to create Vulkan synchronization objects for a frame!");
 }
 
 void Graphics::cleanup()

@@ -125,7 +125,7 @@ static VkShaderStageFlagBits getStageBit(ShaderStageType type)
 	case SHADERSTAGE_COMPUTE:
 		return VK_SHADER_STAGE_COMPUTE_BIT;
 	default:
-		throw love::Exception("invalid type");
+		throw love::Exception("Invalid shader stage type: %d", type);
 	}
 }
 
@@ -152,7 +152,7 @@ static EShLanguage getGlslShaderType(ShaderStageType stage)
 	case SHADERSTAGE_COMPUTE:
 		return EShLangCompute;
 	default:
-		throw love::Exception("unkonwn shader stage type");
+		throw love::Exception("Unknown shader stage type: %d", stage);
 	}
 }
 
@@ -708,8 +708,9 @@ void Shader::compileShaders()
 
 		VkShaderModule shaderModule;
 
-		if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
-			throw love::Exception("failed to create shader module");
+		VkResult result = vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
+		if (result != VK_SUCCESS)
+			throw love::Exception("Failed to create Vulkan shader module: %s", Vulkan::getErrorString(result));
 
 		std::string debugname = getShaderStageDebugName(shaderStage);
 		if (!debugname.empty() && vgfx->getEnabledOptionalInstanceExtensions().debugInfo)
@@ -963,8 +964,9 @@ void Shader::createDescriptorSetLayout()
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 	layoutInfo.pBindings = bindings.data();
 
-	if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
-		throw love::Exception("failed to create descriptor set layout");
+	VkResult result = vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan descriptor set layout: %s", Vulkan::getErrorString(result));
 }
 
 void Shader::createPipelineLayout()
@@ -975,8 +977,9 @@ void Shader::createPipelineLayout()
 	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 	pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
-		throw love::Exception("failed to create pipeline layout");
+	VkResult result = vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan pipeline layout: %s", Vulkan::getErrorString(result));
 
 	if (isCompute)
 	{
@@ -987,8 +990,9 @@ void Shader::createPipelineLayout()
 		computeInfo.stage = shaderStages.at(0);
 		computeInfo.layout = pipelineLayout;
 
-		if (vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &computeInfo, nullptr, &computePipeline) != VK_SUCCESS)
-			throw love::Exception("failed to create compute pipeline");
+		result = vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &computeInfo, nullptr, &computePipeline);
+		if (result != VK_SUCCESS)
+			throw love::Exception("Failed to create Vulkan compute pipeline: %s", Vulkan::getErrorString(result));
 	}
 }
 
@@ -1090,8 +1094,9 @@ void Shader::createDescriptorPool()
 	createInfo.pPoolSizes = descriptorPoolSizes.data();
 
 	VkDescriptorPool pool;
-	if (vkCreateDescriptorPool(device, &createInfo, nullptr, &pool) != VK_SUCCESS)
-		throw love::Exception("failed to create descriptor pool");
+	VkResult result = vkCreateDescriptorPool(device, &createInfo, nullptr, &pool);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan descriptor pool: %s", Vulkan::getErrorString(result));
 
 	descriptorPools[currentFrame].push_back(pool);
 }
@@ -1122,7 +1127,7 @@ VkDescriptorSet Shader::allocateDescriptorSet()
 				createDescriptorPool();
 			continue;
 		default:
-			throw love::Exception("failed to allocate descriptor set");
+			throw love::Exception("Failed to allocate Vulkan descriptor set: %s", Vulkan::getErrorString(result));
 		}
 	}
 }

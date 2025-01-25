@@ -39,7 +39,7 @@ static VkBufferUsageFlags getUsageBit(BufferUsage mode)
 	case BUFFERUSAGE_SHADER_STORAGE: return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 	case BUFFERUSAGE_INDIRECT_ARGUMENTS: return VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 	default:
-		throw love::Exception("unsupported BufferUsage mode");
+		throw love::Exception("Unsupported BufferUsage mode: %d", mode);
 	}
 }
 
@@ -111,7 +111,7 @@ bool Buffer::loadVolatile()
 
 	auto result = vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
 	if (result != VK_SUCCESS)
-		throw love::Exception("failed to create buffer");
+		throw love::Exception("Failed to create Vulkan buffer: %s", Vulkan::getErrorString(result));
 
 	if (zeroInitialize)
 	{
@@ -131,8 +131,9 @@ bool Buffer::loadVolatile()
 		bufferViewInfo.format = Vulkan::getVulkanVertexFormat(getDataMember(0).decl.format);
 		bufferViewInfo.range = VK_WHOLE_SIZE;
 
-		if (vkCreateBufferView(vgfx->getDevice(), &bufferViewInfo, nullptr, &bufferView) != VK_SUCCESS)
-			throw love::Exception("failed to create texel buffer view");
+		result = vkCreateBufferView(vgfx->getDevice(), &bufferViewInfo, nullptr, &bufferView);
+		if (result != VK_SUCCESS)
+			throw love::Exception("Failed to create Vulkan texel buffer view: %s", Vulkan::getErrorString(result));
 	}
 
 	VkMemoryPropertyFlags memoryProperties;
@@ -226,8 +227,9 @@ void *Buffer::map(MapType map, size_t offset, size_t size)
 		allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
 		allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-		if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAllocation, &stagingAllocInfo) != VK_SUCCESS)
-			throw love::Exception("failed to create staging buffer");
+		VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAllocation, &stagingAllocInfo);
+		if (result != VK_SUCCESS)
+			throw love::Exception("Failed to create Vulkan staging buffer: %s", Vulkan::getErrorString(result));
 
 		return stagingAllocInfo.pMappedData;
 	}
@@ -254,8 +256,9 @@ bool Buffer::fill(size_t offset, size_t size, const void *data)
 	VmaAllocation fillAllocation;
 	VmaAllocationInfo fillAllocInfo;
 
-	if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &fillBuffer, &fillAllocation, &fillAllocInfo) != VK_SUCCESS)
-		throw love::Exception("failed to create fill buffer");
+	VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &fillBuffer, &fillAllocation, &fillAllocInfo);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan fill buffer: %s", Vulkan::getErrorString(result));
 
 	memcpy(fillAllocInfo.pMappedData, data, size);
 

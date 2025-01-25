@@ -37,7 +37,7 @@ static VkBufferUsageFlags getUsageFlags(BufferUsage mode)
 	case BUFFERUSAGE_INDEX: return VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 	case BUFFERUSAGE_UNIFORM: return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 	default:
-		throw love::Exception("unsupported BufferUsage mode");
+		throw love::Exception("Unsupported BufferUsage mode: %d", mode);
 	}
 }
 
@@ -62,8 +62,9 @@ bool StreamBuffer::loadVolatile()
 	allocCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
 	allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-	if (vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo) != VK_SUCCESS)
-		throw love::Exception("Cannot create stream buffer: out of graphics memory.");
+	VkResult result = vmaCreateBuffer(allocator, &bufferInfo, &allocCreateInfo, &buffer, &allocation, &allocInfo);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Cannot create stream buffer: %s", Vulkan::getErrorString(result));
 
 	VkMemoryPropertyFlags properties;
 	vmaGetAllocationMemoryProperties(allocator, allocation, &properties);

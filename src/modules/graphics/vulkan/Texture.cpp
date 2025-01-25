@@ -156,15 +156,17 @@ bool Texture::loadVolatile()
 
 		if ((msaaSamples & VK_SAMPLE_COUNT_1_BIT) != 0 || readable)
 		{
-			if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &imageData.image, &imageData.allocation, nullptr) != VK_SUCCESS)
-				throw love::Exception("failed to create image");
+			VkResult result = vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &imageData.image, &imageData.allocation, nullptr);
+			if (result != VK_SUCCESS)
+				throw love::Exception("Failed to create Vulkan image: %s", Vulkan::getErrorString(result));
 		}
 
 		if ((msaaSamples & VK_SAMPLE_COUNT_1_BIT) == 0)
 		{
 			imageInfo.samples = msaaSamples;
-			if (vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &msaaImageData.image, &msaaImageData.allocation, nullptr) != VK_SUCCESS)
-				throw love::Exception("failed to create MSAA image");
+			VkResult result = vmaCreateImage(allocator, &imageInfo, &imageAllocationCreateInfo, &msaaImageData.image, &msaaImageData.allocation, nullptr);
+			if (result != VK_SUCCESS)
+				throw love::Exception("Failed to create Vulkan MSAA image: %s", Vulkan::getErrorString(result));
 		}
 
 		auto commandBuffer = vgfx->getCommandBufferForDataTransfer();
@@ -410,8 +412,9 @@ void Texture::createTextureImageView()
 	imageData.imageView = VK_NULL_HANDLE;
 	if (imageData.image != VK_NULL_HANDLE && readable)
 	{
-		if (vkCreateImageView(device, &viewInfo, nullptr, &imageData.imageView) != VK_SUCCESS)
-			throw love::Exception("could not create texture image view");
+		VkResult result = vkCreateImageView(device, &viewInfo, nullptr, &imageData.imageView);
+		if (result != VK_SUCCESS)
+			throw love::Exception("Could not create Vulkan texture image view: %s", Vulkan::getErrorString(result));
 	}
 }
 
@@ -450,8 +453,9 @@ void Texture::createRenderTargetImageViews(VulkanImageData &data)
 			viewInfo.components.b = vulkanFormat.swizzleB;
 			viewInfo.components.a = vulkanFormat.swizzleA;
 
-			if (vkCreateImageView(device, &viewInfo, nullptr, &data.renderTargetImageViews.at(mip).at(slice)) != VK_SUCCESS)
-				throw love::Exception("could not create render target image view");
+			VkResult result = vkCreateImageView(device, &viewInfo, nullptr, &data.renderTargetImageViews.at(mip).at(slice));
+			if (result != VK_SUCCESS)
+				throw love::Exception("Could not create Vulkan render target image view: %s", Vulkan::getErrorString(result));
 		}
 	}
 }
@@ -650,7 +654,9 @@ void Texture::uploadByteData(const void *data, size_t size, int level, int slice
 	allocCreateInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
 	VmaAllocationInfo allocInfo;
-	vmaCreateBuffer(allocator, &bufferCreateInfo, &allocCreateInfo, &stagingBuffer, &vmaAllocation, &allocInfo);
+	VkResult result = vmaCreateBuffer(allocator, &bufferCreateInfo, &allocCreateInfo, &stagingBuffer, &vmaAllocation, &allocInfo);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan staging buffer for texture data upload: %s", Vulkan::getErrorString(result));
 
 	memcpy(allocInfo.pMappedData, data, size);
 
