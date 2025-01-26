@@ -52,7 +52,7 @@ SharedDescriptorPools::SharedDescriptorPools(VkDevice device, int dynamicUniform
 	{
 		size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 		size.descriptorCount = dynamicUniformBuffers;
-		descriptorPoolSizes.push_back({ size });
+		descriptorPoolSizes.push_back(size);
 	}
 
 	if (sampledTextures > 0)
