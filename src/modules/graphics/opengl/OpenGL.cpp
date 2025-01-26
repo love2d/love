@@ -943,7 +943,11 @@ uint32 OpenGL::getStencilWriteMask() const
 
 void OpenGL::setColorWriteMask(uint32 mask)
 {
-	glColorMask(mask & (1 << 0), mask & (1 << 1), mask & (1 << 2), mask & (1 << 3));
+	GLboolean r = (mask & (1 << 0)) ? GL_TRUE : GL_FALSE;
+	GLboolean g = (mask & (1 << 1)) ? GL_TRUE : GL_FALSE;
+	GLboolean b = (mask & (1 << 2)) ? GL_TRUE : GL_FALSE;
+	GLboolean a = (mask & (1 << 3)) ? GL_TRUE : GL_FALSE;
+	glColorMask(r, g, b, a);
 	state.colorWriteMask = mask;
 }
 
