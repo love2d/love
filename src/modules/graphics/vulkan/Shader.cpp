@@ -57,7 +57,7 @@ SharedDescriptorPools::SharedDescriptorPools(VkDevice device, int dynamicUniform
 
 	if (sampledTextures > 0)
 	{
-		size.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+		size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		size.descriptorCount = sampledTextures;
 		descriptorPoolSizes.push_back(size);
 	}
