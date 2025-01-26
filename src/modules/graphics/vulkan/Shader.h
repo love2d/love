@@ -112,6 +112,36 @@ struct GraphicsPipelineConfigurationFullHasher
 
 class Graphics;
 
+class SharedDescriptorPools
+{
+public:
+
+	SharedDescriptorPools(VkDevice device, int dynamicUniformBuffers, int sampledTextures, int storageTextures, int texelBuffers, int storageBuffers);
+	virtual ~SharedDescriptorPools();
+
+	VkDescriptorSet allocateDescriptorSet(const VkDescriptorSetLayout &descriptorSetLayout);
+
+	void newFrame(uint64 frameIndex);
+
+	int dynamicUniformBuffers = 0;
+	int sampledTextures = 0;
+	int storageTextures = 0;
+	int texelBuffers = 0;
+	int storageBuffers = 0;
+
+private:
+
+	void createDescriptorPool();
+
+	std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
+	std::vector<std::vector<VkDescriptorPool>> pools;
+	Optional<uint64> lastFrameIndex;
+	size_t currentFrame = 0;
+	uint32 currentPool = 0;
+	VkDevice device = VK_NULL_HANDLE;
+
+};
+
 class Shader final
 	: public graphics::Shader
 	, public Volatile
@@ -148,7 +178,7 @@ public:
 
 	const VkPipelineLayout getGraphicsPipelineLayout() const;
 
-	void newFrame();
+	void newFrame(uint64 graphicsFrameIndex);
 
 	void cmdPushDescriptorSets(VkCommandBuffer, VkPipelineBindPoint);
 
@@ -177,10 +207,8 @@ private:
 	void compileShaders();
 	void createDescriptorSetLayout();
 	void createPipelineLayout();
-	void createDescriptorPoolSizes();
+	void acquireDescriptorPools();
 	void buildLocalUniforms(spirv_cross::Compiler &comp, const spirv_cross::SPIRType &type, size_t baseoff, const std::string &basename);
-	void createDescriptorPool();
-	VkDescriptorSet allocateDescriptorSet();
 
 	void setTextureDescriptor(const UniformInfo *info, love::graphics::Texture *texture, int index);
 	void setBufferDescriptor(const UniformInfo *info, love::graphics::Buffer *buffer, int index);
@@ -192,9 +220,6 @@ private:
 
 	VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-	std::vector<VkDescriptorPoolSize> descriptorPoolSizes;
-
-	std::vector<std::vector<VkDescriptorPool>> descriptorPools;
 
 	std::vector<VkDescriptorBufferInfo> descriptorBuffers;
 	std::vector<VkDescriptorImageInfo> descriptorImages;
@@ -209,6 +234,8 @@ private:
 
 	Graphics *vgfx = nullptr;
 	VkDevice device = VK_NULL_HANDLE;
+
+	SharedDescriptorPools *descriptorPools = nullptr;
 
 	bool isCompute = false;
 	bool resourceDescriptorsDirty = false;
@@ -226,9 +253,6 @@ private:
 
 	std::unordered_map<GraphicsPipelineConfigurationCore, VkPipeline, GraphicsPipelineConfigurationCoreHasher> graphicsPipelinesDynamicState;
 	std::unordered_map<GraphicsPipelineConfigurationFull, VkPipeline, GraphicsPipelineConfigurationFullHasher> graphicsPipelinesNoDynamicState;
-
-	uint32_t currentFrame = 0;
-	uint32_t currentDescriptorPool = 0;
 };
 
 }

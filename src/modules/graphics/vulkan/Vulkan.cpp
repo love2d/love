@@ -810,7 +810,7 @@ VkDescriptorType Vulkan::getDescriptorType(graphics::Shader::UniformType type)
 	case graphics::Shader::UniformType::UNIFORM_STORAGETEXTURE:
 		return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	case graphics::Shader::UniformType::UNIFORM_TEXELBUFFER:
-		return VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+		return VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
 	case graphics::Shader::UniformType::UNIFORM_STORAGEBUFFER:
 		return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 	default:

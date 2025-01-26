@@ -612,6 +612,7 @@ void Graphics::present(void *screenshotCallbackdata)
 	updateTemporaryResources();
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	realFrameIndex++;
 
 	beginFrame();
 }
@@ -1413,7 +1414,7 @@ void Graphics::beginFrame()
 	Vulkan::resetShaderSwitches();
 
 	for (const auto &shader : usedShadersInFrame)
-		shader->newFrame();
+		shader->newFrame(realFrameIndex);
 	usedShadersInFrame.clear();
 
 	localUniformBuffer->nextFrame();
@@ -2849,6 +2850,52 @@ VkSampler Graphics::getCachedSampler(const SamplerState &samplerState)
 		VkSampler sampler = createSampler(samplerState);
 		samplers.insert({ samplerkey, sampler });
 		return sampler;
+	}
+}
+
+static uint64 getDescriptorPoolsKey(int dynamicUniformBuffers, int sampledTextures, int storageTextures, int texelBuffers, int storageBuffers)
+{
+	return (((int64)dynamicUniformBuffers & 0xFF) << 0)
+		| (((int64)sampledTextures & 0xFF) << 8)
+		| (((int64)storageTextures & 0xFF) << 16)
+		| (((int64)texelBuffers    & 0xFF) << 24)
+		| (((int64)storageBuffers  & 0xFF) << 32);
+}
+
+SharedDescriptorPools *Graphics::acquireDescriptorPools(int dynamicUniformBuffers, int sampledTextures, int storageTextures, int texelBuffers, int storageBuffers)
+{
+	uint64 key = getDescriptorPoolsKey(dynamicUniformBuffers, sampledTextures, storageTextures, texelBuffers, storageBuffers);
+
+	auto it = sharedDescriptorPools.find(key);
+	if (it != sharedDescriptorPools.end())
+	{
+		it->second.referenceCount++;
+		return it->second.pools;
+	}
+
+	auto pools = new SharedDescriptorPools(device, dynamicUniformBuffers, sampledTextures, storageTextures, texelBuffers, storageBuffers);
+
+	SharedDescriptorPoolsRef ref{};
+	ref.pools = pools;
+	ref.referenceCount = 1;
+	sharedDescriptorPools[key] = ref;
+
+	return pools;
+}
+
+void Graphics::releaseDescriptorPools(SharedDescriptorPools *p)
+{
+	uint64 key = getDescriptorPoolsKey(p->dynamicUniformBuffers, p->sampledTextures, p->storageTextures, p->texelBuffers, p->storageBuffers);
+
+	auto it = sharedDescriptorPools.find(key);
+	if (it != sharedDescriptorPools.end())
+	{
+		it->second.referenceCount--;
+		if (it->second.referenceCount <= 0)
+		{
+			delete it->second.pools;
+			sharedDescriptorPools.erase(key);
+		}
 	}
 }
 

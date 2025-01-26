@@ -273,6 +273,8 @@ public:
 	void addReadbackCallback(std::function<void()> callback);
 	void submitGpuCommands(SubmitMode, void *screenshotCallbackData = nullptr);
 	VkSampler getCachedSampler(const SamplerState &sampler);
+	SharedDescriptorPools *acquireDescriptorPools(int dynamicUniformBuffers, int sampledTextures, int storageTextures, int texelBuffers, int storageBuffers);
+	void releaseDescriptorPools(SharedDescriptorPools *pools);
 	graphics::Shader::BuiltinUniformData getCurrentBuiltinUniformData();
 	const OptionalDeviceExtensions &getEnabledOptionalDeviceExtensions() const;
 	const OptionalInstanceExtensions &getEnabledOptionalInstanceExtensions() const;
@@ -287,6 +289,8 @@ public:
 
 	uint32 getDeviceApiVersion() const { return deviceApiVersion; }
 
+	uint64 getRealFrameIndex() const { return realFrameIndex; }
+
 protected:
 	graphics::ShaderStage *newShaderStageInternal(ShaderStageType stage, const std::string &cachekey, const std::string &source, bool gles) override;
 	graphics::Shader *newShaderInternal(StrongRef<love::graphics::ShaderStage> stages[SHADERSTAGE_MAX_ENUM], const Shader::CompileOptions &options) override;
@@ -298,6 +302,13 @@ protected:
 	void setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture) override;
 
 private:
+
+	struct SharedDescriptorPoolsRef
+	{
+		SharedDescriptorPools *pools = nullptr;
+		int referenceCount = 0;
+	};
+
 	bool checkValidationSupport();
 	void pickPhysicalDevice();
 	int rateDeviceSuitability(VkPhysicalDevice device, bool querySwapChain);
@@ -381,6 +392,7 @@ private:
 	std::unordered_map<FramebufferConfiguration, VkFramebuffer, FramebufferConfigurationHasher> framebuffers;
 	std::unordered_map<VkFramebuffer, bool> framebufferUsages;
 	std::unordered_map<uint64, VkSampler> samplers;
+	std::unordered_map<uint64, SharedDescriptorPoolsRef> sharedDescriptorPools;
 	VkCommandPool commandPool = VK_NULL_HANDLE;
 	std::vector<VkCommandBuffer> commandBuffers;
 	std::vector<VkSemaphore> imageAvailableSemaphores;
@@ -392,6 +404,7 @@ private:
 	bool imageRequested = false;
 	size_t currentFrame = 0;
 	uint32_t imageIndex = 0;
+	uint64 realFrameIndex = 0;
 	bool swapChainRecreationRequested = false;
 	bool transitionColorDepthLayouts = false;
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;

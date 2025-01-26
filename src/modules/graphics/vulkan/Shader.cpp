@@ -38,6 +38,129 @@ namespace vulkan
 
 static const uint32_t DESCRIPTOR_POOL_SIZE = 1000;
 
+SharedDescriptorPools::SharedDescriptorPools(VkDevice device, int dynamicUniformBuffers, int sampledTextures, int storageTextures, int texelBuffers, int storageBuffers)
+	: device(device)
+	, dynamicUniformBuffers(dynamicUniformBuffers)
+	, sampledTextures(sampledTextures)
+	, storageTextures(storageTextures)
+	, texelBuffers(texelBuffers)
+	, storageBuffers(storageBuffers)
+{
+	VkDescriptorPoolSize size{};
+
+	if (dynamicUniformBuffers > 0)
+	{
+		size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		size.descriptorCount = dynamicUniformBuffers;
+		descriptorPoolSizes.push_back({ size });
+	}
+
+	if (sampledTextures > 0)
+	{
+		size.type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+		size.descriptorCount = sampledTextures;
+		descriptorPoolSizes.push_back(size);
+	}
+
+	if (storageTextures > 0)
+	{
+		size.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+		size.descriptorCount = storageTextures;
+		descriptorPoolSizes.push_back(size);
+	}
+
+	if (texelBuffers > 0)
+	{
+		size.type = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+		size.descriptorCount = texelBuffers;
+		descriptorPoolSizes.push_back(size);
+	}
+
+	if (storageBuffers > 0)
+	{
+		size.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		size.descriptorCount = storageBuffers;
+		descriptorPoolSizes.push_back(size);
+	}
+
+	pools.resize(MAX_FRAMES_IN_FLIGHT);
+}
+
+SharedDescriptorPools::~SharedDescriptorPools()
+{
+	auto vgfx = (Graphics *)Module::getInstance<Graphics>(Module::M_GRAPHICS);
+	if (vgfx == nullptr)
+		return;
+
+	vgfx->queueCleanUp([device = device, descriptorPools = pools]()
+	{
+		for (const auto &pools : descriptorPools)
+		{
+			for (const auto pool : pools)
+				vkDestroyDescriptorPool(device, pool, nullptr);
+		}
+	});
+}
+
+void SharedDescriptorPools::newFrame(uint64 frameIndex)
+{
+	if (!lastFrameIndex.hasValue || lastFrameIndex.value != frameIndex)
+	{
+		lastFrameIndex.set(frameIndex);
+		currentFrame = (size_t)(frameIndex % MAX_FRAMES_IN_FLIGHT);
+		currentPool = 0;
+		for (VkDescriptorPool pool : pools[currentFrame])
+			vkResetDescriptorPool(device, pool, 0);
+	}
+}
+
+void SharedDescriptorPools::createDescriptorPool()
+{
+	VkDescriptorPoolCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	createInfo.maxSets = DESCRIPTOR_POOL_SIZE;
+	createInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
+	createInfo.pPoolSizes = descriptorPoolSizes.data();
+
+	VkDescriptorPool pool;
+	VkResult result = vkCreateDescriptorPool(device, &createInfo, nullptr, &pool);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to create Vulkan descriptor pool: %s", Vulkan::getErrorString(result));
+
+	pools[currentFrame].push_back(pool);
+}
+
+VkDescriptorSet SharedDescriptorPools::allocateDescriptorSet(const VkDescriptorSetLayout &descriptorSetLayout)
+{
+	if (pools[currentFrame].empty())
+		createDescriptorPool();
+
+	while (true)
+	{
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = pools[currentFrame][currentPool];
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &descriptorSetLayout;
+
+		VkDescriptorSet descriptorSet;
+		VkResult result = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet);
+
+		switch (result)
+		{
+		case VK_SUCCESS:
+			return descriptorSet;
+		case VK_ERROR_OUT_OF_POOL_MEMORY:
+			currentPool++;
+			if (pools[currentFrame].size() <= currentPool)
+				createDescriptorPool();
+			continue;
+		default:
+			throw love::Exception("Failed to allocate Vulkan descriptor set: %s", Vulkan::getErrorString(result));
+		}
+	}
+}
+
 class BindingMapper
 {
 public:
@@ -187,10 +310,8 @@ bool Shader::loadVolatile()
 	compileShaders();
 	createDescriptorSetLayout();
 	createPipelineLayout();
-	createDescriptorPoolSizes();
-	descriptorPools.resize(MAX_FRAMES_IN_FLIGHT);
-	currentFrame = 0;
-	newFrame();
+	acquireDescriptorPools();
+	newFrame(vgfx->getRealFrameIndex());
 
 	return true;
 }
@@ -200,14 +321,12 @@ void Shader::unloadVolatile()
 	if (shaderModules.empty())
 		return;
 
+	vgfx->releaseDescriptorPools(descriptorPools);
+	descriptorPools = nullptr;
+
 	vgfx->queueCleanUp([shaderModules = std::move(shaderModules), device = device, descriptorSetLayout = descriptorSetLayout, pipelineLayout = pipelineLayout,
-		descriptorPools = descriptorPools, computePipeline = computePipeline,
+		computePipeline = computePipeline,
 		graphicsPipelinesCore = std::move(graphicsPipelinesDynamicState), graphicsPipelinesFull = std::move(graphicsPipelinesNoDynamicState)]() {
-		for (const auto &pools : descriptorPools)
-		{
-			for (const auto pool : pools)
-				vkDestroyDescriptorPool(device, pool, nullptr);
-		}
 		for (const auto shaderModule : shaderModules)
 			vkDestroyShaderModule(device, shaderModule, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
@@ -222,7 +341,6 @@ void Shader::unloadVolatile()
 
 	shaderModules.clear();
 	shaderStages.clear();
-	descriptorPools.clear();
 }
 
 const std::vector<VkPipelineShaderStageCreateInfo> &Shader::getShaderStages() const
@@ -240,16 +358,12 @@ VkPipeline Shader::getComputePipeline() const
 	return computePipeline;
 }
 
-void Shader::newFrame()
+void Shader::newFrame(uint64 graphicsFrameIndex)
 {
-	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-
-	currentDescriptorPool = 0;
 	currentDescriptorSet = VK_NULL_HANDLE;
 	resourceDescriptorsDirty = true;
 
-	for (VkDescriptorPool pool : descriptorPools[currentFrame])
-		vkResetDescriptorPool(device, pool, 0);
+	descriptorPools->newFrame(graphicsFrameIndex);
 }
 
 void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBindPoint bindPoint)
@@ -309,7 +423,7 @@ void Shader::cmdPushDescriptorSets(VkCommandBuffer commandBuffer, VkPipelineBind
 
 	if (resourceDescriptorsDirty || currentDescriptorSet == VK_NULL_HANDLE)
 	{
-		currentDescriptorSet = allocateDescriptorSet();
+		currentDescriptorSet = descriptorPools->allocateDescriptorSet(descriptorSetLayout);
 
 		for (auto &write : descriptorWrites)
 			write.dstSet = currentDescriptorSet;
@@ -996,31 +1110,29 @@ void Shader::createPipelineLayout()
 	}
 }
 
-void Shader::createDescriptorPoolSizes()
+static int getDescriptorPoolSize(const std::map<std::string, Shader::UniformInfo> &uniforms)
 {
+	int size = 0;
+	for (const auto &entry : uniforms)
+	{
+		if (entry.second.active)
+			size += entry.second.count;
+	}
+	return size;
+}
+
+void Shader::acquireDescriptorPools()
+{
+	int dynamicUniformBuffers = 0;
 	if (!localUniformData.empty())
-	{
-		VkDescriptorPoolSize size{};
-		size.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		size.descriptorCount = 1;
+		dynamicUniformBuffers++;
 
-		descriptorPoolSizes.push_back(size);
-	}
+	int sampledTextures = getDescriptorPoolSize(reflection.sampledTextures);
+	int storageTextures = getDescriptorPoolSize(reflection.storageTextures);
+	int texelBuffers = getDescriptorPoolSize(reflection.texelBuffers);
+	int storageBuffers = getDescriptorPoolSize(reflection.storageBuffers);
 
-	for (const auto &entry : reflection.allUniforms)
-	{
-		if (!entry.second->active)
-			continue;
-
-		VkDescriptorPoolSize size{};
-		auto type = Vulkan::getDescriptorType(entry.second->baseType);
-		if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
-			continue;
-
-		size.type = type;
-		size.descriptorCount = entry.second->count;
-		descriptorPoolSizes.push_back(size);
-	}
+	descriptorPools = vgfx->acquireDescriptorPools(dynamicUniformBuffers, sampledTextures, storageTextures, texelBuffers, storageBuffers);
 }
 
 void Shader::setMainTex(graphics::Texture *texture)
@@ -1081,53 +1193,6 @@ void Shader::setBufferDescriptor(const UniformInfo *info, love::graphics::Buffer
 		{
 			descriptorBufferViews[info->bindingStartIndex + index] = view;
 			resourceDescriptorsDirty = true;
-		}
-	}
-}
-
-void Shader::createDescriptorPool()
-{
-	VkDescriptorPoolCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	createInfo.maxSets = DESCRIPTOR_POOL_SIZE;
-	createInfo.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
-	createInfo.pPoolSizes = descriptorPoolSizes.data();
-
-	VkDescriptorPool pool;
-	VkResult result = vkCreateDescriptorPool(device, &createInfo, nullptr, &pool);
-	if (result != VK_SUCCESS)
-		throw love::Exception("Failed to create Vulkan descriptor pool: %s", Vulkan::getErrorString(result));
-
-	descriptorPools[currentFrame].push_back(pool);
-}
-
-VkDescriptorSet Shader::allocateDescriptorSet()
-{
-	if (descriptorPools[currentFrame].empty())
-		createDescriptorPool();
-
-	while (true)
-	{
-		VkDescriptorSetAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = descriptorPools[currentFrame][currentDescriptorPool];
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &descriptorSetLayout;
-
-		VkDescriptorSet descriptorSet;
-		VkResult result = vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet);
-
-		switch (result)
-		{
-		case VK_SUCCESS:
-			return descriptorSet;
-		case VK_ERROR_OUT_OF_POOL_MEMORY:
-			currentDescriptorPool++;
-			if (descriptorPools[currentFrame].size() <= currentDescriptorPool)
-				createDescriptorPool();
-			continue;
-		default:
-			throw love::Exception("Failed to allocate Vulkan descriptor set: %s", Vulkan::getErrorString(result));
 		}
 	}
 }
