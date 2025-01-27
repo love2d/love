@@ -180,6 +180,7 @@ function love.init()
 			resizable = false,
 			centered = true,
 			usedpiscale = true,
+			hidehomeindicator = "0",
 		},
 		graphics = {
 			gammacorrect = false,
@@ -401,6 +402,7 @@ function love.init()
 			display = c.window.display, -- deprecated
 			highdpi = c.window.highdpi, -- deprecated
 			usedpiscale = c.window.usedpiscale,
+			hidehomeindicator = c.window.hidehomeindicator,
 			x = c.window.x,
 			y = c.window.y,
 		}), "Could not set window mode")
