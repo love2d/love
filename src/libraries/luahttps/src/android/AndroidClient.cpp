@@ -55,10 +55,10 @@ AndroidClient::AndroidClient()
 	LibraryLoader::handle *library = LibraryLoader::GetCurrentProcessHandle();
 
 	// Look for SDL_GetAndroidJNIEnv and SDL_GetAndroidActivity (SDL3)
-	if (
-		!LibraryLoader::LoadSymbol(SDL_AndroidGetJNIEnv, library, "SDL_GetAndroidJNIEnv") &&
-		!LibraryLoader::LoadSymbol(SDL_AndroidGetActivity, library, "SDL_GetAndroidActivity")
-	)
+	if (!(
+		LibraryLoader::LoadSymbol(SDL_AndroidGetJNIEnv, library, "SDL_GetAndroidJNIEnv") &&
+		LibraryLoader::LoadSymbol(SDL_AndroidGetActivity, library, "SDL_GetAndroidActivity")
+	))
 	{
 		// Probably running SDL2.
 		LibraryLoader::LoadSymbol(SDL_AndroidGetJNIEnv, library, "SDL_AndroidGetJNIEnv");
