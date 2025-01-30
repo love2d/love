@@ -53,10 +53,17 @@ AndroidClient::AndroidClient()
 : HTTPSClient()
 {
 	LibraryLoader::handle *library = LibraryLoader::GetCurrentProcessHandle();
-	// Look for SDL_AndroidGetJNIEnv
-	LibraryLoader::LoadSymbol(SDL_AndroidGetJNIEnv, library, "SDL_AndroidGetJNIEnv");
-	// Look for SDL_AndroidGetActivity
-	LibraryLoader::LoadSymbol(SDL_AndroidGetActivity, library, "SDL_AndroidGetActivity");
+
+	// Look for SDL_GetAndroidJNIEnv and SDL_GetAndroidActivity (SDL3)
+	if (
+		!LibraryLoader::LoadSymbol(SDL_AndroidGetJNIEnv, library, "SDL_GetAndroidJNIEnv") &&
+		!LibraryLoader::LoadSymbol(SDL_AndroidGetActivity, library, "SDL_GetAndroidActivity")
+	)
+	{
+		// Probably running SDL2.
+		LibraryLoader::LoadSymbol(SDL_AndroidGetJNIEnv, library, "SDL_AndroidGetJNIEnv");
+		LibraryLoader::LoadSymbol(SDL_AndroidGetActivity, library, "SDL_AndroidGetActivity");
+	}
 }
 
 bool AndroidClient::valid() const
