@@ -383,6 +383,11 @@ function love.init()
 
 	-- Setup window here.
 	if c.window and c.modules.window then
+		if c.window.icon then
+			assert(love.image, "If an icon is set in love.conf, love.image must be loaded.")
+			love.window.setIcon(love.image.newImageData(c.window.icon))
+		end
+
 		love.window.setTitle(c.window.title or c.title)
 		assert(love.window.setMode(c.window.width, c.window.height,
 		{
@@ -404,10 +409,6 @@ function love.init()
 			x = c.window.x,
 			y = c.window.y,
 		}), "Could not set window mode")
-		if c.window.icon then
-			assert(love.image, "If an icon is set in love.conf, love.image must be loaded.")
-			love.window.setIcon(love.image.newImageData(c.window.icon))
-		end
 	end
 
 	-- The first couple event pumps on some systems (e.g. macOS) can take a
