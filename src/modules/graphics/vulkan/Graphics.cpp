@@ -637,6 +637,16 @@ void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixe
 
 	if (swapChain != VK_NULL_HANDLE)
 		msaaSamples = getMsaaCount(requestedMsaa);
+
+	// Don't wait until the next frame starts to recreate the swapchain - doing so
+	// will cause a 1 frame delay in the backbuffer size on resize, and it can cause
+	// MSAA state to get out of sync for a frame.
+	if (swapChainRecreationRequested)
+	{
+		submitGpuCommands(SUBMIT_NOPRESENT);
+		recreateSwapChain();
+		beginSwapChainFrame();
+	}
 }
 
 bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
@@ -1343,10 +1353,8 @@ void Graphics::initDynamicState()
 	}
 }
 
-void Graphics::beginFrame()
+void Graphics::beginSwapChainFrame()
 {
-	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-
 	if (swapChain != VK_NULL_HANDLE)
 	{
 		while (true)
@@ -1369,14 +1377,6 @@ void Graphics::beginFrame()
 	{
 		imageRequested = false;
 	}
-
-	for (auto &readbackCallback : readbackCallbacks.at(currentFrame))
-		readbackCallback();
-	readbackCallbacks.at(currentFrame).clear();
-
-	for (auto &cleanUpFn : cleanUpFunctions.at(currentFrame))
-		cleanUpFn();
-	cleanUpFunctions.at(currentFrame).clear();
 
 	startRecordingGraphicsCommands();
 
@@ -1410,6 +1410,21 @@ void Graphics::beginFrame()
 
 		transitionColorDepthLayouts = false;
 	}
+}
+
+void Graphics::beginFrame()
+{
+	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
+	for (auto &readbackCallback : readbackCallbacks.at(currentFrame))
+		readbackCallback();
+	readbackCallbacks.at(currentFrame).clear();
+
+	for (auto &cleanUpFn : cleanUpFunctions.at(currentFrame))
+		cleanUpFn();
+	cleanUpFunctions.at(currentFrame).clear();
+
+	beginSwapChainFrame();
 
 	Vulkan::resetShaderSwitches();
 

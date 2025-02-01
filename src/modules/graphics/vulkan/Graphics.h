@@ -341,6 +341,7 @@ private:
 	void cleanupSwapChain();
 	void recreateSwapChain();
 	void initDynamicState();
+	void beginSwapChainFrame();
 	void beginFrame();
 	void startRecordingGraphicsCommands();
 	void endRecordingGraphicsCommands();
