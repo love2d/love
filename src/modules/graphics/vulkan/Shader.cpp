@@ -107,7 +107,7 @@ void SharedDescriptorPools::newFrame(uint64 frameIndex)
 	if (!lastFrameIndex.hasValue || lastFrameIndex.value != frameIndex)
 	{
 		lastFrameIndex.set(frameIndex);
-		currentFrame = (size_t)(frameIndex % MAX_FRAMES_IN_FLIGHT);
+		currentFrame = (size_t)((currentFrame + 1) % MAX_FRAMES_IN_FLIGHT);
 		currentPool = 0;
 		for (VkDescriptorPool pool : pools[currentFrame])
 			vkResetDescriptorPool(device, pool, 0);
