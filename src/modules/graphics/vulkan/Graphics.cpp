@@ -643,6 +643,7 @@ void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixe
 	// MSAA state to get out of sync for a frame.
 	if (swapChainRecreationRequested)
 	{
+		swapChainRecreationRequested = false;
 		submitGpuCommands(SUBMIT_NOPRESENT);
 		recreateSwapChain();
 		beginSwapChainFrame();
