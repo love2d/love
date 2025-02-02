@@ -1576,6 +1576,13 @@ bool Graphics::checkValidationSupport()
 
 void Graphics::pickPhysicalDevice()
 {
+	struct DeviceRating
+	{
+		VkPhysicalDevice device;
+		size_t deviceIndex;
+		int rating;
+	};
+
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -1585,18 +1592,28 @@ void Graphics::pickPhysicalDevice()
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-	std::multimap<int, VkPhysicalDevice> candidates;
+	std::vector<DeviceRating> candidates;
 
-	for (const auto &device : devices)
+	for (size_t i = 0; i < devices.size(); i++)
 	{
-		int score = rateDeviceSuitability(device, true);
-		candidates.insert(std::make_pair(score, device));
+		DeviceRating r = {};
+		r.device = devices[i];
+		r.deviceIndex = i;
+		r.rating = rateDeviceSuitability(devices[i], true);
+		candidates.push_back(r);
 	}
 
-	if (candidates.rbegin()->first > 0)
-		physicalDevice = candidates.rbegin()->second;
+	std::sort(candidates.begin(), candidates.end(), [](const DeviceRating &a, const DeviceRating &b) -> bool
+	{
+		if (a.rating != b.rating)
+			return a.rating > b.rating;
+		return a.deviceIndex < b.deviceIndex;
+	});
+
+	if (!candidates.empty() && candidates[0].rating > 0)
+		physicalDevice = candidates[0].device;
 	else
-		throw love::Exception("failed to find a suitable gpu");
+		throw love::Exception("Vulkan: failed to find a suitable GPU.");
 
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -1616,22 +1633,6 @@ void Graphics::pickPhysicalDevice()
 		throw love::Exception("Failed to convert vulkan depth/stencil swapchain pixel format %d to love PixelFormat.", depthStencilFormat);
 		break;
 	}
-}
-
-bool Graphics::checkDeviceExtensionSupport(VkPhysicalDevice device)
-{
-	uint32_t extensionCount;
-	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
-	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
-	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
-
-	for (const auto &extension : availableExtensions)
-		requiredExtensions.erase(extension.extensionName);
-
-	return requiredExtensions.empty();
 }
 
 // if the score is nonzero then the device is suitable.
