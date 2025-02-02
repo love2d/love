@@ -1645,7 +1645,37 @@ int Graphics::rateDeviceSuitability(VkPhysicalDevice device, bool querySwapChain
 	vkGetPhysicalDeviceProperties(device, &deviceProperties);
 	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
-	int score = 1;
+	uint32_t extensionCount = 0;
+	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+	bool hasMSFTLayeredDriver = false;
+	for (const auto &extension : availableExtensions)
+	{
+		if (strcmp(extension.extensionName, VK_MSFT_LAYERED_DRIVER_EXTENSION_NAME) == 0)
+		{
+			hasMSFTLayeredDriver = true;
+			break;
+		}
+	}
+
+	VkPhysicalDeviceProperties2 deviceProperties2{};
+	deviceProperties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+
+	VkPhysicalDeviceLayeredDriverPropertiesMSFT layeredDriverProperties{};
+	layeredDriverProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LAYERED_DRIVER_PROPERTIES_MSFT;
+
+	if (deviceProperties.apiVersion >= VK_API_VERSION_1_1)
+	{
+		if (hasMSFTLayeredDriver)
+			deviceProperties2.pNext = &layeredDriverProperties;
+
+		vkGetPhysicalDeviceProperties2(device, &deviceProperties2);
+	}
+
+	int score = 2;
 
 	// optional
 
@@ -1655,6 +1685,10 @@ int Graphics::rateDeviceSuitability(VkPhysicalDevice device, bool querySwapChain
 		score += isLowPowerPreferred() ? 1000 : 100;
 	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU)
 		score += 10;
+
+	// Reduce the score if this is something like Vulkan-on-D3D12 rather than a native driver.
+	if (hasMSFTLayeredDriver && layeredDriverProperties.underlyingAPI != VK_LAYERED_DRIVER_UNDERLYING_API_NONE_MSFT)
+		score /= 2;
 
 	// definitely needed
 
@@ -1668,11 +1702,15 @@ int Graphics::rateDeviceSuitability(VkPhysicalDevice device, bool querySwapChain
 	if (!indices.isComplete() && (querySwapChain || !indices.graphicsFamily.hasValue))
 		score = 0;
 
-	bool extensionsSupported = checkDeviceExtensionSupport(device);
-	if (!extensionsSupported)
+	std::set<std::string> missingExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+	for (const auto &extension : availableExtensions)
+		missingExtensions.erase(extension.extensionName);
+
+	if (!missingExtensions.empty())
 		score = 0;
 
-	if (extensionsSupported && querySwapChain)
+	if (missingExtensions.empty() && querySwapChain)
 	{
 		auto swapChainSupport = querySwapChainSupport(device);
 		bool swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
