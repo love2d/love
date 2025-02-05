@@ -3267,6 +3267,8 @@ function love.nogame()
 
 	function love.resize()
 		create_world()
+		g_t = 0
+		g_step = 0
 	end
 
 	function love.conf(t)
