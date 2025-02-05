@@ -114,6 +114,7 @@ function love.createhandlers()
 		end,
 		resize = function (w, h)
 			if love.resize then return love.resize(w, h) end
+			collectgarbage()
 		end,
 		filedropped = function (f, x, y)
 			if love.filedropped then return love.filedropped(f, x, y) end
