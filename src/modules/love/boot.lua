@@ -453,6 +453,7 @@ end
 
 return function()
 	local func
+	local setModalDrawFunc = false
 	local inerror = false
 
 	local function deferErrhand(...)
@@ -481,14 +482,20 @@ return function()
 		result, main = xpcall(love.run, deferErrhand)
 		if result then
 			func = main
+			setModalDrawFunc = true
 		elseif inerror then -- Error in error handler
 			print("Error: " .. tostring(main))
 		end
 	end
 
 	func = earlyinit
+	local prevFunc = nil
 
 	while func do
+		if setModalDrawFunc and love.event and func ~= prevFunc then
+			prevFunc = func
+			love.event._setDefaultModalDrawCallback(func)
+		end
 		local _, retval, restartvalue = xpcall(func, deferErrhand)
 		if retval then return retval, restartvalue end
 		coroutine.yield()

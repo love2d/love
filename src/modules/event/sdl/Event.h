@@ -70,6 +70,8 @@ private:
 	Message *convertJoystickEvent(const SDL_Event &e) const;
 	Message *convertWindowEvent(const SDL_Event &e, love::window::Window *win);
 
+	bool insideEventPump = false;
+
 }; // Event
 
 } // sdl

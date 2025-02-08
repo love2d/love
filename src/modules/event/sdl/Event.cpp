@@ -79,19 +79,27 @@ static void normalizedToDPICoords(love::window::Window *window, double *x, doubl
 // SDL's event watch callbacks trigger when the event is actually posted inside
 // SDL, unlike with SDL_PollEvents. This is useful for some events which require
 // handling inside the function which triggered them on some backends.
-static bool SDLCALL watchAppEvents(void * /*udata*/, SDL_Event *event)
+// Note: this may run on non-main threads on some platforms (Android?)
+static bool SDLCALL watchAppEvents(void *udata, SDL_Event *event)
 {
-	auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+	auto eventModule = (Event *)udata;
 
 	switch (event->type)
 	{
-	// On iOS, calling any OpenGL ES function after the function which triggers
-	// SDL_APP_DIDENTERBACKGROUND is called will kill the app, so we handle it
-	// with an event watch callback, which will be called inside that function.
 	case SDL_EVENT_DID_ENTER_BACKGROUND:
 	case SDL_EVENT_WILL_ENTER_FOREGROUND:
-		if (gfx)
-			gfx->setActive(event->type == SDL_EVENT_WILL_ENTER_FOREGROUND);
+		// On iOS, calling any OpenGL ES function after the function which triggers
+		// SDL_APP_DIDENTERBACKGROUND is called will kill the app, so we handle it
+		// with an event watch callback, which will be called inside that function.
+		{
+			auto gfx = Module::getInstance<graphics::Graphics>(Module::M_GRAPHICS);
+			if (gfx && SDL_IsMainThread())
+				gfx->setActive(event->type == SDL_EVENT_WILL_ENTER_FOREGROUND);
+		}
+		break;
+	case SDL_EVENT_WINDOW_EXPOSED:
+		if (eventModule != nullptr && SDL_IsMainThread())
+			eventModule->modalDraw();
 		break;
 	default:
 		break;
@@ -119,24 +127,55 @@ void Event::pump(float waitTimeout)
 {
 	exceptionIfInRenderPass("love.event.pump");
 
-	int waitTimeoutMS = 0;
-	if (std::isinf(waitTimeout) || waitTimeout < 0.0f)
-		waitTimeoutMS = -1; // Wait forever.
-	else if (waitTimeout > 0.0f)
-		waitTimeoutMS = (int)std::min<int64>(LOVE_INT32_MAX, 1000LL * waitTimeout);
+	bool shouldPoll = false;
 
-	// Wait for the first event, if requested.
-	SDL_Event e;
-	if (SDL_WaitEventTimeout(&e, waitTimeoutMS))
+	if (insideEventPump)
 	{
-		StrongRef<Message> msg(convert(e), Acquire::NORETAIN);
-		if (msg)
-			push(msg);
+		// Don't pump if we're inside the event pump already, but do allow
+		// polling what's in the SDL queue.
+		shouldPoll = true;
+	}
+	else
+	{
+		int waitTimeoutMS = 0;
+		if (std::isinf(waitTimeout) || waitTimeout < 0.0f)
+			waitTimeoutMS = -1; // Wait forever.
+		else if (waitTimeout > 0.0f)
+			waitTimeoutMS = (int)std::min<int64>(LOVE_INT32_MAX, 1000LL * waitTimeout);
 
-		// Fetch any extra events that came in during WaitEvent.
+		try
+		{
+			// Wait for the first event, if requested.
+			SDL_Event e;
+			insideEventPump = true;
+			if (SDL_WaitEventTimeout(&e, waitTimeoutMS))
+			{
+				insideEventPump = false;
+				StrongRef<Message> msg(convert(e), Acquire::NORETAIN);
+				if (msg)
+					push(msg);
+
+				// Fetch any extra events that came in during WaitEvent.
+				shouldPoll = true;
+			}
+			else
+			{
+				insideEventPump = false;
+			}
+		}
+		catch (std::exception &)
+		{
+			insideEventPump = false;
+			throw;
+		}
+	}
+
+	if (shouldPoll)
+	{
+		SDL_Event e;
 		while (SDL_PollEvent(&e))
 		{
-			msg.set(convert(e), Acquire::NORETAIN);
+			StrongRef<Message> msg(convert(e), Acquire::NORETAIN);
 			if (msg)
 				push(msg);
 		}

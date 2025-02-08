@@ -55,6 +55,15 @@ class Event : public Module
 {
 public:
 
+	typedef void (*ModalDrawCallback)(void *context);
+
+	struct ModalDrawData
+	{
+		ModalDrawCallback draw;
+		ModalDrawCallback cleanup;
+		void *context;
+	};
+
 	virtual ~Event();
 
 	void push(Message *msg);
@@ -64,9 +73,19 @@ public:
 	virtual void pump(float waitTimeout = 0.0f) = 0;
 	virtual Message *wait() = 0;
 
+	void setModalDrawData(const ModalDrawData &data);
+	const ModalDrawData &getModalDrawData() const { return modalDrawData; }
+
+	void setDefaultModalDrawData(const ModalDrawData &data);
+
+	void modalDraw();
+
 protected:
 
 	Event(const char *name);
+
+	ModalDrawData modalDrawData;
+	ModalDrawData defaultModalDrawData;
 
 	love::thread::MutexRef mutex;
 	std::queue<Message *> queue;

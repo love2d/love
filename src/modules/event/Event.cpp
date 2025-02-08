@@ -40,11 +40,18 @@ Message::~Message()
 
 Event::Event(const char *name)
 	: Module(M_EVENT, name)
+	, modalDrawData()
+	, defaultModalDrawData()
 {
 }
 
 Event::~Event()
 {
+	if (modalDrawData.cleanup != nullptr)
+		modalDrawData.cleanup(modalDrawData.context);
+
+	if (defaultModalDrawData.cleanup != nullptr)
+		defaultModalDrawData.cleanup(defaultModalDrawData.context);
 }
 
 void Event::push(Message *msg)
@@ -73,6 +80,30 @@ void Event::clear()
 		queue.front()->release();
 		queue.pop();
 	}
+}
+
+void Event::setModalDrawData(const ModalDrawData &data)
+{
+	if (modalDrawData.cleanup != nullptr)
+		modalDrawData.cleanup(modalDrawData.context);
+
+	modalDrawData = data;
+}
+
+void Event::setDefaultModalDrawData(const ModalDrawData &data)
+{
+	if (defaultModalDrawData.cleanup != nullptr)
+		defaultModalDrawData.cleanup(defaultModalDrawData.context);
+
+	defaultModalDrawData = data;
+}
+
+void Event::modalDraw()
+{
+	if (modalDrawData.draw != nullptr)
+		modalDrawData.draw(modalDrawData.context);
+	else if (defaultModalDrawData.draw != nullptr)
+		defaultModalDrawData.draw(defaultModalDrawData.context);
 }
 
 } // event
