@@ -207,7 +207,6 @@ int w__setDefaultModalDrawCallback(lua_State *L)
 		Reference *r = new Reference(L);
 		lua_pop(L, 1);
 
-		Event::ModalDrawData data = {};
 		data.draw = drawCallback;
 		data.cleanup = cleanupCallback;
 		data.context = r;
