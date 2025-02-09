@@ -2932,7 +2932,7 @@ function love.nogame()
 		self.closed_t = math.max(0, self.closed_t - dt)
 
 		if self.next_blink_t == 0 then
-			self.next_blink_t = 5 + math.random(0, 3)
+			self.next_blink_t = 5 + love.math.random(0, 3)
 			self.closed_t = 0.1
 		end
 	end
@@ -2962,7 +2962,7 @@ function love.nogame()
 		self.state:save(self.body, g_step)
 
 		if math.floor(g_step % 5) == 0 then
-			self.body:applyForce(math.random(30, 50), 0)
+			self.body:applyForce(love.math.random(30, 50), 0)
 		end
 	end
 
@@ -3113,7 +3113,7 @@ function love.nogame()
 		self.w = self.h_spacing + self.img:getWidth()
 		self.speed = speed -- px/s
 		self.count = love.graphics.getWidth() / self.w + 2
-		self.initial_img = math.random(1, 4)
+		self.initial_img = love.math.random(1, 4)
 	end
 
 	function CloudTrack:update(dt)
@@ -3151,6 +3151,8 @@ function love.nogame()
 
 	-- Called on resize.
 	function create_world()
+		love.math.setRandomSeed(12345)
+
 		local wx, wy = love.graphics.getDimensions()
 		world = love.physics.newWorld(0, 9.81*64)
 		duckloon = Duckloon(world, wx / 2, wy / 2 - 100)
@@ -3267,8 +3269,7 @@ function love.nogame()
 
 	function love.resize()
 		create_world()
-		g_t = 0
-		g_step = 0
+		g_step = g_t
 	end
 
 	function love.conf(t)
