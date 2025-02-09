@@ -232,6 +232,8 @@ bool Filesystem::setIdentity(const char *ident, bool appendToPath)
 	// This is done so the save directory is only created on-demand.
 	if (!mountCommonPathInternal(COMMONPATH_APP_SAVEDIR, nullptr, MOUNT_PERMISSIONS_READWRITE, appendToPath, false))
 		saveDirectoryNeedsMounting = true;
+	else
+		saveDirectoryNeedsMounting = false;
 
 	// Mount any other app common paths with directory creation immediately
 	// instead of on-demand, since to get to this point they would have to be

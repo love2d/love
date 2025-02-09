@@ -410,7 +410,7 @@ love.test.filesystem.mountCommonPath = function(test)
   end
   local mount6 = love.filesystem.mountCommonPath('userdocuments', 'userdocuments', 'readwrite')
   local ok = pcall(love.filesystem.mountCommonPath, 'fakepath', 'fake', 'readwrite')
-  test:assertTrue(mount1, 'check mount appsavedir')
+  test:assertFalse(mount1, 'check mount appsavedir') -- This is already mounted, we can't do it again.
   test:assertTrue(mount2, 'check mount appdocuments')
   test:assertTrue(mount3, 'check mount userhome')
   test:assertTrue(mount4, 'check mount userappdata')
