@@ -960,6 +960,8 @@ int extloader(lua_State *L)
 	SDL_SharedObject *handle = nullptr;
 	auto *inst = instance();
 
+	std::string loaderror = "";
+
 #ifdef LOVE_ANDROID
 	// Specifically Android, look the library path based on getCRequirePath first
 	std::string androidPath(love::android::getCRequirePath());
@@ -975,6 +977,7 @@ int extloader(lua_State *L)
 
 	if (!handle)
 	{
+		loaderror += std::string(" ") + std::string(SDL_GetError());
 #endif // LOVE_ANDROID
 
 	for (const std::string &el : inst->getCRequirePath())
@@ -1000,6 +1003,8 @@ int extloader(lua_State *L)
 			// Can fail, for instance if it turned out the source was a zip
 			if (handle)
 				break;
+			else
+				loaderror += std::string(" ") + std::string(SDL_GetError());
 		}
 
 		if (handle)
@@ -1012,7 +1017,7 @@ int extloader(lua_State *L)
 
 	if (!handle)
 	{
-		lua_pushfstring(L, "\n\tno file '%s' in LOVE paths.", tokenized_name.c_str());
+		lua_pushfstring(L, "\n\tno valid C library '%s' in LOVE paths.%s", tokenized_name.c_str(), loaderror.c_str());
 		return 1;
 	}
 
