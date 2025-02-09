@@ -106,6 +106,27 @@ static bool isAppCommonPath(Filesystem::CommonPath path)
 	}
 }
 
+static bool isMounted(const std::string &path)
+{
+	char **mountedpaths = PHYSFS_getSearchPath();
+	if (mountedpaths == nullptr)
+		return false;
+
+	bool mounted = false;
+	for (char **p = mountedpaths; *p != nullptr; p++)
+	{
+		char *mountedpath = *p;
+		if (strcmp(path.c_str(), mountedpath) == 0)
+		{
+			mounted = true;
+			break;
+		}
+	}
+
+	PHYSFS_freeList(mountedpaths);
+	return mounted;
+}
+
 Filesystem::Filesystem()
 	: love::filesystem::Filesystem("love.filesystem.physfs")
 	, appendIdentityToPath(false)
@@ -292,6 +313,9 @@ bool Filesystem::setSource(const char *source)
 	}
 #endif
 
+	if (isMounted(new_search_path))
+		return false;
+
 	// Add the directory.
 	if (!PHYSFS_mount(new_search_path.c_str(), nullptr, 1))
 	{
@@ -398,6 +422,9 @@ bool Filesystem::mountFullPath(const char *archive, const char *mountpoint, Moun
 
 	std::string canonarchive = canonicalizeRealPath(archive);
 
+	if (isMounted(canonarchive))
+		return false;
+
 #ifdef LOVE_ANDROID
 	if (strncmp(archive, "content://", 10) == 0)
 	{
@@ -453,6 +480,9 @@ bool Filesystem::mountCommonPath(CommonPath path, const char *mountpoint, MountP
 bool Filesystem::mount(Data *data, const char *archivename, const char *mountpoint, bool appendToPath)
 {
 	if (!PHYSFS_isInit())
+		return false;
+
+	if (isMounted(archivename))
 		return false;
 
 	if (PHYSFS_mountMemory(data->getData(), data->getSize(), nullptr, archivename, mountpoint, appendToPath) != 0)
