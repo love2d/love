@@ -7,6 +7,7 @@ function love.conf(t)
   t.window.resizable = true
   t.window.depth = true
   t.window.stencil = true
+  t.window.usedpiscale = false
 end
 
 -- custom crash message here to catch anything that might occur with modules 
