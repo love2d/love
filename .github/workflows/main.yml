@@ -139,12 +139,12 @@ jobs:
     - name: Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: love-linux-x86_64.AppImage
+        name: love-linux-${{ matrix.architecture }}.AppImage
         path: love-${{ github.sha }}.AppImage
     - name: Artifact Debug Symbols
       uses: actions/upload-artifact@v4
       with:
-        name: love-x86_64-AppImage-debug
+        name: love-${{ matrix.architecture }}-AppImage-debug
         path: love-${{ github.sha }}.AppImage-debug.tar.gz
     - name: Check Tests Passing
       if: steps.report1.outputs.conclusion == 'failure' || steps.report2.outputs.conclusion == 'failure'
