@@ -103,12 +103,12 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengles)
       run: |
-        7z a -tzip test-output-linux-opengles.zip love2d-${{ github.sha }}/testing/output/
+        7z a -tzip test-output-linux-opengles-${{ matrix.architecture }}.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (opengles)
       uses: actions/upload-artifact@v4
       with:
         name: test-output-linux-opengles-${{ steps.report2.outputs.conclusion }}
-        path: test-output-linux-opengles.zip
+        path: test-output-linux-opengles-${{ matrix.architecture }}.zip
     # linux vulkan tests
     - name: Run Test Suite (vulkan)
       env:
@@ -124,12 +124,12 @@ jobs:
         path: love2d-${{ github.sha }}/testing/output/lovetest_all.md
     - name: Zip Test Output (vulkan)
       run: |
-        7z a -tzip test-output-linux-vulkan.zip love2d-${{ github.sha }}/testing/output/
+        7z a -tzip test-output-linux-vulkan-${{ matrix.architecture }}.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (vulkan)
       uses: actions/upload-artifact@v4
       with:
         name: test-output-linux-vulkan
-        path: test-output-linux-vulkan.zip
+        path: test-output-linux-vulkan-${{ matrix.architecture }}.zip
     - name: Stop xvfb and openbox
       # should always stop xvfb and openbox even if other steps failed
       if: always()
