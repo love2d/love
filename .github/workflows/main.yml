@@ -80,12 +80,12 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengl)
       run: |
-        7z a -tzip test-output-linux-opengl.zip love2d-${{ github.sha }}/testing/output/
+        7z a -tzip test-output-linux-opengl-${{ matrix.architecture }}.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (opengl)
       uses: actions/upload-artifact@v4
       with:
         name: test-output-linux-opengl-${{ steps.report1.outputs.conclusion }}
-        path: test-output-linux-opengl.zip
+        path: test-output-linux-opengl-${{ matrix.architecture }}.zip
     # linux opengles tests
     - name: Run Test Suite (opengles)
       env:
