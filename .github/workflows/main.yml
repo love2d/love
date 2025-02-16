@@ -1,9 +1,12 @@
 name: continuous-integration
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   Linux:
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        architecture: [x86_64, arm64]    
     permissions:
       checks: write
       pull-requests: write
