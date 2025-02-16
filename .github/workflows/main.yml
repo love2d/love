@@ -84,7 +84,7 @@ jobs:
     - name: Artifact Test Output (opengl)
       uses: actions/upload-artifact@v4
       with:
-        name: test-output-linux-opengl-${{ steps.report1.outputs.conclusion }}
+        name: test-output-linux-opengl-${{ matrix.architecture }}-${{ steps.report1.outputs.conclusion }}
         path: test-output-linux-opengl-${{ matrix.architecture }}.zip
     # linux opengles tests
     - name: Run Test Suite (opengles)
@@ -107,7 +107,7 @@ jobs:
     - name: Artifact Test Output (opengles)
       uses: actions/upload-artifact@v4
       with:
-        name: test-output-linux-opengles-${{ steps.report2.outputs.conclusion }}
+        name: test-output-linux-opengles-${{ matrix.architecture }}-${{ steps.report2.outputs.conclusion }}
         path: test-output-linux-opengles-${{ matrix.architecture }}.zip
     # linux vulkan tests
     - name: Run Test Suite (vulkan)
@@ -128,7 +128,7 @@ jobs:
     - name: Artifact Test Output (vulkan)
       uses: actions/upload-artifact@v4
       with:
-        name: test-output-linux-vulkan
+        name: test-output-linux-vulkan-${{ matrix.architecture }}
         path: test-output-linux-vulkan-${{ matrix.architecture }}.zip
     - name: Stop xvfb and openbox
       # should always stop xvfb and openbox even if other steps failed
