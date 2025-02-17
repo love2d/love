@@ -29,6 +29,7 @@ jobs:
                                           libcurl4-openssl-dev libfuse2 wmctrl openbox mesa-vulkan-drivers \
                                           libvulkan1
         ARCH=$(uname -m)
+        echo "ARCH=$ARCH" >> $GITHUB_ENV
         if [ "$ARCH" != "aarch64" ]; then
 
           wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
@@ -85,12 +86,12 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengl)
       run: |
-        7z a -tzip test-output-linux-opengl-${{ matrix.architecture }}.zip love2d-${{ github.sha }}/testing/output/
+        7z a -tzip test-output-linux-opengl-${{ runner.arch }}.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (opengl)
       uses: actions/upload-artifact@v4
       with:
-        name: test-output-linux-opengl-${{ matrix.architecture }}-${{ steps.report1.outputs.conclusion }}
-        path: test-output-linux-opengl-${{ matrix.architecture }}.zip
+        name: test-output-linux-opengl-${{ runner.arch }}-${{ steps.report1.outputs.conclusion }}
+        path: test-output-linux-opengl-${{ runner.arch }}.zip
     # linux opengles tests
     - name: Run Test Suite (opengles)
       env:
@@ -108,12 +109,12 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
     - name: Zip Test Output (opengles)
       run: |
-        7z a -tzip test-output-linux-opengles-${{ matrix.architecture }}.zip love2d-${{ github.sha }}/testing/output/
+        7z a -tzip test-output-linux-opengles-${{ runner.arch }}.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (opengles)
       uses: actions/upload-artifact@v4
       with:
-        name: test-output-linux-opengles-${{ matrix.architecture }}-${{ steps.report2.outputs.conclusion }}
-        path: test-output-linux-opengles-${{ matrix.architecture }}.zip
+        name: test-output-linux-opengles-${{ runner.arch }}-${{ steps.report2.outputs.conclusion }}
+        path: test-output-linux-opengles-${{ runner.arch }}.zip
     # linux vulkan tests
     - name: Run Test Suite (vulkan)
       if: runner.arch != 'ARM64'
@@ -131,12 +132,12 @@ jobs:
         path: love2d-${{ github.sha }}/testing/output/lovetest_all.md
     - name: Zip Test Output (vulkan)
       run: |
-        7z a -tzip test-output-linux-vulkan-${{ matrix.architecture }}.zip love2d-${{ github.sha }}/testing/output/
+        7z a -tzip test-output-linux-vulkan-${{ runner.arch }}.zip love2d-${{ github.sha }}/testing/output/
     - name: Artifact Test Output (vulkan)
       uses: actions/upload-artifact@v4
       with:
-        name: test-output-linux-vulkan-${{ matrix.architecture }}
-        path: test-output-linux-vulkan-${{ matrix.architecture }}.zip
+        name: test-output-linux-vulkan-${{ runner.arch }}
+        path: test-output-linux-vulkan-${{ runner.arch }}.zip
     - name: Stop xvfb and openbox
       # should always stop xvfb and openbox even if other steps failed
       if: always()
@@ -146,12 +147,12 @@ jobs:
     - name: Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: love-linux-${{ matrix.architecture }}.AppImage
+        name: love-linux-${{ runner.arch }}.AppImage
         path: love-${{ github.sha }}.AppImage
     - name: Artifact Debug Symbols
       uses: actions/upload-artifact@v4
       with:
-        name: love-${{ matrix.architecture }}-AppImage-debug
+        name: love-${{ runner.arch }}-AppImage-debug
         path: love-${{ github.sha }}.AppImage-debug.tar.gz
     - name: Check Tests Passing
       if: steps.report1.outputs.conclusion == 'failure' || steps.report2.outputs.conclusion == 'failure'
