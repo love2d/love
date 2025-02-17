@@ -16,7 +16,7 @@ jobs:
       DISPLAY: :99
     steps:
     - name: Update APT
-      run: sudo apt-get update
+      run: sudo apt update -q
     - name: Install Dependencies
       run: |
         sudo apt install --assume-yes build-essential git make cmake autoconf automake \
