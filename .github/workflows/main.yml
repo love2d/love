@@ -117,7 +117,6 @@ jobs:
         path: test-output-linux-opengles-${{ runner.arch }}.zip
     # linux vulkan tests
     - name: Run Test Suite (vulkan)
-      if: runner.arch != 'ARM64'
       env:
         LOVE_GRAPHICS_DEBUG: 1
         LOVE_GRAPHICS_VULKAN_ALLOW_SOFTWARE: 1
