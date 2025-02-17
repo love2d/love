@@ -118,7 +118,7 @@ jobs:
     # linux vulkan tests
     - name: Run Test Suite (vulkan)
       env:
-        LOVE_GRAPHICS_DEBUG:  ${{ runner.arch != 'ARM64' && '1' || '0' }} 
+        LOVE_GRAPHICS_DEBUG: ${{ runner.arch == 'ARM64' && '0' || '1' }} 
         LOVE_GRAPHICS_VULKAN_ALLOW_SOFTWARE: 1
       run: |
         ./love-${{ github.sha }}.AppImage love2d-${{ github.sha }}/testing/main.lua --all --isRunner --renderers vulkan
