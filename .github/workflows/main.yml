@@ -6,7 +6,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+        runner: [ubuntu-22.04, ubuntu-24.04-arm]
     permissions:
       checks: write
       pull-requests: write
