@@ -16,10 +16,10 @@ jobs:
       DISPLAY: :99
     steps:
     - name: Update APT
-      run: sudo apt update -q
+      run: sudo apt-get update
     - name: Install Dependencies
       run: |
-        sudo apt install --assume-yes build-essential git make cmake autoconf automake \
+        sudo apt-get install --assume-yes build-essential git make cmake autoconf automake \
                                           libtool pkg-config libasound2-dev libpulse-dev libaudio-dev \
                                           libjack-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
                                           libxfixes-dev libxi-dev libxinerama-dev libxxf86vm-dev libxss-dev \
