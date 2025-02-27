@@ -586,14 +586,14 @@ void Texture::generateMipmapsInternal()
 
 		VkImageBlit blit{};
 		blit.srcOffsets[0] = { 0, 0, 0 };
-		blit.srcOffsets[1] = { getPixelWidth(i - 1), getPixelHeight(i - 1), 1 };
+		blit.srcOffsets[1] = { getPixelWidth(i - 1), getPixelHeight(i - 1), getDepth(i - 1) };
 		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.srcSubresource.mipLevel = rootView.startMipmap + i - 1;
 		blit.srcSubresource.baseArrayLayer = rootView.startLayer;
 		blit.srcSubresource.layerCount = static_cast<uint32_t>(layerCount);
 
 		blit.dstOffsets[0] = { 0, 0, 0 };
-		blit.dstOffsets[1] = { getPixelWidth(i), getPixelHeight(i), 1 };
+		blit.dstOffsets[1] = { getPixelWidth(i), getPixelHeight(i), getDepth(i) };
 		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		blit.dstSubresource.mipLevel = rootView.startMipmap + i;
 		blit.dstSubresource.baseArrayLayer = rootView.startLayer;
