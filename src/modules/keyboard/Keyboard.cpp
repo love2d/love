@@ -58,6 +58,7 @@ bool Keyboard::getConstant(const char *in, Key &out)
 	{
 		stringToKey[text] = codepoint;
 		out = (Key)codepoint;
+		return true;
 	}
 
 	return false;
