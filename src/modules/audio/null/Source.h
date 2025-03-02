@@ -22,6 +22,7 @@
 #define LOVE_AUDIO_NULL_SOURCE_H
 
 // LOVE
+#include "common/math.h"
 #include "common/Object.h"
 #include "audio/Source.h"
 #include "audio/Filter.h"
@@ -94,20 +95,20 @@ public:
 
 private:
 
-	float pitch;
-	float volume;
-	float coneInnerAngle;
-	float coneOuterAngle;
-	float coneOuterVolume;
-	float coneOuterHighGain;
-	bool relative;
-	bool looping;
-	float minVolume;
-	float maxVolume;
-	float referenceDistance;
-	float rolloffFactor;
-	float maxDistance;
-	float absorptionFactor;
+	float pitch = 1.0f;
+	float volume = 1.0f;
+	float coneInnerAngle = LOVE_TORAD(360.0f);
+	float coneOuterAngle = LOVE_TORAD(360.0f);
+	float coneOuterVolume = 0.0f;
+	float coneOuterHighGain = 1.0f;
+	bool relative = false;
+	bool looping = false;
+	float minVolume = 0.0f;
+	float maxVolume = 1.0f;
+	float referenceDistance = 1.0f;
+	float rolloffFactor = 1.0f;
+	float maxDistance = std::numeric_limits<float>::max();
+	float absorptionFactor = 0.0f;
 
 }; // Source
 
