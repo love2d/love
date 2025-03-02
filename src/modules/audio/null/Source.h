@@ -27,6 +27,9 @@
 #include "audio/Source.h"
 #include "audio/Filter.h"
 
+// STL
+#include <limits>
+
 namespace love
 {
 namespace audio
@@ -107,7 +110,7 @@ private:
 	float maxVolume = 1.0f;
 	float referenceDistance = 1.0f;
 	float rolloffFactor = 1.0f;
-	float maxDistance = FLT_MAX;
+	float maxDistance = std::numeric_limits<float>::max();
 	float absorptionFactor = 0.0f;
 
 }; // Source
