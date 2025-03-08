@@ -286,7 +286,8 @@ bool Texture::loadVolatile()
 		}
 	}
 
-	updateGraphicsMemorySize(true);
+	if (root)
+		updateGraphicsMemorySize(true);
 
 	return true;
 }

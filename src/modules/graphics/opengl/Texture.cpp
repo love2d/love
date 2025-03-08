@@ -440,7 +440,8 @@ bool Texture::loadVolatile()
 		}
 	}
 
-	updateGraphicsMemorySize(true);
+	if (parentView.texture == this)
+		updateGraphicsMemorySize(true);
 
 	return true;
 }
