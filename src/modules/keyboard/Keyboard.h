@@ -587,6 +587,8 @@ public:
 	 **/
 	virtual bool hasScreenKeyboard() const = 0;
 
+	virtual bool isScreenKeyboardVisible() const = 0;
+
 	static bool getConstant(const char *in, Key &out);
 	static bool getConstant(Key in, const char *&out);
 

@@ -177,6 +177,14 @@ bool Keyboard::hasScreenKeyboard() const
 	return SDL_HasScreenKeyboardSupport();
 }
 
+bool Keyboard::isScreenKeyboardVisible() const
+{
+	SDL_Window *window = getSDLWindow();
+	if (window == nullptr)
+		return false;
+	return SDL_ScreenKeyboardShown(window);
+}
+
 bool Keyboard::getConstant(Key in, SDL_Keycode &out)
 {
 	if (in & KEY_SCANCODE_MASK)

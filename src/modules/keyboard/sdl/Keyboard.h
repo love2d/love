@@ -56,6 +56,7 @@ public:
 	void setTextInput(bool enable, double x, double y, double w, double h);
 	bool hasTextInput() const;
 	bool hasScreenKeyboard() const;
+	bool isScreenKeyboardVisible() const;
 
 	static bool getConstant(Key in, SDL_Keycode &out);
 	static bool getConstant(SDL_Keycode in, Key &out);
