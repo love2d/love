@@ -491,7 +491,22 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 						}
 					}
 
-					attributes[name] = msl.get_decoration(var, spv::DecorationLocation);
+					int location = (int)msl.get_decoration(var, spv::DecorationLocation);
+					DataBaseType basetype = DATA_BASETYPE_FLOAT;
+
+					switch (msl.get_type_from_variable(var).basetype)
+					{
+					case spirv_cross::SPIRType::Int:
+						basetype = DATA_BASETYPE_INT;
+						break;
+					case spirv_cross::SPIRType::UInt:
+						basetype = DATA_BASETYPE_UINT;
+						break;
+					default:
+						break;
+					}
+
+					attributes[name] = { location, basetype };
 				}
 			}
 
@@ -717,7 +732,7 @@ void Shader::attach()
 int Shader::getVertexAttributeIndex(const std::string &name)
 {
 	const auto it = attributes.find(name);
-	return it != attributes.end() ? it->second : -1;
+	return it != attributes.end() ? it->second.index : -1;
 }
 
 const Shader::UniformInfo *Shader::getUniformInfo(BuiltinUniform builtin) const
@@ -860,7 +875,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(graphics::Graphics *g
 
 	for (const auto &pair : this->attributes)
 	{
-		int i = pair.second;
+		int i = pair.second.index;
 		uint32 bit = 1u << i;
 
 		if (attributes.enableBits & bit)
@@ -882,8 +897,26 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(graphics::Graphics *g
 		}
 		else
 		{
-			vertdesc.attributes[i].format = MTLVertexFormatFloat4;
-			vertdesc.attributes[i].offset = 0;
+			switch (pair.second.baseType)
+			{
+			case DATA_BASETYPE_INT:
+				vertdesc.attributes[i].format = MTLVertexFormatInt4;
+				vertdesc.attributes[i].offset = sizeof(float) * 4;
+				break;
+			case DATA_BASETYPE_UINT:
+				vertdesc.attributes[i].format = MTLVertexFormatUInt4;
+				vertdesc.attributes[i].offset = sizeof(float) * 4;
+				break;
+			case DATA_BASETYPE_FLOAT:
+				vertdesc.attributes[i].format = MTLVertexFormatFloat4;
+				if (i == ATTRIB_COLOR)
+					vertdesc.attributes[i].offset = sizeof(float) * 4 * 2;
+				else
+					vertdesc.attributes[i].offset = 0;
+			default:
+				break;
+			}
+
 			vertdesc.attributes[i].bufferIndex = DEFAULT_VERTEX_BUFFER_BINDING;
 
 			vertdesc.layouts[DEFAULT_VERTEX_BUFFER_BINDING].stride = sizeof(float) * 4;

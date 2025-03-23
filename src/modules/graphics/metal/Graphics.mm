@@ -259,6 +259,7 @@ struct DefaultVertexAttributes
 {
 	float floats[4];
 	int ints[4];
+	float color[4];
 };
 
 Graphics *Graphics::graphicsInstance = nullptr;
@@ -352,11 +353,13 @@ Graphics::Graphics()
 		std::vector<Buffer::DataDeclaration> dataformat = {
 			{"floats", DATAFORMAT_FLOAT_VEC4, 0},
 			{"ints", DATAFORMAT_INT32_VEC4, 0},
+			{"color", DATAFORMAT_FLOAT_VEC4, 0}
 		};
 
 		DefaultVertexAttributes defaults = {
 			{0.0f, 0.0f, 0.0f, 1.0f},
 			{0, 0, 0, 1},
+			{1.0f, 1.0f, 1.0f, 1.0f}
 		};
 
 		Buffer::Settings attribsettings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);

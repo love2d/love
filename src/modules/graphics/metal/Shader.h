@@ -126,6 +126,12 @@ public:
 
 private:
 
+	struct AttributeInfo
+	{
+		int index;
+		DataBaseType baseType;
+	};
+
 	struct RenderPipelineHasher
 	{
 		size_t operator() (const RenderPipelineKey &key) const
@@ -151,7 +157,7 @@ private:
 
 	int firstVertexBufferBinding;
 
-	std::map<std::string, int> attributes;
+	std::map<std::string, AttributeInfo> attributes;
 
 	std::vector<TextureBinding> textureBindings;
 	std::vector<BufferBinding> bufferBindings;
