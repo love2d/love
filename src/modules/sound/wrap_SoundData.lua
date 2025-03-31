@@ -34,7 +34,7 @@ end
 local status, ffi = pcall(require, "ffi")
 if not status then return end
 
-local tonumber, assert, error = tonumber, assert, error
+local tonumber, assert, error, type = tonumber, assert, error, type
 local floor = math.floor
 
 local float = ffi.typeof("float")

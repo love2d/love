@@ -202,6 +202,7 @@ function love.run()
 	end
 end
 
+local pcall, table = pcall, table
 local debug, print, tostring, error = debug, print, tostring, error
 
 function love.threaderror(t, err)

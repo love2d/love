@@ -441,6 +441,8 @@ function love.init()
 	end
 end
 
+local xpcall = xpcall
+local coroutine_yield = coroutine.yield
 local print, debug, tostring = print, debug, tostring
 
 local function error_printer(msg, layer)
@@ -498,7 +500,7 @@ return function()
 		end
 		local _, retval, restartvalue = xpcall(func, deferErrhand)
 		if retval then return retval, restartvalue end
-		coroutine.yield()
+		coroutine_yield()
 	end
 
 	return 1

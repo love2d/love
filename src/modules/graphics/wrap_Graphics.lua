@@ -24,7 +24,7 @@ misrepresented as being the original software.
 
 local table_concat = table.concat
 local ipairs = ipairs
-local pcall = pcall
+local pcall, type, error = pcall, type, error
 local graphics = love.graphics
 
 function graphics.newVideo(file, settings)
