@@ -215,7 +215,7 @@ local function error_printer(msg, layer)
 	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
 end
 
-function love.errhand(msg)
+function love.errorhandler(msg)
 	msg = tostring(msg)
 
 	error_printer(msg, 2)
@@ -339,6 +339,9 @@ function love.errhand(msg)
 	end
 
 end
+
+-- Legacy code support.
+love.errhand = love.errorhandler
 
 -- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.
 --)luastring"--"
