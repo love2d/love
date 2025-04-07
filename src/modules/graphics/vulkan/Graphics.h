@@ -337,7 +337,7 @@ private:
 	void createCommandBuffers();
 	void createSyncObjects();
 	void cleanup();
-	void cleanupSwapChain();
+	void cleanupSwapChain(bool destroySwapChainObject);
 	void recreateSwapChain();
 	void initDynamicState();
 	void beginSwapChainFrame();

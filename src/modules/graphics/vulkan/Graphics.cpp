@@ -815,8 +815,13 @@ void Graphics::unSetMode()
 
 	created = false;
 
-	cleanupSwapChain();
-	vkDestroySurfaceKHR(instance, surface, nullptr);
+	cleanupSwapChain(true);
+
+	if (surface != VK_NULL_HANDLE)
+	{
+		vkDestroySurfaceKHR(instance, surface, nullptr);
+		surface = VK_NULL_HANDLE;
+	}
 }
 
 void Graphics::setActive(bool enable)
@@ -2021,11 +2026,21 @@ void Graphics::createSwapChain()
 		createInfo.compositeAlpha = chooseCompositeAlpha(swapChainSupport.capabilities);
 		createInfo.presentMode = presentMode;
 		createInfo.clipped = VK_TRUE;
-		createInfo.oldSwapchain = VK_NULL_HANDLE;
+		createInfo.oldSwapchain = swapChain;
 
-		VkResult result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain);
+		VkSwapchainKHR newSwapChain = VK_NULL_HANDLE;
+		VkResult result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &newSwapChain);
+
 		if (result != VK_SUCCESS)
 			throw love::Exception("Failed to create Vulkan swap chain: %s", Vulkan::getErrorString(result));
+
+		if (swapChain != VK_NULL_HANDLE)
+		{
+			vkDestroySwapchainKHR(device, swapChain, nullptr);
+			swapChain = VK_NULL_HANDLE;
+		}
+
+		swapChain = newSwapChain;
 
 		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
 		swapChainImages.resize(imageCount);
@@ -2033,6 +2048,12 @@ void Graphics::createSwapChain()
 	}
 	else
 	{
+		if (swapChain != VK_NULL_HANDLE)
+		{
+			vkDestroySwapchainKHR(device, swapChain, nullptr);
+			swapChain = VK_NULL_HANDLE;
+		}
+
 		// Use a fake backbuffer. Creation is deferred until startRecordingGraphicsCommands
 		// because newTexture needs an active command buffer to do its initial
 		// layout transitions.
@@ -3424,19 +3445,27 @@ void Graphics::cleanup()
 	}
 }
 
-void Graphics::cleanupSwapChain()
+void Graphics::cleanupSwapChain(bool destroySwapChainObject)
 {
 	if (colorImage)
 	{
 		cleanupFramebuffers(colorImageView, swapChainPixelFormat);
+
 		vkDestroyImageView(device, colorImageView, nullptr);
+		colorImageView = VK_NULL_HANDLE;
+
 		vmaDestroyImage(vmaAllocator, colorImage, colorImageAllocation);
+		colorImage = VK_NULL_HANDLE;
 	}
 	if (depthImage)
 	{
 		cleanupFramebuffers(depthImageView, depthStencilPixelFormat);
+
 		vkDestroyImageView(device, depthImageView, nullptr);
+		depthImageView = VK_NULL_HANDLE;
+
 		vmaDestroyImage(vmaAllocator, depthImage, depthImageAllocation);
+		depthImage = VK_NULL_HANDLE;
 	}
 	for (const auto &swapChainImageView : swapChainImageViews)
 	{
@@ -3444,18 +3473,21 @@ void Graphics::cleanupSwapChain()
 		vkDestroyImageView(device, swapChainImageView, nullptr);
 	}
 	swapChainImageViews.clear();
-	vkDestroySwapchainKHR(device, swapChain, nullptr);
 	swapChainImages.clear();
 	fakeBackbuffer.set(nullptr);
 
-	swapChain = VK_NULL_HANDLE;
+	if (destroySwapChainObject && swapChain != VK_NULL_HANDLE)
+	{
+		vkDestroySwapchainKHR(device, swapChain, nullptr);
+		swapChain = VK_NULL_HANDLE;
+	}
 }
 
 void Graphics::recreateSwapChain()
 {
 	vkDeviceWaitIdle(device);
 
-	cleanupSwapChain();
+	cleanupSwapChain(false);
 
 	createSwapChain();
 	createImageViews();
