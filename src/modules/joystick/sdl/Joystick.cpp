@@ -464,12 +464,12 @@ bool Joystick::setVibration(float left, float right, float duration)
 		length = Uint32(std::min(duration, maxduration) * 1000);
 	}
 
-	return SDL_RumbleJoystick(joyhandle, (Uint16)(left * LOVE_UINT16_MAX), (Uint16)(right * LOVE_UINT16_MAX), length) == 0;
+	return SDL_RumbleJoystick(joyhandle, (Uint16)(left * LOVE_UINT16_MAX), (Uint16)(right * LOVE_UINT16_MAX), length);
 }
 
 bool Joystick::setVibration()
 {
-	return isConnected() && SDL_RumbleJoystick(joyhandle, 0, 0, 0) == 0;
+	return isConnected() && SDL_RumbleJoystick(joyhandle, 0, 0, 0);
 }
 
 void Joystick::getVibration(float &left, float &right)
