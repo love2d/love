@@ -112,6 +112,7 @@ private:
 	SDL_Gamepad *controller;
 
 	JoystickType joystickType;
+	GamepadType gamepadType;
 
 	SDL_JoystickID instanceid;
 	std::string pguid;

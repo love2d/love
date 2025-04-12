@@ -42,6 +42,7 @@ Joystick::Joystick(int id)
 	: joyhandle(nullptr)
 	, controller(nullptr)
 	, joystickType(JOYSTICK_TYPE_UNKNOWN)
+	, gamepadType(GAMEPAD_TYPE_UNKNOWN)
 	, instanceid(-1)
 	, id(id)
 {
@@ -114,6 +115,48 @@ bool Joystick::open(int64 deviceid)
 			joystickType = JOYSTICK_TYPE_UNKNOWN;
 			break;
 		}
+
+		if (controller != nullptr)
+		{
+			switch (SDL_GetGamepadType(controller))
+			{
+			case SDL_GAMEPAD_TYPE_UNKNOWN:
+				gamepadType = GAMEPAD_TYPE_UNKNOWN;
+				break;
+			case SDL_GAMEPAD_TYPE_XBOX360:
+				gamepadType = GAMEPAD_TYPE_XBOX360;
+				break;
+			case SDL_GAMEPAD_TYPE_XBOXONE:
+				gamepadType = GAMEPAD_TYPE_XBOXONE;
+				break;
+			case SDL_GAMEPAD_TYPE_PS3:
+				gamepadType = GAMEPAD_TYPE_PS3;
+				break;
+			case SDL_GAMEPAD_TYPE_PS4:
+				gamepadType = GAMEPAD_TYPE_PS4;
+				break;
+			case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+				gamepadType = GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
+				break;
+			case SDL_GAMEPAD_TYPE_PS5:
+				gamepadType = GAMEPAD_TYPE_PS5;
+				break;
+			case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+				gamepadType = GAMEPAD_TYPE_JOYCON_LEFT;
+				break;
+			case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+				gamepadType = GAMEPAD_TYPE_JOYCON_RIGHT;
+				break;
+			case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+				gamepadType = GAMEPAD_TYPE_JOYCON_PAIR;
+				break;
+			default:
+				gamepadType = GAMEPAD_TYPE_UNKNOWN;
+				break;
+			}
+		}
+		else
+			gamepadType = GAMEPAD_TYPE_UNKNOWN;
 	}
 
 	return isConnected();
@@ -255,25 +298,7 @@ bool Joystick::isGamepad() const
 
 Joystick::GamepadType Joystick::getGamepadType() const
 {
-	if (controller == nullptr)
-		return GAMEPAD_TYPE_UNKNOWN;
-
-	switch (SDL_GetGamepadType(controller))
-	{
-		case SDL_GAMEPAD_TYPE_UNKNOWN: return GAMEPAD_TYPE_UNKNOWN;
-		case SDL_GAMEPAD_TYPE_XBOX360: return GAMEPAD_TYPE_XBOX360;
-		case SDL_GAMEPAD_TYPE_XBOXONE: return GAMEPAD_TYPE_XBOXONE;
-		case SDL_GAMEPAD_TYPE_PS3: return GAMEPAD_TYPE_PS3;
-		case SDL_GAMEPAD_TYPE_PS4: return GAMEPAD_TYPE_PS4;
-		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO: return GAMEPAD_TYPE_NINTENDO_SWITCH_PRO;
-		case SDL_GAMEPAD_TYPE_PS5: return GAMEPAD_TYPE_PS5;
-		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT: return GAMEPAD_TYPE_JOYCON_LEFT;
-		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT: return GAMEPAD_TYPE_JOYCON_RIGHT;
-		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR: return GAMEPAD_TYPE_JOYCON_PAIR;
-		default: return GAMEPAD_TYPE_UNKNOWN;
-	}
-
-	return GAMEPAD_TYPE_UNKNOWN;
+	return gamepadType;
 }
 
 float Joystick::getGamepadAxis(love::joystick::Joystick::GamepadAxis axis) const
