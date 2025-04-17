@@ -2555,6 +2555,8 @@ int w_setFont(lua_State *L)
 
 int w_getFont(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	Font *f = nullptr;
 	luax_catchexcept(L, [&](){ f = instance()->getFont(); });
 
