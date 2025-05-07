@@ -62,6 +62,8 @@ public:
 	 */
 	void clear() override;
 
+	bool allowModalDraws() const;
+
 private:
 
 	void exceptionIfInRenderPass(const char *name);

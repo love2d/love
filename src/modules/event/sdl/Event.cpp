@@ -98,14 +98,14 @@ static bool SDLCALL watchAppEvents(void *udata, SDL_Event *event)
 		}
 		break;
 	case SDL_EVENT_WINDOW_EXPOSED:
-		if (eventModule != nullptr && SDL_IsMainThread())
+		if (eventModule != nullptr && SDL_IsMainThread() && eventModule->allowModalDraws())
 			eventModule->modalDraw();
 		break;
 	default:
 		break;
 	}
 
-	return 1;
+	return true;
 }
 
 Event::Event()
@@ -143,30 +143,29 @@ void Event::pump(float waitTimeout)
 		else if (waitTimeout > 0.0f)
 			waitTimeoutMS = (int)std::min<int64>(LOVE_INT32_MAX, 1000LL * waitTimeout);
 
+		// Wait for the first event, if requested. WaitEvent also calls PumpEvents.
+		SDL_Event e = {};
+		insideEventPump = true;
+		bool success = false;
 		try
 		{
-			// Wait for the first event, if requested.
-			SDL_Event e;
-			insideEventPump = true;
-			if (SDL_WaitEventTimeout(&e, waitTimeoutMS))
-			{
-				insideEventPump = false;
-				StrongRef<Message> msg(convert(e), Acquire::NORETAIN);
-				if (msg)
-					push(msg);
-
-				// Fetch any extra events that came in during WaitEvent.
-				shouldPoll = true;
-			}
-			else
-			{
-				insideEventPump = false;
-			}
+			success = SDL_WaitEventTimeout(&e, waitTimeoutMS);
 		}
 		catch (std::exception &)
 		{
 			insideEventPump = false;
 			throw;
+		}
+		insideEventPump = false;
+
+		if (success)
+		{
+			StrongRef<Message> msg(convert(e), Acquire::NORETAIN);
+			if (msg)
+				push(msg);
+
+			// Fetch any extra events that came in during WaitEvent.
+			shouldPoll = true;
 		}
 	}
 
@@ -206,6 +205,11 @@ void Event::clear()
 	}
 
 	love::event::Event::clear();
+}
+
+bool Event::allowModalDraws() const
+{
+	return insideEventPump;
 }
 
 void Event::exceptionIfInRenderPass(const char *name)
