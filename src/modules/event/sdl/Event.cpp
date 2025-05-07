@@ -172,7 +172,7 @@ void Event::pump(float waitTimeout)
 	if (shouldPoll)
 	{
 		SDL_Event e;
-		while (SDL_PollEvent(&e))
+		while (SDL_PeepEvents(&e, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) > 0)
 		{
 			StrongRef<Message> msg(convert(e), Acquire::NORETAIN);
 			if (msg)
