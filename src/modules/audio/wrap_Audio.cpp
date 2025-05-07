@@ -540,6 +540,41 @@ int w_isEffectsSupported(lua_State *L)
 	return 1;
 }
 
+int w_setOutputSpatialization(lua_State *L)
+{
+	bool enable = luax_checkboolean(L, 1);
+	const char *filter = luaL_optstring(L, 2, nullptr);
+	bool success = instance()->setOutputSpatialization(enable, filter);
+	luax_pushboolean(L, success);
+	return 1;
+}
+
+int w_getOutputSpatialization(lua_State *L)
+{
+	const char *filter = nullptr;
+	bool enabled = instance()->getOutputSpatialization(filter);
+	luax_pushboolean(L, enabled);
+	if (filter != nullptr)
+		lua_pushstring(L, filter);
+	else
+		lua_pushnil(L);
+	return 2;
+}
+
+int w_getOutputSpatializationFilters(lua_State *L)
+{
+	std::vector<std::string> filters;
+	instance()->getOutputSpatializationFilters(filters);
+
+	lua_createtable(L, (int)filters.size(), 0);
+	for (int i = 0; i < (int)filters.size(); i++)
+	{
+		luax_pushstring(L, filters[i]);
+		lua_rawseti(L, -2, i + 1);
+	}
+	return 1;
+}
+
 int w_setMixWithSystem(lua_State *L)
 {
 	luax_pushboolean(L, Audio::setMixWithSystem(luax_checkboolean(L, 1)));
@@ -622,6 +657,9 @@ static const luaL_Reg functions[] =
 	{ "getMaxSceneEffects", w_getMaxSceneEffects },
 	{ "getMaxSourceEffects", w_getMaxSourceEffects },
 	{ "isEffectsSupported", w_isEffectsSupported },
+	{ "setOutputSpatialization", w_setOutputSpatialization },
+	{ "getOutputSpatialization", w_getOutputSpatialization },
+	{ "getOutputSpatializationFilters", w_getOutputSpatializationFilters },
 	{ "setMixWithSystem", w_setMixWithSystem },
 	{ "getPlaybackDevice", w_getPlaybackDevice },
 	{ "getPlaybackDevices", w_getPlaybackDevices },

@@ -122,6 +122,10 @@ public:
 	int getMaxSourceEffects() const;
 	bool isEFXsupported() const;
 
+	bool setOutputSpatialization(bool enable, const char *filter = nullptr) override;
+	bool getOutputSpatialization(const char *&filter) const override;
+	void getOutputSpatializationFilters(std::vector<std::string> &list) const override;
+
 	bool getEffectID(const char *name, ALuint &id);
 
 	std::string getPlaybackDevice();
@@ -129,7 +133,10 @@ public:
 	void setPlaybackDevice(const char *name);
 
 private:
+
+	std::vector<ALint> computeContextAttribs();
 	void initializeEFX();
+
 	// The OpenAL device.
 	ALCdevice *device;
 
@@ -138,7 +145,6 @@ private:
 
 	// The OpenAL context.
 	ALCcontext *context;
-	std::vector<ALCint> attribs;
 
 	// The OpenAL effects
 	struct EffectMapStorage
@@ -149,7 +155,12 @@ private:
 	std::map<std::string, struct EffectMapStorage> effectmap;
 	std::stack<ALuint> slotlist;
 	int MAX_SCENE_EFFECTS = 64;
-	int MAX_SOURCE_EFFECTS = 64;
+	int MAX_REQUESTED_SOURCE_EFFECTS = 64;
+	int MAX_SOURCE_EFFECTS = 0;
+
+	// Disable HRTF output by default.
+	bool requestEnableHRTF = false;
+	std::string requestedHRTFFilter;
 
 	// The Pool.
 	Pool *pool;
@@ -178,6 +189,8 @@ private:
 
 	DistanceModel distanceModel;
 	//float metersPerUnit = 1.0;
+
+	bool hasHRTFExtension = false;
 
 #ifdef LOVE_ANDROID
 #	ifndef ALC_SOFT_pause_device

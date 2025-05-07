@@ -83,6 +83,10 @@ public:
 	int getMaxSourceEffects() const;
 	bool isEFXsupported() const;
 
+	bool setOutputSpatialization(bool enable, const char *filter = nullptr) override;
+	bool getOutputSpatialization(const char *&filter) const override;
+	void getOutputSpatializationFilters(std::vector<std::string> &list) const override;
+
 	void pauseContext();
 	void resumeContext();
 

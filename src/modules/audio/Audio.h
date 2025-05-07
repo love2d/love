@@ -282,6 +282,10 @@ public:
 	 */
 	virtual bool isEFXsupported() const = 0;
 
+	virtual bool setOutputSpatialization(bool enable, const char *filter = nullptr) = 0;
+	virtual bool getOutputSpatialization(const char *&filter) const = 0;
+	virtual void getOutputSpatializationFilters(std::vector<std::string> &list) const = 0;
+
 	/**
 	 * Sets whether audio from other apps mixes with love.audio or is muted,
 	 * on supported platforms.

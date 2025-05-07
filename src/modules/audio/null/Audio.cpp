@@ -199,6 +199,21 @@ bool Audio::isEFXsupported() const
 	return false;
 }
 
+bool Audio::setOutputSpatialization(bool, const char *)
+{
+	return false;
+}
+
+bool Audio::getOutputSpatialization(const char *&filter) const
+{
+	filter = nullptr;
+	return false;
+}
+
+void Audio::getOutputSpatializationFilters(std::vector<std::string> &) const
+{
+}
+
 void Audio::pauseContext()
 {
 }

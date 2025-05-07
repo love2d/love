@@ -113,9 +113,6 @@ Audio::Audio()
 	, poolThread(nullptr)
 	, distanceModel(DISTANCE_INVERSE_CLAMPED)
 {
-	attribs.push_back(0);
-	attribs.push_back(0);
-
 	// Before opening new device, check if recording
 	// is requested.
 	if (getRequestRecordingPermission())
@@ -137,10 +134,9 @@ Audio::Audio()
 		if (device == nullptr)
 			throw love::Exception("Could not open device.");
 
-#ifdef ALC_EXT_EFX
-		attribs.insert(attribs.begin(), ALC_MAX_AUXILIARY_SENDS);
-		attribs.insert(attribs.begin() + 1, MAX_SOURCE_EFFECTS);
-#endif
+		hasHRTFExtension = alcIsExtensionPresent(device, "ALC_SOFT_HRTF") == AL_TRUE;
+
+		std::vector<ALint> attribs = computeContextAttribs();
 
 		context = alcCreateContext(device, attribs.data());
 
@@ -255,6 +251,44 @@ Audio::~Audio()
 	alcMakeContextCurrent(nullptr);
 	alcDestroyContext(context);
 	alcCloseDevice(device);
+}
+
+std::vector<ALint> Audio::computeContextAttribs()
+{
+	std::vector<ALint> attribs;
+
+#ifdef ALC_EXT_EFX
+	attribs.push_back(ALC_MAX_AUXILIARY_SENDS);
+	attribs.push_back(MAX_REQUESTED_SOURCE_EFFECTS);
+#endif
+
+#ifdef ALC_SOFT_HRTF
+	if (hasHRTFExtension)
+	{
+		attribs.push_back(ALC_HRTF_SOFT);
+		attribs.push_back(requestEnableHRTF ? AL_TRUE : AL_FALSE);
+		if (!requestedHRTFFilter.empty())
+		{
+			std::vector<std::string> filters;
+			getOutputSpatializationFilters(filters);
+
+			for (size_t i = 0; i < filters.size(); i++)
+			{
+				if (filters[i] == requestedHRTFFilter)
+				{
+					attribs.push_back(ALC_HRTF_ID_SOFT);
+					attribs.push_back((int)i);
+					break;
+				}
+			}
+		}
+	}
+#endif
+
+	attribs.push_back(0);
+	attribs.push_back(0);
+
+	return attribs;
 }
 
 love::audio::Source *Audio::newSource(love::sound::Decoder *decoder)
@@ -386,7 +420,7 @@ void Audio::getPlaybackDevices(std::vector<std::string> &list)
 	}
 }
 
-void Audio::setPlaybackDevice(const char* name)
+void Audio::setPlaybackDevice(const char *name)
 {
 #ifndef ALC_SOFT_reopen_device
 	typedef ALCboolean (ALC_APIENTRY*LPALCREOPENDEVICESOFT)(ALCdevice *device,
@@ -403,6 +437,8 @@ void Audio::setPlaybackDevice(const char* name)
 		love::audio::Audio::setPlaybackDevice(name);
 		return;
 	}
+
+	std::vector<ALint> attribs = computeContextAttribs();
 
 	if (alcReopenDeviceSOFT(device, (const ALCchar *) name, attribs.data()) == ALC_FALSE)
 		throw love::Exception("Cannot set output device: %s", alcGetString(device, alcGetError(device)));
@@ -704,6 +740,71 @@ bool Audio::isEFXsupported() const
 	return (alGenEffects != nullptr);
 #else
 	return false;
+#endif
+}
+
+bool Audio::setOutputSpatialization(bool enable, const char *filter)
+{
+	requestEnableHRTF = enable;
+	if (filter != nullptr)
+		requestedHRTFFilter = filter;
+	else
+		requestedHRTFFilter.clear();
+
+#ifdef ALC_SOFT_HRTF
+	if (hasHRTFExtension)
+	{
+		static auto alcResetDeviceSOFT = (LPALCRESETDEVICESOFT)alcGetProcAddress(device, "alcResetDeviceSOFT");
+		if (alcResetDeviceSOFT == nullptr)
+			return false;
+
+		std::vector<ALint> attribs = computeContextAttribs();
+		return alcResetDeviceSOFT(device, attribs.data()) != AL_FALSE;
+	}
+#endif
+
+	return false;
+}
+
+bool Audio::getOutputSpatialization(const char *&filter) const
+{
+#ifdef ALC_SOFT_HRTF
+	if (hasHRTFExtension)
+	{
+		ALCint enabled = 0;
+		alcGetIntegerv(device, ALC_HRTF_SOFT, 1, &enabled);
+		if (enabled != 0)
+			filter = alcGetString(device, ALC_HRTF_SPECIFIER_SOFT);
+		else
+			filter = nullptr;
+		return enabled != 0;
+	}
+#endif
+
+	filter = nullptr;
+	return false;
+}
+
+void Audio::getOutputSpatializationFilters(std::vector<std::string> &list) const
+{
+#ifdef ALC_SOFT_HRTF
+	if (!hasHRTFExtension)
+		return;
+
+	static auto alcGetStringiSOFT = (LPALCGETSTRINGISOFT)alcGetProcAddress(device, "alcGetStringiSOFT");
+	if (alcGetStringiSOFT == nullptr)
+		return;
+
+	ALCint count = 0;
+	alcGetIntegerv(device, ALC_NUM_HRTF_SPECIFIERS_SOFT, 1, &count);
+	for (int i = 0; i < count; i++)
+	{
+		const char *specifier = alcGetStringiSOFT(device, ALC_HRTF_SPECIFIER_SOFT, i);
+		if (specifier != nullptr)
+			list.push_back(specifier);
+	}
+#else
+	LOVE_UNUSED(list);
 #endif
 }
 
