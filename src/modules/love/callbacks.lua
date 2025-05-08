@@ -306,7 +306,7 @@ function love.errorhandler(msg)
 	end
 
 	return function()
-		love.event.pump()
+		love.event.pump(0.1)
 
 		for e, a, b, c in love.event.poll() do
 			if e == "quit" then
@@ -334,7 +334,7 @@ function love.errorhandler(msg)
 		draw()
 
 		if love.timer then
-			love.timer.sleep(0.1)
+			love.timer.sleep(0.001)
 		end
 	end
 
