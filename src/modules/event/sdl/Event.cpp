@@ -167,6 +167,15 @@ void Event::pump(float waitTimeout)
 			// Fetch any extra events that came in during WaitEvent.
 			shouldPoll = true;
 		}
+
+		// For exceptions generated inside a modal draw callback, propagate them
+		// outside of OS event processing instead of inside.
+		if (!deferredExceptionMessage.empty())
+		{
+			std::string exceptionstr = deferredExceptionMessage;
+			deferredExceptionMessage.clear();
+			throw love::Exception("%s", exceptionstr.c_str());
+		}
 	}
 
 	if (shouldPoll)

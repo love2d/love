@@ -86,6 +86,7 @@ protected:
 
 	ModalDrawData modalDrawData;
 	ModalDrawData defaultModalDrawData;
+	std::string deferredExceptionMessage;
 
 	love::thread::MutexRef mutex;
 	std::queue<Message *> queue;

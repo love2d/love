@@ -100,10 +100,21 @@ void Event::setDefaultModalDrawData(const ModalDrawData &data)
 
 void Event::modalDraw()
 {
-	if (modalDrawData.draw != nullptr)
-		modalDrawData.draw(modalDrawData.context);
-	else if (defaultModalDrawData.draw != nullptr)
-		defaultModalDrawData.draw(defaultModalDrawData.context);
+	// Skip the draw if a previous one generated an unprocessed exception.
+	if (!deferredExceptionMessage.empty())
+		return;
+
+	try
+	{
+		if (modalDrawData.draw != nullptr)
+			modalDrawData.draw(modalDrawData.context);
+		else if (defaultModalDrawData.draw != nullptr)
+			defaultModalDrawData.draw(defaultModalDrawData.context);
+	}
+	catch (std::exception &e)
+	{
+		deferredExceptionMessage = e.what();
+	}
 }
 
 } // event
