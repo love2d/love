@@ -623,7 +623,7 @@ int w_setStencilMode(lua_State *L)
 	if (!getConstant(modestr, mode))
 		return luax_enumerror(L, "stencil mode", getConstants(mode), modestr);
 
-	int value = (int) luaL_optinteger(L, 3, 1);
+	int value = (int) luaL_optinteger(L, 2, 1);
 
 	luax_catchexcept(L, [&]() { instance()->setStencilMode(mode, value); });
 	return 0;
