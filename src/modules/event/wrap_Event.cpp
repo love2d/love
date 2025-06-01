@@ -152,18 +152,44 @@ int w_restart(lua_State *L)
 	return 1;
 }
 
-static void drawCallback(void *context)
+struct DrawCallbackData
+{
+	Variant returnValues[2];
+	Reference *r;
+};
+
+static int drawCallbackInner(lua_State *L)
+{
+	auto data = (DrawCallbackData *)lua_touserdata(L, 1);
+
+	data->r->push(L);
+
+	lua_call(L, 0, 2);
+
+	data->returnValues[0] = luax_checkvariant(L, -2, false);
+	data->returnValues[1] = luax_checkvariant(L, -1, false);
+
+	lua_pop(L, 2);
+	return 0;
+}
+
+static void drawCallback(void *context, Variant *returnVal0, Variant *returnVal1)
 {
 	auto r = (Reference *)context;
 	lua_State *L = r->getPinnedL();
 
-	r->push(L);
+	DrawCallbackData data = {};
+	data.r = r;
 
-	int err = lua_pcall(L, 0, 0, 0);
+	// pcall into C code to catch errors from checkvariant as well as the lua_call.
+	int err = lua_cpcall(L, drawCallbackInner, &data);
 
 	// Unfortunately, this eats the stack trace, too bad.
 	if (err != 0)
 		throw love::Exception("Error in modal draw callback: %s", lua_tostring(L, -1));
+
+	*returnVal0 = data.returnValues[0];
+	*returnVal1 = data.returnValues[1];
 }
 
 static void cleanupCallback(void *context)

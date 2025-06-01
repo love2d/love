@@ -56,9 +56,17 @@ Event::~Event()
 
 void Event::push(Message *msg)
 {
+	push(msg, false);
+}
+
+void Event::push(Message *msg, bool pushFront)
+{
 	Lock lock(mutex);
 	msg->retain();
-	queue.push(msg);
+	if (pushFront)
+		queue.push_front(msg);
+	else
+		queue.push_back(msg);
 }
 
 bool Event::poll(Message *&msg)
@@ -67,7 +75,7 @@ bool Event::poll(Message *&msg)
 	if (queue.empty())
 		return false;
 	msg = queue.front();
-	queue.pop();
+	queue.pop_front();
 	return true;
 }
 
@@ -76,9 +84,8 @@ void Event::clear()
 	Lock lock(mutex);
 	while (!queue.empty())
 	{
-		// std::queue::pop will remove the first (front) element.
 		queue.front()->release();
-		queue.pop();
+		queue.pop_front();
 	}
 }
 
@@ -104,12 +111,17 @@ void Event::modalDraw()
 	if (!deferredExceptionMessage.empty())
 		return;
 
+	// Also skip the draw if a previous one generated a return value that
+	// needs to be passed down as a quit event.
+	if (deferredReturnValues[0].getType() != Variant::NIL)
+		return;
+
 	try
 	{
 		if (modalDrawData.draw != nullptr)
-			modalDrawData.draw(modalDrawData.context);
+			modalDrawData.draw(modalDrawData.context, &deferredReturnValues[0], &deferredReturnValues[1]);
 		else if (defaultModalDrawData.draw != nullptr)
-			defaultModalDrawData.draw(defaultModalDrawData.context);
+			defaultModalDrawData.draw(defaultModalDrawData.context, &deferredReturnValues[0], &deferredReturnValues[1]);
 	}
 	catch (std::exception &e)
 	{

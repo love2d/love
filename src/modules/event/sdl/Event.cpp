@@ -174,7 +174,24 @@ void Event::pump(float waitTimeout)
 		{
 			std::string exceptionstr = deferredExceptionMessage;
 			deferredExceptionMessage.clear();
+			deferredReturnValues[0] = Variant();
+			deferredReturnValues[1] = Variant();
 			throw love::Exception("%s", exceptionstr.c_str());
+		}
+
+		if (deferredReturnValues[0].getType() != Variant::NIL)
+		{
+			// Third arg being true will tell love.run to skip the love.quit callback,
+			// since the original modal draw function already processed that.
+			std::vector<Variant> args = {deferredReturnValues[0], deferredReturnValues[1], Variant(true)};
+
+			StrongRef<Message> msg(new Message("quit", args), Acquire::NORETAIN);
+
+			// Push to the front of queue so it's dealt with before any other event.
+			push(msg, true);
+
+			deferredReturnValues[0] = Variant();
+			deferredReturnValues[1] = Variant();
 		}
 	}
 
