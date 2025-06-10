@@ -116,8 +116,10 @@ namespace vulkan { extern love::graphics::Graphics *createInstance(); }
 
 static const Renderer rendererOrder[] = {
 	RENDERER_METAL,
-#ifdef LOVE_ANDROID
-	// Don't enable vulkan by default yet on android - it needs more testing.
+#if defined(LOVE_ANDROID) || (defined(LOVE_WINDOWS) && defined(_M_ARM64))
+	// Don't prioritize Vulkan by default yet on Android - it needs more testing.
+	// Also don't prioritize Vulkan on Windows ARM64 because it doesn't work.
+	// See https://github.com/love2d/love/issues/2196
 	RENDERER_OPENGL,
 	RENDERER_VULKAN,
 #else
