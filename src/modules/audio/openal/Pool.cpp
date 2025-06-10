@@ -106,7 +106,7 @@ void Pool::update()
 
 	thread::Lock lock(mutex);
 
-	static bool disconnectExtSupported = alcIsExtensionPresent(device, "ALC_EXT_Disconnect") == ALC_TRUE;
+	static bool disconnectExtSupported = alcIsExtensionPresent(device, "ALC_EXT_disconnect") == ALC_TRUE;
 
 	// Device disconnection event
 	if (disconnectExtSupported)
