@@ -1412,6 +1412,7 @@ add_library(love_3p_glslang
 	src/libraries/glslang/glslang/Include/ShHandle.h
 	src/libraries/glslang/glslang/Include/SpirvIntrinsics.h
 	src/libraries/glslang/glslang/Include/Types.h
+	src/libraries/glslang/glslang/Include/visibility.h
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/Pp.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpAtom.cpp
 	src/libraries/glslang/glslang/MachineIndependent/preprocessor/PpContext.cpp
@@ -1484,10 +1485,11 @@ add_library(love_3p_glslang
 	src/libraries/glslang/SPIRV/Logger.h
 	src/libraries/glslang/SPIRV/NonSemanticDebugPrintf.h
 	src/libraries/glslang/SPIRV/NonSemanticShaderDebugInfo100.h
-	src/libraries/glslang/SPIRV/spirv.hpp
+	src/libraries/glslang/SPIRV/spirv.hpp11
 	src/libraries/glslang/SPIRV/SpvBuilder.cpp
 	src/libraries/glslang/SPIRV/SpvBuilder.h
 	src/libraries/glslang/SPIRV/spvIR.h
+	src/libraries/glslang/SPIRV/spvUtil.h
 	src/libraries/glslang/SPIRV/SpvPostProcess.cpp
 	src/libraries/glslang/SPIRV/SPVRemapper.cpp
 	src/libraries/glslang/SPIRV/SPVRemapper.h

@@ -50,6 +50,52 @@ class Float16 {
   uint16_t val;
 };
 
+class FloatE5M2 {
+ public:
+  FloatE5M2(uint8_t v) : val(v) {}
+  FloatE5M2() {}
+  static bool isNan(const FloatE5M2& val) {
+    return ((val.val & 0x7C) == 0x7C) && ((val.val & 0x3) != 0);
+  }
+  // Returns true if the given value is any kind of infinity.
+  static bool isInfinity(const FloatE5M2& val) {
+    return ((val.val & 0x7C) == 0x7C) && ((val.val & 0x3) == 0);
+  }
+  FloatE5M2(const FloatE5M2& other) { val = other.val; }
+  uint8_t get_value() const { return val; }
+
+  // Returns the maximum normal value.
+  static FloatE5M2 max() { return FloatE5M2(0x7B); }
+  // Returns the lowest normal value.
+  static FloatE5M2 lowest() { return FloatE5M2(0xFB); }
+
+ private:
+  uint8_t val;
+};
+
+class FloatE4M3 {
+ public:
+  FloatE4M3(uint8_t v) : val(v) {}
+  FloatE4M3() {}
+  static bool isNan(const FloatE4M3& val) {
+    return (val.val & 0x7F) == 0x7F;
+  }
+  // Returns true if the given value is any kind of infinity.
+  static bool isInfinity(const FloatE4M3&) {
+    return false;
+  }
+  FloatE4M3(const FloatE4M3& other) { val = other.val; }
+  uint8_t get_value() const { return val; }
+
+  // Returns the maximum normal value.
+  static FloatE4M3 max() { return FloatE4M3(0x7E); }
+  // Returns the lowest normal value.
+  static FloatE4M3 lowest() { return FloatE4M3(0xFE); }
+
+ private:
+  uint8_t val;
+};
+
 // To specialize this type, you must override uint_type to define
 // an unsigned integer that can fit your floating point type.
 // You must also add a isNan function that returns true if
@@ -93,6 +139,30 @@ struct FloatProxyTraits<Float16> {
   static Float16 max() { return Float16::max(); }
   // Returns the lowest normal value.
   static Float16 lowest() { return Float16::lowest(); }
+};
+
+template <>
+struct FloatProxyTraits<FloatE5M2> {
+  typedef uint8_t uint_type;
+  static bool isNan(FloatE5M2 f) { return FloatE5M2::isNan(f); }
+  // Returns true if the given value is any kind of infinity.
+  static bool isInfinity(FloatE5M2 f) { return FloatE5M2::isInfinity(f); }
+  // Returns the maximum normal value.
+  static FloatE5M2 max() { return FloatE5M2::max(); }
+  // Returns the lowest normal value.
+  static FloatE5M2 lowest() { return FloatE5M2::lowest(); }
+};
+
+template <>
+struct FloatProxyTraits<FloatE4M3> {
+  typedef uint8_t uint_type;
+  static bool isNan(FloatE4M3 f) { return FloatE4M3::isNan(f); }
+  // Returns true if the given value is any kind of infinity.
+  static bool isInfinity(FloatE4M3 f) { return FloatE4M3::isInfinity(f); }
+  // Returns the maximum normal value.
+  static FloatE4M3 max() { return FloatE4M3::max(); }
+  // Returns the lowest normal value.
+  static FloatE4M3 lowest() { return FloatE4M3::lowest(); }
 };
 
 // Since copying a floating point number (especially if it is NaN)
@@ -224,6 +294,30 @@ struct HexFloatTraits<FloatProxy<Float16>> {
   static const uint_type num_exponent_bits = 5;
   static const uint_type num_fraction_bits = 10;
   static const uint_type exponent_bias = 15;
+};
+
+template <>
+struct HexFloatTraits<FloatProxy<FloatE5M2>> {
+  typedef uint8_t uint_type;
+  typedef int8_t int_type;
+  typedef uint8_t underlying_type;
+  typedef uint8_t native_type;
+  static const uint_type num_used_bits = 8;
+  static const uint_type num_exponent_bits = 5;
+  static const uint_type num_fraction_bits = 2;
+  static const uint_type exponent_bias = 15;
+};
+
+template <>
+struct HexFloatTraits<FloatProxy<FloatE4M3>> {
+  typedef uint8_t uint_type;
+  typedef int8_t int_type;
+  typedef uint8_t underlying_type;
+  typedef uint8_t native_type;
+  static const uint_type num_used_bits = 8;
+  static const uint_type num_exponent_bits = 4;
+  static const uint_type num_fraction_bits = 3;
+  static const uint_type exponent_bias = 7;
 };
 
 enum round_direction {

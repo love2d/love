@@ -46,34 +46,46 @@
 // even if no merging was done (i.e., the stage was only one compilation unit).
 //
 
+#include "../../glslang/Public/ShaderLang.h"
 #include "localintermediate.h"
 #include "../Include/InfoSink.h"
 #include "SymbolTable.h"
+#include "LiveTraverser.h"
 
 namespace glslang {
 
 //
 // Link-time error emitter.
 //
-void TIntermediate::error(TInfoSink& infoSink, const char* message, EShLanguage unitStage)
+void TIntermediate::error(TInfoSink& infoSink, const TSourceLoc* loc, EShMessages messages, const char* message,
+                          EShLanguage unitStage)
 {
     infoSink.info.prefix(EPrefixError);
-    if (unitStage < EShLangCount)
-        infoSink.info << "Linking " << StageName(getStage()) << " and " << StageName(unitStage) << " stages: " << message << "\n";
-    else
+    if (loc)
+        infoSink.info.location(*loc, messages & EShMsgAbsolutePath, messages & EShMsgDisplayErrorColumn);
+    if (unitStage == EShLangCount)
         infoSink.info << "Linking " << StageName(language) << " stage: " << message << "\n";
+    else if (language == EShLangCount)
+        infoSink.info << "Linking " << StageName(unitStage) << " stage: " << message << "\n";
+    else
+        infoSink.info << "Linking " << StageName(language) << " and " << StageName(unitStage) << " stages: " << message << "\n";
 
     ++numErrors;
 }
 
 // Link-time warning.
-void TIntermediate::warn(TInfoSink& infoSink, const char* message, EShLanguage unitStage)
+void TIntermediate::warn(TInfoSink& infoSink, const TSourceLoc* loc, EShMessages messages, const char* message,
+                         EShLanguage unitStage)
 {
     infoSink.info.prefix(EPrefixWarning);
-    if (unitStage < EShLangCount)
-        infoSink.info << "Linking " << StageName(language) << " and " << StageName(unitStage) << " stages: " << message << "\n";
-    else
+    if (loc)
+        infoSink.info.location(*loc, messages & EShMsgAbsolutePath, messages & EShMsgDisplayErrorColumn);
+    if (unitStage == EShLangCount)
         infoSink.info << "Linking " << StageName(language) << " stage: " << message << "\n";
+    else if (language == EShLangCount)
+        infoSink.info << "Linking " << StageName(unitStage) << " stage: " << message << "\n";
+    else
+        infoSink.info << "Linking " << StageName(language) << " and " << StageName(unitStage) << " stages: " << message << "\n";
 }
 
 // TODO: 4.4 offset/align:  "Two blocks linked together in the same program with the same block
@@ -113,7 +125,9 @@ void TIntermediate::mergeUniformObjects(TInfoSink& infoSink, TIntermediate& unit
     mergeLinkerObjects(infoSink, linkerObjects, unitLinkerObjects, unit.getStage());
 }
 
-static inline bool isSameInterface(TIntermSymbol* symbol, EShLanguage stage, TIntermSymbol* unitSymbol, EShLanguage unitStage) {
+static inline bool isSameInterface(TIntermSymbol* symbol, TIntermSymbol* unitSymbol) {
+    EShLanguage stage = symbol->getStage();
+    EShLanguage unitStage = unitSymbol->getStage();
     return // 1) same stage and same shader interface
         (stage == unitStage && symbol->getType().getShaderInterface() == unitSymbol->getType().getShaderInterface()) ||
         // 2) accross stages and both are uniform or buffer
@@ -124,21 +138,54 @@ static inline bool isSameInterface(TIntermSymbol* symbol, EShLanguage stage, TIn
         (unitStage < stage && symbol->getQualifier().storage == EvqVaryingIn && unitSymbol->getQualifier().storage == EvqVaryingOut);
 }
 
-static bool isSameSymbol(TIntermSymbol* symbol1, EShLanguage stage1, TIntermSymbol* symbol2, EShLanguage stage2) {
+static bool isSameSymbol(TIntermSymbol* symbol1, TIntermSymbol* symbol2) {
     // If they are both blocks in the same shader interface,
     // match by the block-name, not the identifier name.
     if (symbol1->getType().getBasicType() == EbtBlock && symbol2->getType().getBasicType() == EbtBlock) {
-        if (isSameInterface(symbol1, stage1, symbol2, stage2)) {
+        if (isSameInterface(symbol1, symbol2)) {
             return symbol1->getType().getTypeName() == symbol2->getType().getTypeName();
         }
     } else if (symbol1->getName() == symbol2->getName())
         return true;
     return false;
 }
+
+//
+// merge implicit array sizes for uniform/buffer objects
+//
+void TIntermediate::mergeImplicitArraySizes(TInfoSink&, TIntermediate& unit) {
+    if (unit.treeRoot == nullptr || treeRoot == nullptr)
+        return;
+
+    // Get the linker-object lists
+    TIntermSequence& linkerObjects = findLinkerObjects()->getSequence();
+    TIntermSequence unitLinkerObjects = unit.findLinkerObjects()->getSequence();
+
+    // filter unitLinkerObjects to only contain uniforms
+    auto end = std::remove_if(unitLinkerObjects.begin(), unitLinkerObjects.end(),
+        [](TIntermNode* node) {return node->getAsSymbolNode()->getQualifier().storage != EvqUniform &&
+                                      node->getAsSymbolNode()->getQualifier().storage != EvqBuffer; });
+    unitLinkerObjects.resize(end - unitLinkerObjects.begin());
+
+    std::size_t initialNumLinkerObjects = linkerObjects.size();
+    for (unsigned int unitLinkObj = 0; unitLinkObj < unitLinkerObjects.size(); ++unitLinkObj) {
+        for (std::size_t linkObj = 0; linkObj < initialNumLinkerObjects; ++linkObj) {
+            TIntermSymbol* symbol = linkerObjects[linkObj]->getAsSymbolNode();
+            TIntermSymbol* unitSymbol = unitLinkerObjects[unitLinkObj]->getAsSymbolNode();
+            assert(symbol && unitSymbol);
+
+            if (isSameSymbol(symbol, unitSymbol)) {
+                // Update implicit array sizes
+                mergeImplicitArraySizes(symbol->getWritableType(), unitSymbol->getType());
+            }
+        }
+    }
+}
+
 //
 // do error checking on the shader boundary in / out vars
 //
-void TIntermediate::checkStageIO(EShMessages messages, TInfoSink& infoSink, TIntermediate& unit) {
+void TIntermediate::checkStageIO(TInfoSink& infoSink, TIntermediate& unit, EShMessages messages) {
     if (unit.treeRoot == nullptr || treeRoot == nullptr)
         return;
 
@@ -159,32 +206,272 @@ void TIntermediate::checkStageIO(EShMessages messages, TInfoSink& infoSink, TInt
     // do matching and error checking
     mergeLinkerObjects(infoSink, linkerObjects, unitLinkerObjects, unit.getStage());
 
-    // Check that all of our inputs have matching outputs from the previous stage.
-    // Only do this for Vulkan, since GL_ARB_separate_shader_objects allows for
-    // the in/out to not match
-    if (spvVersion.vulkan > 0 || (messages & EshMsgCrossStageIO)) {
-        for (auto& nextStageInterm : unitLinkerObjects) {
-            auto* nextStageSymbol = nextStageInterm->getAsSymbolNode();
-            bool found = false;
-            for (auto& curStageInterm : linkerObjects) {
-                if (isSameSymbol(curStageInterm->getAsSymbolNode(), getStage(), nextStageSymbol, unit.getStage())) {
-                    found = true;
-                    break;
+    if ((messages & EShMsgValidateCrossStageIO) == 0)
+        return;
+
+    // The OpenGL Shading Language, Version 4.60.8 (https://registry.khronos.org/OpenGL/specs/gl/GLSLangSpec.4.60.pdf)
+    // 4.3.4 Input Variables
+    // Only the input variables that are statically read need to be written by the previous stage; it is
+    // allowed to have superfluous declarations of input variables. This is shown in the following table.
+    // +------------------------------------------------------------------------------------------------+
+    // | Treatment of Mismatched Input        | Consuming Shader (input variables)                      |
+    // | Variables                            |---------------------------------------------------------|
+    // |                                      | No          | Declared but no | Declared and Static Use |
+    // |                                      | Declaration | Static Use      |                         |
+    // |--------------------------------------+-------------+-----------------+-------------------------|
+    // | Generating Shader  | No Declaration  | Allowed     | Allowed         | Link-Time Error         |
+    // | (output variables) |-----------------+-------------+-----------------+-------------------------|
+    // |                    | Declared but no | Allowed     | Allowed         | Allowed (values are     |
+    // |                    | Static Use      |             |                 | undefined)              |
+    // |                    |-----------------+-------------+-----------------+-------------------------|
+    // |                    | Declared and    | Allowed     | Allowed         | Allowed (values are     |
+    // |                    | Static Use      |             |                 | potentially undefined)  |
+    // +------------------------------------------------------------------------------------------------+
+    // Consumption errors are based on static use only. Compilation may generate a warning, but not an
+    // error, for any dynamic use the compiler can deduce that might cause consumption of undefined values.
+
+    // TODO: implement support for geometry passthrough
+    if (getGeoPassthroughEXT()) {
+        unit.warn(infoSink, "GL_NV_geometry_shader_passthrough is enabled, skipping cross-stage IO validation",
+                  getStage());
+        return;
+    }
+
+    class TIOTraverser : public TLiveTraverser {
+    public:
+        TIOTraverser(TIntermediate& i, bool all, TIntermSequence& sequence, TStorageQualifier storage)
+            : TLiveTraverser(i, all, true, false, false), sequence(sequence), storage(storage)
+        {
+        }
+
+        virtual void visitSymbol(TIntermSymbol* symbol)
+        {
+            if (symbol->getQualifier().storage == storage)
+                sequence.push_back(symbol);
+        }
+
+    private:
+        TIntermSequence& sequence;
+        TStorageQualifier storage;
+    };
+
+    // live symbols only
+    TIntermSequence unitLiveInputs;
+
+    TIOTraverser unitTraverser(unit, false, unitLiveInputs, EvqVaryingIn);
+    unitTraverser.pushFunction(unit.getEntryPointMangledName().c_str());
+    while (! unitTraverser.destinations.empty()) {
+        TIntermNode* destination = unitTraverser.destinations.back();
+        unitTraverser.destinations.pop_back();
+        destination->traverse(&unitTraverser);
+    }
+
+    // all symbols
+    TIntermSequence allOutputs;
+
+    TIOTraverser traverser(*this, true, allOutputs, EvqVaryingOut);
+    getTreeRoot()->traverse(&traverser);
+
+    std::unordered_set<int> outputLocations;
+    for (auto& output : allOutputs) {
+        if (output->getAsSymbolNode()->getBasicType() == EbtBlock) {
+            int lastLocation = -1;
+            if (output->getAsSymbolNode()->getQualifier().hasLocation())
+                lastLocation = output->getAsSymbolNode()->getQualifier().layoutLocation;
+            const TTypeList* members = output->getAsSymbolNode()->getType().getStruct();
+            for (auto& member : *members) {
+                int location = lastLocation;
+                if (member.type->getQualifier().hasLocation())
+                    location = member.type->getQualifier().layoutLocation;
+                if (location != -1) {
+                    int locationSize = TIntermediate::computeTypeLocationSize(*member.type, getStage());
+                    for (int i = 0; i < locationSize; ++i)
+                        outputLocations.insert(location + i);
+                    lastLocation = location + locationSize;
                 }
             }
-            if (!found) {
-                TString errmsg;
-                errmsg.append("Input '");
-                if (nextStageSymbol->getType().getBasicType() == EbtBlock)
-                    errmsg.append(nextStageSymbol->getType().getTypeName());
-                else
-                    errmsg.append(nextStageSymbol->getName());
-                errmsg.append("' in ").append(StageName(unit.getStage()));
-                errmsg.append(" shader has no corresponding output in ").append(StageName(getStage())).append(" shader.");
-                error(infoSink, errmsg.c_str(), unit.getStage());
-            }
+        } else {
+            int locationSize = TIntermediate::computeTypeLocationSize(output->getAsSymbolNode()->getType(), getStage());
+            for (int i = 0; i < locationSize; ++i)
+                outputLocations.insert(output->getAsSymbolNode()->getQualifier().layoutLocation + i);
         }
     }
+
+    // remove unitStage inputs with matching outputs in the current stage
+    auto liveEnd = std::remove_if(
+        unitLiveInputs.begin(), unitLiveInputs.end(), [this, &allOutputs, &outputLocations](TIntermNode* input) {
+            // ignore built-ins
+            if (input->getAsSymbolNode()->getAccessName().compare(0, 3, "gl_") == 0)
+                return true;
+            // try to match by location
+            if (input->getAsSymbolNode()->getQualifier().hasLocation() &&
+                outputLocations.find(input->getAsSymbolNode()->getQualifier().layoutLocation) != outputLocations.end())
+                return true;
+            if (input->getAsSymbolNode()->getBasicType() == EbtBlock) {
+                int lastLocation = -1;
+                if (input->getAsSymbolNode()->getQualifier().hasLocation())
+                    lastLocation = input->getAsSymbolNode()->getQualifier().layoutLocation;
+                const TTypeList* members = input->getAsSymbolNode()->getType().getStruct();
+                for (auto& member : *members) {
+                    int location = lastLocation;
+                    if (member.type->getQualifier().hasLocation())
+                        location = member.type->getQualifier().layoutLocation;
+                    if (location != -1) {
+                        int locationSize = TIntermediate::computeTypeLocationSize(*member.type, getStage());
+                        for (int i = 0; i < locationSize; ++i)
+                            if (outputLocations.find(location + i) != outputLocations.end())
+                                return true;
+                        lastLocation = location + locationSize;
+                    }
+                }
+            }
+            // otherwise, try to match by name
+            return std::any_of(allOutputs.begin(), allOutputs.end(), [input](TIntermNode* output) {
+                return output->getAsSymbolNode()->getAccessName() == input->getAsSymbolNode()->getAccessName();
+            });
+        });
+    unitLiveInputs.resize(liveEnd - unitLiveInputs.begin());
+
+    // check remaining loose unitStage inputs for a matching output block member
+    liveEnd = std::remove_if(unitLiveInputs.begin(), unitLiveInputs.end(), [&allOutputs](TIntermNode* input) {
+        return std::any_of(allOutputs.begin(), allOutputs.end(), [input](TIntermNode* output) {
+            if (output->getAsSymbolNode()->getBasicType() != EbtBlock)
+                return false;
+            const TTypeList* members = output->getAsSymbolNode()->getType().getStruct();
+            return std::any_of(members->begin(), members->end(), [input](TTypeLoc type) {
+                return type.type->getFieldName() == input->getAsSymbolNode()->getName();
+            });
+        });
+    });
+    unitLiveInputs.resize(liveEnd - unitLiveInputs.begin());
+
+    // finally, check remaining unitStage block inputs for a matching loose output
+    liveEnd = std::remove_if(
+        unitLiveInputs.begin(), unitLiveInputs.end(), [&allOutputs](TIntermNode* input) {
+            if (input->getAsSymbolNode()->getBasicType() != EbtBlock)
+                return false;
+            // liveness isn't tracked per member so finding any one live member is the best we can do
+            const TTypeList* members = input->getAsSymbolNode()->getType().getStruct();
+            return std::any_of(members->begin(), members->end(), [allOutputs](TTypeLoc type) {
+                return std::any_of(allOutputs.begin(), allOutputs.end(), [&type](TIntermNode* output) {
+                    return type.type->getFieldName() == output->getAsSymbolNode()->getName();
+                });
+            });
+        });
+    unitLiveInputs.resize(liveEnd - unitLiveInputs.begin());
+
+    // any remaining unitStage inputs have no matching output
+    std::for_each(unitLiveInputs.begin(), unitLiveInputs.end(), [&](TIntermNode* input) {
+        unit.error(infoSink, &input->getLoc(), messages,
+                   "Preceding stage has no matching declaration for statically used input:", getStage());
+        infoSink.info << "    "
+                      << input->getAsSymbolNode()->getType().getCompleteString(
+                             true, true, false, true, input->getAsSymbolNode()->getAccessName())
+                      << "\n";
+    });
+
+    // TODO: warn about statically read inputs with outputs declared but not written to
+}
+
+void TIntermediate::optimizeStageIO(TInfoSink&, TIntermediate& unit)
+{
+    // don't do any input/output demotion on compute, raytracing, or task/mesh stages
+    // TODO: support task/mesh
+    if (getStage() > EShLangFragment || unit.getStage() > EShLangFragment) {
+        return;
+    }
+
+    class TIOTraverser : public TLiveTraverser {
+    public:
+        TIOTraverser(TIntermediate& i, bool all, TIntermSequence& sequence, TStorageQualifier storage)
+            : TLiveTraverser(i, all, true, false, false), sequence(sequence), storage(storage)
+        {
+        }
+
+        virtual void visitSymbol(TIntermSymbol* symbol)
+        {
+            if (symbol->getQualifier().storage == storage) {
+                sequence.push_back(symbol);
+            }
+        }
+
+    private:
+        TIntermSequence& sequence;
+        TStorageQualifier storage;
+    };
+
+    // live symbols only
+    TIntermSequence unitLiveInputs;
+
+    TIOTraverser unitTraverser(unit, false, unitLiveInputs, EvqVaryingIn);
+    unitTraverser.pushFunction(unit.getEntryPointMangledName().c_str());
+    while (! unitTraverser.destinations.empty()) {
+        TIntermNode* destination = unitTraverser.destinations.back();
+        unitTraverser.destinations.pop_back();
+        destination->traverse(&unitTraverser);
+    }
+
+    TIntermSequence allOutputs;
+    TIntermSequence unitAllInputs;
+
+    TIOTraverser allTraverser(*this, true, allOutputs, EvqVaryingOut);
+    getTreeRoot()->traverse(&allTraverser);
+
+    TIOTraverser unitAllTraverser(unit, true, unitAllInputs, EvqVaryingIn);
+    unit.getTreeRoot()->traverse(&unitAllTraverser);
+
+    // find outputs not consumed by the next stage
+    std::for_each(allOutputs.begin(), allOutputs.end(), [&unitLiveInputs, &unitAllInputs](TIntermNode* output) {
+        // don't do anything to builtins
+        if (output->getAsSymbolNode()->getAccessName().compare(0, 3, "gl_") == 0)
+            return;
+
+        // don't demote block outputs (for now)
+        if (output->getAsSymbolNode()->getBasicType() == EbtBlock)
+            return;
+
+        // check if the (loose) output has a matching loose input
+        auto isMatchingInput = [output](TIntermNode* input) {
+            return output->getAsSymbolNode()->getAccessName() == input->getAsSymbolNode()->getAccessName();
+        };
+
+        // check if the (loose) output has a matching block member input
+        auto isMatchingInputBlockMember = [output](TIntermNode* input) {
+            // ignore loose inputs
+            if (input->getAsSymbolNode()->getBasicType() != EbtBlock)
+                return false;
+
+            // don't demote loose outputs with matching input block members
+            auto isMatchingBlockMember = [output](TTypeLoc type) {
+                return type.type->getFieldName() == output->getAsSymbolNode()->getName();
+            };
+            const TTypeList* members = input->getAsSymbolNode()->getType().getStruct();
+            return std::any_of(members->begin(), members->end(), isMatchingBlockMember);
+        };
+
+        // determine if the input/output pair should be demoted
+        // do the faster (and more likely) loose-loose check first
+        if (std::none_of(unitLiveInputs.begin(), unitLiveInputs.end(), isMatchingInput) && 
+            std::none_of(unitAllInputs.begin(), unitAllInputs.end(), isMatchingInputBlockMember)) {
+            // demote any input matching the output
+            auto demoteMatchingInputs = [output](TIntermNode* input) {
+                if (output->getAsSymbolNode()->getAccessName() == input->getAsSymbolNode()->getAccessName()) {
+                    // demote input to a plain variable
+                    TIntermSymbol* symbol = input->getAsSymbolNode();
+                    symbol->getQualifier().storage = EvqGlobal;
+                    symbol->getQualifier().clearInterstage();
+                    symbol->getQualifier().clearLayout();
+                }
+            };
+
+            // demote all matching outputs to a plain variable
+            TIntermSymbol* symbol = output->getAsSymbolNode();
+            symbol->getQualifier().storage = EvqGlobal;
+            symbol->getQualifier().clearInterstage();
+            symbol->getQualifier().clearLayout();
+            std::for_each(unitAllInputs.begin(), unitAllInputs.end(), demoteMatchingInputs);
+        }
+    });
 }
 
 void TIntermediate::mergeCallGraphs(TInfoSink& infoSink, TIntermediate& unit)
@@ -313,6 +600,7 @@ void TIntermediate::mergeModes(TInfoSink& infoSink, TIntermediate& unit)
     MERGE_TRUE(nonCoherentColorAttachmentReadEXT);
     MERGE_TRUE(nonCoherentDepthAttachmentReadEXT);
     MERGE_TRUE(nonCoherentStencilAttachmentReadEXT);
+    MERGE_TRUE(nonCoherentTileAttachmentReadQCOM);
 
     if (depthLayout == EldNone)
         depthLayout = unit.depthLayout;
@@ -647,10 +935,10 @@ void TIntermediate::mergeBlockDefinitions(TInfoSink& infoSink, TIntermSymbol* bl
                 // don't need as many checks as when merging symbols, since
                 // initializers and most qualifiers are stripped when the member is moved into the block
                 if ((*memberType) != (*unitMemberType)) {
-                    error(infoSink, "Types must match:");
+                    error(infoSink, "Types must match:", unitBlock->getStage());
                     infoSink.info << "    " << memberType->getFieldName() << ": ";
-                    infoSink.info << "\"" << memberType->getCompleteString() << "\" versus ";
-                    infoSink.info << "\"" << unitMemberType->getCompleteString() << "\"\n";
+                    infoSink.info << "\"" << memberType->getCompleteString() << "\" in stage " << StageName(block->getStage()) << " versus ";
+                    infoSink.info << "\"" << unitMemberType->getCompleteString() << "\" in stage " << StageName(unitBlock->getStage()) << "\n";
                 }
 
                 memberIndexUpdates[i] = j;
@@ -743,18 +1031,13 @@ void TIntermediate::mergeLinkerObjects(TInfoSink& infoSink, TIntermSequence& lin
     // Error check and merge the linker objects (duplicates should not be created)
     std::size_t initialNumLinkerObjects = linkerObjects.size();
     for (unsigned int unitLinkObj = 0; unitLinkObj < unitLinkerObjects.size(); ++unitLinkObj) {
-        TIntermSymbol* unitSymbol = unitLinkerObjects[unitLinkObj]->getAsSymbolNode();
         bool merge = true;
-
-        // Don't merge inputs backwards into previous stages
-        if (getStage() != unitStage && unitSymbol->getQualifier().storage == EvqVaryingIn)
-            merge = false;
-
         for (std::size_t linkObj = 0; linkObj < initialNumLinkerObjects; ++linkObj) {
             TIntermSymbol* symbol = linkerObjects[linkObj]->getAsSymbolNode();
+            TIntermSymbol* unitSymbol = unitLinkerObjects[unitLinkObj]->getAsSymbolNode();
             assert(symbol && unitSymbol);
 
-            if (isSameSymbol(symbol, getStage(), unitSymbol, unitStage)) {
+            if (isSameSymbol(symbol, unitSymbol)) {
                 // filter out copy
                 merge = false;
 
@@ -780,18 +1063,39 @@ void TIntermediate::mergeLinkerObjects(TInfoSink& infoSink, TIntermSequence& lin
                 }
                 else if (symbol->getWritableType().isImplicitlySizedArray() && unitSymbol->getType().isSizedArray()) {
                     if (symbol->getWritableType().getImplicitArraySize() > unitSymbol->getType().getOuterArraySize())
-                        error(infoSink, "Implicit size of unsized array doesn't match same symbol among multiple shaders.");
+                        error(infoSink, "Implicit size of unsized array doesn't match same symbol among multiple shaders.", unitStage);
                 }
                 else if (unitSymbol->getType().isImplicitlySizedArray() && symbol->getWritableType().isSizedArray()) {
                     if (unitSymbol->getType().getImplicitArraySize() > symbol->getWritableType().getOuterArraySize())
-                        error(infoSink, "Implicit size of unsized array doesn't match same symbol among multiple shaders.");
+                        error(infoSink, "Implicit size of unsized array doesn't match same symbol among multiple shaders.", unitStage);
+                }
+
+                if (symbol->getType().isStruct() && unitSymbol->getType().isStruct() &&
+                    symbol->getType().getStruct()->size() == unitSymbol->getType().getStruct()->size()) {
+                    for (int i = 0; i < (int)symbol->getType().getStruct()->size(); ++i) {
+                        auto& type = (*symbol->getWritableType().getStruct())[i];
+                        auto& unitType = (*unitSymbol->getWritableType().getStruct())[i];
+
+                        if (type.type->isImplicitlySizedArray() && unitType.type->isImplicitlySizedArray()) {
+                            if (unitType.type->getImplicitArraySize() > type.type->getImplicitArraySize())
+                                type.type->updateImplicitArraySize(unitType.type->getImplicitArraySize());
+                        }
+                        else if (type.type->isImplicitlySizedArray() && unitType.type->isSizedArray()) {
+                            if (type.type->getImplicitArraySize() > unitType.type->getOuterArraySize())
+                                error(infoSink, "Implicit size of unsized array doesn't match same symbol among multiple shaders.", unitStage);
+                        }
+                        else if (type.type->isSizedArray() && unitType.type->isImplicitlySizedArray()) {
+                            if (type.type->getOuterArraySize() < unitType.type->getImplicitArraySize())
+                                error(infoSink, "Implicit size of unsized array doesn't match same symbol among multiple shaders.", unitStage);
+                        }
+                    }
                 }
 
                 // Update implicit array sizes
                 mergeImplicitArraySizes(symbol->getWritableType(), unitSymbol->getType());
 
                 // Check for consistent types/qualification/initializers etc.
-                mergeErrorCheck(infoSink, *symbol, *unitSymbol, unitStage);
+                mergeErrorCheck(infoSink, *symbol, *unitSymbol);
             }
             // If different symbols, verify they arn't push_constant since there can only be one per stage
             else if (symbol->getQualifier().isPushConstant() && unitSymbol->getQualifier().isPushConstant() && getStage() == unitStage)
@@ -833,7 +1137,7 @@ void TIntermediate::mergeLinkerObjects(TInfoSink& infoSink, TIntermSequence& lin
                         }
                     };
 
-                    if (isSameInterface(symbol, getStage(), unitSymbol, unitStage)) {
+                    if (isSameInterface(symbol, unitSymbol)) {
                         checkName(symbol->getName());
 
                         // check members of other anonymous blocks
@@ -877,9 +1181,11 @@ void TIntermediate::mergeImplicitArraySizes(TType& type, const TType& unitType)
 //
 // This function only does one of intra- or cross-stage matching per call.
 //
-void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& symbol, const TIntermSymbol& unitSymbol, EShLanguage unitStage)
+void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& symbol, const TIntermSymbol& unitSymbol)
 {
-    bool crossStage = getStage() != unitStage;
+    EShLanguage stage = symbol.getStage();
+    EShLanguage unitStage = unitSymbol.getStage();
+    bool crossStage = stage != unitStage;
     bool writeTypeComparison = false;
     bool errorReported = false;
     bool printQualifiers = false;
@@ -891,10 +1197,10 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
         // but, we make an exception if one is an implicit array and the other is sized
         // or if the array sizes differ because of the extra array dimension on some in/out boundaries
         bool arraysMatch = false;
-        if (isIoResizeArray(symbol.getType(), getStage()) || isIoResizeArray(unitSymbol.getType(), unitStage)) {
+        if (isIoResizeArray(symbol.getType(), stage) || isIoResizeArray(unitSymbol.getType(), unitStage)) {
             // if the arrays have an extra dimension because of the stage.
             // compare dimensions while ignoring the outer dimension
-            unsigned int firstDim = isIoResizeArray(symbol.getType(), getStage()) ? 1 : 0;
+            unsigned int firstDim = isIoResizeArray(symbol.getType(), stage) ? 1 : 0;
             unsigned int numDim = symbol.getArraySizes()
                 ? symbol.getArraySizes()->getNumDims() : 0;
             unsigned int unitFirstDim = isIoResizeArray(unitSymbol.getType(), unitStage) ? 1 : 0;
@@ -923,7 +1229,7 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
             if (lpidx >= 0 && rpidx >= 0) {
                 error(infoSink, "Member names and types must match:", unitStage);
                 infoSink.info << "    Block: " << symbol.getType().getTypeName() << "\n";
-                infoSink.info << "        " << StageName(getStage()) << " stage: \""
+                infoSink.info << "        " << StageName(stage) << " stage: \""
                               << (*symbol.getType().getStruct())[lpidx].type->getCompleteString(true, false, false, true,
                                       (*symbol.getType().getStruct())[lpidx].type->getFieldName()) << "\"\n";
                 infoSink.info << "        " << StageName(unitStage) << " stage: \""
@@ -931,20 +1237,20 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
                                       (*unitSymbol.getType().getStruct())[rpidx].type->getFieldName()) << "\"\n";
                 errorReported = true;
             } else if (lpidx >= 0 && rpidx == -1) {
-                  TString errmsg = StageName(getStage());
+                  TString errmsg = StageName(stage);
                   errmsg.append(" block member has no corresponding member in ").append(StageName(unitStage)).append(" block:");
                   error(infoSink, errmsg.c_str(), unitStage);
-                  infoSink.info << "    " << StageName(getStage()) << " stage: Block: " << symbol.getType().getTypeName() << ", Member: "
+                  infoSink.info << "    " << StageName(stage) << " stage: Block: " << symbol.getType().getTypeName() << ", Member: "
                     << (*symbol.getType().getStruct())[lpidx].type->getFieldName() << "\n";
                   infoSink.info << "    " << StageName(unitStage) << " stage: Block: " << unitSymbol.getType().getTypeName() << ", Member: n/a \n";
                   errorReported = true;
             } else if (lpidx == -1 && rpidx >= 0) {
                   TString errmsg = StageName(unitStage);
-                  errmsg.append(" block member has no corresponding member in ").append(StageName(getStage())).append(" block:");
+                  errmsg.append(" block member has no corresponding member in ").append(StageName(stage)).append(" block:");
                   error(infoSink, errmsg.c_str(), unitStage);
                   infoSink.info << "    " << StageName(unitStage) << " stage: Block: " << unitSymbol.getType().getTypeName() << ", Member: "
                     << (*unitSymbol.getType().getStruct())[rpidx].type->getFieldName() << "\n";
-                  infoSink.info << "    " << StageName(getStage()) << " stage: Block: " << symbol.getType().getTypeName() << ", Member: n/a \n";
+                  infoSink.info << "    " << StageName(stage) << " stage: Block: " << symbol.getType().getTypeName() << ", Member: n/a \n";
                   errorReported = true;
             } else {
                   error(infoSink, "Types must match:", unitStage);
@@ -1001,7 +1307,7 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
                 layoutQualifierError = true;
             }
             if (layoutQualifierError) {
-                infoSink.info << "    " << StageName(getStage()) << " stage: Block: " << symbol.getType().getTypeName() << ", Member: "
+                infoSink.info << "    " << StageName(stage) << " stage: Block: " << symbol.getType().getTypeName() << ", Member: "
                               << (*symbol.getType().getStruct())[li].type->getFieldName() << " \""
                               << (*symbol.getType().getStruct())[li].type->getCompleteString(true, true, false, false) << "\"\n";
                 infoSink.info << "    " << StageName(unitStage) << " stage: Block: " << unitSymbol.getType().getTypeName() << ", Member: "
@@ -1113,6 +1419,10 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
         error(infoSink, "Memory volatil qualifier must match:", unitStage);
         memoryQualifierError = true;
     }
+    if (symbol.getQualifier().nontemporal != unitSymbol.getQualifier().nontemporal) {
+        error(infoSink, "Memory nontemporal qualifier must match:", unitStage);
+        memoryQualifierError = true;
+    }
     if (symbol.getQualifier().restrict != unitSymbol.getQualifier().restrict) {
         error(infoSink, "Memory restrict qualifier must match:", unitStage);
         memoryQualifierError = true;
@@ -1182,24 +1492,24 @@ void TIntermediate::mergeErrorCheck(TInfoSink& infoSink, const TIntermSymbol& sy
         if (symbol.getType().getBasicType() == EbtBlock && unitSymbol.getType().getBasicType() == EbtBlock &&
             symbol.getType().getStruct() && unitSymbol.getType().getStruct()) {
           if (printType) {
-            infoSink.info << "    " << StageName(getStage()) << " stage: \"" << symbol.getType().getCompleteString(true, printQualifiers, printPrecision,
+            infoSink.info << "    " << StageName(stage) << " stage: \"" << symbol.getType().getCompleteString(true, printQualifiers, printPrecision,
                                                     printType, symbol.getName(), symbol.getType().getTypeName()) << "\"\n";
             infoSink.info << "    " << StageName(unitStage) << " stage: \"" << unitSymbol.getType().getCompleteString(true, printQualifiers, printPrecision,
                                                     printType, unitSymbol.getName(), unitSymbol.getType().getTypeName()) << "\"\n";
           } else {
-            infoSink.info << "    " << StageName(getStage()) << " stage: Block: " << symbol.getType().getTypeName() << " Instance: " << symbol.getName()
+            infoSink.info << "    " << StageName(stage) << " stage: Block: " << symbol.getType().getTypeName() << " Instance: " << symbol.getName()
               << ": \"" << symbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType) << "\"\n";
             infoSink.info << "    " << StageName(unitStage) << " stage: Block: " << unitSymbol.getType().getTypeName() << " Instance: " << unitSymbol.getName()
               << ": \"" << unitSymbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType) << "\"\n";
           }
         } else {
           if (printType) {
-            infoSink.info << "    " << StageName(getStage()) << " stage: \""
+            infoSink.info << "    " << StageName(stage) << " stage: \""
               << symbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType, symbol.getName()) << "\"\n";
             infoSink.info << "    " << StageName(unitStage) << " stage: \""
               << unitSymbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType, unitSymbol.getName()) << "\"\n";
           } else {
-            infoSink.info << "    " << StageName(getStage()) << " stage: " << symbol.getName() << " \""
+            infoSink.info << "    " << StageName(stage) << " stage: " << symbol.getName() << " \""
               << symbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType) << "\"\n";
             infoSink.info << "    " << StageName(unitStage) << " stage: " << unitSymbol.getName() << " \""
               << unitSymbol.getType().getCompleteString(true, printQualifiers, printPrecision, printType) << "\"\n";
@@ -1231,7 +1541,8 @@ void TIntermediate::sharedBlockCheck(TInfoSink& infoSink)
 // Do final link-time error checking of a complete (merged) intermediate representation.
 // (Much error checking was done during merging).
 //
-// Also, lock in defaults of things not set, including array sizes.
+// Also, lock in defaults of things not set.
+// Defer adopting implicit array sizes to later, after all stages are merged.
 //
 void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
 {
@@ -1392,23 +1703,6 @@ void TIntermediate::finalCheck(TInfoSink& infoSink, bool keepUncalled)
         error(infoSink, "Unknown Stage.");
         break;
     }
-
-    // Process the tree for any node-specific work.
-    class TFinalLinkTraverser : public TIntermTraverser {
-    public:
-        TFinalLinkTraverser() { }
-        virtual ~TFinalLinkTraverser() { }
-
-        virtual void visitSymbol(TIntermSymbol* symbol)
-        {
-            // Implicitly size arrays.
-            // If an unsized array is left as unsized, it effectively
-            // becomes run-time sized.
-            symbol->getWritableType().adoptImplicitArraySizes(false);
-        }
-    } finalLinkTraverser;
-
-    treeRoot->traverse(&finalLinkTraverser);
 }
 
 //
@@ -2091,6 +2385,9 @@ int TIntermediate::getBaseAlignmentScalar(const TType& type, int& size)
     case EbtUint64:
     case EbtDouble:  size = 8; return 8;
     case EbtFloat16: size = 2; return 2;
+    case EbtBFloat16: size = 2; return 2;
+    case EbtFloatE5M2:
+    case EbtFloatE4M3:
     case EbtInt8:
     case EbtUint8:   size = 1; return 1;
     case EbtInt16:

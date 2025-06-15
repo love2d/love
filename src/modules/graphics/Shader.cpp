@@ -1253,7 +1253,7 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 			program.addShader(stages[i]->getGLSLangValidationShader());
 	}
 
-	if (!program.link((EShMessages)(EshMsgCrossStageIO | EshMsgOverlappingLocations)))
+	if (!program.link((EShMessages)(EShMsgValidateCrossStageIO | EshMsgOverlappingLocations)))
 	{
 		err = "Cannot compile shader:\n\n" + std::string(program.getInfoLog()) + "\n" + std::string(program.getInfoDebugLog());
 		return false;

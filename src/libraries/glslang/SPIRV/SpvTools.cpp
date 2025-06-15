@@ -71,6 +71,8 @@ spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLog
         return spv_target_env::SPV_ENV_VULKAN_1_2;
     case glslang::EShTargetVulkan_1_3:
         return spv_target_env::SPV_ENV_VULKAN_1_3;
+    case glslang::EShTargetVulkan_1_4:
+        return spv_target_env::SPV_ENV_VULKAN_1_4;
     default:
         break;
     }
@@ -80,6 +82,11 @@ spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLog
 
     logger->missingFunctionality("Target version for SPIRV-Tools validator");
     return spv_target_env::SPV_ENV_UNIVERSAL_1_0;
+}
+
+spv_target_env MapToSpirvToolsEnv(const glslang::TIntermediate& intermediate, spv::SpvBuildLogger* logger)
+{
+    return MapToSpirvToolsEnv(intermediate.getSpv(), logger);
 }
 
 // Callback passed to spvtools::Optimizer::SetMessageConsumer
@@ -158,6 +165,7 @@ void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<
     spvValidatorOptionsSetBeforeHlslLegalization(options, prelegalization);
     spvValidatorOptionsSetScalarBlockLayout(options, intermediate.usingScalarBlockLayout());
     spvValidatorOptionsSetWorkgroupScalarBlockLayout(options, intermediate.usingScalarBlockLayout());
+    spvValidatorOptionsSetAllowOffsetTextureOperand(options, intermediate.usingTextureOffsetNonConst());
     spvValidateWithOptions(context, options, &binary, &diagnostic);
 
     // report
@@ -304,6 +312,6 @@ void SpirvToolsStripDebugInfo(const glslang::TIntermediate& intermediate,
     optimizer.Run(spirv.data(), spirv.size(), &spirv, spvOptOptions);
 }
 
-}; // end namespace glslang
+} // end namespace glslang
 
 #endif

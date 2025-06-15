@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2014-2015 LunarG, Inc.
+// Copyright (C) 2023 LunarG, Inc.
 //
 // All rights reserved.
 //
@@ -31,25 +31,24 @@
 // LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-
 //
-// Disassembler for SPIR-V.
-//
+#ifdef GLSLANG_IS_SHARED_LIBRARY
+    #ifdef _WIN32
+        #ifdef GLSLANG_EXPORTING
+            #define GLSLANG_EXPORT __declspec(dllexport)
+        #else
+            #define GLSLANG_EXPORT __declspec(dllimport)
+        #endif
+    #elif __GNUC__ >= 4
+        #define GLSLANG_EXPORT __attribute__((visibility("default")))
+    #endif
+#endif // GLSLANG_IS_SHARED_LIBRARY
 
-#pragma once
-#ifndef disassembler_H
-#define disassembler_H
+#ifndef GLSLANG_EXPORT
+#define GLSLANG_EXPORT
+#endif
 
-#include <iostream>
-#include <vector>
-
-#include "../glslang/Include/visibility.h"
-
-namespace spv {
-
-    // disassemble with glslang custom disassembler
-    GLSLANG_EXPORT void Disassemble(std::ostream& out, const std::vector<unsigned int>&);
-
-}  // end namespace spv
-
-#endif // disassembler_H
+// Symbols marked with this macro are only meant for public use by the test suite
+// and do not appear in publicly installed headers. They are not considered to be
+// part of the glslang library ABI.
+#define GLSLANG_EXPORT_FOR_TESTS GLSLANG_EXPORT

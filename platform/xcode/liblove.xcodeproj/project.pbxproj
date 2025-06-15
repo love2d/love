@@ -50,6 +50,9 @@
 		217DFC101D9F6D490055D849 /* url.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD41D9F6D490055D849 /* url.lua.h */; };
 		217DFC111D9F6D490055D849 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		217DFC121D9F6D490055D849 /* usocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD61D9F6D490055D849 /* usocket.h */; };
+		D91C76122DE3D088001FC408 /* spvUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = D91C76112DE3D088001FC408 /* spvUtil.h */; };
+		D91C76132DE3D088001FC408 /* spirv.hpp11 in Resources */ = {isa = PBXBuildFile; fileRef = D91C76102DE3D088001FC408 /* spirv.hpp11 */; };
+		D91C76152DE3D0A2001FC408 /* visibility.h in Headers */ = {isa = PBXBuildFile; fileRef = D91C76142DE3D0A2001FC408 /* visibility.h */; };
 		D923E7D3296B85B9002FF1B3 /* harfbuzz.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */; };
 		D93660F82D1C727C00C0EC4B /* Touch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D93660F72D1C727C00C0EC4B /* Touch.cpp */; };
 		D93660F92D1C727C00C0EC4B /* Touch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D93660F72D1C727C00C0EC4B /* Touch.cpp */; };
@@ -1317,7 +1320,6 @@
 		FAF6C9E223C2DE2900D7B5BC /* InReadableOrder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF6C9C623C2DE2900D7B5BC /* InReadableOrder.cpp */; };
 		FAF6C9E323C2DE2900D7B5BC /* GLSL.ext.AMD.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF6C9C723C2DE2900D7B5BC /* GLSL.ext.AMD.h */; };
 		FAF6C9E423C2DE2900D7B5BC /* doc.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF6C9C823C2DE2900D7B5BC /* doc.h */; };
-		FAF6C9E523C2DE2900D7B5BC /* spirv.hpp in Headers */ = {isa = PBXBuildFile; fileRef = FAF6C9C923C2DE2900D7B5BC /* spirv.hpp */; };
 		FAF6C9E623C2DE2900D7B5BC /* SpvBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF6C9CA23C2DE2900D7B5BC /* SpvBuilder.cpp */; };
 		FAF6C9E723C2DE2900D7B5BC /* SpvBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FAF6C9CA23C2DE2900D7B5BC /* SpvBuilder.cpp */; };
 		FAF6C9E823C2DE2900D7B5BC /* GLSL.ext.EXT.h in Headers */ = {isa = PBXBuildFile; fileRef = FAF6C9CB23C2DE2900D7B5BC /* GLSL.ext.EXT.h */; };
@@ -1414,6 +1416,9 @@
 		217DFBD41D9F6D490055D849 /* url.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = url.lua.h; sourceTree = "<group>"; };
 		217DFBD51D9F6D490055D849 /* usocket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = usocket.c; sourceTree = "<group>"; };
 		217DFBD61D9F6D490055D849 /* usocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = usocket.h; sourceTree = "<group>"; };
+		D91C76102DE3D088001FC408 /* spirv.hpp11 */ = {isa = PBXFileReference; lastKnownFileType = text; path = spirv.hpp11; sourceTree = "<group>"; };
+		D91C76112DE3D088001FC408 /* spvUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = spvUtil.h; sourceTree = "<group>"; };
+		D91C76142DE3D0A2001FC408 /* visibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = visibility.h; sourceTree = "<group>"; };
 		D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = harfbuzz.xcframework; path = ios/libraries/harfbuzz.xcframework; sourceTree = "<group>"; };
 		D93660F72D1C727C00C0EC4B /* Touch.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Touch.cpp; sourceTree = "<group>"; };
 		D943E58C2A24D56000D80361 /* PhysfsIo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PhysfsIo.cpp; sourceTree = "<group>"; };
@@ -2296,7 +2301,6 @@
 		FAF6C9C623C2DE2900D7B5BC /* InReadableOrder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InReadableOrder.cpp; sourceTree = "<group>"; };
 		FAF6C9C723C2DE2900D7B5BC /* GLSL.ext.AMD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLSL.ext.AMD.h; sourceTree = "<group>"; };
 		FAF6C9C823C2DE2900D7B5BC /* doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = doc.h; sourceTree = "<group>"; };
-		FAF6C9C923C2DE2900D7B5BC /* spirv.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = spirv.hpp; sourceTree = "<group>"; };
 		FAF6C9CA23C2DE2900D7B5BC /* SpvBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpvBuilder.cpp; sourceTree = "<group>"; };
 		FAF6C9CB23C2DE2900D7B5BC /* GLSL.ext.EXT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLSL.ext.EXT.h; sourceTree = "<group>"; };
 		FAF6C9CC23C2DE2900D7B5BC /* GLSL.ext.KHR.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLSL.ext.KHR.h; sourceTree = "<group>"; };
@@ -3959,6 +3963,7 @@
 				FAF13FD01E20934C00F898D2 /* ShHandle.h */,
 				FA84DE5D2778D7DB002674C6 /* SpirvIntrinsics.h */,
 				FAF13FD11E20934C00F898D2 /* Types.h */,
+				D91C76142DE3D0A2001FC408 /* visibility.h */,
 			);
 			path = Include;
 			sourceTree = "<group>";
@@ -4056,10 +4061,10 @@
 			isa = PBXGroup;
 			children = (
 				FAF6C9D023C2DE2900D7B5BC /* bitutils.h */,
-				FAF6C9D923C2DE2900D7B5BC /* disassemble.cpp */,
 				FAF6C9D123C2DE2900D7B5BC /* disassemble.h */,
-				FAF6C9D823C2DE2900D7B5BC /* doc.cpp */,
+				FAF6C9D923C2DE2900D7B5BC /* disassemble.cpp */,
 				FAF6C9C823C2DE2900D7B5BC /* doc.h */,
+				FAF6C9D823C2DE2900D7B5BC /* doc.cpp */,
 				FAF6C9C723C2DE2900D7B5BC /* GLSL.ext.AMD.h */,
 				D9DB6E3A2B4B41570037A1F6 /* GLSL.ext.ARM.h */,
 				FAF6C9CB23C2DE2900D7B5BC /* GLSL.ext.EXT.h */,
@@ -4067,23 +4072,24 @@
 				FAF6C9CD23C2DE2900D7B5BC /* GLSL.ext.NV.h */,
 				D9DB6E3B2B4B41580037A1F6 /* GLSL.ext.QCOM.h */,
 				FAF6C9D323C2DE2900D7B5BC /* GLSL.std.450.h */,
-				FAF6C9CE23C2DE2900D7B5BC /* GlslangToSpv.cpp */,
 				FAF6C9D223C2DE2900D7B5BC /* GlslangToSpv.h */,
+				FAF6C9CE23C2DE2900D7B5BC /* GlslangToSpv.cpp */,
 				FAF6C9D623C2DE2900D7B5BC /* hex_float.h */,
 				FAF6C9C623C2DE2900D7B5BC /* InReadableOrder.cpp */,
-				FAF6C9D523C2DE2900D7B5BC /* Logger.cpp */,
 				FAF6C9D723C2DE2900D7B5BC /* Logger.h */,
+				FAF6C9D523C2DE2900D7B5BC /* Logger.cpp */,
 				D9DB6E382B4B41570037A1F6 /* NonSemanticDebugPrintf.h */,
 				D9DB6E392B4B41570037A1F6 /* NonSemanticShaderDebugInfo100.h */,
-				FAF6C9C923C2DE2900D7B5BC /* spirv.hpp */,
-				FAF6C9CA23C2DE2900D7B5BC /* SpvBuilder.cpp */,
+				D91C76102DE3D088001FC408 /* spirv.hpp11 */,
 				FAF6C9C223C2DE2900D7B5BC /* SpvBuilder.h */,
+				FAF6C9CA23C2DE2900D7B5BC /* SpvBuilder.cpp */,
 				FAF6C9CF23C2DE2900D7B5BC /* spvIR.h */,
 				FAF6C9C323C2DE2900D7B5BC /* SpvPostProcess.cpp */,
-				FAF6C9D423C2DE2900D7B5BC /* SPVRemapper.cpp */,
 				FAF6C9C123C2DE2900D7B5BC /* SPVRemapper.h */,
-				FAF6C9C523C2DE2900D7B5BC /* SpvTools.cpp */,
+				FAF6C9D423C2DE2900D7B5BC /* SPVRemapper.cpp */,
 				FAF6C9C423C2DE2900D7B5BC /* SpvTools.h */,
+				FAF6C9C523C2DE2900D7B5BC /* SpvTools.cpp */,
+				D91C76112DE3D088001FC408 /* spvUtil.h */,
 			);
 			path = SPIRV;
 			sourceTree = "<group>";
@@ -4204,7 +4210,6 @@
 				FA0B7EDE1A95902D000E1D17 /* Touch.h in Headers */,
 				FAC7CD861FE35E95006A60C7 /* physfs.h in Headers */,
 				D9DAB92C2961F10000C64820 /* TextShaper.h in Headers */,
-				FAF6C9E523C2DE2900D7B5BC /* spirv.hpp in Headers */,
 				FA522D4F23F9FE380059EE3C /* MP3Decoder.h in Headers */,
 				217DFBEE1D9F6D490055D849 /* luasocket.h in Headers */,
 				FACA02F31F5E396B0084B28F /* HashFunction.h in Headers */,
@@ -4268,6 +4273,7 @@
 				FA0B7DAD1A95902C000E1D17 /* STBHandler.h in Headers */,
 				FABDA9BB2552448300B5C523 /* b2_dynamic_tree.h in Headers */,
 				FA1BA0A41E16D97500AA2803 /* wrap_Font.h in Headers */,
+				D91C76122DE3D088001FC408 /* spvUtil.h in Headers */,
 				FA0B7DE11A95902C000E1D17 /* wrap_Math.h in Headers */,
 				FA0B7D1A1A95902C000E1D17 /* TrueTypeRasterizer.h in Headers */,
 				FA0B7EA81A95902C000E1D17 /* wrap_Decoder.h in Headers */,
@@ -4488,6 +4494,7 @@
 				FA0B793D1A958E3B000E1D17 /* runtime.h in Headers */,
 				FAF6C9E323C2DE2900D7B5BC /* GLSL.ext.AMD.h in Headers */,
 				FA57FB9A1AE1993600F2AD6D /* noise1234.h in Headers */,
+				D91C76152DE3D0A2001FC408 /* visibility.h in Headers */,
 				FACA02EF1F5E396B0084B28F /* Compressor.h in Headers */,
 				FA0B7CED1A95902C000E1D17 /* Event.h in Headers */,
 				FA0B7D811A95902C000E1D17 /* Volatile.h in Headers */,
@@ -4638,6 +4645,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D91C76132DE3D088001FC408 /* spirv.hpp11 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
