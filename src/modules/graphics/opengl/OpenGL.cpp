@@ -1174,12 +1174,12 @@ bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelform
 {
 	GLenum gltarget = getGLTextureType(target);
 	TextureFormat fmt = convertPixelFormat(pixelformat);
+	bool compressed = isPixelFormatCompressed(pixelformat);
 
 	// This shouldn't be needed for glTexStorage, but some drivers don't follow
 	// the spec apparently.
 	// https://stackoverflow.com/questions/13859061/does-an-immutable-texture-need-a-gl-texture-max-level
-	if (GLAD_VERSION_1_2 || GLAD_ES_VERSION_3_0)
-		glTexParameteri(gltarget, GL_TEXTURE_MAX_LEVEL, levels - 1);
+	glTexParameteri(gltarget, GL_TEXTURE_MAX_LEVEL, levels - 1);
 
 	if (fmt.swizzled)
 	{
@@ -1222,14 +1222,30 @@ bool OpenGL::rawTexStorage(TextureType target, int levels, PixelFormat pixelform
 					if (target == TEXTURE_CUBE)
 						gltarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + face;
 
-					glTexImage2D(gltarget, level, fmt.internalformat, w, h, 0,
-					             fmt.externalformat, fmt.type, nullptr);
+					if (compressed)
+					{
+						size_t mipsize = faces * getPixelFormatSliceSize(pixelformat, w, h);
+						glCompressedTexImage2D(gltarget, level, fmt.internalformat, w, h, 0, mipsize, nullptr);
+					}
+					else
+					{
+						glTexImage2D(gltarget, level, fmt.internalformat, w, h, 0,
+						             fmt.externalformat, fmt.type, nullptr);
+					}
 				}
 			}
 			else if (target == TEXTURE_2D_ARRAY || target == TEXTURE_VOLUME)
 			{
-				glTexImage3D(gltarget, level, fmt.internalformat, w, h, d,
-				             0, fmt.externalformat, fmt.type, nullptr);
+				if (compressed)
+				{
+					size_t mipsize = d * getPixelFormatSliceSize(pixelformat, w, h);
+					glCompressedTexImage3D(gltarget, level, fmt.internalformat, w, h, d, 0, mipsize, nullptr);
+				}
+				else
+				{
+					glTexImage3D(gltarget, level, fmt.internalformat, w, h, d,
+					             0, fmt.externalformat, fmt.type, nullptr);
+				}
 			}
 
 			w = std::max(w / 2, 1);

@@ -300,42 +300,14 @@ void Texture::createTexture()
 	else if (texType == TEXTURE_CUBE)
 		slicecount = 6;
 
-	// For a couple flimsy reasons, we don't initialize the texture here if it's
-	// compressed. I need to verify that getPixelFormatSliceSize will return the
-	// correct value for all compressed texture formats, and I also vaguely
-	// remember some driver issues on some old Android systems, maybe...
-	// For now, the base class enforces data on init for compressed textures.
-	if (!isCompressed())
-		gl.rawTexStorage(texType, mipcount, format, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
-
-	// rawTexStorage handles this for uncompressed textures.
-	if (isCompressed())
-		glTexParameteri(gltype, GL_TEXTURE_MAX_LEVEL, mipcount - 1);
+	gl.rawTexStorage(texType, mipcount, format, pixelWidth, pixelHeight, texType == TEXTURE_VOLUME ? depth : layers);
 
 	int w = pixelWidth;
 	int h = pixelHeight;
 	int d = depth;
 
-	OpenGL::TextureFormat fmt = gl.convertPixelFormat(format);
-
 	for (int mip = 0; mip < mipcount; mip++)
 	{
-		if (isCompressed() && (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME))
-		{
-			int slicecount = slices.getSliceCount(mip);
-			size_t mipsize = 0;
-
-			for (int slice = 0; slice < slicecount; slice++)
-			{
-				auto id = slices.get(slice, mip);
-				if (id != nullptr)
-					mipsize += id->getSize();
-			}
-
-			if (mipsize > 0)
-				glCompressedTexImage3D(gltype, mip, fmt.internalformat, w, h, slicecount, 0, mipsize, nullptr);
-		}
-
 		for (int slice = 0; slice < slicecount; slice++)
 		{
 			love::image::ImageDataBase *id = slices.get(slice, mip);
