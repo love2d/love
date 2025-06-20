@@ -460,13 +460,7 @@ void Texture::uploadByteData(const void *data, size_t size, int level, int slice
 	if (isPixelFormatCompressed(format))
 	{
 		if (texType == TEXTURE_2D || texType == TEXTURE_CUBE)
-		{
-			// Possible issues on some very old drivers if TexSubImage is used.
-			if (r.x != 0 || r.y != 0 || r.w != getPixelWidth(level) || r.h != getPixelHeight(level))
-				glCompressedTexSubImage2D(gltarget, level, r.x, r.y, r.w, r.h, fmt.internalformat, size, data);
-			else
-				glCompressedTexImage2D(gltarget, level, fmt.internalformat, r.w, r.h, 0, size, data);
-		}
+			glCompressedTexSubImage2D(gltarget, level, r.x, r.y, r.w, r.h, fmt.internalformat, size, data);
 		else if (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_VOLUME)
 			glCompressedTexSubImage3D(gltarget, level, r.x, r.y, slice, r.w, r.h, 1, fmt.internalformat, size, data);
 	}

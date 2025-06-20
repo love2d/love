@@ -358,7 +358,6 @@ public:
 	/**
 	 * Equivalent to glTexStorage2D/3D on platforms that support it. Equivalent
 	 * to glTexImage2D/3D for all levels and slices of a texture otherwise.
-	 * NOTE: this does not handle compressed texture formats.
 	 **/
 	bool rawTexStorage(TextureType target, int levels, PixelFormat pixelformat, int width, int height, int depth = 1);
 
