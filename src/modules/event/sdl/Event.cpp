@@ -98,7 +98,8 @@ static bool SDLCALL watchAppEvents(void *udata, SDL_Event *event)
 		}
 		break;
 	case SDL_EVENT_WINDOW_EXPOSED:
-		if (eventModule != nullptr && SDL_IsMainThread() && eventModule->allowModalDraws())
+		// Only redraw during live-resize events (data1 is 1 in that situation).
+		if (event->window.data1 == 1 && eventModule != nullptr && SDL_IsMainThread() && eventModule->allowModalDraws())
 			eventModule->modalDraw();
 		break;
 	default:
