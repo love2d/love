@@ -79,6 +79,7 @@ function love.boot()
 
 	love.filesystem.setFused(is_fused_game)
 
+	--关闭游戏本体进入时左下角的日志输出
 	--love.setDeprecationOutput(not love.filesystem.isFused())
 
 	main_file = "main.lua"
