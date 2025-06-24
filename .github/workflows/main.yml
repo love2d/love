@@ -27,6 +27,7 @@ jobs:
                                           libegl1-mesa-dev libibus-1.0-dev fcitx-libs-dev libsamplerate0-dev \
                                           libsndio-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev \
                                           libcurl4-openssl-dev libfuse2 wmctrl openbox mesa-vulkan-drivers \
+                                          libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev \
                                           libvulkan1
     - name: Install Vulkan SDK
       if: ${{ runner.arch == 'X64' }}
