@@ -81,6 +81,7 @@ function love.boot()
 
 	--关闭游戏本体进入时左下角的日志输出
 	--love.setDeprecationOutput(not love.filesystem.isFused())
+	--测试提交
 
 	main_file = "main.lua"
 	local custom_main_file = false
