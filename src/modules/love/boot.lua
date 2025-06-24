@@ -79,7 +79,7 @@ function love.boot()
 
 	love.filesystem.setFused(is_fused_game)
 
-	love.setDeprecationOutput(not love.filesystem.isFused())
+	--love.setDeprecationOutput(not love.filesystem.isFused())
 
 	main_file = "main.lua"
 	local custom_main_file = false
