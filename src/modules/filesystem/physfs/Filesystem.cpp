@@ -158,6 +158,12 @@ void Filesystem::init(const char *arg0)
 
 	if (!PHYSFS_init(arg0))
 		throw love::Exception("Failed to initialize filesystem: %s", PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()));
+	if (!PHYSFS_init(arg0)) {
+		PHYSFS_ErrorCode err = PHYSFS_getLastErrorCode();
+		if (err == PHYSFS_ERR_IS_INITIALIZED)
+			return;
+		throw love::Exception("Failed to initialize filesystem: %s", PHYSFS_getErrorByCode(err));
+	}
 
 	// Enable symlinks by default.
 	setSymlinksEnabled(true);
