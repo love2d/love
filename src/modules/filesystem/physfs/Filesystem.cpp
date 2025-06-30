@@ -273,7 +273,6 @@ bool Filesystem::setSource(const char *source)
 
 	PHYSFS_Io *gameLoveIO;
 	bool hasFusedGame = love::android::checkFusedGame((void **) &gameLoveIO);
-	bool isAAssetMounted = false;
 
 	if (hasFusedGame)
 	{
@@ -295,12 +294,12 @@ bool Filesystem::setSource(const char *source)
 			}
 
 			// See love::android::initializeVirtualArchive()
-			new_search_path = "ASET.AASSET";
-			isAAssetMounted = true;
+			gameSource = "ASET.AASSET";
+			return true;
 		}
 	}
 
-	if (!isAAssetMounted)
+	try
 	{
 		// Is this content:// URIs?
 		auto io = (PHYSFS_Io *) love::android::getIOFromContentProtocol(source);
@@ -313,6 +312,8 @@ bool Filesystem::setSource(const char *source)
 
 		io->destroy(io);
 	}
+	catch (const love::Exception &)
+	{}
 #endif
 
 	if (isMounted(new_search_path))
