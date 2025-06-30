@@ -104,10 +104,10 @@ bool getSafeArea(int &top, int &left, int &bottom, int &right)
 
 	if (safeArea != nullptr)
 	{
-		top = env->GetIntField(activity, env->GetFieldID(rectClass, "top", "I"));
-		left = env->GetIntField(activity, env->GetFieldID(rectClass, "left", "I"));
-		bottom = env->GetIntField(activity, env->GetFieldID(rectClass, "bottom", "I"));
-		right = env->GetIntField(activity, env->GetFieldID(rectClass, "right", "I"));
+		top = env->GetIntField(safeArea, env->GetFieldID(rectClass, "top", "I"));
+		left = env->GetIntField(safeArea, env->GetFieldID(rectClass, "left", "I"));
+		bottom = env->GetIntField(safeArea, env->GetFieldID(rectClass, "bottom", "I"));
+		right = env->GetIntField(safeArea, env->GetFieldID(rectClass, "right", "I"));
         env->DeleteLocalRef(safeArea);
 	}
 
