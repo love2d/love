@@ -581,6 +581,10 @@ void Shader::compileShaders()
 
 	const auto &enabledExtensions = vgfx->getEnabledOptionalDeviceExtensions();
 
+	uint32 glslangOpts = EShMsgDefault;
+	if (isDebugEnabled())
+		glslangOpts |= EShMsgDebugInfo;
+
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
 		if (!stages[i])
@@ -616,7 +620,7 @@ void Shader::compileShaders()
 		bool forceDefault = false;
 		bool forwardCompat = true;
 
-		if (!tshader->parse(GetResources(), defaultVersion, defaultProfile, forceDefault, forwardCompat, EShMsgSuppressWarnings))
+		if (!tshader->parse(GetResources(), defaultVersion, defaultProfile, forceDefault, forwardCompat, (EShMessages)(glslangOpts | EShMsgSuppressWarnings)))
 		{
 			const char *stageName = "unknown";
 			ShaderStage::getConstant(stage, stageName);
@@ -632,7 +636,7 @@ void Shader::compileShaders()
 		glslangShaders.push_back(std::move(tshader));
 	}
 
-	if (!program->link(EShMsgDefault))
+	if (!program->link((EShMessages)(glslangOpts | EShMsgLinkTimeOptimization)))
 		throw love::Exception("link failed! %s\n", program->getInfoLog());
 
 	if (!program->mapIO())
@@ -654,6 +658,13 @@ void Shader::compileShaders()
 		spv::SpvBuildLogger logger;
 		glslang::SpvOptions opt;
 		opt.validate = true;
+
+		if (isDebugEnabled())
+		{
+			opt.generateDebugInfo = true;
+			opt.emitNonSemanticShaderDebugInfo = true;
+			opt.emitNonSemanticShaderDebugSource = true;
+		}
 
 		std::vector<uint32> spirv;
 
