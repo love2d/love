@@ -24,6 +24,7 @@
 #include "common/Exception.h"
 
 #include <string.h>
+#include <algorithm>
 
 namespace love
 {
@@ -160,6 +161,8 @@ void ImageRasterizer::load(const uint32 *glyphs, int glyphcount)
 
 		imageGlyphs.push_back(imageGlyph);
 		glyphIndices[glyphs[i]] = (int) imageGlyphs.size() - 1;
+
+		metrics.advance = std::max(metrics.advance, imageGlyph.width + extraSpacing);
 	}
 }
 

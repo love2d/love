@@ -191,6 +191,7 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 		{
 			lineHeight = cline.getAttributeInt("lineHeight");
 			metrics.ascent = cline.getAttributeInt("base");
+			metrics.descent = metrics.ascent - lineHeight; // Negative.
 		}
 		else if (tag == "page")
 		{
@@ -250,6 +251,8 @@ void BMFontRasterizer::parseConfig(const std::string &configtext)
 
 			characters.push_back(c);
 			characterIndices[id] = (int) characters.size() - 1;
+
+			metrics.advance = std::max(metrics.advance, c.metrics.advance);
 		}
 		else if (tag == "kerning")
 		{
