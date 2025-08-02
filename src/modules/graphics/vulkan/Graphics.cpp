@@ -1468,7 +1468,10 @@ void Graphics::startRecordingGraphicsCommands()
 		fakeBackbuffer.set((Texture*)newTexture(settings, nullptr), Acquire::NORETAIN);
 	}
 
-	setDefaultRenderPass();
+	// Update the pending render pass state with current backbuffer data if no RT is active.
+	// If one is active, the state shouldn't need updating.
+	if (!isRenderTargetActive())
+		setDefaultRenderPass();
 
 	if (defaultVertexBuffer)
 	{
