@@ -775,7 +775,7 @@ Variant luax_checkvariant(lua_State *L, int n, bool allowuserdata, std::set<cons
 
 			Variant::SharedTable *table = new Variant::SharedTable();
 
-			size_t len = luax_objlen(L, -1);
+			size_t len = luax_objlen(L, n);
 			if (len > 0)
 				table->pairs.reserve(len);
 
