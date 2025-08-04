@@ -55,6 +55,8 @@ end
 function graphics.stencil(func, action, value, keepvalues)
 	love.markDeprecated(2, "love.graphics.stencil", "function", "replaced", "love.graphics.setStencilMode or setStencilState")
 
+	action = action or "replace" -- make compatible with 11.x by giving default value --
+	
 	if not keepvalues then
 		graphics.clear(false, true, false)
 	end
