@@ -1036,6 +1036,9 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, VertexAttri
 		id<MTLDepthStencilState> mtlstate = getCachedDepthStencilState(depth, state.stencil);
 
 		[encoder setDepthStencilState:mtlstate];
+
+		// Also set the depth clamping (depth state change is tirggered for both deptstate and clamp state changes)
+		[encoder setDepthClipMode: state.depthClampEnable == false ?  MTLDepthClipModeClip : MTLDepthClipModeClamp];
 	}
 
 	if (dirtyState & STATEBIT_STENCIL)
@@ -1838,6 +1841,18 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 		flushBatchedDraws();
 		state.depthTest = compare;
 		state.depthWrite = write;
+		dirtyRenderState |= STATEBIT_DEPTH;
+	}
+}
+
+void Graphics::setDepthClamp(bool enable)
+{
+	DisplayState &state = states.back();
+
+	if(state.depthClampEnable != enable)
+	{
+		flushBatchedDraws();
+		state.depthClampEnable = enable;
 		dirtyRenderState |= STATEBIT_DEPTH;
 	}
 }

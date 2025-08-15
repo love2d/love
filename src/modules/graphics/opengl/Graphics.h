@@ -92,6 +92,8 @@ public:
 
 	void setDepthMode(CompareMode compare, bool write) override;
 
+	void setDepthClamp(bool enable) override;
+
 	void setFrontFaceWinding(Winding winding) override;
 
 	void setColorMask(ColorChannelMask mask) override;

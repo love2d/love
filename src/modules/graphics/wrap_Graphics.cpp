@@ -2891,6 +2891,12 @@ int w_getDepthMode(lua_State *L)
 	return 2;
 }
 
+int w_setDepthClampEnable(lua_State *L)
+{
+	instance()->setDepthClamp(luax_checkboolean(L, 1));
+	return 0;
+}
+
 int w_setMeshCullMode(lua_State *L)
 {
 	const char *str = luaL_checkstring(L, 1);
@@ -4081,6 +4087,7 @@ static const luaL_Reg functions[] =
 	{ "getPointSize", w_getPointSize },
 	{ "setDepthMode", w_setDepthMode },
 	{ "getDepthMode", w_getDepthMode },
+	{ "setDepthClampEnable", w_setDepthClampEnable },
 	{ "setMeshCullMode", w_setMeshCullMode },
 	{ "getMeshCullMode", w_getMeshCullMode },
 	{ "setFrontFaceWinding", w_setFrontFaceWinding },

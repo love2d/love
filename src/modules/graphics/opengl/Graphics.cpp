@@ -1453,6 +1453,17 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 	}
 }
 
+void Graphics::setDepthClamp(bool enable)
+{
+	DisplayState &state = states.back();
+
+	if(state.depthClampEnable != enable)
+		flushBatchedDraws();
+
+	gl.setEnableState(OpenGL::ENABLE_DEPTH_CLAMP, enable);
+	state.depthClampEnable = enable;
+}
+
 void Graphics::setFrontFaceWinding(Winding winding)
 {
 	DisplayState &state = states.back();
