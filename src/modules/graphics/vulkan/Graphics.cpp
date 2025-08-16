@@ -1104,6 +1104,18 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 	states.back().depthWrite = write;
 }
 
+void Graphics::setDepthClamp(bool enable)
+{
+	flushBatchedDraws();
+
+	if (optionalDeviceExtensions.extendedDynamicState3)
+	{
+		vkCmdSetDepthClampEnableEXT(commandBuffers.at(currentFrame), Vulkan::getBool(enable));
+	}
+
+	states.back().depthClampEnable = enable;
+}
+
 void Graphics::setWireframe(bool enable)
 {
 	flushBatchedDraws();
@@ -1356,6 +1368,11 @@ void Graphics::initDynamicState()
 
 		vkCmdSetFrontFaceEXT(
 			commandBuffers.at(currentFrame), Vulkan::getFrontFace(states.back().winding));
+	}
+
+	if (optionalDeviceExtensions.extendedDynamicState3)
+	{
+		vkCmdSetDepthClampEnableEXT(commandBuffers.at(currentFrame), Vulkan::getBool(states.back().depthClampEnable));
 	}
 }
 
@@ -1782,6 +1799,8 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 	{
 		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.extendedDynamicState = true;
+		if (strcmp(extension.extensionName, VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME) == 0)
+			optionalDeviceExtensions.extendedDynamicState3 = true;
 		if (strcmp(extension.extensionName, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.memoryRequirements2 = true;
 		if (strcmp(extension.extensionName, VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME) == 0)
@@ -1844,6 +1863,8 @@ void Graphics::createLogicalDevice()
 	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
 	if (optionalDeviceExtensions.extendedDynamicState)
 		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+	if (optionalDeviceExtensions.extendedDynamicState3)
+		enabledExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
 	if (optionalDeviceExtensions.memoryRequirements2)
 		enabledExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
 	if (optionalDeviceExtensions.dedicatedAllocation)
@@ -2609,13 +2630,23 @@ void Graphics::prepareDraw(VertexAttributesID attributesID, const BufferBindings
 	if (optionalDeviceExtensions.extendedDynamicState)
 	{
 		vkCmdSetCullModeEXT(commandBuffers.at(currentFrame), Vulkan::getCullMode(cullmode));
-		pipeline = s->getCachedGraphicsPipeline(this, configuration.core);
+		if (!optionalDeviceExtensions.extendedDynamicState3)
+		{
+			// If extended dynamic state 3 is not supported, we need to set the depth clamp enable manually via no dynamic state.
+			// But the depth clamp enable is not part of the core dynamic state, so we need to use noDynamicState only for depth clamp enable.
+			// Rest of the dynamic state is still set via extended dynamic state.
+			configuration.noDynamicState.depthClampEnable = states.back().depthClampEnable;
+			pipeline = s->getCachedGraphicsPipeline(this, configuration);
+		}
+		else
+			pipeline = s->getCachedGraphicsPipeline(this, configuration.core);
 	}
 	else
 	{
 		configuration.noDynamicState.winding = states.back().winding;
 		configuration.noDynamicState.depthState.compare = states.back().depthTest;
 		configuration.noDynamicState.depthState.write = states.back().depthWrite;
+		configuration.noDynamicState.depthClampEnable = states.back().depthClampEnable;
 		configuration.noDynamicState.stencilAction = states.back().stencil.action;
 		configuration.noDynamicState.stencilCompare = states.back().stencil.compare;
 		configuration.noDynamicState.cullmode = cullmode;
@@ -3012,7 +3043,6 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 
 	VkPipelineRasterizationStateCreateInfo rasterizer{};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-	rasterizer.depthClampEnable = VK_FALSE;
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = Vulkan::getPolygonMode(configuration.wireFrame);
 	rasterizer.lineWidth = 1.0f;
@@ -3021,6 +3051,9 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 		rasterizer.cullMode = Vulkan::getCullMode(noDynamicStateConfiguration->cullmode);
 		rasterizer.frontFace = Vulkan::getFrontFace(noDynamicStateConfiguration->winding);
 	}
+
+	if (!optionalDeviceExtensions.extendedDynamicState3)
+		rasterizer.depthClampEnable = Vulkan::getBool(noDynamicStateConfiguration->depthClampEnable);
 
 	rasterizer.depthBiasEnable = VK_FALSE;
 	rasterizer.depthBiasConstantFactor = 0.0f;
@@ -3098,7 +3131,7 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 
 	std::vector<VkDynamicState> dynamicStates;
 
-	if (optionalDeviceExtensions.extendedDynamicState)
+	if (optionalDeviceExtensions.extendedDynamicState3)
 		dynamicStates = {
 			VK_DYNAMIC_STATE_SCISSOR,
 			VK_DYNAMIC_STATE_VIEWPORT,
@@ -3111,7 +3144,22 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 			VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT,
 			VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT,
 			VK_DYNAMIC_STATE_STENCIL_OP_EXT,
-		};
+			VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT,
+	};
+	else if (optionalDeviceExtensions.extendedDynamicState)
+		dynamicStates = {
+			VK_DYNAMIC_STATE_SCISSOR,
+			VK_DYNAMIC_STATE_VIEWPORT,
+			VK_DYNAMIC_STATE_STENCIL_WRITE_MASK,
+			VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK,
+			VK_DYNAMIC_STATE_STENCIL_REFERENCE,
+
+			VK_DYNAMIC_STATE_CULL_MODE_EXT,
+			VK_DYNAMIC_STATE_FRONT_FACE_EXT,
+			VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT,
+			VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT,
+			VK_DYNAMIC_STATE_STENCIL_OP_EXT,
+	};
 	else
 		dynamicStates = {
 			VK_DYNAMIC_STATE_SCISSOR,
@@ -3119,7 +3167,7 @@ VkPipeline Graphics::createGraphicsPipeline(Shader *shader, const GraphicsPipeli
 			VK_DYNAMIC_STATE_STENCIL_WRITE_MASK,
 			VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK,
 			VK_DYNAMIC_STATE_STENCIL_REFERENCE,
-		};
+	};
 
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;

@@ -847,6 +847,7 @@ void Graphics::restoreState(const DisplayState &s)
 
 	setStencilState(s.stencil);
 	setDepthMode(s.depthTest, s.depthWrite);
+	setDepthClamp(s.depthClampEnable);
 
 	setColorMask(s.colorMask);
 	setWireframe(s.wireframe);
@@ -925,6 +926,9 @@ void Graphics::restoreStateChecked(const DisplayState &s)
 
 	if (s.depthTest != cur.depthTest || s.depthWrite != cur.depthWrite)
 		setDepthMode(s.depthTest, s.depthWrite);
+
+	if(s.depthClampEnable != cur.depthClampEnable)
+		setDepthClamp(s.depthClampEnable);
 
 	if (s.colorMask != cur.colorMask)
 		setColorMask(s.colorMask);

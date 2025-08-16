@@ -621,6 +621,12 @@ public:
 	void setDepthMode();
 	void getDepthMode(CompareMode &compare, bool &write) const;
 
+	/**
+	 * Clamps the depth valies to [0, 1] range instead of clipping geomentry
+	 * away at near and far planes
+	 */
+	virtual void setDepthClamp(bool enable) = 0;
+
 	void setMeshCullMode(CullMode cull);
 	CullMode getMeshCullMode() const;
 
@@ -948,6 +954,7 @@ protected:
 
 		CompareMode depthTest = COMPARE_ALWAYS;
 		bool depthWrite = false;
+		bool depthClampEnable = false;
 
 		CullMode meshCullMode = CULL_NONE;
 		Winding winding = WINDING_CCW;
