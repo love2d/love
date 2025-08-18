@@ -1455,13 +1455,15 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 
 void Graphics::setDepthClamp(bool enable)
 {
-	DisplayState &state = states.back();
+	if(capabilities.features[FEATURE_DEPTH_CLAMP]) {
+		DisplayState &state = states.back();
 
-	if(state.depthClampEnable != enable)
-		flushBatchedDraws();
-
-	gl.setEnableState(OpenGL::ENABLE_DEPTH_CLAMP, enable);
-	state.depthClampEnable = enable;
+		if(state.depthClampEnable != enable)
+			flushBatchedDraws();
+	
+		gl.setEnableState(OpenGL::ENABLE_DEPTH_CLAMP, enable);
+		state.depthClampEnable = enable;
+	}
 }
 
 void Graphics::setFrontFaceWinding(Winding winding)
@@ -1620,7 +1622,12 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_TEXEL);
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = gl.isCopyTextureToBufferSupported();
 	capabilities.features[FEATURE_INDIRECT_DRAW] = capabilities.features[FEATURE_GLSL4];
-	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_DEPTH_CLAMP] = hasExtension("GL_EXT_depth_clamp") ||
+	hasExtension("GL_NV_depth_clamp") ||
+	hasExtension("GL_AMD_depth_clamp_separate") ||
+	hasExtension("GL_ARB_depth_clamp") ||
+	GLAD_VERSION_3_2;
+	static_assert(FEATURE_MAX_ENUM == 14, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();
@@ -1747,6 +1754,23 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 
 	bool readable = (usage & PIXELFORMATUSAGEFLAGS_SAMPLE) != 0;
 	return (usage & pixelFormatUsage[format][readable ? 1 : 0]) == usage;
+}
+
+bool Graphics::hasExtension(const char* name)
+{
+	GLint numExts = 0;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &numExts);
+	for (GLint i = 0; i < numExts; ++i) {
+		const char* ext = (const char*)glGetStringi(GL_EXTENSIONS, i);
+		::printf("extension: %s \n", ext);
+		if (strcmp(ext, name) == 0) return true;
+	}
+	// fallback for older contexts
+	const char* all = (const char*)glGetString(GL_EXTENSIONS);
+	if (all) {
+		return strstr(all, name) != nullptr;
+	}
+	return false;
 }
 
 } // opengl
