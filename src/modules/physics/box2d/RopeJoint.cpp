@@ -56,6 +56,11 @@ RopeJoint::~RopeJoint()
 {
 }
 
+Joint::Type RopeJoint::getType() const
+{
+	return JOINT_ROPE;
+}
+
 float RopeJoint::getMaxLength() const
 {
 	return Physics::scaleUp(joint->GetMaxLength());
