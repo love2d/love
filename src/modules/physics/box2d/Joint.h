@@ -72,7 +72,7 @@ public:
 	/**
 	 * Gets the type of joint.
 	 **/
-	Type getType() const;
+	virtual Type getType() const;
 
 	virtual Body *getBodyA() const;
 	virtual Body *getBodyB() const;
