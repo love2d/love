@@ -803,8 +803,6 @@ PHYSFS_DECL const char *PHYSFS_getBaseDir(void);
  * \fn const char *PHYSFS_getUserDir(void)
  * \brief Get the path where user's home directory resides.
  *
- * \deprecated As of PhysicsFS 2.1, you probably want PHYSFS_getPrefDir().
- *
  * Helper function.
  *
  * Get the "user dir". This is meant to be a suggestion of where a specific
@@ -819,7 +817,7 @@ PHYSFS_DECL const char *PHYSFS_getBaseDir(void);
  * \sa PHYSFS_getBaseDir
  * \sa PHYSFS_getPrefDir
  */
-PHYSFS_DECL const char *PHYSFS_getUserDir(void) PHYSFS_DEPRECATED;
+PHYSFS_DECL const char *PHYSFS_getUserDir(void);
 
 
 /**
