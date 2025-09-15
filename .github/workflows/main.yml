@@ -209,6 +209,8 @@ jobs:
         echo nofiles=ignore>> "%GITHUB_OUTPUT%"
         echo moredef=-DLOVE_EXTRA_DLLS=%CD%\angle\libEGL.dll;%CD%\angle\libGLESv2.dll>> "%GITHUB_OUTPUT%"
         exit /b 0
+    - name: Install NSIS
+      run: winget install nsis --disable-interactivity --accept-source-agreements --accept-package-agreements
     - name: Download pdbstr
       run: curl -Lfo pdbstr.nupkg https://www.nuget.org/api/v2/package/Microsoft.Debugging.Tools.PdbStr/20230731.1609.0
     - name: Download srctool
