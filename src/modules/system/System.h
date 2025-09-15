@@ -64,6 +64,11 @@ public:
 	virtual int getProcessorCount() const = 0;
 
 	/**
+	 * Gets the amount of RAM configured in the system in MiB.
+	 **/
+	virtual int getMemorySize() const = 0;
+
+	/**
 	 * Replaces the contents of the system's text clipboard with a string.
 	 * @param text The clipboard text to set.
 	 **/

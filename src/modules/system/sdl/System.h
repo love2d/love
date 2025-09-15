@@ -43,6 +43,7 @@ public:
 	virtual ~System() {}
 
 	int getProcessorCount() const override;
+	int getMemorySize() const override;
 
 	void setClipboardText(const std::string &text) const override;
 	std::string getClipboardText() const override;

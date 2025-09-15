@@ -59,6 +59,12 @@ love.test.system.getProcessorCount = function(test)
 end
 
 
+-- love.system.getMemorySize
+love.test.system.getMemorySize = function(test)
+  test:assertNotNil(love.system.getMemorySize())
+end
+
+
 -- love.system.hasBackgroundMusic
 love.test.system.hasBackgroundMusic = function(test)
   test:assertNotNil(love.system.hasBackgroundMusic())

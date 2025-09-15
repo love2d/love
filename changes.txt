@@ -81,6 +81,7 @@ Released: N/A
 * Added love.sensorupdated callback.
 * Added love.joysticksensorupdated callback.
 * Added variant for enet peer:send and host:broadcast which accepts a pointer (light userdata) and a size.
+* Added love.system.getMemorySize.
 
 * Changed the default font from Vera size 12 to Noto Sans size 13.
 * Changed TrueType and OpenType font handling to have improved kerning and character combining support.
