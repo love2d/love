@@ -41,6 +41,12 @@ int w_getProcessorCount(lua_State *L)
 	return 1;
 }
 
+int w_getMemorySize(lua_State *L)
+{
+	lua_pushinteger(L, instance()->getMemorySize());
+	return 1;
+}
+
 int w_setClipboardText(lua_State *L)
 {
 	const char *text = luaL_checkstring(L, 1);
@@ -121,6 +127,7 @@ static const luaL_Reg functions[] =
 {
 	{ "getOS", w_getOS },
 	{ "getProcessorCount", w_getProcessorCount },
+	{ "getMemorySize", w_getMemorySize },
 	{ "setClipboardText", w_setClipboardText },
 	{ "getClipboardText", w_getClipboardText },
 	{ "getPowerInfo", w_getPowerInfo },

@@ -45,6 +45,11 @@ int System::getProcessorCount() const
 	return SDL_GetNumLogicalCPUCores();
 }
 
+int System::getMemorySize() const
+{
+	return SDL_GetSystemRAM();
+}
+
 bool System::isWindowOpen() const
 {
 	auto window = Module::getInstance<window::Window>(M_WINDOW);
