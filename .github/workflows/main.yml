@@ -161,7 +161,7 @@ jobs:
         exit 1
 
   Windows:
-    runs-on: windows-latest
+    runs-on: windows-2025
     permissions:
       checks: write
       pull-requests: write
