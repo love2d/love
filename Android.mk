@@ -98,7 +98,12 @@ LOCAL_SRC_FILES := \
 
 LOCAL_CXXFLAGS := -std=c++11
 LOCAL_SHARED_LIBRARIES := libopenal libmpg123 
-LOCAL_STATIC_LIBRARIES := libvorbis libogg libtheora libmodplug libfreetype libluajit SDL2_static
+LOCAL_STATIC_LIBRARIES := libvorbis libogg libtheora libmodplug libfreetype libluajit liblovely_core SDL2_static
+
+# 加入你的 JNI Bridge 源文件
+LOCAL_SRC_FILES += \
+    $(subst $(LOCAL_PATH)/,, \
+      $(LOCAL_PATH)/../LuaJIT-2.1/src/lovely_jni_bridge.cpp)
 
 # $(info liblove: include dirs $(LOCAL_C_INCLUDES))
 # $(info liblove: src files $(LOCAL_SRC_FILES))
