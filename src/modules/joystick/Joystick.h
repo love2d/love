@@ -144,6 +144,26 @@ public:
 		INPUT_TYPE_MAX_ENUM
 	};
 
+	enum PowerState
+	{
+		POWERSTATE_ERROR = -1,   /**< error determining power status */
+		POWERSTATE_UNKNOWN,      /**< cannot determine power status */
+		POWERSTATE_ON_BATTERY,   /**< Not plugged in, running on the battery */
+		POWERSTATE_NO_BATTERY,   /**< Plugged in, no battery available */
+		POWERSTATE_CHARGING,     /**< Plugged in, charging battery */
+		POWERSTATE_CHARGED,       /**< Plugged in, battery charged */
+		POWERSTATE_MAX_ENUM
+	};
+
+	enum ConnectionState
+	{
+		CONNECTION_INVALID = -1,
+		CONNECTION_UNKNOWN,
+		CONNECTION_WIRED,
+		CONNECTION_WIRELESS,
+		CONNECTION_MAX_ENUM
+	};
+
 	// Represents a gamepad input value, e.g. the "x" button or the left trigger.
 	struct GamepadInput
 	{
@@ -223,6 +243,8 @@ public:
 	virtual bool isSensorEnabled(Sensor::SensorType type) const = 0;
 	virtual void setSensorEnabled(Sensor::SensorType type, bool enabled) = 0;
 	virtual std::vector<float> getSensorData(Sensor::SensorType type) const = 0;
+	virtual PowerState getPowerInfo(int &batteryPercent) const = 0;
+	virtual ConnectionState getConnectionState() const = 0;
 
 	STRINGMAP_CLASS_DECLARE(Hat);
 	STRINGMAP_CLASS_DECLARE(JoystickType);
@@ -230,6 +252,8 @@ public:
 	STRINGMAP_CLASS_DECLARE(GamepadAxis);
 	STRINGMAP_CLASS_DECLARE(GamepadButton);
 	STRINGMAP_CLASS_DECLARE(InputType);
+	STRINGMAP_CLASS_DECLARE(PowerState);
+	STRINGMAP_CLASS_DECLARE(ConnectionState);
 
 	static float clampval(float x);
 

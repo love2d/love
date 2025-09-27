@@ -84,6 +84,8 @@ public:
 	int getID() const override;
 
 	void getDeviceInfo(int &vendorID, int &productID, int &productVersion) const override;
+	PowerState getPowerInfo(int& batteryPercent) const override;
+	ConnectionState getConnectionState() const override;
 
 	bool isVibrationSupported() override;
 	bool setVibration(float left, float right, float duration = -1.0f) override;
@@ -103,6 +105,12 @@ public:
 
 	static bool getConstant(SDL_GamepadButton in, GamepadButton &out);
 	static bool getConstant(GamepadButton in, SDL_GamepadButton &out);
+
+	static bool getConstant(SDL_PowerState in, PowerState &out);
+	static bool getConstant(PowerState in, SDL_PowerState &out);
+
+	static bool getConstant(SDL_JoystickConnectionState in, ConnectionState &out);
+	static bool getConstant(ConnectionState in, SDL_JoystickConnectionState &out);
 
 private:
 
@@ -129,6 +137,11 @@ private:
 	static EnumMap<GamepadButton, SDL_GamepadButton, GAMEPAD_BUTTON_MAX_ENUM>::Entry gpButtonEntries[];
 	static EnumMap<GamepadButton, SDL_GamepadButton, GAMEPAD_BUTTON_MAX_ENUM> gpButtons;
 
+	static EnumMap<PowerState, SDL_PowerState, POWERSTATE_MAX_ENUM>::Entry powerStateEntries[];
+	static EnumMap<PowerState, SDL_PowerState, POWERSTATE_MAX_ENUM> powerStates;
+
+	static EnumMap<ConnectionState, SDL_JoystickConnectionState, CONNECTION_MAX_ENUM>::Entry connectionStateEntries[];
+	static EnumMap<ConnectionState, SDL_JoystickConnectionState, CONNECTION_MAX_ENUM> connectionStates;
 };
 
 } // sdl
