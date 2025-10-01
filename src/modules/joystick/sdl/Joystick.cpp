@@ -158,11 +158,6 @@ bool Joystick::open(int64 deviceid)
 		else
 			gamepadType = GAMEPAD_TYPE_UNKNOWN;
 	}
-	else
-	{
-		auto err = SDL_GetError();
-		auto t = 1;
-	}
 
 	return isConnected();
 }

@@ -49,11 +49,7 @@ JoystickModule::JoystickModule()
 	int count = 0;
 	SDL_JoystickID *sticks = SDL_GetJoysticks(&count);
 	for (int i = 0; i < count; i++)
-	{
-		auto test = SDL_OpenGamepad(sticks[i]);
-		auto err = SDL_GetError();
 		addJoystick((int64)sticks[i]);
-	}
 	SDL_free(sticks);
 
 	// Start joystick event watching. Joysticks are automatically added and
