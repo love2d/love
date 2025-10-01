@@ -135,5 +135,23 @@ STRINGMAP_CLASS_BEGIN(Joystick, Joystick::InputType, Joystick::INPUT_TYPE_MAX_EN
 }
 STRINGMAP_CLASS_END(Joystick, Joystick::InputType, Joystick::INPUT_TYPE_MAX_ENUM, inputType)
 
+STRINGMAP_CLASS_BEGIN(Joystick, Joystick::PowerType, Joystick::POWER_MAX_ENUM, powerState)
+{
+	{ "unknown",      Joystick::POWER_UNKNOWN      },
+	{ "onbattery",    Joystick::POWER_ON_BATTERY   },
+	{ "nobattery",    Joystick::POWER_NO_BATTERY   },
+	{ "charging",     Joystick::POWER_CHARGING     },
+	{ "charged",      Joystick::POWER_CHARGED      },
+}
+STRINGMAP_CLASS_END(Joystick, Joystick::PowerType, Joystick::POWER_MAX_ENUM, powerState)
+
+STRINGMAP_CLASS_BEGIN(Joystick, Joystick::ConnectionType, Joystick::CONNECTION_MAX_ENUM, connectionState)
+{
+	{ "unknown",     Joystick::CONNECTION_UNKNOWN },
+	{ "wired",       Joystick::CONNECTION_WIRED },
+	{ "wireless",    Joystick::CONNECTION_WIRELESS },
+}
+STRINGMAP_CLASS_END(Joystick, Joystick::ConnectionType, Joystick::CONNECTION_MAX_ENUM, connectionState)
+
 } // joystick
 } // love

@@ -447,6 +447,39 @@ int w_Joystick_getSensorData(lua_State *L)
 	return (int) data.size();
 }
 
+int w_Joystick_getDevicePowerInfo(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+
+	int batteryPercent = 0;
+	const char *str;
+	Joystick::PowerType state = j->getPowerInfo(batteryPercent);
+	
+	if (!Joystick::getConstant(state, str))
+		str = "unknown";
+
+	lua_pushstring(L, str);
+
+	if (batteryPercent >= 0)
+		lua_pushnumber(L, batteryPercent);
+	else
+		lua_pushnil(L);
+	
+	return 2;
+}
+
+int w_Joystick_getDeviceConnectionState(lua_State *L)
+{
+	Joystick *j = luax_checkjoystick(L, 1);
+
+	const char *str = "unknown";
+	Joystick::getConstant(j->getConnectionState(), str);
+
+	lua_pushstring(L, str);
+
+	return 1;
+}
+
 #endif // LOVE_ENABLE_SENSOR
 
 // List of functions to wrap.
@@ -457,6 +490,8 @@ static const luaL_Reg w_Joystick_functions[] =
 	{ "getID", w_Joystick_getID },
 	{ "getGUID", w_Joystick_getGUID },
 	{ "getDeviceInfo", w_Joystick_getDeviceInfo },
+	{ "getDevicePowerInfo", w_Joystick_getDevicePowerInfo },
+	{ "getDeviceConnectionState", w_Joystick_getDeviceConnectionState },
 	{ "getJoystickType", w_Joystick_getJoystickType },
 	{ "getAxisCount", w_Joystick_getAxisCount },
 	{ "getButtonCount", w_Joystick_getButtonCount },
