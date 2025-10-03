@@ -325,6 +325,18 @@ love.test.graphics.Font = function(test)
   local imgdata2 = love.graphics.readbackTexture(canvas)
   test:compareImg(imgdata2)
 
+  -- check finding the position of glyphs
+  local glyphPosString = "hello, world"
+  for i = 1, #glyphPosString do
+    local x, y, w, h = font:getGlyphPosition(i, glyphPosString, 100)
+    test:assertEquals(font:getWidth(glyphPosString:sub(1, i - 1)), x, "compare glyph pos to length of previous")
+    test:assertEquals(font:getWidth(glyphPosString:sub(i, i)), w, "check width")
+  end
+  test:assertFalse(pcall(font.getGlyphPosition, font, -1, "123", 50), "negative glyph index")
+  test:assertFalse(pcall(font.getGlyphPosition, font, 4, "123", 50), "out of bounds glyph index")
+  local x, y = font:getGlyphPosition(3, "abcd", 17)
+  test:assertEquals(font:getHeight(), y, "glyph position with wrap")
+  test:assertEquals(font:getGlyphPosition(1, "a", 1000, "center"), 1000 / 2 - font:getWidth("a") / 2, "centered glyph position")
 end
 
 
