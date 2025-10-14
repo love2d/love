@@ -465,8 +465,11 @@ void Joystick::getDeviceInfo(int &vendorID, int &productID, int &productVersion)
 Joystick::PowerType Joystick::getPowerInfo(int& batteryPercent) const
 {
 	// Gets the battery state of a joystick/gamepad
-	Joystick::PowerType powerState;
+	Joystick::PowerType powerState = Joystick::PowerType::POWER_UNKNOWN;
 	SDL_PowerState batteryState;
+
+	if (!isConnected())
+		return powerState;
 
 	batteryState = SDL_GetJoystickPowerInfo(joyhandle, &batteryPercent);
 
@@ -477,8 +480,11 @@ Joystick::PowerType Joystick::getPowerInfo(int& batteryPercent) const
 Joystick::ConnectionType Joystick::getConnectionState() const
 {
 	// Gets the connection state of a joystick/gamepad (wired / wireless etc)
-	Joystick::ConnectionType connectionState;
+	Joystick::ConnectionType connectionState = Joystick::ConnectionType::CONNECTION_UNKNOWN;
 	SDL_JoystickConnectionState sdlConnectionState;
+
+	if (!isConnected())
+		return connectionState;
 
 	sdlConnectionState = SDL_GetJoystickConnectionState(joyhandle);
 
