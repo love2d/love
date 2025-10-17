@@ -29,6 +29,8 @@ Released: N/A
 * Added Joystick:hasSensor.
 * Added Joystick:isSensorEnabled and Joystick:setSensorEnabled.
 * Added Joystick:getSensorData.
+* Added Joystick:getPowerInfo which exposes infomation about batteries in a controller are and if they're charging.
+* Added Joystick:getConnectionState which indicates if a joystick is connected wired or wireless.
 * Added new Gamepad API buttons: "misc1", "paddle1", "paddle2", "paddle3", "paddle4". and "touchpad".
 * Added World:getFixturesInArea().
 * Added support for saving .exr image files via ImageData:encode.

@@ -462,6 +462,36 @@ void Joystick::getDeviceInfo(int &vendorID, int &productID, int &productVersion)
 	}
 }
 
+Joystick::PowerType Joystick::getPowerInfo(int& batteryPercent) const
+{
+	// Gets the battery state of a joystick/gamepad
+	Joystick::PowerType powerState = Joystick::PowerType::POWER_UNKNOWN;
+	SDL_PowerState batteryState;
+
+	if (!isConnected())
+		return powerState;
+
+	batteryState = SDL_GetJoystickPowerInfo(joyhandle, &batteryPercent);
+
+	getConstant(batteryState, powerState);
+	return powerState;
+}
+
+Joystick::ConnectionType Joystick::getConnectionState() const
+{
+	// Gets the connection state of a joystick/gamepad (wired / wireless etc)
+	Joystick::ConnectionType connectionState = Joystick::ConnectionType::CONNECTION_UNKNOWN;
+	SDL_JoystickConnectionState sdlConnectionState;
+
+	if (!isConnected())
+		return connectionState;
+
+	sdlConnectionState = SDL_GetJoystickConnectionState(joyhandle);
+
+	getConstant(sdlConnectionState, connectionState);
+	return connectionState;
+}
+
 bool Joystick::isVibrationSupported()
 {
 	if (!isConnected())
@@ -614,6 +644,26 @@ bool Joystick::getConstant(Joystick::GamepadButton in, SDL_GamepadButton &out)
 	return gpButtons.find(in, out);
 }
 
+bool Joystick::getConstant(SDL_PowerState in, Joystick::PowerType &out)
+{
+	return powerStates.find(in, out);
+}
+
+bool Joystick::getConstant(Joystick::PowerType in, SDL_PowerState &out)
+{
+	return powerStates.find(in, out);
+}
+
+bool Joystick::getConstant(SDL_JoystickConnectionState in, Joystick::ConnectionType &out)
+{
+	return connectionStates.find(in, out);
+}
+
+bool Joystick::getConstant(Joystick::ConnectionType in, SDL_JoystickConnectionState &out)
+{
+	return connectionStates.find(in, out);
+}
+
 EnumMap<Joystick::Hat, Uint8, Joystick::HAT_MAX_ENUM>::Entry Joystick::hatEntries[] =
 {
 	{Joystick::HAT_CENTERED, SDL_HAT_CENTERED},
@@ -667,6 +717,26 @@ EnumMap<Joystick::GamepadButton, SDL_GamepadButton, Joystick::GAMEPAD_BUTTON_MAX
 };
 
 EnumMap<Joystick::GamepadButton, SDL_GamepadButton, Joystick::GAMEPAD_BUTTON_MAX_ENUM> Joystick::gpButtons(Joystick::gpButtonEntries, sizeof(Joystick::gpButtonEntries));
+
+EnumMap<Joystick::PowerType, SDL_PowerState, Joystick::POWER_MAX_ENUM>::Entry Joystick::powerEntries[] =
+{
+	{Joystick::POWER_UNKNOWN, SDL_POWERSTATE_UNKNOWN},
+	{Joystick::POWER_ON_BATTERY, SDL_POWERSTATE_ON_BATTERY},
+	{Joystick::POWER_NO_BATTERY, SDL_POWERSTATE_NO_BATTERY},
+	{Joystick::POWER_CHARGING, SDL_POWERSTATE_CHARGING},
+	{Joystick::POWER_CHARGED, SDL_POWERSTATE_CHARGED},
+};
+
+EnumMap<Joystick::PowerType, SDL_PowerState, Joystick::POWER_MAX_ENUM> Joystick::powerStates(Joystick::powerEntries, sizeof(Joystick::powerEntries));
+
+EnumMap<Joystick::ConnectionType, SDL_JoystickConnectionState, Joystick::CONNECTION_MAX_ENUM>::Entry Joystick::connectionStateEntries[] =
+{
+	{Joystick::CONNECTION_UNKNOWN, SDL_JOYSTICK_CONNECTION_UNKNOWN},
+	{Joystick::CONNECTION_WIRED, SDL_JOYSTICK_CONNECTION_WIRED},
+	{Joystick::CONNECTION_WIRELESS, SDL_JOYSTICK_CONNECTION_WIRELESS},
+};
+
+EnumMap<Joystick::ConnectionType, SDL_JoystickConnectionState, Joystick::CONNECTION_MAX_ENUM> Joystick::connectionStates(Joystick::connectionStateEntries, sizeof(Joystick::connectionStateEntries));
 
 } // sdl
 } // joystick

@@ -49,7 +49,7 @@ JoystickModule::JoystickModule()
 	int count = 0;
 	SDL_JoystickID *sticks = SDL_GetJoysticks(&count);
 	for (int i = 0; i < count; i++)
-		addJoystick((int64) sticks[i]);
+		addJoystick((int64)sticks[i]);
 	SDL_free(sticks);
 
 	// Start joystick event watching. Joysticks are automatically added and
