@@ -756,6 +756,8 @@ add_library(love_image_magpie STATIC
 	src/modules/image/magpie/STBHandler.h
     src/modules/image/magpie/QOIHandler.cpp
 	src/modules/image/magpie/QOIHandler.h
+	src/modules/image/magpie/WEBPHandler.cpp
+	src/modules/image/magpie/WEBPHandler.h
 )
 target_link_libraries(love_image_magpie PUBLIC
 	lovedep::Zlib
@@ -1879,6 +1881,15 @@ add_library(love_3p_xxhash
 	src/libraries/xxHash/xxhash.c
 	src/libraries/xxHash/xxhash.h
 )
+
+#
+# Simple WebP
+#
+
+# Simple has no implementation files of its own.
+#add_library(love_3p_simplewebp
+#	src/libraries/simplewebp/simplewebp.h
+#)
 
 #
 # liblove
