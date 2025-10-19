@@ -341,7 +341,7 @@ std::vector<Buffer::DataDeclaration> Buffer::getCommonFormatDeclaration(CommonFo
 	case CommonFormat::XYf_STPf_RGBAub:
 		return {
 			{ getConstant(ATTRIB_POS), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_POS },
-			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC2, 0, ATTRIB_TEXCOORD },
+			{ getConstant(ATTRIB_TEXCOORD), DATAFORMAT_FLOAT_VEC3, 0, ATTRIB_TEXCOORD },
 			{ getConstant(ATTRIB_COLOR), DATAFORMAT_UNORM8_VEC4, 0, ATTRIB_COLOR },
 		};
 	case CommonFormat::COUNT:
