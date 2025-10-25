@@ -53,7 +53,7 @@ function love.boot()
 	if love.restart and type(love.restart) == "table" then
 		local was_no_game = love.restart.noGameRestartInfo
 		if was_no_game and type(was_no_game) == "table" then
-			if was_no_game.gamepath then
+			if was_no_game.gamepath and type(was_no_game.gamepath) == "string" then
 				table.insert(arg, 1, was_no_game.gamepath)
 			end
 		end
