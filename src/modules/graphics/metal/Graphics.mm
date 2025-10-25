@@ -1036,6 +1036,9 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, VertexAttri
 		id<MTLDepthStencilState> mtlstate = getCachedDepthStencilState(depth, state.stencil);
 
 		[encoder setDepthStencilState:mtlstate];
+
+		// Also set the depth clamping (depth state change is tirggered for both deptstate and clamp state changes)
+		[encoder setDepthClipMode: state.depthClampEnable ? MTLDepthClipModeClamp : MTLDepthClipModeClip];
 	}
 
 	if (dirtyState & STATEBIT_STENCIL)
@@ -1842,6 +1845,18 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 	}
 }
 
+void Graphics::setDepthClamp(bool enable)
+{
+	DisplayState &state = states.back();
+
+	if(state.depthClampEnable != enable)
+	{
+		flushBatchedDraws();
+		state.depthClampEnable = enable;
+		dirtyRenderState |= STATEBIT_DEPTH;
+	}
+}
+
 void Graphics::setFrontFaceWinding(Winding winding)
 {
 	if (states.back().winding != winding)
@@ -2266,7 +2281,9 @@ void Graphics::initCapabilities()
 	else
 		capabilities.features[FEATURE_INDIRECT_DRAW] = false;
 	
-	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_DEPTH_CLAMP] = true;
+	
+	static_assert(FEATURE_MAX_ENUM == 14, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;
