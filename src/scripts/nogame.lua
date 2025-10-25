@@ -3285,6 +3285,18 @@ function love.nogame()
 			t.window.borderless = true
 		end
 	end
+
+	function restartWithNewGame(path)
+		love.event.quit("restart", {noGameRestartInfo = {gamepath = path}})
+	end
+
+	function love.filedropped(file)
+		restartWithNewGame(file:getFilename())
+	end
+
+	function love.directorydropped(path)
+		restartWithNewGame(path)
+	end
 end
 
 return love.nogame
