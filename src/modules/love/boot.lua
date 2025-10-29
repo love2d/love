@@ -45,6 +45,9 @@ function love.boot()
 	-- This is absolutely needed.
 	require("love.filesystem")
 
+	-- Having love.system loaded before conf.lua is run can be useful for accessing love.system.getOS.
+	require("love.system")
+
 	love.rawGameArguments = arg
 
 	local arg0 = love.arg.getLow(love.rawGameArguments)
