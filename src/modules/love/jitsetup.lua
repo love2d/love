@@ -29,47 +29,11 @@ end
 -- Double the defaults.
 jit.opt.start("maxtrace=2000", "maxrecord=8000")
 
--- Somewhat arbitrary value. Needs to be higher than the combined sizes below,
--- and higher than the default (512) because that's already too low.
+-- Somewhat arbitrary value.
 jit.opt.start("maxmcode=16384")
 
-if jit.arch == "arm64" or jit.arch == "arm" then
-	-- https://github.com/LuaJIT/LuaJIT/issues/285
-	-- LuaJIT 2.1 on arm(64) currently (as of commit b4b2dce) can only use memory
-	-- for JIT compilation within a certain short range. Other libraries such as
-	-- SDL can take all the usable space in that range and cause attempts at JIT
-	-- compilation to both fail and take a long time.
-	-- This is a very hacky attempt at a workaround. LuaJIT allocates executable
-	-- code in pools. We'll try "reserving" pools before any external code is
-	-- executed, by causing JIT compilation via a small loop. We can't easily
-	-- tell if JIT compilation succeeded, so we do several successively smaller
-	-- pool allocations in case previous ones fail.
-	-- This is a really hacky hack and by no means foolproof - there are a lot of
-	-- potential situations (especially when threads are used) where previously
-	-- executed external code will still take up space that LuaJIT needed for itself.
-
-	jit.opt.start("sizemcode=2048")
-	for i=1, 100 do end
-	
-	jit.opt.start("sizemcode=1024")
-	for i=1, 100 do end
-	
-	jit.opt.start("sizemcode=512")
-	for i=1, 100 do end
-	
-	jit.opt.start("sizemcode=256")
-	for i=1, 100 do end
-	
-	jit.opt.start("sizemcode=128")
-	for i=1, 100 do end
-
-	-- Actually just turn the whole thing off for arm(64). It's very hard to get
-	-- reliable performance in non-trivial games even with the above workaround.
-	jit.off()
-else
-	-- Somewhat arbitrary value (>= the default).
-	jit.opt.start("sizemcode=128")
-end
+-- Somewhat arbitrary value (>= the default).
+jit.opt.start("sizemcode=128")
 
 -- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.
 --)luastring"--"
