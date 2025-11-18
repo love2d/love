@@ -408,7 +408,7 @@ void vibrate(double seconds)
 					id<CHHapticPatternPlayer> player =
 						[engine createPlayerWithPattern:pattern error:nil];
 					[player startAtTime:0 error:nil];
-					return; // Success - haptic playing.
+					return;
 				}
 			}
 		}
