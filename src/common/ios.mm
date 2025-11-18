@@ -30,6 +30,7 @@ using namespace love::apple;
 
 #import <AudioToolbox/AudioServices.h>
 #import <AVFoundation/AVFoundation.h>
+#import <CoreHaptics/CoreHaptics.h>
 
 #include "modules/audio/Audio.h"
 
@@ -364,10 +365,55 @@ std::string getLoveInResources(bool &fused)
 	return path;
 }
 
-void vibrate()
+void vibrate(double seconds)
 {
 	@autoreleasepool
 	{
+		if (@available(iOS 13.0, *))
+		{
+			NSError *error = nil;
+			CHHapticEngine *engine = [[CHHapticEngine alloc]
+				initAndReturnError:&error];
+
+			if (engine != nil)
+			{
+				[engine startAndReturnError:nil];
+
+				NSDictionary *hapticDict = @{
+					CHHapticPatternKeyEvent: @[@{
+						CHHapticPatternKeyEventType:
+							CHHapticEventTypeHapticContinuous,
+						CHHapticPatternKeyTime: @0.0,
+						CHHapticPatternKeyEventDuration: @(seconds),
+						CHHapticPatternKeyEventParameters: @[
+							@{
+								CHHapticPatternKeyParameterID:
+									CHHapticEventParameterIDHapticIntensity,
+								CHHapticPatternKeyParameterValue: @1.0
+							},
+							@{
+								CHHapticPatternKeyParameterID:
+									CHHapticEventParameterIDHapticSharpness,
+								CHHapticPatternKeyParameterValue: @0.5
+							}
+						]
+					}]
+				};
+
+				CHHapticPattern *pattern = [[CHHapticPattern alloc]
+					initWithDictionary:hapticDict error:nil];
+
+				if (pattern != nil)
+				{
+					id<CHHapticPatternPlayer> player =
+						[engine createPlayerWithPattern:pattern error:nil];
+					[player startAtTime:0 error:nil];
+					return; // Success - haptic playing.
+				}
+			}
+		}
+
+		// Fallback: iOS < 13 or Core Haptics unavailable.
 		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 	}
 }
