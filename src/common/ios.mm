@@ -386,11 +386,13 @@ void vibrate(double seconds)
 						CHHapticPatternKeyTime: @0.0,
 						CHHapticPatternKeyEventDuration: @(seconds),
 						CHHapticPatternKeyEventParameters: @[
+							// Correlates to Android's default high intensity vibration.
 							@{
 								CHHapticPatternKeyParameterID:
 									CHHapticEventParameterIDHapticIntensity,
 								CHHapticPatternKeyParameterValue: @1.0
 							},
+							// Medium sharpness, 0.0 is dull rumble while 1.0 is crisp tap.
 							@{
 								CHHapticPatternKeyParameterID:
 									CHHapticEventParameterIDHapticSharpness,
