@@ -273,7 +273,7 @@ function love.errorhandler(msg)
 	end
 
 	table.insert(err, "\n")
-	
+
 	for l in trace:gmatch("([^\n]+)") do
 		if not l:match("boot.lua") then
 			l = l:gsub("stack traceback:", "Traceback\n")
