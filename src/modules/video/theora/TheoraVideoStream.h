@@ -58,6 +58,7 @@ public:
 	void setSync(FrameSync *frameSync);
 
 	bool isPlaying() const;
+	double getDuration();
 
 	void threadedFillBackBuffer(double dt);
 
@@ -83,6 +84,7 @@ private:
 
 	double lastFrame;
 	double nextFrame;
+	double duration;
 
 	void parseHeader();
 	void seekDecoder(double target);

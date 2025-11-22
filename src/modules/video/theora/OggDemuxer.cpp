@@ -264,6 +264,67 @@ bool OggDemuxer::seek(ogg_packet &packet, double target, std::function<double(in
 	return true;
 }
 
+double OggDemuxer::getDuration(std::function<double(int64)> getTime)
+{
+	int64 currentPos = file->tell();
+	bool wasEos = eos;
+
+	// Seek to near the end of the file to find the last page
+	int64 fileSize = file->getSize();
+	if (fileSize <= 0)
+		return -1.0;
+
+	file->seek(fileSize);
+	
+	// Read backwards to find the last page with valid granulepos
+	ogg_packet tempPacket;
+	ogg_int64_t lastGranulepos = -1;
+
+	// Use bisection to find the last valid packet
+	double low = 0;
+	double high = fileSize;
+	static const double threshold = 0.01;
+	while (high - low > threshold)
+	{
+		double pos = (high + low) / 2;
+		file->seek(pos);
+		resync();
+
+		if (!readPage(true))
+		{
+			high = pos;
+			continue;
+		}
+
+		if (!readPacket(tempPacket, false))
+		{
+			high = pos;
+			eos = false;
+			continue;
+		}
+
+		if (tempPacket.granulepos > lastGranulepos)
+		{
+			lastGranulepos = tempPacket.granulepos;
+			low = pos;
+		}
+		else
+		{
+			high = pos;
+		}
+	}
+
+	// Restore original state
+	file->seek(currentPos);
+	resync();
+	eos = wasEos;
+
+	if (lastGranulepos < 0)
+		return -1.0;
+
+	return getTime(lastGranulepos);
+}
+
 } // theora
 } // video
 } // love
