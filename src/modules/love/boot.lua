@@ -48,10 +48,10 @@ function love.boot()
 	-- Having love.system loaded before conf.lua is run can be useful for accessing love.system.getOS.
 	require("love.system")
 
-	-- nogame.lua returns noGameRestartInfo when
+	-- nogame.lua returns _noGameRestartInfo when
 	-- dropping a file or directory on to its window.
 	if love.restart and type(love.restart) == "table" then
-		local was_no_game = love.restart.noGameRestartInfo
+		local was_no_game = love.restart._noGameRestartInfo
 		if was_no_game and type(was_no_game) == "table" then
 			if was_no_game.gamepath and type(was_no_game.gamepath) == "string" then
 				table.insert(arg, 1, was_no_game.gamepath)

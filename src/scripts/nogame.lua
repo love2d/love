@@ -3287,7 +3287,7 @@ function love.nogame()
 	end
 
 	function restartWithNewGame(path)
-		love.event.quit("restart", {noGameRestartInfo = {gamepath = path}})
+		love.event.quit("restart", {_noGameRestartInfo = {gamepath = path}})
 	end
 
 	function love.filedropped(file)
