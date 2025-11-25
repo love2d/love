@@ -150,6 +150,9 @@ function love.createhandlers()
 		sensorupdated = function (sensorType, x, y, z)
 			if love.sensorupdated then return love.sensorupdated(sensorType, x, y, z) end
 		end,
+		themechanged = function ()
+			if love.themechanged then return love.themechanged() end
+		end,
 	}, {
 		__index = function(self, name)
 			error("Unknown event: " .. name)
