@@ -114,6 +114,14 @@ public:
 		ORIENTATION_MAX_ENUM
 	};
 
+	enum SystemTheme
+	{
+		THEME_UNKNOWN,
+		THEME_LIGHT,
+		THEME_DARK,
+		THEME_MAX_ENUM
+	};
+
 	struct WindowSize
 	{
 		int width;
@@ -252,11 +260,19 @@ public:
 
 	virtual void requestAttention(bool continuous) = 0;
 
+	/**
+	* Get information about the system theme.
+	*
+	* @return System theme, which can be either light, dark, or unknown.
+	**/
+	virtual SystemTheme getSystemTheme() const = 0;
+
 	STRINGMAP_CLASS_DECLARE(Setting);
 	STRINGMAP_CLASS_DECLARE(FullscreenType);
 	STRINGMAP_CLASS_DECLARE(MessageBoxType);
 	STRINGMAP_CLASS_DECLARE(FileDialogType);
 	STRINGMAP_CLASS_DECLARE(DisplayOrientation);
+	STRINGMAP_CLASS_DECLARE(SystemTheme);
 
 protected:
 

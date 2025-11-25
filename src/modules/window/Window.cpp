@@ -112,5 +112,14 @@ STRINGMAP_CLASS_BEGIN(Window, Window::DisplayOrientation, Window::ORIENTATION_MA
 }
 STRINGMAP_CLASS_END(Window, Window::DisplayOrientation, Window::ORIENTATION_MAX_ENUM, orientation)
 
+STRINGMAP_CLASS_BEGIN(Window, Window::SystemTheme, Window::THEME_MAX_ENUM, systemThemes)
+{
+	{"unknown", Window::THEME_UNKNOWN},
+	{"light", Window::THEME_LIGHT},
+	{"dark", Window::THEME_DARK}
+};
+STRINGMAP_CLASS_END(Window, Window::SystemTheme, Window::THEME_MAX_ENUM, systemThemes)
+
+
 } // window
 } // love

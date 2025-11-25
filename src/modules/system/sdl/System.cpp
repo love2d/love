@@ -93,15 +93,6 @@ love::system::System::PowerState System::getPowerInfo(int &seconds, int &percent
 	return state;
 }
 
-System::SystemTheme System::getTheme() const
-{
-	SDL_SystemTheme sdlstate = SDL_GetSystemTheme();
-	SystemTheme state = THEME_UNKNOWN;
-	systemThemes.find(sdlstate, state);
-
-	return state;
-}
-
 bool System::openURL(const std::string &url) const
 {
 	return SDL_OpenURL(url.c_str());
@@ -136,15 +127,6 @@ EnumMap<System::PowerState, SDL_PowerState, System::POWER_MAX_ENUM>::Entry Syste
 };
 
 EnumMap<System::PowerState, SDL_PowerState, System::POWER_MAX_ENUM> System::powerStates(System::powerEntries, sizeof(System::powerEntries));
-
-EnumMap<System::SystemTheme, SDL_SystemTheme, System::THEME_MAX_ENUM>::Entry System::systemThemeEntries[] =
-{
-	{System::THEME_UNKNOWN, SDL_SYSTEM_THEME_UNKNOWN},
-	{System::THEME_LIGHT, SDL_SYSTEM_THEME_LIGHT},
-	{System::THEME_DARK, SDL_SYSTEM_THEME_DARK},
-};
-
-EnumMap<System::SystemTheme, SDL_SystemTheme, System::THEME_MAX_ENUM> System::systemThemes(System::systemThemeEntries, sizeof(System::systemThemeEntries));
 
 } // sdl
 } // system

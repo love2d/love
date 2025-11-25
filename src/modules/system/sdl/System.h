@@ -27,7 +27,6 @@
 
 // SDL
 #include <SDL3/SDL_power.h>
-#include <SDL3/SDL_system.h>
 
 namespace love
 {
@@ -50,7 +49,6 @@ public:
 	std::string getClipboardText() const override;
 
 	PowerState getPowerInfo(int &seconds, int &percent) const override;
-	SystemTheme getTheme() const override;
 	bool openURL(const std::string &url) const override;
 	std::vector<std::string> getPreferredLocales() const override;
 
@@ -60,8 +58,6 @@ private:
 
 	static EnumMap<PowerState, SDL_PowerState, POWER_MAX_ENUM>::Entry powerEntries[];
 	static EnumMap<PowerState, SDL_PowerState, POWER_MAX_ENUM> powerStates;
-	static EnumMap<SystemTheme, SDL_SystemTheme, THEME_MAX_ENUM>::Entry systemThemeEntries[];
-	static EnumMap<SystemTheme, SDL_SystemTheme, THEME_MAX_ENUM> systemThemes;
 
 }; // System
 

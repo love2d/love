@@ -89,11 +89,6 @@ bool System::getConstant(System::PowerState in, const char *&out)
 	return powerStates.find(in, out);
 }
 
-bool System::getConstant(System::SystemTheme in, const char *&out)
-{
-	return systemThemes.find(in, out);
-}
-
 StringMap<System::PowerState, System::POWER_MAX_ENUM>::Entry System::powerEntries[] =
 {
 	{"unknown", System::POWER_UNKNOWN},
@@ -104,15 +99,6 @@ StringMap<System::PowerState, System::POWER_MAX_ENUM>::Entry System::powerEntrie
 };
 
 StringMap<System::PowerState, System::POWER_MAX_ENUM> System::powerStates(System::powerEntries, sizeof(System::powerEntries));
-
-StringMap<System::SystemTheme, System::THEME_MAX_ENUM>::Entry System::systemThemeEntries[] =
-{
-	{"unknown", System::THEME_UNKNOWN},
-	{"light", System::THEME_LIGHT},
-	{"dark", System::THEME_DARK}
-};
-
-StringMap<System::SystemTheme, System::THEME_MAX_ENUM> System::systemThemes(System::systemThemeEntries, sizeof(System::systemThemeEntries));
 
 } // system
 } // love
