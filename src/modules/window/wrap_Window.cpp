@@ -765,6 +765,15 @@ int w_getPointer(lua_State *L)
 	return 1;
 }
 
+int w_getSystemTheme(lua_State *L)
+{
+	Window::SystemTheme theme = instance()->getSystemTheme();
+	const char *str = "unknown";
+	Window::getConstant(theme, str);
+	lua_pushstring(L, str);
+	return 1;
+}
+
 static const luaL_Reg functions[] =
 {
 	{ "getDisplayCount", w_getDisplayCount },
@@ -809,6 +818,7 @@ static const luaL_Reg functions[] =
 	{ "showFileDialog", w_showFileDialog },
 	{ "requestAttention", w_requestAttention },
 	{ "getPointer", w_getPointer },
+	{ "getSystemTheme", w_getSystemTheme },
 	{ 0, 0 }
 };
 

@@ -573,6 +573,9 @@ Message *Event::convert(const SDL_Event &e)
 	case SDL_EVENT_LOCALE_CHANGED:
 		msg = new Message("localechanged");
 		break;
+	case SDL_EVENT_SYSTEM_THEME_CHANGED:
+		msg = new Message("themechanged");
+		break;
 	case SDL_EVENT_SENSOR_UPDATE:
 		sensorInstance = Module::getInstance<sensor::Sensor>(M_SENSOR);
 		if (sensorInstance)
