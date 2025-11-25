@@ -87,6 +87,15 @@ int w_getPowerInfo(lua_State *L)
 	return 3;
 }
 
+int w_getTheme(lua_State *L)
+{
+	System::SystemTheme theme = instance()->getTheme();
+	const char *str = "unknown";
+	System::getConstant(theme, str);
+	lua_pushstring(L, str);
+	return 1;
+}
+
 int w_openURL(lua_State *L)
 {
 	std::string url = luax_checkstring(L, 1);
@@ -131,6 +140,7 @@ static const luaL_Reg functions[] =
 	{ "setClipboardText", w_setClipboardText },
 	{ "getClipboardText", w_getClipboardText },
 	{ "getPowerInfo", w_getPowerInfo },
+	{ "getTheme", w_getTheme },
 	{ "openURL", w_openURL },
 	{ "vibrate", w_vibrate },
 	{ "hasBackgroundMusic", w_hasBackgroundMusic },

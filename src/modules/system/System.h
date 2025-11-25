@@ -48,6 +48,14 @@ public:
 		POWER_MAX_ENUM
 	};
 
+	enum SystemTheme
+	{
+		THEME_UNKNOWN,
+		THEME_LIGHT,
+		THEME_DARK,
+		THEME_MAX_ENUM
+	};
+
 	System(const char *name);
 	virtual ~System() {}
 
@@ -92,6 +100,13 @@ public:
 	virtual PowerState getPowerInfo(int &seconds, int &percent) const = 0;
 
 	/**
+	 * Get information about the system theme.
+	 *
+	 * @return System theme, which can be either light, dark, or unknown.
+	 **/
+	virtual SystemTheme getTheme() const = 0;
+
+	/**
 	 * Opens the specified URL with the user's default program to handle that
 	 * particular URL type.
 	 *
@@ -131,11 +146,14 @@ public:
 
 	static bool getConstant(const char *in, PowerState &out);
 	static bool getConstant(PowerState in, const char *&out);
+	static bool getConstant(SystemTheme in, const char *&out);
 
 private:
 
 	static StringMap<PowerState, POWER_MAX_ENUM>::Entry powerEntries[];
 	static StringMap<PowerState, POWER_MAX_ENUM> powerStates;
+	static StringMap<SystemTheme, THEME_MAX_ENUM>::Entry systemThemeEntries[];
+	static StringMap<SystemTheme, THEME_MAX_ENUM> systemThemes;
 
 }; // System
 
