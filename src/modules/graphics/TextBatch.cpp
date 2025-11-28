@@ -82,6 +82,7 @@ void TextBatch::uploadVertices(const std::vector<Font::GlyphVertex> &vertices, s
 		vertexBuffer = newbuffer;
 
 		vertexBuffers.set(0, vertexBuffer, 0);
+		modifiedVertices.encapsulate(0, newsize);
 	}
 
 	if (vertexData != nullptr && datasize > 0)
