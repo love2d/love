@@ -313,7 +313,8 @@ function love.errorhandler(msg)
 
 		for e, a, b, c in love.event.poll() do
 			if e == "quit" then
-				return 1
+				-- Also handle restart args.
+				return a or 1, b
 			elseif e == "keypressed" and a == "escape" then
 				return 1
 			elseif e == "keypressed" and a == "c" and love.keyboard.isDown("lctrl", "rctrl") then
