@@ -72,6 +72,7 @@ public:
 	struct GlyphPosition
 	{
 		Vector2 position;
+		Vector2 advance;
 		GlyphIndex glyphIndex;
 	};
 
