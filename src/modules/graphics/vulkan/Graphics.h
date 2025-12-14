@@ -161,6 +161,9 @@ struct OptionalDeviceExtensions
 	// VK_EXT_extended_dynamic_state
 	bool extendedDynamicState = false;
 
+	// VK_EXT_extended_dynamic_state3
+	bool extendedDynamicState3 = false;
+
 	// VK_KHR_get_memory_requirements2
 	bool memoryRequirements2 = false;
 
@@ -251,6 +254,7 @@ public:
 	void setScissor() override;
 	void setStencilState(const StencilState &s) override;
 	void setDepthMode(CompareMode compare, bool write) override;
+	void setDepthClamp(bool enable) override;
 	void setFrontFaceWinding(Winding winding) override;
 	void setColorMask(ColorChannelMask mask) override;
 	void setBlendState(const BlendState &blend) override;
