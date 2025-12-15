@@ -365,57 +365,166 @@ std::string getLoveInResources(bool &fused)
 	return path;
 }
 
+// Static haptic engine with strong reference (persists for app lifetime).
+static CHHapticEngine *sHapticEngine API_AVAILABLE(ios(13.0)) = nil;
+static BOOL sHapticEngineStarted = NO;
+
+// Plays a haptic pattern on the running engine.
+// @param engine  The started haptic engine.
+// @param seconds Duration of the vibration.
+// @return YES on success, NO on failure (caller should use fallback).
+static BOOL playHapticPattern(CHHapticEngine *engine, double seconds)
+	API_AVAILABLE(ios(13.0))
+{
+	NSError *error = nil;
+
+	NSDictionary *hapticDict = @{
+		CHHapticPatternKeyPattern: @[
+			@{
+				CHHapticPatternKeyEvent: @{
+					CHHapticPatternKeyEventType:
+						CHHapticEventTypeHapticContinuous,
+					CHHapticPatternKeyTime: @0.0,
+					CHHapticPatternKeyEventDuration: @(seconds),
+					CHHapticPatternKeyEventParameters: @[
+						// High intensity, correlates to Android's default.
+						@{
+							CHHapticPatternKeyParameterID:
+								CHHapticEventParameterIDHapticIntensity,
+							CHHapticPatternKeyParameterValue: @1.0
+						},
+						// Medium sharpness: 0.0 is rumble, 1.0 is crisp tap.
+						@{
+							CHHapticPatternKeyParameterID:
+								CHHapticEventParameterIDHapticSharpness,
+							CHHapticPatternKeyParameterValue: @0.5
+						}
+					]
+				}
+			}
+		]
+	};
+
+	CHHapticPattern *pattern = [[CHHapticPattern alloc]
+		initWithDictionary:hapticDict error:&error];
+	if (pattern == nil)
+	{
+		NSLog(@"LOVE Haptics: Failed to create pattern: %@",
+			error.localizedDescription);
+		return NO;
+	}
+
+	id<CHHapticPatternPlayer> player =
+		[engine createPlayerWithPattern:pattern error:&error];
+	if (player == nil)
+	{
+		NSLog(@"LOVE Haptics: Failed to create player: %@",
+			error.localizedDescription);
+		return NO;
+	}
+
+	if (![player startAtTime:0 error:&error])
+	{
+		NSLog(@"LOVE Haptics: Failed to start player: %@",
+			error.localizedDescription);
+		return NO;
+	}
+
+	return YES;
+}
+
+// Creates and configures the haptic engine with lifecycle handlers.
+// @return The configured engine, or nil on failure.
+static CHHapticEngine *createHapticEngine() API_AVAILABLE(ios(13.0))
+{
+	NSError *error = nil;
+	CHHapticEngine *engine = [[CHHapticEngine alloc] initAndReturnError:&error];
+
+	if (engine == nil)
+	{
+		NSLog(@"LOVE Haptics: Failed to create engine: %@",
+			error.localizedDescription);
+		return nil;
+	}
+
+	// Handle engine stop (e.g., app backgrounded, audio interruption).
+	engine.stoppedHandler = ^(CHHapticEngineStoppedReason reason) {
+		NSLog(@"LOVE Haptics: Engine stopped (reason: %ld), "
+			"will restart on next use", (long)reason);
+		sHapticEngineStarted = NO;
+	};
+
+	// Handle engine reset (system-level reset, must recreate).
+	engine.resetHandler = ^{
+		NSLog(@"LOVE Haptics: Engine reset, will recreate on next use");
+		sHapticEngine = nil;
+		sHapticEngineStarted = NO;
+	};
+
+	return engine;
+}
+
+// Triggers vibration for given duration using CoreHaptics or fallback.
+// @param seconds Duration of vibration in seconds.
 void vibrate(double seconds)
 {
 	@autoreleasepool
 	{
 		if (@available(iOS 13.0, *))
 		{
-			NSError *error = nil;
-			CHHapticEngine *engine = [[CHHapticEngine alloc]
-				initAndReturnError:&error];
-
-			if (engine != nil)
+			if (!CHHapticEngine.capabilitiesForHardware.supportsHaptics)
 			{
-				[engine startAndReturnError:nil];
+				NSLog(@"LOVE Haptics: Device does not support haptics, "
+					"using fallback");
+				AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+				return;
+			}
 
-				NSDictionary *hapticDict = @{
-					CHHapticPatternKeyEvent: @[@{
-						CHHapticPatternKeyEventType:
-							CHHapticEventTypeHapticContinuous,
-						CHHapticPatternKeyTime: @0.0,
-						CHHapticPatternKeyEventDuration: @(seconds),
-						CHHapticPatternKeyEventParameters: @[
-							// Correlates to Android's default high intensity vibration.
-							@{
-								CHHapticPatternKeyParameterID:
-									CHHapticEventParameterIDHapticIntensity,
-								CHHapticPatternKeyParameterValue: @1.0
-							},
-							// Medium sharpness, 0.0 is dull rumble while 1.0 is crisp tap.
-							@{
-								CHHapticPatternKeyParameterID:
-									CHHapticEventParameterIDHapticSharpness,
-								CHHapticPatternKeyParameterValue: @0.5
-							}
-						]
-					}]
-				};
-
-				CHHapticPattern *pattern = [[CHHapticPattern alloc]
-					initWithDictionary:hapticDict error:nil];
-
-				if (pattern != nil)
+			// Create engine lazily if needed.
+			if (sHapticEngine == nil)
+			{
+				sHapticEngine = createHapticEngine();
+				if (sHapticEngine == nil)
 				{
-					id<CHHapticPatternPlayer> player =
-						[engine createPlayerWithPattern:pattern error:nil];
-					[player startAtTime:0 error:nil];
+					AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 					return;
 				}
 			}
+
+			if (!sHapticEngineStarted)
+			{
+				// Capture seconds for use in completion handler.
+				double duration = seconds;
+				CHHapticEngine *engine = sHapticEngine;
+
+				[engine startWithCompletionHandler:^(NSError *error) {
+					if (error != nil)
+					{
+						NSLog(@"LOVE Haptics: Failed to start engine: %@",
+							error.localizedDescription);
+						AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+						return;
+					}
+
+					sHapticEngineStarted = YES;
+
+					if (!playHapticPattern(engine, duration))
+					{
+						AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+					}
+				}];
+				return;
+			}
+
+			// Engine already running, play immediately.
+			if (!playHapticPattern(sHapticEngine, seconds))
+			{
+				AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+			}
+			return;
 		}
 
-		// Fallback: iOS < 13 or Core Haptics unavailable.
+		// Fallback: iOS < 13 or CoreHaptics unavailable.
 		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 	}
 }
