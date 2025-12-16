@@ -281,7 +281,7 @@ double OggDemuxer::getDuration(std::function<double(int64)> getTime)
 		ogg_int64_t gp = ogg_page_granulepos(&page);
 
 		// Skip pages with invalid granulepos (-1 = continuation page)
-		if (gp < 0)
+		if (gp <= 0)
 			continue;
 
 		// Track highest granulepos (increases monotonically)
