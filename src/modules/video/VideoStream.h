@@ -71,7 +71,7 @@ public:
 	virtual void seek(double offset);
 	virtual double tell() const;
 	virtual bool isPlaying() const;
-	virtual double getDuration() = 0;
+	virtual double getDuration() const = 0;
 
 	class FrameSync;
 	class DeltaSync;
