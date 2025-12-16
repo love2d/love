@@ -196,7 +196,7 @@ void TheoraVideoStream::parseHeader()
 	});
 }
 
-double TheoraVideoStream::getDuration()
+double TheoraVideoStream::getDuration() const
 {
 	return duration;
 }

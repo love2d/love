@@ -58,7 +58,7 @@ public:
 	void setSync(FrameSync *frameSync);
 
 	bool isPlaying() const;
-	double getDuration();
+	double getDuration() const;
 
 	void threadedFillBackBuffer(double dt);
 
