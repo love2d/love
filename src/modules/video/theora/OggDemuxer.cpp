@@ -289,9 +289,9 @@ double OggDemuxer::getDuration(std::function<double(int64)> getTime)
 			lastGranulepos = gp;
 	}
 
-	// Seek back to position after headers for playback
+	// Seek back to position after headers for playback.
 	file->seek(startPos);
-	ogg_sync_reset(&sync);
+	resync();
 	eos = false;
 
 	if (lastGranulepos < 0)
