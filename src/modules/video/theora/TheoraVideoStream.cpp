@@ -188,18 +188,16 @@ void TheoraVideoStream::parseHeader()
 
 	headerParsed = true;
 	th_decode_packetin(decoder, &packet, nullptr);
+
+	// Calculate duration now while file is being read sequentially
+	// This avoids seek/sync issues that occur when trying to re-scan later
+	duration = demuxer.getDuration([this](int64 granulepos) {
+		return th_granule_time(decoder, granulepos);
+	});
 }
 
 double TheoraVideoStream::getDuration()
 {
-	// Only calculate duration once and cache it
-	if (duration == -2.0)
-	{
-		duration = demuxer.getDuration([this](int64 granulepos) {
-			return th_granule_time(decoder, granulepos);
-		});
-	}
-
 	return duration;
 }
 

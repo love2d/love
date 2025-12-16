@@ -266,62 +266,38 @@ bool OggDemuxer::seek(ogg_packet &packet, double target, std::function<double(in
 
 double OggDemuxer::getDuration(std::function<double(int64)> getTime)
 {
-	int64 currentPos = file->tell();
-	bool wasEos = eos;
-
-	// Seek to near the end of the file to find the last page
-	int64 fileSize = file->getSize();
-	if (fileSize <= 0)
-		return -1.0;
-
-	file->seek(fileSize);
-	
-	// Read backwards to find the last page with valid granulepos
-	ogg_packet tempPacket;
+	// Called during initialization while file is being read sequentially.
+	// We continue reading forward (no seek to 0) to avoid sync issues.
+	// Save position to restore after scanning.
+	int64 startPos = file->tell();
 	ogg_int64_t lastGranulepos = -1;
 
-	// Use bisection to find the last valid packet
-	double low = 0;
-	double high = fileSize;
-	static const double threshold = 0.01;
-	while (high - low > threshold)
+	while (readPage(true))
 	{
-		double pos = (high + low) / 2;
-		file->seek(pos);
-		resync();
-
-		if (!readPage(true))
-		{
-			high = pos;
+		// Only process pages from our video stream
+		if (ogg_page_serialno(&page) != videoSerial)
 			continue;
-		}
 
-		if (!readPacket(tempPacket, false))
-		{
-			high = pos;
-			eos = false;
+		ogg_int64_t gp = ogg_page_granulepos(&page);
+
+		// Skip pages with invalid granulepos (-1 = continuation page)
+		if (gp < 0)
 			continue;
-		}
 
-		if (tempPacket.granulepos > lastGranulepos)
-		{
-			lastGranulepos = tempPacket.granulepos;
-			low = pos;
-		}
-		else
-		{
-			high = pos;
-		}
+		// Track highest granulepos (increases monotonically)
+		if (gp > lastGranulepos)
+			lastGranulepos = gp;
 	}
 
-	// Restore original state
-	file->seek(currentPos);
-	resync();
-	eos = wasEos;
+	// Seek back to position after headers for playback
+	file->seek(startPos);
+	ogg_sync_reset(&sync);
+	eos = false;
 
 	if (lastGranulepos < 0)
 		return -1.0;
 
+	// Duration = time of last granulepos (video starts at 0)
 	return getTime(lastGranulepos);
 }
 
