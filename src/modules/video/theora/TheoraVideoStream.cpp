@@ -40,6 +40,7 @@ TheoraVideoStream::TheoraVideoStream(love::filesystem::File *file)
 	, frameReady(false)
 	, lastFrame(0)
 	, nextFrame(0)
+	, duration(-2.0)
 {
 	if (demuxer.findStream() != OggDemuxer::TYPE_THEORA)
 		throw love::Exception("Invalid video file, video is not theora");
@@ -187,6 +188,17 @@ void TheoraVideoStream::parseHeader()
 
 	headerParsed = true;
 	th_decode_packetin(decoder, &packet, nullptr);
+
+	// Calculate duration now while file is being read sequentially
+	// This avoids seek/sync issues that occur when trying to re-scan later
+	duration = demuxer.getDuration([this](int64 granulepos) {
+		return th_granule_time(decoder, granulepos);
+	});
+}
+
+double TheoraVideoStream::getDuration() const
+{
+	return duration;
 }
 
 void TheoraVideoStream::seekDecoder(double target)
