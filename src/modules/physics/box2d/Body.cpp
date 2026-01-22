@@ -124,8 +124,7 @@ float Body::getInertia() const
 
 int Body::getMassData(lua_State *L)
 {
-	b2MassData data;
-	body->GetMassData(&data);
+	b2MassData data = body->GetMassData();
 	b2Vec2 center = Physics::scaleUp(data.center);
 	lua_pushnumber(L, center.x);
 	lua_pushnumber(L, center.y);
@@ -265,8 +264,7 @@ void Body::setMassData(float x, float y, float m, float i)
 
 void Body::setMass(float m)
 {
-	b2MassData data;
-	body->GetMassData(&data);
+	b2MassData data = body->GetMassData();
 	data.mass = m;
 	body->SetMassData(&data);
 	hasCustomMass = true;

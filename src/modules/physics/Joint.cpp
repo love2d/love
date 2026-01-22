@@ -52,7 +52,6 @@ StringMap<Joint::Type, Joint::JOINT_MAX_ENUM>::Entry Joint::typeEntries[] =
 	{"friction", Joint::JOINT_FRICTION},
 	{"weld", Joint::JOINT_WELD},
 	{"wheel", Joint::JOINT_WHEEL},
-	{"rope", Joint::JOINT_ROPE},
 	{"motor", Joint::JOINT_MOTOR},
 };
 
