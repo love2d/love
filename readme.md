@@ -8,8 +8,7 @@ LÖVE is an awesome, free, and open-source framework you can use to make 2D game
 Documentation
 -------------
 
-We use our [wiki][wiki] for documentation.
-If you need further help, feel free to ask on our [forums][forums], our [Discord server][discord], or our [subreddit][subreddit].
+We use our [wiki][wiki] for documentation. If you need further assistance, please don't hesitate to ask on the LÖVE [forums][forums], [Discord server][discord], or [subreddit][subreddit].
 
 Repository
 ----------
