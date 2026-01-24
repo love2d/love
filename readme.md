@@ -35,7 +35,8 @@ There are also unstable/nightly builds:
 Test Suite
 ----------
 
-The test suite in `testing/` covers all the LÖVE APIs, and tests them the same way developers use them. You can view current test coverage from any [action][workflows].  
+The test suite in `testing/` covers all the LÖVE APIs, and tests them the same way developers use them. You can view current test coverage from any [action][workflows].
+
 You can run the suite locally like you would run any other LÖVE project from the command line:
 
 ```bash
