@@ -92,6 +92,8 @@ public:
 
 	void setDepthMode(CompareMode compare, bool write) override;
 
+	void setDepthClamp(bool enable) override;
+
 	void setFrontFaceWinding(Winding winding) override;
 
 	void setColorMask(ColorChannelMask mask) override;
@@ -144,6 +146,8 @@ private:
 	void setRenderTargetsInternal(const RenderTargets &rts, int pixelw, int pixelh, bool hasSRGBtexture) override;
 	void initCapabilities() override;
 	void getAPIStats(int &shaderswitches) const override;
+	
+	bool hasExtension(const char* name);
 
 	void endPass(bool presenting);
 	GLuint bindCachedFBO(const RenderTargets &targets);
