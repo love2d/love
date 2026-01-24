@@ -48,10 +48,10 @@ See the [readme][testsuite] in the testing folder for more information.
 Contributing
 ------------
 
-The best places to contribute are through the issue tracker and the official Discord server or IRC channel.
+The best places to contribute are through the [Issue Tracker][issue-tracker], [Discord Server][discord] or IRC channel.
 
 For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
-Changes and new features typically get discussed in the issue tracker or on Discord or the forums before a pull request is made.
+New changes/features typically get discussed on the [Issue Tracker][issue-tracker], [Discord Server][discord] or [Forums][forums] before creating a pull request.
 
 Compilation
 -----------
@@ -117,3 +117,4 @@ Dependencies
 [releases]: https://github.com/love2d/love/releases
 [testsuite]: https://github.com/love2d/love/tree/main/testing
 [workflows]: https://github.com/love2d/love/actions/workflows/main.yml?query=branch%3Amain
+[issue-tracker]: https://github.com/love2d/love/issues
