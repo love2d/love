@@ -39,7 +39,7 @@ The test suite in `testing/` covers all the LÖVE APIs, and tests them the same 
 You can run the suite locally like you would run a normal LÖVE project, e.g.:  
 `love testing`
 
-See the [readme][testsuite] in the testing folder for more info.  
+See the [readme][testsuite] in the testing folder for more information.
 
 Contributing
 ------------
