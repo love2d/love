@@ -24,7 +24,7 @@ Experimental changes are sometimes developed in a separate [love-experiments][lo
 Builds
 ------
 
-Files for releases are in the [releases][releases] section on GitHub. [The site][site] has links to files and additional platform content for the latest release.
+Files for releases are in the [releases][releases] section on GitHub. The [LÖVE][site] website has links to files and additional platform content for the latest release.
 
 There are also unstable/nightly builds:
 
