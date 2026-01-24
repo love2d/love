@@ -569,6 +569,9 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		}
 	}
 
+	if (f.hidehomeindicator)
+		SDL_SetHint(SDL_HINT_IOS_HIDE_HOME_INDICATOR, f.hidehomeindicator);
+
 	bool needsetmode = false;
 
 	if (renderer != windowRenderer && isOpen())
@@ -760,6 +763,8 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 	setHighDPIAllowed((wflags & SDL_WINDOW_HIGH_PIXEL_DENSITY) != 0);
 
 	settings.usedpiscale = newsettings.usedpiscale;
+
+	settings.hidehomeindicator = newsettings.hidehomeindicator;
 
 	// Only minimize on focus loss if the window is in exclusive-fullscreen mode
 	if (settings.fullscreen && settings.fstype == FULLSCREEN_EXCLUSIVE)
