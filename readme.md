@@ -29,7 +29,7 @@ Files for releases are in the [releases][releases] section on GitHub. The [LÖVE
 There are also unstable/nightly builds:
 
 - Builds for some platforms are automatically created after each commit and are available through GitHub's CI interfaces.
-- For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa]
+- For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa].
 - For arch linux there's [love-git][aur] in the AUR.
 
 Test Suite
