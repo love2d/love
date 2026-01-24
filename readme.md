@@ -36,8 +36,11 @@ Test Suite
 ----------
 
 The test suite in `testing/` covers all the LÖVE APIs, and tests them the same way developers use them. You can view current test coverage from any [action][workflows].  
-You can run the suite locally like you would run a normal LÖVE project, e.g.:  
-`love testing`
+You can run the suite locally like you would run a normal LÖVE project from the command line:
+
+```bash
+love testing
+```
 
 See the [readme][testsuite] in the testing folder for more information.
 
