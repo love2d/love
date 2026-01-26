@@ -1,12 +1,14 @@
-LÖVE is an *awesome* framework you can use to make 2D games in Lua. It's free, open-source, and works on Windows, macOS, Linux, Android, and iOS.
 
-[![Build Status: Github CI](https://github.com/love2d/love/workflows/continuous-integration/badge.svg)](https://github.com/love2d/love/actions?query=workflow%3Acontinuous-integration)
+# LÖVE
+
+LÖVE is an awesome, free, and open-source framework you can use to make 2D games in Lua. It works on Windows, macOS, Linux, Android, and iOS.
+
+[![Build Status: Github CI](https://github.com/love2d/love/workflows/continuous-integration/badge.svg)][ci]
 
 Documentation
 -------------
 
-We use our [wiki][wiki] for documentation.
-If you need further help, feel free to ask on our [forums][forums], our [Discord server][discord], or our [subreddit][subreddit].
+We use our [wiki][wiki] for documentation. If you need further assistance, please don't hesitate to ask on the LÖVE [Forums][forums], [Discord Server][discord], or [SubReddit][subreddit].
 
 Repository
 ----------
@@ -22,30 +24,34 @@ Experimental changes are sometimes developed in a separate [love-experiments][lo
 Builds
 ------
 
-Files for releases are in the [releases][releases] section on GitHub. [The site][site] has links to files and additional platform content for the latest release.
+Files for releases are in the [releases][releases] section on GitHub. The [LÖVE][site] website has links to files and additional platform content for the latest release.
 
 There are also unstable/nightly builds:
 
 - Builds for some platforms are automatically created after each commit and are available through GitHub's CI interfaces.
-- For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa]
+- For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa].
 - For arch linux there's [love-git][aur] in the AUR.
 
 Test Suite
 ----------
 
-The test suite in `testing/` covers all the LÖVE APIs, and tests them the same way developers use them. You can view current test coverage from any [action][workflows].  
-You can run the suite locally like you would run a normal LÖVE project, e.g.:  
-`love testing`
+The test suite in `testing/` covers all the LÖVE APIs, and tests them the same way developers use them. You can view current test coverage from any [action][workflows].
 
-See the [readme][testsuite] in the testing folder for more info.  
+You can run the suite locally like you would run any other LÖVE project from the command line:
+
+```bash
+love testing
+```
+
+See the [readme][testsuite] in the testing folder for more information.
 
 Contributing
 ------------
 
-The best places to contribute are through the issue tracker and the official Discord server or IRC channel.
+The best places to contribute are through the [Issue Tracker][issue-tracker] or [Discord Server][discord].
 
 For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
-Changes and new features typically get discussed in the issue tracker or on Discord or the forums before a pull request is made.
+New changes/features typically get discussed on the [Issue Tracker][issue-tracker], [Discord Server][discord] or [Forums][forums] before creating a pull request.
 
 Compilation
 -----------
@@ -63,7 +69,7 @@ Because in-tree builds are not allowed, the Makefiles needs to be generated in a
 > CMake 3.15 and earlier doesn't support `--install-prefix`. In that case, use `-DCMAKE_INSTALL_PREFIX=` instead.
 
 ### macOS
-Download or clone [this repository][dependencies-apple] and copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder and the `shared` subfolder into love's `platform/xcode` folder.
+Download/Clone the [love apple dependencies][dependencies-apple] repository. Copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder. The `shared` subfolder will also need to be included into love's `platform/xcode` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
 
@@ -71,9 +77,9 @@ Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the
 Building for iOS requires macOS and Xcode.
 
 Download the `love-apple-dependencies` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
-unzip it, and place the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder and the `shared` subfolder into love's `platform/xcode` folder.
+unzip it, and place the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder. The `shared` subfolder will also need to be included into love's `platform/xcode` folder.
 
-Or, download or clone [this repository][dependencies-apple] and copy, move, or symlink the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder and the `shared` subfolder into love's `platform/xcode` folder.
+You can also download/clone the [love apple dependencies][dependencies-apple] repository. Copy, move, or symlink the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder. The `shared` subfolder will also need to be included into love's `platform/xcode` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
 
@@ -111,3 +117,5 @@ Dependencies
 [releases]: https://github.com/love2d/love/releases
 [testsuite]: https://github.com/love2d/love/tree/main/testing
 [workflows]: https://github.com/love2d/love/actions/workflows/main.yml?query=branch%3Amain
+[issue-tracker]: https://github.com/love2d/love/issues
+[ci]: https://github.com/love2d/love/actions?query=workflow%3Acontinuous-integration
