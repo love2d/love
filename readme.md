@@ -48,7 +48,7 @@ See the [readme][testsuite] in the testing folder for more information.
 Contributing
 ------------
 
-The best places to contribute are through the [Issue Tracker][issue-tracker], [Discord Server][discord] or IRC channel.
+The best places to contribute are through the [Issue Tracker][issue-tracker] or [Discord Server][discord].
 
 For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
 New changes/features typically get discussed on the [Issue Tracker][issue-tracker], [Discord Server][discord] or [Forums][forums] before creating a pull request.
