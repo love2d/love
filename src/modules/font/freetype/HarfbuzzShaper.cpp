@@ -163,21 +163,36 @@ void HarfbuzzShaper::computeBufferRanges(const ColoredCodepoints &codepoints, Ra
 
 		for (size_t i = 0; i < glyphcount; i++)
 		{
+			uint32 prevCluster = (i > 0) ? glyphinfos[i - 1].cluster : 0;
+			uint32 currCluster = glyphinfos[i].cluster;
+			// Only merge consecutive glyphs if their clusters are also consecutive
+			bool clustersContiguous = (i == 0) || (currCluster == prevCluster + 1) || (currCluster == prevCluster);
+
 			if (isValidGlyph(glyphinfos[i].codepoint, codepoints.cps, glyphinfos[i].cluster))
 			{
-				if (bufferranges.empty() || bufferranges.back().index != rasti || bufferranges.back().range.getMax() + 1 != i)
-					bufferranges.push_back({rasti, (int)glyphinfos[i].cluster, Range(i, 1)});
-				else
+				bool canExtendPrevious = !bufferranges.empty()
+					&& bufferranges.back().index == rasti
+					&& bufferranges.back().range.getMax() + 1 == i
+					&& clustersContiguous;
+
+				if (canExtendPrevious)
 					bufferranges.back().range.last++;
+				else
+					bufferranges.push_back({rasti, (int)glyphinfos[i].cluster, Range(i, 1)});
 			}
 			else if (rasti == rasterizers.size() - 1)
 			{
 				// Use the first font for remaining invalid glyphs when no
 				// fallback font supports them.
-				if (bufferranges.empty() || bufferranges.back().index != 0 || bufferranges.back().range.getMax() + 1 != i)
-					bufferranges.push_back({0, (int)glyphinfos[i].cluster, Range(i, 1)});
-				else
+				bool canExtendPrevious = !bufferranges.empty()
+					&& bufferranges.back().index == 0
+					&& bufferranges.back().range.getMax() + 1 == i
+					&& clustersContiguous;
+
+				if (canExtendPrevious)
 					bufferranges.back().range.last++;
+				else
+					bufferranges.push_back({0, (int)glyphinfos[i].cluster, Range(i, 1)});
 			}
 			else
 			{
