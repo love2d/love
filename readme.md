@@ -1,113 +1,77 @@
-LÖVE is an *awesome* framework you can use to make 2D games in Lua. It's free, open-source, and works on Windows, macOS, Linux, Android, and iOS.
+# LÖVE with Lua 5.4
 
-[![Build Status: Github CI](https://github.com/love2d/love/workflows/continuous-integration/badge.svg)](https://github.com/love2d/love/actions?query=workflow%3Acontinuous-integration)
+本仓库是 [LÖVE](https://love2d.org) 2D 游戏框架的 **Lua 5.4 移植分支**，基于 LÖVE 12.0 (main) 修改，使其能够使用 **Lua 5.4.7** 替代默认的 LuaJIT / Lua 5.1 进行编译和运行。
 
-Documentation
--------------
+## 目的
 
-We use our [wiki][wiki] for documentation.
-If you need further help, feel free to ask on our [forums][forums], our [Discord server][discord], or our [subreddit][subreddit].
+LÖVE 官方默认使用 LuaJIT 作为脚本引擎，但 LuaJIT 长期停留在 Lua 5.1 语法级别。本仓库的目标是让 LÖVE 支持 Lua 5.4 的全部新特性，包括：
 
-Repository
-----------
+- `<const>` / `<close>` 变量属性
+- `//` 整数除法运算符
+- 原生位运算符（`&`, `|`, `~`, `<<`, `>>`）
+- `math.type()` 区分 integer / float
+- 内置 `utf8` 标准库
+- `warn()` 警告系统
+- `math.maxinteger` / `math.mininteger`
+- 整数与浮点数的严格类型区分
 
-We use the 'main' branch for development of the next major release, and therefore it should not be considered stable.
+## 构建环境
 
-There are also branches for currently released major versions, which may have fixes and changes meant for upcoming patch releases within that major version.
+- **编译器**: GCC 14.2.0 (MSYS2 MinGW-w64)
+- **构建系统**: CMake 3.31+
+- **Lua**: 5.4.7 (`pacman -S mingw-w64-x86_64-lua`)
+- **平台**: Windows (MSYS2 MinGW64)
 
-We tag all our releases (since we started using mercurial and git), and have binary downloads available for them.
+### 构建命令
 
-Experimental changes are sometimes developed in a separate [love-experiments][love-experiments] repository.
+```bash
+cmake -B build -S . -G "MinGW Makefiles" -DLOVE_JIT=OFF
+cmake --build build -j$(nproc)
+```
 
-Builds
-------
+## 修改内容
 
-Files for releases are in the [releases][releases] section on GitHub. [The site][site] has links to files and additional platform content for the latest release.
+相对于 LÖVE 12.0 官方 main 分支，本仓库做了以下修改：
 
-There are also unstable/nightly builds:
+### 1. CMakeLists.txt
 
-- Builds for some platforms are automatically created after each commit and are available through GitHub's CI interfaces.
-- For ubuntu linux they are in [ppa:bartbes/love-unstable][unstableppa]
-- For arch linux there's [love-git][aur] in the AUR.
+- **Lua 5.4 查找与兼容宏**：将 `find_package(Lua51)` 改为 `find_package(Lua 5.4)`，添加 `LUA_COMPAT_5_3` 编译宏以保留向后兼容 API
+- **CPack 空目标修复**：为 `$<TARGET_FILE:${MEGA_SDL3}>` 添加 `if(MEGA_SDL3)` 守护，修复非 MEGA 构建时的 CMake 生成器表达式语法错误
+- **MinGW 链接器循环依赖修复**：GCC 单遍链接器无法自动处理 LÖVE 静态库间的循环引用，显式列出所有 STATIC 库目标并重复两次来解决
+- **luahttps Windows 库链接**：将 `wininet`、`ws2_32`、`secur32` 的链接条件从 `if(MSVC)` 扩展为 `if(MSVC OR MINGW)`
 
-Test Suite
-----------
+### 2. src/modules/event/wrap_Event.cpp
 
-The test suite in `testing/` covers all the LÖVE APIs, and tests them the same way developers use them. You can view current test coverage from any [action][workflows].  
-You can run the suite locally like you would run a normal LÖVE project, e.g.:  
-`love testing`
+- **lua_cpcall 兼容**：`lua_cpcall` 在 Lua 5.2+ 中被移除，添加条件编译使用 `lua_pushcfunction` + `lua_pcall` 替代
 
-See the [readme][testsuite] in the testing folder for more info.  
+### 3. src/modules/love/love.cpp
 
-Contributing
-------------
+- **utf8 库预加载**：Lua 5.4 内置 `utf8` 标准库，在 `LUA_VERSION_NUM >= 504` 时跳过 LÖVE 自定义的 `luaopen_luautf8` 预加载
 
-The best places to contribute are through the issue tracker and the official Discord server or IRC channel.
+### 4. .gitignore
 
-For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
-Changes and new features typically get discussed in the issue tracker or on Discord or the forums before a pull request is made.
+- 添加 `/build/` 目录
 
-Compilation
------------
+## 验证
 
-### Windows
-Follow the instructions at the [megasource][megasource] repository page.
+构建产物通过了 8 项 Lua 5.4 特性验证测试（见 `snake/` 目录中的贪吃蛇示例游戏）：
 
-### *nix
-Because in-tree builds are not allowed, the Makefiles needs to be generated in a separate build directory. In this example, folder named `build` is used:
+```
+✓ 1. <const> 变量属性
+✓ 2. // 整数除法
+✓ 3. 位运算符 &, |, <<
+✓ 4. math.type() 类型区分
+✓ 5. 内置 utf8 标准库
+✓ 6. warn() 警告系统
+✓ 7. math.maxinteger 常量
+✓ 8. 整数/浮点严格区分
+```
 
-	$ cmake -B build -S. --install-prefix $PWD/prefix # this will create the directory `build/`.
-	$ cmake --build build --target install -j$(nproc) # this will build with all cores and put the files in `prefix/`.
+```
+$ lovec --version
+LOVE 12.0 (Bestest Friend)
+```
 
-> [!NOTE]  
-> CMake 3.15 and earlier doesn't support `--install-prefix`. In that case, use `-DCMAKE_INSTALL_PREFIX=` instead.
+## 原始项目
 
-### macOS
-Download or clone [this repository][dependencies-apple] and copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder and the `shared` subfolder into love's `platform/xcode` folder.
-
-Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
-
-### iOS
-Building for iOS requires macOS and Xcode.
-
-Download the `love-apple-dependencies` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
-unzip it, and place the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder and the `shared` subfolder into love's `platform/xcode` folder.
-
-Or, download or clone [this repository][dependencies-apple] and copy, move, or symlink the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder and the `shared` subfolder into love's `platform/xcode` folder.
-
-Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
-
-See `readme-iOS.rtf` for more information.
-
-### Android
-Visit the [Android build repository][android-repository] for build instructions.
-
-Dependencies
-------------
-
-- SDL3
-- OpenGL 3.3+ / OpenGL ES 3.0+ / Vulkan / Metal
-- OpenAL
-- Lua / LuaJIT / LLVM-lua
-- FreeType
-- harfbuzz
-- ModPlug
-- Vorbisfile
-- Theora
-
-[site]: https://love2d.org
-[wiki]: https://love2d.org/wiki
-[forums]: https://love2d.org/forums
-[discord]: https://discord.gg/rhUets9
-[subreddit]: https://www.reddit.com/r/love2d
-[dependencies-apple]: https://github.com/love2d/love-apple-dependencies
-[dependencies-ios]: https://github.com/love2d/love/releases
-[megasource]: https://github.com/love2d/megasource
-[unstableppa]: https://launchpad.net/~bartbes/+archive/love-unstable
-[aur]: https://aur.archlinux.org/packages/love-git
-[love-experiments]: https://github.com/slime73/love-experiments
-[codestyle]: https://love2d.org/wiki/Code_Style
-[android-repository]: https://github.com/love2d/love-android
-[releases]: https://github.com/love2d/love/releases
-[testsuite]: https://github.com/love2d/love/tree/main/testing
-[workflows]: https://github.com/love2d/love/actions/workflows/main.yml?query=branch%3Amain
+LÖVE 是一个优秀的开源 2D 游戏框架，详见 [原始 README](readme.md.bak) 和 [官方网站](https://love2d.org)。

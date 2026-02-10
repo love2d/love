@@ -657,7 +657,9 @@ int luaopen_love(lua_State *L)
 #ifdef LOVE_ENABLE_ENET
 	love::luax_preload(L, luaopen_enet, "enet");
 #endif
-#ifdef LOVE_ENABLE_LUA53
+#if defined(LOVE_ENABLE_LUA53) && LUA_VERSION_NUM < 504
+	// Lua 5.4+ has a built-in utf8 library, so only preload the custom one
+	// for older Lua versions (5.1/LuaJIT with backported 5.3 features).
 	love::luax_preload(L, luaopen_luautf8, "utf8");
 #endif
 #ifdef LOVE_ENABLE_LUAHTTPS

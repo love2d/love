@@ -182,7 +182,13 @@ static void drawCallback(void *context, Variant *returnVal0, Variant *returnVal1
 	data.r = r;
 
 	// pcall into C code to catch errors from checkvariant as well as the lua_call.
+#if LUA_VERSION_NUM >= 502
+	lua_pushcfunction(L, drawCallbackInner);
+	lua_pushlightuserdata(L, &data);
+	int err = lua_pcall(L, 1, 0, 0);
+#else
 	int err = lua_cpcall(L, drawCallbackInner, &data);
+#endif
 
 	// Unfortunately, this eats the stack trace, too bad.
 	if (err != 0)

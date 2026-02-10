@@ -216,9 +216,12 @@ Please see https://github.com/love2d/megasource
 		target_include_directories(lovedep::Lua INTERFACE ${LUAJIT_INCLUDE_DIR})
 		target_link_libraries(lovedep::Lua INTERFACE ${LUAJIT_LIBRARY})
 	else()
-		find_package(Lua51 REQUIRED)
+		find_package(Lua 5.4 REQUIRED)
 		target_include_directories(lovedep::Lua INTERFACE ${LUA_INCLUDE_DIR})
-		target_link_libraries(lovedep::Lua INTERFACE ${LUA_LIBRARY})
+		target_link_libraries(lovedep::Lua INTERFACE ${LUA_LIBRARIES})
+		# Lua 5.4 needs LUA_COMPAT_5_3 for backward-compatible APIs
+		# (e.g. lua_newuserdata, lua_getuservalue, etc.)
+		target_compile_definitions(lovedep::Lua INTERFACE LUA_COMPAT_5_3)
 	endif()
 endif()
 
@@ -1651,7 +1654,7 @@ if (APPLE)
 	target_compile_options(love_3p_luahttps PRIVATE -fobjc-arc)
 endif()
 
-if(MSVC)
+if(MSVC OR MINGW)
 	target_link_libraries(love_3p_luahttps
 		ws2_32
 		secur32
@@ -1950,7 +1953,39 @@ set(LIBLOVE_LIBRARIES
 	love_3p_wuff
 	love_3p_xxhash
 )
-target_link_libraries(liblove ${LIBLOVE_DEPENDENCIES} ${LIBLOVE_LIBRARIES})
+if(MINGW)
+	# MinGW/GCC linker is single-pass; we must list all static libraries
+	# explicitly and repeat them to resolve circular references.
+	# The INTERFACE targets' transitive deps get deduplicated by CMake,
+	# so we expand and repeat everything manually.
+	set(LIBLOVE_ALL_STATIC
+		love_common
+		love_audio_root love_audio_null love_audio_openal
+		love_data
+		love_event_root love_event_sdl
+		love_filesystem_root love_filesystem_physfs
+		love_font_root love_font_freetype
+		love_graphics_root love_graphics_opengl love_graphics_vulkan
+		love_image_root love_image_magpie
+		love_joystick_root love_joystick_sdl
+		love_keyboard_root love_keyboard_sdl
+		love_math
+		love_mouse_root love_mouse_sdl
+		love_physics_root love_physics_box2d
+		love_sensor_root love_sensor_sdl
+		love_sound_root love_sound_lullaby
+		love_system_root love_system_sdl
+		love_thread_root love_thread_sdl
+		love_timer
+		love_touch_root love_touch_sdl
+		love_video_root love_video_theora
+		love_window_root love_window_sdl
+		${LIBLOVE_LIBRARIES}
+	)
+	target_link_libraries(liblove ${LIBLOVE_ALL_STATIC} ${LIBLOVE_ALL_STATIC})
+else()
+	target_link_libraries(liblove ${LIBLOVE_DEPENDENCIES} ${LIBLOVE_LIBRARIES})
+endif()
 
 if(LOVE_EXTRA_DEPENDECIES)
 	add_dependencies(liblove ${LOVE_EXTRA_DEPENDECIES})
@@ -2039,7 +2074,9 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 	# CPack
 	###################################
 	install(TARGETS love lovec liblove RUNTIME DESTINATION .)
-	install(PROGRAMS $<TARGET_FILE:${MEGA_SDL3}> DESTINATION .)
+	if(MEGA_SDL3)
+		install(PROGRAMS $<TARGET_FILE:${MEGA_SDL3}> DESTINATION .)
+	endif()
 
 	# Our install script (and NSIS) doesn't fully support Windows ARM64 yet.
 	if(MEGA_ARM64)
