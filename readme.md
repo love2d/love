@@ -69,17 +69,29 @@ Because in-tree builds are not allowed, the Makefiles needs to be generated in a
 > CMake 3.15 and earlier doesn't support `--install-prefix`. In that case, use `-DCMAKE_INSTALL_PREFIX=` instead.
 
 ### macOS
-Download or clone the [love apple dependencies][dependencies-apple] repository. Copy, move, or symlink the `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder. The `shared` subfolder will also need to be included into love's `platform/xcode` folder.
+Download or clone the [love apple dependencies][dependencies-apple] repository.
+
+Copy, move, or symlink the following directories:
+  * `macOS/Frameworks` subfolder into love's `platform/xcode/macosx` folder.
+  * `shared` subfolder into love's `platform/xcode` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-macosx` target.
 
 ### iOS
 Building for iOS requires macOS and Xcode.
 
-Download the `love-apple-dependencies` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios],
-unzip it, and place the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder. The `shared` subfolder will also need to be included into love's `platform/xcode` folder.
+Download the `love-apple-dependencies` zip file corresponding to the LÖVE version being used from the [Releases page][dependencies-ios]
+and unzip it.
 
-You can also download/clone the [love apple dependencies][dependencies-apple] repository. Copy, move, or symlink the `iOS/libraries` subfolder into love's `platform/xcode/ios` folder. The `shared` subfolder will also need to be included into love's `platform/xcode` folder.
+Copy the following directories:
+  * `iOS/libraries` subfolder into love's `platform/xcode/ios` folder.
+  * `shared` subfolder into love's `platform/xcode` folder.
+
+You can also download/clone the [love apple dependencies][dependencies-apple] repository.
+
+Copy, move, or symlink the following directories:
+  * `iOS/libraries` subfolder into love's `platform/xcode/ios` folder.
+  * `shared` subfolder into love's `platform/xcode` folder.
 
 Then use the Xcode project found at `platform/xcode/love.xcodeproj` to build the `love-ios` target.
 
