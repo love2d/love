@@ -8,7 +8,7 @@ LÖVE is an awesome framework you can use to make 2D games in Lua. Its free and 
 Documentation
 -------------
 
-We use our [wiki][wiki] for documentation. If you need further assistance, please don't hesitate to ask on the LÖVE [Forums][forums], [Discord Server][discord], or [SubReddit][subreddit].
+We use our [wiki][wiki] for documentation. If you need further help, please don't hesitate to ask on the LÖVE [Forums][forums], [Discord Server][discord], or [SubReddit][subreddit].
 
 Repository
 ----------
