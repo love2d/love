@@ -462,6 +462,38 @@ std::vector<Font::DrawCommand> Font::generateVertices(const love::font::ColoredC
 	return commands;
 }
 
+float Font::getAlign(const love::font::ColoredCodepoints &text, const Range range, float width, float wrap, AlignMode align, float *extraspacing) {
+	float offset = 0;
+	switch (align)
+	{
+		case ALIGN_RIGHT:
+			offset = floorf(wrap - width);
+			break;
+		case ALIGN_CENTER:
+			offset = floorf((wrap - width) / 2.0f);
+			break;
+		case ALIGN_JUSTIFY:
+		{
+			auto start = text.cps.begin() + range.getOffset();
+			auto end = start + range.getSize();
+			float numspaces = std::count(start, end, ' ');
+
+			if (text.cps[range.last] == ' ')
+				--numspaces;
+
+			if (width < wrap && numspaces >= 1)
+				*extraspacing = (wrap - width) / numspaces;
+			else
+				*extraspacing = 0.0f;
+			break;
+		}
+		case ALIGN_LEFT:
+		default:
+			break;
+	}
+	return offset;
+}
+
 std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const love::font::ColoredCodepoints &text, const Colorf &constantcolor, float wrap, AlignMode align, std::vector<GlyphVertex> &vertices, love::font::TextShaper::TextInfo *info)
 {
 	wrap = std::max(wrap, 0.0f);
@@ -494,33 +526,7 @@ std::vector<Font::DrawCommand> Font::generateVerticesFormatted(const love::font:
 
 		maxwidth = std::max(width, maxwidth);
 
-		switch (align)
-		{
-			case ALIGN_RIGHT:
-				offset.x = floorf(wrap - width);
-				break;
-			case ALIGN_CENTER:
-				offset.x = floorf((wrap - width) / 2.0f);
-				break;
-			case ALIGN_JUSTIFY:
-			{
-				auto start = text.cps.begin() + range.getOffset();
-				auto end = start + range.getSize();
-				float numspaces = std::count(start, end, ' ');
-
-				if (text.cps[range.last] == ' ')
-					--numspaces;
-
-				if (width < wrap && numspaces >= 1)
-					extraspacing = (wrap - width) / numspaces;
-				else
-					extraspacing = 0.0f;
-				break;
-			}
-			case ALIGN_LEFT:
-			default:
-				break;
-		}
+		offset.x = getAlign(text, range, width, wrap, align, &extraspacing);
 
 		std::vector<DrawCommand> newcommands = generateVertices(text, range, constantcolor, vertices, extraspacing, offset);
 
@@ -611,6 +617,43 @@ void Font::printf(graphics::Graphics *gfx, const std::vector<love::font::Colored
 int Font::getWidth(const std::string &str)
 {
 	return shaper->getWidth(str);
+}
+
+Vector2 Font::getGlyphPosition(int index, const std::string &str, float wraplimit, AlignMode align, float *width)
+{
+	love::font::ColoredCodepoints codepoints;
+	love::font::getCodepointsFromString(str, codepoints.cps);
+
+	std::vector<Range> ranges;
+	std::vector<float> widths;
+	shaper->getWrap(codepoints, wraplimit, ranges, &widths);
+
+	float y = 0;
+	for (int i = 0; i < (int)ranges.size(); i++)
+	{
+		const auto &range = ranges[i];
+		if (!range.isValid())
+		{
+			y += shaper->getCombinedHeight();
+			continue;
+		}
+		if (index >= range.first && index <= range.last)
+		{
+			Vector2 offset(0.0f, floorf(y));
+			float extraspacing;
+			offset.x = getAlign(codepoints, range, widths[i], wraplimit, align, &extraspacing);
+
+			std::vector<love::font::TextShaper::GlyphPosition> glyphpositions;
+			shaper->computeGlyphPositions(codepoints, range, offset, extraspacing, &glyphpositions, nullptr, nullptr);
+
+			Vector2 pos = glyphpositions[index - range.first].position;
+			pos.y -= getBaseline();
+			*width = glyphpositions[index - range.first].advance.x;
+			return pos;
+		}
+		y += shaper->getCombinedHeight();
+	}
+	throw love::Exception("String index is out of range");
 }
 
 int Font::getWidth(uint32 glyph)

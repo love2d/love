@@ -298,12 +298,14 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 
 			if (positions)
 			{
-				GlyphPosition p = { curpos, gindex };
+				GlyphPosition p = { curpos, Vector2(0.0f, 0.0f), gindex };
 
 				// Harfbuzz position coordinate systems are based on the given font.
 				// Freetype uses 26.6 fixed point coordinates, so harfbuzz does too.
 				p.position.x += (glyphpos.x_offset >> 6) / dpiScales[bufferrange.index];
 				p.position.y += (glyphpos.y_offset >> 6) / dpiScales[bufferrange.index];
+				p.advance.x = (glyphpos.x_advance >> 6) / dpiScales[bufferrange.index];
+				p.advance.y = (glyphpos.y_advance >> 6) / dpiScales[bufferrange.index];
 
 				positions->push_back(p);
 			}
