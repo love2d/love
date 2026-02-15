@@ -47,6 +47,9 @@ The best places to contribute are through the issue tracker and the official Dis
 For code contributions, pull requests and patches are welcome. Be sure to read the [source code style guide][codestyle].
 Changes and new features typically get discussed in the issue tracker or on Discord or the forums before a pull request is made.
 
+> [!NOTE] 
+> Pull requests, bug reports, and other contributions made with LLM / generative AI technology will not be accepted.
+
 Compilation
 -----------
 
