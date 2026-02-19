@@ -76,6 +76,11 @@ static int readWindowSettings(lua_State *L, int idx, WindowSettings &settings)
 	settings.centered = luax_boolflag(L, idx, settingName(Window::SETTING_CENTERED), settings.centered);
 	settings.usedpiscale = luax_boolflag(L, idx, settingName(Window::SETTING_USE_DPISCALE), settings.usedpiscale);
 
+	lua_getfield(L, idx, settingName(Window::SETTING_HIDEHOMEINDICATOR));
+	if (!lua_isnoneornil(L, -1))
+		settings.hidehomeindicator = (char *) lua_tostring(L, -1);
+	lua_pop(L, 1);
+
 	lua_getfield(L, idx, settingName(Window::SETTING_DEPTH));
 	if (lua_type(L, -1) == LUA_TNUMBER)
 	{
@@ -231,6 +236,9 @@ int w_getMode(lua_State *L)
 
 	luax_pushboolean(L, settings.usedpiscale);
 	lua_setfield(L, -2, settingName(Window::SETTING_USE_DPISCALE));
+
+	lua_pushstring(L, settings.hidehomeindicator);
+	lua_setfield(L, -2, settingName(Window::SETTING_HIDEHOMEINDICATOR));
 
 	lua_pushnumber(L, settings.refreshrate);
 	lua_setfield(L, -2, settingName(Window::SETTING_REFRESHRATE));

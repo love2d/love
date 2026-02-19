@@ -73,6 +73,7 @@ STRINGMAP_CLASS_BEGIN(Window, Window::Setting, Window::SETTING_MAX_ENUM, setting
 	{"display", Window::SETTING_DISPLAY},
 	{"highdpi", Window::SETTING_HIGHDPI},
 	{"usedpiscale", Window::SETTING_USE_DPISCALE},
+	{"hidehomeindicator", Window::SETTING_HIDEHOMEINDICATOR},
 	{"refreshrate", Window::SETTING_REFRESHRATE},
 	{"x", Window::SETTING_X},
 	{"y", Window::SETTING_Y},
