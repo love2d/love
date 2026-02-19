@@ -84,6 +84,7 @@ struct GraphicsPipelineConfigurationNoDynamicState
 	StencilAction stencilAction = STENCIL_MAX_ENUM;
 	CompareMode stencilCompare = COMPARE_MAX_ENUM;
 	DepthState depthState{};
+	bool depthClampEnable = false;
 };
 
 struct GraphicsPipelineConfigurationFull
