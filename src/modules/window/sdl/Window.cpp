@@ -576,6 +576,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	if (isOpen())
 	{
+		SDL_SetWindowMinimumSize(window, f.minwidth, f.minheight);
+
 		if (fsmode.w > 0 && fsmode.h > 0)
 			SDL_SetWindowFullscreenMode(window, &fsmode);
 		else
@@ -620,6 +622,8 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		if (!createWindowAndContext(x, y, width, height, createflags, renderer))
 			return false;
 
+		SDL_SetWindowMinimumSize(window, f.minwidth, f.minheight);
+
 		if (f.fullscreen)
 		{
 			if (fsmode.w > 0 && fsmode.h > 0)
@@ -639,9 +643,6 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 
 	// Make sure the mouse keeps its previous grab setting.
 	setMouseGrab(mouseGrabbed);
-
-	// Enforce minimum window dimensions.
-	SDL_SetWindowMinimumSize(window, f.minwidth, f.minheight);
 
 	if (this->settings.displayindex != f.displayindex || f.useposition || f.centered)
 		SDL_SetWindowPosition(window, x, y);
