@@ -1520,8 +1520,6 @@ static void SDLCALL fileDialogCallbackSDL(void *userdata, const char *const *fil
 	if (state == nullptr)
 		return;
 
-	auto fs = Module::getInstance<filesystem::Filesystem>(Module::M_FILESYSTEM);
-
 	if (filelist != nullptr)
 	{
 		// SDL's file list only lasts until the end of the callback, so we copy it.
