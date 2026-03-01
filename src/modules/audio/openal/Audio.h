@@ -79,48 +79,48 @@ public:
 	static ALenum getFormat(int bitDepth, int channels);
 
 	// Implements Audio.
-	love::audio::Source *newSource(love::sound::Decoder *decoder);
-	love::audio::Source *newSource(love::sound::SoundData *soundData);
-	love::audio::Source *newSource(int sampleRate, int bitDepth, int channels, int buffers);
-	int getActiveSourceCount() const;
-	int getMaxSources() const;
-	bool play(love::audio::Source *source);
-	bool play(const std::vector<love::audio::Source*> &sources);
-	void stop(love::audio::Source *source);
-	void stop(const std::vector<love::audio::Source*> &sources);
-	void stop();
-	void pause(love::audio::Source *source);
-	void pause(const std::vector<love::audio::Source*> &sources);
-	std::vector<love::audio::Source*> pause();
-	void pauseContext();
-	void resumeContext();
-	void setVolume(float volume);
-	float getVolume() const;
+	love::audio::Source *newSource(love::sound::Decoder *decoder) override;
+	love::audio::Source *newSource(love::sound::SoundData *soundData) override;
+	love::audio::Source *newSource(int sampleRate, int bitDepth, int channels, int buffers) override;
+	int getActiveSourceCount() const override;
+	int getMaxSources() const override;
+	bool play(love::audio::Source *source) override;
+	bool play(const std::vector<love::audio::Source*> &sources) override;
+	void stop(love::audio::Source *source) override;
+	void stop(const std::vector<love::audio::Source*> &sources) override;
+	void stop() override;
+	void pause(love::audio::Source *source) override;
+	void pause(const std::vector<love::audio::Source*> &sources) override;
+	std::vector<love::audio::Source*> pause() override;
+	void pauseContext() override;
+	void resumeContext() override;
+	void setVolume(float volume) override;
+	float getVolume() const override;
 
-	void getPosition(float *v) const;
-	void setPosition(float *v);
-	void getOrientation(float *v) const;
-	void setOrientation(float *v);
-	void getVelocity(float *v) const;
-	void setVelocity(float *v);
+	void getPosition(float *v) const override;
+	void setPosition(float *v) override;
+	void getOrientation(float *v) const override;
+	void setOrientation(float *v) override;
+	void getVelocity(float *v) const override;
+	void setVelocity(float *v) override;
 
-	void setDopplerScale(float scale);
-	float getDopplerScale() const;
+	void setDopplerScale(float scale) override;
+	float getDopplerScale() const override;
 	//void setMeter(float scale);
 	//float getMeter() const;
 
-	const std::vector<love::audio::RecordingDevice*> &getRecordingDevices();
+	const std::vector<love::audio::RecordingDevice*> &getRecordingDevices() override;
 
-	DistanceModel getDistanceModel() const;
-	void setDistanceModel(DistanceModel distanceModel);
+	DistanceModel getDistanceModel() const override;
+	void setDistanceModel(DistanceModel distanceModel) override;
 
-	bool setEffect(const char *name, std::map<Effect::Parameter, float> &params);
-	bool unsetEffect(const char *name);
-	bool getEffect(const char *name, std::map<Effect::Parameter, float> &params);
-	bool getActiveEffects(std::vector<std::string> &list) const;
-	int getMaxSceneEffects() const;
-	int getMaxSourceEffects() const;
-	bool isEFXsupported() const;
+	bool setEffect(const char *name, std::map<Effect::Parameter, float> &params) override;
+	bool unsetEffect(const char *name) override;
+	bool getEffect(const char *name, std::map<Effect::Parameter, float> &params) override;
+	bool getActiveEffects(std::vector<std::string> &list) const override;
+	int getMaxSceneEffects() const override;
+	int getMaxSourceEffects() const override;
+	bool isEFXsupported() const override;
 
 	bool setOutputSpatialization(bool enable, const char *filter = nullptr) override;
 	bool getOutputSpatialization(const char *&filter) const override;
@@ -128,9 +128,9 @@ public:
 
 	bool getEffectID(const char *name, ALuint &id);
 
-	std::string getPlaybackDevice();
-	void getPlaybackDevices(std::vector<std::string> &list);
-	void setPlaybackDevice(const char *name);
+	std::string getPlaybackDevice() override;
+	void getPlaybackDevices(std::vector<std::string> &list) override;
+	void setPlaybackDevice(const char *name) override;
 
 private:
 
