@@ -264,6 +264,43 @@ bool OggDemuxer::seek(ogg_packet &packet, double target, std::function<double(in
 	return true;
 }
 
+double OggDemuxer::getDuration(std::function<double(int64)> getTime)
+{
+	// Called during initialization while file is being read sequentially.
+	// We continue reading forward (no seek to 0) to avoid sync issues.
+	// Save position to restore after scanning.
+	int64 startPos = file->tell();
+	ogg_int64_t lastGranulepos = -1;
+
+	while (readPage(true))
+	{
+		// Only process pages from our video stream
+		if (ogg_page_serialno(&page) != videoSerial)
+			continue;
+
+		ogg_int64_t gp = ogg_page_granulepos(&page);
+
+		// Skip pages with invalid granulepos (-1 = continuation page)
+		if (gp <= 0)
+			continue;
+
+		// Track highest granulepos (increases monotonically)
+		if (gp > lastGranulepos)
+			lastGranulepos = gp;
+	}
+
+	// Seek back to position after headers for playback.
+	file->seek(startPos);
+	resync();
+	eos = false;
+
+	if (lastGranulepos < 0)
+		return -1.0;
+
+	// Duration = time of last granulepos (video starts at 0)
+	return getTime(lastGranulepos);
+}
+
 } // theora
 } // video
 } // love
