@@ -1,4 +1,4 @@
-name: continuous-integration
+name: continuous beb -integration
 on: [push, pull_request]
 
 jobs:
