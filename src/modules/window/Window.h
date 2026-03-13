@@ -75,6 +75,7 @@ public:
 		SETTING_DISPLAY, // Deprecated
 		SETTING_HIGHDPI, // Deprecated
 		SETTING_USE_DPISCALE,
+		SETTING_HIDEHOMEINDICATOR,
 		SETTING_REFRESHRATE,
 		SETTING_X,
 		SETTING_Y,
@@ -295,6 +296,7 @@ struct WindowSettings
 	bool centered = true;
 	int displayindex = 0;
 	bool usedpiscale = true;
+	char *hidehomeindicator = "0";
 	double refreshrate = 0.0;
 	bool useposition = false;
 	int x = 0;
