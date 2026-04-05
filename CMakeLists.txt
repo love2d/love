@@ -32,6 +32,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE) # Needed for shared libs on Linux. (-f
 set(CMAKE_CXX_STANDARD 17)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)	# Allow grouping projects in Visual Studio
 
+if(CMAKE_SYSTEM_NAME MATCHES "OHOS|OpenHarmony|HarmonyOS")
+	add_compile_definitions(LOVE_OHOS=1)
+endif()
+
 if(APPLE)
 	message(WARNING "CMake is not an officially supported build system for love on Apple platforms.")
 	message(WARNING "Use the prebuilt .app or the xcode project in platform/xcode/ instead.")
@@ -243,6 +247,8 @@ endfunction()
 add_library(love_common STATIC
 	src/common/android.cpp
 	src/common/android.h
+	src/common/ohos.cpp
+	src/common/ohos.h
 	src/common/b64.cpp
 	src/common/b64.h
 	src/common/Color.h
@@ -1989,9 +1995,11 @@ endif()
 #
 # love (executable)
 #
-if(ANDROID)
+if(ANDROID OR CMAKE_SYSTEM_NAME MATCHES "OHOS|OpenHarmony|HarmonyOS")
 	add_library(love SHARED) # On Android, the LOVE main entrypoint needs to be compiled as shared library
-	target_link_libraries(liblove android)
+	if(ANDROID)
+		target_link_libraries(liblove android)
+	endif()
 else()
 	add_executable(love WIN32)
 endif()

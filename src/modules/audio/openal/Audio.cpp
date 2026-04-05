@@ -202,7 +202,7 @@ Audio::Audio()
 
 	poolThread = new PoolThread(pool);
 	poolThread->start();
-	
+
 #ifdef LOVE_IOS
 	love::ios::initAudioSessionInterruptionHandler();
 #endif
@@ -210,10 +210,10 @@ Audio::Audio()
 #ifdef LOVE_ANDROID
 	bool hasPauseDeviceExt = alcIsExtensionPresent(device, "ALC_SOFT_pause_device") == ALC_TRUE;
 	alcDevicePauseSOFT = hasPauseDeviceExt
-		? (LPALCDEVICEPAUSESOFT) alcGetProcAddress(device, "alcDevicePauseSOFT")
+		? (LPALCDEVICEPAUSESOFT)alcGetProcAddress(device, "alcDevicePauseSOFT")
 		: nullptr;
 	alcDeviceResumeSOFT = hasPauseDeviceExt
-		? (LPALCDEVICERESUMESOFT) alcGetProcAddress(device, "alcDeviceResumeSOFT")
+		? (LPALCDEVICERESUMESOFT)alcGetProcAddress(device, "alcDeviceResumeSOFT")
 		: nullptr;
 #endif
 }
@@ -321,7 +321,7 @@ bool Audio::play(love::audio::Source *source)
 	return source->play();
 }
 
-bool Audio::play(const std::vector<love::audio::Source*> &sources)
+bool Audio::play(const std::vector<love::audio::Source *> &sources)
 {
 	return Source::play(sources);
 }
@@ -331,7 +331,7 @@ void Audio::stop(love::audio::Source *source)
 	source->stop();
 }
 
-void Audio::stop(const std::vector<love::audio::Source*> &sources)
+void Audio::stop(const std::vector<love::audio::Source *> &sources)
 {
 	return Source::stop(sources);
 }
@@ -346,12 +346,12 @@ void Audio::pause(love::audio::Source *source)
 	source->pause();
 }
 
-void Audio::pause(const std::vector<love::audio::Source*> &sources)
+void Audio::pause(const std::vector<love::audio::Source *> &sources)
 {
 	return Source::pause(sources);
 }
 
-std::vector<love::audio::Source*> Audio::pause()
+std::vector<love::audio::Source *> Audio::pause()
 {
 	return Source::pause(pool);
 }
@@ -366,10 +366,10 @@ void Audio::pauseContext()
 		// This is extremely rare case since we're using OpenAL-soft
 		// in Android and the ALC_SOFT_pause_device has been supported
 		// since 1.16
-		for (auto &src: pausedSources)
+		for (auto &src : pausedSources)
 			src->release();
 		pausedSources = pause();
-		for (auto &src: pausedSources)
+		for (auto &src : pausedSources)
 			src->retain();
 	}
 #else
@@ -386,7 +386,7 @@ void Audio::resumeContext()
 	{
 		// Again, this is rare case
 		play(pausedSources);
-		for (auto &src: pausedSources)
+		for (auto &src : pausedSources)
 			src->release();
 		pausedSources.resize(0);
 	}
@@ -423,11 +423,11 @@ void Audio::getPlaybackDevices(std::vector<std::string> &list)
 void Audio::setPlaybackDevice(const char *name)
 {
 #ifndef ALC_SOFT_reopen_device
-	typedef ALCboolean (ALC_APIENTRY*LPALCREOPENDEVICESOFT)(ALCdevice *device,
+	typedef ALCboolean(ALC_APIENTRY *LPALCREOPENDEVICESOFT)(ALCdevice *device,
 		const ALCchar *deviceName, const ALCint *attribs);
 #endif
 	static LPALCREOPENDEVICESOFT alcReopenDeviceSOFT = alcIsExtensionPresent(device, "ALC_SOFT_reopen_device") == ALC_TRUE
-		? (LPALCREOPENDEVICESOFT) alcGetProcAddress(device, "alcReopenDeviceSOFT")
+		? (LPALCREOPENDEVICESOFT)alcGetProcAddress(device, "alcReopenDeviceSOFT")
 		: nullptr;
 
 	if (alcReopenDeviceSOFT == nullptr)
@@ -440,7 +440,7 @@ void Audio::setPlaybackDevice(const char *name)
 
 	std::vector<ALint> attribs = computeContextAttribs();
 
-	if (alcReopenDeviceSOFT(device, (const ALCchar *) name, attribs.data()) == ALC_FALSE)
+	if (alcReopenDeviceSOFT(device, (const ALCchar *)name, attribs.data()) == ALC_FALSE)
 		throw love::Exception("Cannot set output device: %s", alcGetString(device, alcGetError(device)));
 }
 
@@ -557,10 +557,10 @@ void Audio::setDistanceModel(DistanceModel distanceModel)
 	}
 }
 
-const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
+const std::vector<love::audio::RecordingDevice *> &Audio::getRecordingDevices()
 {
 	std::vector<std::string> devnames;
-	std::vector<love::audio::RecordingDevice*> devices;
+	std::vector<love::audio::RecordingDevice *> devices;
 
 	// If recording permission is not granted, inform user about it
 	// and return empty list.
@@ -601,7 +601,7 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 	{
 		if (devstr[offset] == '\0')
 			break;
-		std::string str((ALCchar*)&devstr[offset]);
+		std::string str((ALCchar *)&devstr[offset]);
 		if (str != defaultname)
 			devnames.push_back(str);
 		offset += str.length() + 1;
@@ -609,7 +609,7 @@ const std::vector<love::audio::RecordingDevice*> &Audio::getRecordingDevices()
 
 	devices.reserve(devnames.size());
 	//build ordered list of devices
-	for (int i = 0; i < (int) devnames.size(); i++)
+	for (int i = 0; i < (int)devnames.size(); i++)
 	{
 		devices.push_back(nullptr);
 		auto d = devices.end() - 1;
@@ -652,7 +652,7 @@ bool Audio::setEffect(const char *name, std::map<Effect::Parameter, float> &para
 		slot = slotlist.top();
 		slotlist.pop();
 
-		effectmap[name] = {effect, slot};
+		effectmap[name] = { effect, slot };
 	}
 	else
 	{

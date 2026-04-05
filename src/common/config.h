@@ -21,7 +21,7 @@
 #ifndef LOVE_CONFIG_H
 #define LOVE_CONFIG_H
 
-// Platform stuff.
+ // Platform stuff.
 #if defined(WIN32) || defined(_WIN32)
 #	define LOVE_WINDOWS 1
 #	include <winapifamily.h>
@@ -36,6 +36,10 @@
 #if defined(__ANDROID__)
 #	define LOVE_ANDROID 1
 // Needed for ENet
+#	define HAS_SOCKLEN_T 1
+#endif
+#if defined(OHOS) || defined(__OHOS__)
+#	define LOVE_OHOS 1
 #	define HAS_SOCKLEN_T 1
 #endif
 #if defined(__APPLE__)
@@ -123,7 +127,7 @@
 #	define LOVE_LEGENDARY_APP_ARGV_HACK
 #endif
 
-#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX) || defined(LOVE_ANDROID)
+#if defined(LOVE_WINDOWS) || defined(LOVE_LINUX) || defined(LOVE_ANDROID) || defined(LOVE_OHOS)
 #	define LOVE_GRAPHICS_VULKAN
 #endif
 

@@ -66,12 +66,31 @@
 #include "common/android.h"
 #endif
 
+#ifdef LOVE_OHOS
+#include "common/ohos.h"
+#include <sys/stat.h>
+#endif
+
 namespace love
 {
 namespace filesystem
 {
 namespace physfs
 {
+
+#ifdef LOVE_OHOS
+static bool osFileExists(const char *path)
+{
+	struct stat st;
+	return path && stat(path, &st) == 0 && S_ISREG(st.st_mode);
+}
+
+static bool osDirectoryExists(const char *path)
+{
+	struct stat st;
+	return path && stat(path, &st) == 0 && S_ISDIR(st.st_mode);
+}
+#endif
 
 static std::string normalize(const std::string &input)
 {
@@ -314,6 +333,37 @@ bool Filesystem::setSource(const char *source)
 	}
 	catch (const love::Exception &)
 	{}
+#endif
+
+#ifdef LOVE_OHOS
+	love::ohos::createStorageDirectories();
+
+	const std::string &resourcePath = love::ohos::getGameResourcePath();
+	if (!resourcePath.empty())
+	{
+		std::string mainlua = resourcePath + "/main.lua";
+		std::string gamelove = resourcePath + "/game.love";
+
+		if (osDirectoryExists(resourcePath.c_str()) && osFileExists(mainlua.c_str()))
+		{
+			std::string canon = canonicalizeRealPath(resourcePath);
+			if (!isMounted(canon) && PHYSFS_mount(canon.c_str(), nullptr, 1))
+			{
+				gameSource = canon;
+				return true;
+			}
+		}
+
+		if (osFileExists(gamelove.c_str()))
+		{
+			std::string canon = canonicalizeRealPath(gamelove);
+			if (!isMounted(canon) && PHYSFS_mount(canon.c_str(), nullptr, 1))
+			{
+				gameSource = canon;
+				return true;
+			}
+		}
+	}
 #endif
 
 	if (isMounted(new_search_path))
@@ -701,6 +751,32 @@ std::string Filesystem::getFullCommonPath(CommonPath path)
 	case COMMONPATH_USER_DOCUMENTS:
 		// TODO: something more idiomatic / useful?
 		fullPaths[path] = normalize(storagepath + "/Documents/");
+		break;
+	case COMMONPATH_MAX_ENUM:
+		break;
+	}
+
+#elif defined(LOVE_OHOS)
+
+	std::string base = love::ohos::getSandboxPath();
+	if (base.empty())
+		base = normalize(PHYSFS_getUserDir());
+
+	switch (path)
+	{
+	case COMMONPATH_APP_SAVEDIR:
+	case COMMONPATH_APP_DOCUMENTS:
+		break;
+	case COMMONPATH_USER_HOME:
+		fullPaths[path] = normalize(PHYSFS_getUserDir());
+		break;
+	case COMMONPATH_USER_APPDATA:
+		fullPaths[path] = normalize(base + "/save/");
+		break;
+	case COMMONPATH_USER_DESKTOP:
+		break;
+	case COMMONPATH_USER_DOCUMENTS:
+		fullPaths[path] = normalize(base + "/Documents/");
 		break;
 	case COMMONPATH_MAX_ENUM:
 		break;

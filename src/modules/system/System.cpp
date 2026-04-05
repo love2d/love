@@ -50,6 +50,8 @@ const char *System::getOS()
 	return "Windows";
 #elif defined(LOVE_ANDROID)
 	return "Android";
+#elif defined(LOVE_OHOS)
+	return "OHOS";
 #elif defined(LOVE_LINUX)
 	return "Linux";
 #else
@@ -63,6 +65,8 @@ void System::vibrate(double seconds) const
 	love::android::vibrate(seconds);
 #elif defined(LOVE_IOS)
 	love::ios::vibrate();
+#elif defined(LOVE_OHOS)
+	LOVE_UNUSED(seconds);
 #else
 	LOVE_UNUSED(seconds);
 #endif
@@ -74,6 +78,8 @@ bool System::hasBackgroundMusic() const
 	return love::android::hasBackgroundMusic();
 #elif defined(LOVE_IOS)
 	return love::ios::hasBackgroundMusic();
+#elif defined(LOVE_OHOS)
+	return false;
 #else
 	return false;
 #endif

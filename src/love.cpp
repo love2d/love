@@ -29,11 +29,11 @@
 
 #include <SDL3/SDL_main.h>
 
-// Lua
+ // Lua
 extern "C" {
-	#include <lua.h>
-	#include <lualib.h>
-	#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 }
 
 #ifdef LOVE_WINDOWS
@@ -54,15 +54,15 @@ extern "C" {
 extern "C"
 {
 
-// Prefer the higher performance GPU on Windows systems that use nvidia Optimus.
-// http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf
-// TODO: Re-evaluate in the future when the average integrated GPU in Optimus
-// systems is less mediocre?
-LOVE_EXPORT DWORD NvOptimusEnablement = 1;
+	// Prefer the higher performance GPU on Windows systems that use nvidia Optimus.
+	// http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf
+	// TODO: Re-evaluate in the future when the average integrated GPU in Optimus
+	// systems is less mediocre?
+	LOVE_EXPORT DWORD NvOptimusEnablement = 1;
 
-// Same with AMD GPUs.
-// https://community.amd.com/thread/169965
-LOVE_EXPORT DWORD AmdPowerXpressRequestHighPerformance = 1;
+	// Same with AMD GPUs.
+	// https://community.amd.com/thread/169965
+	LOVE_EXPORT DWORD AmdPowerXpressRequestHighPerformance = 1;
 }
 #endif // LOVE_WINDOWS
 
@@ -152,17 +152,17 @@ enum DoneAction
 
 static void print_usage()
 {
-    // when editing this message, change it at boot.lua too
-    printf("LOVE is an *awesome* framework you can use to make 2D games in Lua\n"
-        "https://love2d.org\n"
-        "\n"
-        "usage:\n"
-        "    love --version                  prints LOVE version and quits\n"
-        "    love --help                     prints this message and quits\n"
-        "    love path/to/gamedir            runs the game from the given directory which contains a main.lua file\n"
-        "    love path/to/packagedgame.love  runs the packaged game from the provided .love file\n"
-        "    love path/to/file.lua           runs the game from the given .lua file\n"
-        );
+	// when editing this message, change it at boot.lua too
+	printf("LOVE is an *awesome* framework you can use to make 2D games in Lua\n"
+		"https://love2d.org\n"
+		"\n"
+		"usage:\n"
+		"    love --version                  prints LOVE version and quits\n"
+		"    love --help                     prints this message and quits\n"
+		"    love path/to/gamedir            runs the game from the given directory which contains a main.lua file\n"
+		"    love path/to/packagedgame.love  runs the packaged game from the provided .love file\n"
+		"    love path/to/file.lua           runs the game from the given .lua file\n"
+	);
 }
 
 static DoneAction runlove(int argc, char **argv, int &retval, love::Variant &restartvalue)
@@ -307,7 +307,7 @@ int main(int argc, char **argv)
 	if (strcmp(LOVE_VERSION_STRING, love_version()) != 0)
 	{
 		printf("Version mismatch detected!\nLOVE binary is version %s\n"
-			   "LOVE library is version %s\n", LOVE_VERSION_STRING, love_version());
+			"LOVE library is version %s\n", LOVE_VERSION_STRING, love_version());
 		return 1;
 	}
 
@@ -327,11 +327,16 @@ int main(int argc, char **argv)
 #endif
 	} while (done != DONE_QUIT);
 
-#ifdef LOVE_ANDROID
+#if defined(LOVE_ANDROID) || defined(LOVE_OHOS)
 	SDL_Quit();
 #endif
 
 	return retval;
+}
+
+extern "C" LOVE_EXPORT int love_run(int argc, char **argv)
+{
+	return main(argc, argv);
 }
 
 #endif // LOVE_BUILD_EXE
