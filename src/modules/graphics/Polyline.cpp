@@ -35,6 +35,22 @@ namespace graphics
 
 void Polyline::render(const Vector2 *coords, size_t count, size_t size_hint, float halfwidth, float pixel_size, bool draw_overdraw)
 {
+	// Degenerate line: all points are the same, nothing visible to draw.
+	// Without this check, zero-length segments cause division by zero in
+	// normal computation, producing NaN values that corrupt subsequent
+	// GPU draw calls (see issue #2291).
+	bool has_visible_segment = false;
+	for (size_t i = 1; i < count; i++)
+	{
+		if (coords[i] != coords[0])
+		{
+			has_visible_segment = true;
+			break;
+		}
+	}
+	if (!has_visible_segment)
+		return;
+
 	static std::vector<Vector2> anchors;
 	anchors.clear();
 	anchors.reserve(size_hint);

@@ -116,6 +116,9 @@ public:
 	{
 		Polyline::render(vertices, count, 4 * count - 4, halfwidth, pixel_size, draw_overdraw);
 
+		if (vertex_count < 4)
+			return;
+
 		// discard the first and last two vertices. (these are redundant)
 		for (size_t i = 0; i < vertex_count - 4; ++i)
 			this->vertices[i] = this->vertices[i+2];
