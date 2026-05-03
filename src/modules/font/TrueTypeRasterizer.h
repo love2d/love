@@ -51,6 +51,7 @@ public:
 		OptionalFloat dpiScale;
 		bool sdf = false;
 		bool bold = false;
+		bool italic = false;
 	};
 
 	virtual ~TrueTypeRasterizer() {}

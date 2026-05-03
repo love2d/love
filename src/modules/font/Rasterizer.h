@@ -149,6 +149,7 @@ protected:
 	float dpiScale = 1.0f;
 	bool sdf = false;
 	bool bold = false;
+	bool italic = false;
 
 }; // Rasterizer
 
