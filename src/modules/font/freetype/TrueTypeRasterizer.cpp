@@ -133,7 +133,6 @@ GlyphData *TrueTypeRasterizer::getGlyphDataForIndex(int index) const
 	else if (hinting == HINTING_MONO)
 		rendermode = FT_RENDER_MODE_MONO;
 
-
 	err = FT_Glyph_To_Bitmap(&ftglyph, rendermode, 0, 1);
 
 	if (err != FT_Err_Ok)
