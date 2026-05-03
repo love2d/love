@@ -325,6 +325,19 @@ love.test.graphics.Font = function(test)
   local imgdata2 = love.graphics.readbackTexture(canvas)
   test:compareImg(imgdata2)
 
+  -- check font style
+  local largerCanvas = love.graphics.newCanvas(24, 48)
+  local fontbold = love.graphics.newFont('resources/font.ttf', 24, { bold = true })
+  local fontnormal = love.graphics.newFont('resources/font.ttf', 24)
+  love.graphics.setCanvas(largerCanvas)
+    love.graphics.clear(0, 0, 0, 0)
+    love.graphics.setFont(fontbold)
+    love.graphics.print("a", 0, 5)
+    love.graphics.setFont(fontnormal)
+    love.graphics.print("a", 0, 25)
+  love.graphics.setCanvas()
+  local imgdata3 = love.graphics.readbackTexture(largerCanvas)
+  test:compareImg(imgdata3)
 end
 
 
