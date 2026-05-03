@@ -40,6 +40,7 @@ TrueTypeRasterizer::TrueTypeRasterizer(FT_Library library, love::Data *data, int
 	dpiScale = settings.dpiScale.get(defaultdpiscale);
 
 	sdf = settings.sdf;
+	bold = settings.bold;
 
 	if (size <= 0)
 		throw love::Exception("Invalid TrueType font size: %d", size);
@@ -114,6 +115,9 @@ GlyphData *TrueTypeRasterizer::getGlyphDataForIndex(int index) const
 	if (err != FT_Err_Ok)
 		throw love::Exception("TrueType Font glyph error: FT_Load_Glyph failed (0x%x)", err);
 
+	if (bold && face->glyph->format == FT_GLYPH_FORMAT_OUTLINE)
+		FT_GlyphSlot_Embolden(face->glyph);
+
 	err = FT_Get_Glyph(face->glyph, &ftglyph);
 
 	if (err != FT_Err_Ok)
@@ -124,6 +128,7 @@ GlyphData *TrueTypeRasterizer::getGlyphDataForIndex(int index) const
 		rendermode = FT_RENDER_MODE_SDF;
 	else if (hinting == HINTING_MONO)
 		rendermode = FT_RENDER_MODE_MONO;
+
 
 	err = FT_Glyph_To_Bitmap(&ftglyph, rendermode, 0, 1);
 

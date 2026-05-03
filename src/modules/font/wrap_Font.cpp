@@ -100,6 +100,11 @@ static TrueTypeRasterizer::Settings luax_checktruetypesettings(lua_State* L, int
 		if (!lua_isnoneornil(L, -1))
 			s.sdf = lua_toboolean(L, -1);
 		lua_pop(L, 1);
+
+		lua_getfield(L, startidx, "bold");
+		if (!lua_isnoneornil(L, -1))
+			s.bold = lua_toboolean(L, -1);
+		lua_pop(L, 1);
 	}
 
 	return s;

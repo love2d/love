@@ -148,6 +148,7 @@ protected:
 	FontMetrics metrics = {};
 	float dpiScale = 1.0f;
 	bool sdf = false;
+	bool bold = false;
 
 }; // Rasterizer
 
