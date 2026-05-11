@@ -325,6 +325,24 @@ love.test.graphics.Font = function(test)
   local imgdata2 = love.graphics.readbackTexture(canvas)
   test:compareImg(imgdata2)
 
+  -- check font styles
+  local largerCanvas = love.graphics.newCanvas(24, 64)
+  local fontbold = love.graphics.newFont('resources/font.ttf', 24, { bold = true })
+  local fontitalic = love.graphics.newFont('resources/font.ttf', 24, { italic = true })
+  local fontbolditalic = love.graphics.newFont('resources/font.ttf', 24, { bold=true, italic = true })
+  love.graphics.setCanvas(largerCanvas)
+    love.graphics.clear(0, 0, 0, 0)
+    love.graphics.setFont(fontbold)
+    love.graphics.print("a", 0, 5)
+    love.graphics.setFont(fontitalic)
+    love.graphics.print("a", 0, 25)
+    love.graphics.setFont(fontbolditalic)
+    love.graphics.print("a", 0, 45)
+  love.graphics.setCanvas()
+  local imgdata3 = love.graphics.readbackTexture(largerCanvas)
+  -- Mac OS prints the bold slighty cleaner
+  test.rgba_tolerance = 16
+  test:compareImg(imgdata3)
 end
 
 
