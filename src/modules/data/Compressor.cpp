@@ -246,7 +246,7 @@ private:
 		if (err != Z_STREAM_END)
 		{
 			inflateEnd(&stream);
-			if (err == Z_NEED_DICT || (err == Z_BUF_ERROR && stream.avail_in == 0))
+			if (err == Z_NEED_DICT || (err == Z_BUF_ERROR && stream.avail_out > 0 && stream.avail_in == 0))
 				return Z_DATA_ERROR;
 			return err;
 		}
