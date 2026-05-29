@@ -702,7 +702,6 @@ std::string Filesystem::getFullCommonPath(CommonPath path)
 	switch (path)
 	{
 	case COMMONPATH_APP_SAVEDIR:
-	case COMMONPATH_APP_DOCUMENTS:
 		// Handled above.
 		break;
 	case COMMONPATH_USER_HOME:
