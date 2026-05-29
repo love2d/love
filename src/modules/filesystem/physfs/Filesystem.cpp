@@ -271,6 +271,7 @@ bool Filesystem::setSource(const char *source)
 	if (!love::android::createStorageDirectories())
 		SDL_Log("Error creating storage directories!");
 
+	// If no fused game found, check if there's a game in Documents/lovegame folder
 	PHYSFS_Io *gameLoveIO;
 	bool hasFusedGame = love::android::checkFusedGame((void **) &gameLoveIO);
 
@@ -297,6 +298,21 @@ bool Filesystem::setSource(const char *source)
 			gameSource = "ASET.AASSET";
 			return true;
 		}
+	}
+
+	// No fused game, try to find a game in Documents/lovegame/
+	std::string externalStoragePath = SDL_GetAndroidExternalStoragePath();
+	std::string lovegamePath = externalStoragePath + "/Documents/lovegame";
+	
+	if (PHYSFS_mount(lovegamePath.c_str(), nullptr, 1))
+	{
+		// Check if it contains a main.lua or conf.lua
+		if (PHYSFS_exists("main.lua") || PHYSFS_exists("conf.lua"))
+		{
+			gameSource = lovegamePath;
+			return true;
+		}
+		PHYSFS_unmount(lovegamePath.c_str());
 	}
 
 	try
@@ -695,14 +711,12 @@ std::string Filesystem::getFullCommonPath(CommonPath path)
 	case COMMONPATH_USER_APPDATA:
 		fullPaths[path] = normalize(storagepath + "/save/");
 		break;
-	case COMMONPATH_USER_DESKTOP:
-		// No such thing on Android?
-		break;
 	case COMMONPATH_USER_DOCUMENTS:
-		// TODO: something more idiomatic / useful?
 		fullPaths[path] = normalize(storagepath + "/Documents/");
 		break;
-	case COMMONPATH_MAX_ENUM:
+	case COMMONPATH_APP_DOCUMENTS:
+		// This points to the lovegame folder where games are stored
+		fullPaths[path] = normalize(storagepath + "/Documents/lovegame/");
 		break;
 	}
 
