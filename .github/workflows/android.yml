@@ -1,0 +1,77 @@
+name: Build Android APK
+on:
+  push:
+    branches: [main, lovegame-in-documents]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  Android:
+    runs-on: ubuntu-latest
+    env:
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs='-Xmx4G'"
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+    - name: Checkout our Love2D source
+      uses: actions/checkout@v4
+      with:
+        path: source
+
+    - name: Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: adopt-hotspot
+        java-version: 17
+
+    - name: Checkout love-android framework
+      uses: actions/checkout@v4
+      with:
+        repository: love2d/love-android
+        ref: main
+        path: love-android
+        submodules: false
+
+    - name: Clone Megasource
+      uses: actions/checkout@v4
+      with:
+        path: love-android/app/src/main/cpp/megasource
+        repository: love2d/megasource
+        ref: main
+
+    - name: Replace Megasource with our source
+      run: |
+        rm -rf love-android/app/src/main/cpp/megasource/*
+        cp -r source/* love-android/app/src/main/cpp/megasource/
+        find love-android/app/src/main/cpp/megasource -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true
+
+    - name: Replace LOVE extra files
+      run: |
+        mkdir -p love-android/app/src/main/cpp/love
+        rm -rf love-android/app/src/main/cpp/love/*
+        cp -r source/* love-android/app/src/main/cpp/love/
+        find love-android/app/src/main/cpp/love -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true
+
+    - name: Build Debug APK
+      run: |
+        cd love-android
+        bash ./gradlew assembleNormalRecordDebug
+
+    - name: Build Release APK (unsigned)
+      run: |
+        cd love-android
+        bash ./gradlew assembleNormalRecordRelease
+
+    - name: Artifact Debug APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: love-android-debug-${{ github.sha }}
+        path: love-android/app/build/outputs/apk/normalRecord/debug/app-normal-record-debug.apk
+        retention-days: 7
+
+    - name: Artifact Release APK (unsigned)
+      uses: actions/upload-artifact@v4
+      with:
+        name: love-android-release-unsigned-${{ github.sha }}
+        path: love-android/app/build/outputs/apk/normalRecord/release/app-normal-record-release-unsigned.apk
+        retention-days: 7
