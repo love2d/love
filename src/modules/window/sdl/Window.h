@@ -62,7 +62,7 @@ public:
 
 	DisplayOrientation getDisplayOrientation(int displayindex) const override;
 
-	std::vector<WindowSize> getFullscreenSizes(int displayindex) const override;
+	std::vector<DisplayMode> getFullscreenModes(int displayindex) const override;
 
 	void getDesktopDimensions(int displayindex, int &width, int &height) const override;
 

@@ -919,9 +919,9 @@ Window::DisplayOrientation Window::getDisplayOrientation(int displayindex) const
 	return ORIENTATION_UNKNOWN;
 }
 
-std::vector<Window::WindowSize> Window::getFullscreenSizes(int displayindex) const
+std::vector<Window::DisplayMode> Window::getFullscreenModes(int displayindex) const
 {
-	std::vector<WindowSize> sizes;
+	std::vector<DisplayMode> sizes;
 
 	int count = 0;
 	SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(GetSDLDisplayIDForIndex(displayindex), &count);
@@ -929,7 +929,8 @@ std::vector<Window::WindowSize> Window::getFullscreenSizes(int displayindex) con
 	for (int i = 0; i < count; i++)
 	{
 		// TODO: other mode properties?
-		WindowSize w = {modes[i]->w, modes[i]->h};
+		double refreshrate = (double)modes[i]->refresh_rate_numerator / (double)modes[i]->refresh_rate_denominator;
+		DisplayMode w = {modes[i]->w, modes[i]->h, refreshrate};
 
 		// SDL2's display mode list has multiple entries for modes of the same
 		// size with different bits per pixel, so we need to filter those out.

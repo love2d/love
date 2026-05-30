@@ -122,14 +122,15 @@ public:
 		THEME_MAX_ENUM
 	};
 
-	struct WindowSize
+	struct DisplayMode
 	{
 		int width;
 		int height;
+		double refreshRate;
 
-		bool operator == (const WindowSize &w) const
+		bool operator == (const DisplayMode &w) const
 		{
-			return w.width == width && w.height == height;
+			return w.width == width && w.height == height && refreshRate == w.refreshRate;
 		}
 	};
 
@@ -185,7 +186,7 @@ public:
 
 	virtual DisplayOrientation getDisplayOrientation(int displayindex) const = 0;
 
-	virtual std::vector<WindowSize> getFullscreenSizes(int displayindex) const = 0;
+	virtual std::vector<DisplayMode> getFullscreenModes(int displayindex) const = 0;
 
 	virtual void getDesktopDimensions(int displayindex, int &width, int &height) const = 0;
 
