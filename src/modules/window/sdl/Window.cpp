@@ -853,7 +853,6 @@ bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 	newsettings.fullscreen = fullscreen;
 	newsettings.fstype = fstype;
 
-	bool sdlflags = fullscreen;
 	if (fullscreen)
 	{
 		if (fstype == FULLSCREEN_DESKTOP)
@@ -861,9 +860,11 @@ bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 		else
 		{
 			SDL_DisplayID displayid = SDL_GetDisplayForWindow(window);
-			SDL_DisplayMode mode = {};
-			if (SDL_GetClosestFullscreenDisplayMode(displayid, windowWidth, windowHeight, 0, isHighDPIAllowed(), &mode))
-				SDL_SetWindowFullscreenMode(window, &mode);
+			const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(displayid);
+			if (mode != nullptr)
+				SDL_SetWindowFullscreenMode(window, mode);
+			else
+				return false;
 		}
 	}
 
@@ -871,7 +872,7 @@ bool Window::setFullscreen(bool fullscreen, FullscreenType fstype)
 	love::android::setImmersive(fullscreen);
 #endif
 
-	if (SDL_SetWindowFullscreen(window, sdlflags))
+	if (SDL_SetWindowFullscreen(window, fullscreen))
 	{
 		if (glcontext)
 			SDL_GL_MakeCurrent(window, glcontext);
