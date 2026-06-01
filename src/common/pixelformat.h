@@ -78,6 +78,7 @@ enum PixelFormat
 	PIXELFORMAT_RGB5A1_UNORM,   // LSB->MSB: [a, b, g, r]
 	PIXELFORMAT_RGB565_UNORM,   // LSB->MSB: [b, g, r]
 	PIXELFORMAT_RGB10A2_UNORM,  // LSB->MSB: [r, g, b, a]
+	PIXELFORMAT_RGB10A2_UINT,
 	PIXELFORMAT_RG11B10_FLOAT,  // LSB->MSB: [r, g, b]
 
 	// depth/stencil formats

@@ -1632,6 +1632,11 @@ OpenGL::TextureFormat OpenGL::convertPixelFormat(PixelFormat pixelformat)
 		f.externalformat = GL_RGBA;
 		f.type = GL_UNSIGNED_INT_2_10_10_10_REV;
 		break;
+	case PIXELFORMAT_RGB10A2_UINT:
+		f.internalformat = GL_RGB10_A2UI;
+		f.externalformat = GL_RGBA_INTEGER;
+		f.type = GL_UNSIGNED_INT_2_10_10_10_REV;
+		break;
 	case PIXELFORMAT_RG11B10_FLOAT:
 		f.internalformat = GL_R11F_G11F_B10F;
 		f.externalformat = GL_RGB;
@@ -1983,6 +1988,7 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 	case PIXELFORMAT_RG32_UINT:
 	case PIXELFORMAT_RGBA32_INT:
 	case PIXELFORMAT_RGBA32_UINT:
+	case PIXELFORMAT_RGB10A2_UINT:
 		flags |= PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
 		if (GLAD_VERSION_4_3)
 			flags |= computewrite;

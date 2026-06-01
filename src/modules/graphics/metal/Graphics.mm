@@ -2035,6 +2035,7 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 		case PIXELFORMAT_RG32_UINT:
 		case PIXELFORMAT_RGBA32_INT:
 		case PIXELFORMAT_RGBA32_UINT:
+		case PIXELFORMAT_RGB10A2_UINT:
 			// If MSAA support for int formats is added this should be split up.
 			flags |= sample | rt | computewrite;
 			break;
