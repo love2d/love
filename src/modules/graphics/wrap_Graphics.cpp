@@ -1934,6 +1934,8 @@ static Buffer *luax_newbuffer(lua_State *L, int idx, Buffer::Settings settings, 
 
 int w_newBuffer(lua_State *L)
 {
+	luax_checkgraphicscreated(L);
+
 	Buffer::Settings settings(0, BUFFERDATAUSAGE_DYNAMIC);
 
 	luaL_checktype(L, 3, LUA_TTABLE);
