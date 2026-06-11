@@ -1542,6 +1542,8 @@ void Graphics::endPass(bool presenting)
 
 void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth)
 { @autoreleasepool {
+	bool activateRenderEncoder = false;
+
 	if (c.hasValue || stencil.hasValue || depth.hasValue)
 	{
 		flushBatchedDraws();
@@ -1550,7 +1552,7 @@ void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth
 		if (renderEncoder != nil)
 		{
 			submitRenderEncoder(SUBMIT_STORE);
-			useRenderEncoder();
+			activateRenderEncoder = true;
 		}
 	}
 
@@ -1577,12 +1579,17 @@ void Graphics::clear(OptionalColorD c, OptionalInt stencil, OptionalDouble depth
 		passDesc.depthAttachment.clearDepth = depth.value;
 		passDesc.depthAttachment.loadAction = MTLLoadActionClear;
 	}
+
+	if (activateRenderEncoder)
+		useRenderEncoder();
 }}
 
 void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt stencil, OptionalDouble depth)
 { @autoreleasepool {
 	if (colors.size() == 0 && !stencil.hasValue && !depth.hasValue)
 		return;
+
+	bool activateRenderEncoder = false;
 
 	int ncolorcanvases = (int) states.back().renderTargets.colors.size();
 	int ncolors = (int) colors.size();
@@ -1599,7 +1606,7 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 	if (renderEncoder != nil)
 	{
 		submitRenderEncoder(SUBMIT_STORE);
-		useRenderEncoder();
+		activateRenderEncoder = true;
 	}
 
 	for (int i = 0; i < ncolors; i++)
@@ -1626,6 +1633,9 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 		passDesc.depthAttachment.clearDepth = depth.value;
 		passDesc.depthAttachment.loadAction = MTLLoadActionClear;
 	}
+
+	if (activateRenderEncoder)
+		useRenderEncoder();
 }}
 
 void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
