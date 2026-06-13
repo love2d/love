@@ -2051,6 +2051,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 
 	# Extra DLLs.
 	if(LOVE_EXTRA_DLLS)
+		file(TO_CMAKE_PATH "${LOVE_EXTRA_DLLS}" LOVE_EXTRA_DLLS)
 		foreach(DLL ${LOVE_EXTRA_DLLS})
 			get_filename_component(DLL_NAME ${DLL} NAME)
 			message(STATUS "Extra DLL: ${DLL_NAME}")
@@ -2060,6 +2061,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 
 	# Dynamic runtime libs.
 	if(LOVE_MSVC_DLLS)
+		file(TO_CMAKE_PATH "${LOVE_MSVC_DLLS}" LOVE_MSVC_DLLS)
 		foreach(DLL ${LOVE_MSVC_DLLS})
 			get_filename_component(DLL_NAME ${DLL} NAME)
 			message(STATUS "Runtime DLL: ${DLL_NAME}")
