@@ -152,10 +152,11 @@ Graphics::Graphics()
 		createInfo.ppEnabledLayerNames = validationLayers.data();
 	}
 
-	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
+	VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
+	if (result != VK_SUCCESS)
 	{
 		SDL_Vulkan_UnloadLibrary();
-		throw love::Exception("couldn't create vulkan instance");
+		throw love::Exception("couldn't create vulkan instance: %s", Vulkan::getErrorString(result));
 	}
 
 	volkLoadInstance(instance);
@@ -401,7 +402,7 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 				&screenshotAllocationInfo);
 
 			if (result != VK_SUCCESS)
-				throw love::Exception("failed to create screenshot readback buffer");
+				throw love::Exception("failed to create screenshot readback buffer: %s", Vulkan::getErrorString(result));
 
 			Vulkan::cmdTransitionImageLayout(
 				commandBuffers.at(currentFrame),
@@ -471,8 +472,9 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 		fence = inFlightFences[currentFrame];
 	}
 
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
-		throw love::Exception("failed to submit draw command buffer");
+	VkResult result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, fence);
+	if (result != VK_SUCCESS)
+		throw love::Exception("Failed to submit Vulkan draw command buffer: %s", Vulkan::getErrorString(result));
 	
 	if (submitMode == SUBMIT_NOPRESENT || submitMode == SUBMIT_RESTART || screenshotBuffer != VK_NULL_HANDLE)
 	{
@@ -596,7 +598,7 @@ void Graphics::present(void *screenshotCallbackdata)
 		recreateSwapChain();
 	}
 	else if (result != VK_SUCCESS)
-		throw love::Exception("failed to present swap chain image");
+		throw love::Exception("Failed to present Vulkan swap chain image: %s", Vulkan::getErrorString(result));
 
 	for (love::graphics::StreamBuffer *buffer : batchedDrawState.vb)
 		buffer->nextFrame();
@@ -1370,7 +1372,7 @@ void Graphics::beginSwapChainFrame()
 				continue;
 			}
 			else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-				throw love::Exception("failed to acquire swap chain image");
+				throw love::Exception("Failed to acquire Vulkan swap chain image: %s", Vulkan::getErrorString(result));
 
 			break;
 		}
