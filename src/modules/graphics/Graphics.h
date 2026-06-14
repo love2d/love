@@ -448,6 +448,30 @@ public:
 		}
 	};
 
+	struct BackbufferSettings
+	{
+		int width = 0;
+		int height = 0;
+		int pixelWidth = 0;
+		int pixelHeight = 0;
+		bool stencil = false;
+		bool depth = false;
+		int msaa = 0;
+
+		bool operator == (const BackbufferSettings &other) const
+		{
+			return width == other.width && height == other.height
+				&& pixelWidth == other.pixelWidth && pixelHeight == other.pixelHeight
+				&& stencil == other.stencil && depth == other.depth
+				&& msaa == other.msaa;
+		}
+
+		bool operator != (const BackbufferSettings &other) const
+		{
+			return !(operator == (other));
+		}
+	};
+
 	Graphics(const char *name);
 	virtual ~Graphics();
 
@@ -505,13 +529,13 @@ public:
 	/**
 	 * Called when the backbuffer changes.
 	 **/
-	virtual void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) = 0;
+	virtual void backbufferChanged(const BackbufferSettings &settings) = 0;
 	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight);
 
 	/**
 	 * Sets the current graphics display viewport and initializes the renderer.
 	 **/
-	virtual bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) = 0;
+	virtual bool setMode(void *context, const BackbufferSettings &settings) = 0;
 
 	/**
 	 * Un-sets the current graphics display mode (uninitializing objects if
@@ -546,7 +570,7 @@ public:
 	double getCurrentDPIScale() const;
 	double getScreenDPIScale() const;
 
-	virtual int getRequestedBackbufferMSAA() const = 0;
+	int getRequestedBackbufferMSAA() const;
 	virtual int getBackbufferMSAA() const = 0;
 
 	Buffer *getQuadIndexBuffer() const { return quadIndexBuffer; }
@@ -1051,13 +1075,7 @@ protected:
 
 	void updateDeviceProjection(const Matrix4 &projection);
 
-	int width;
-	int height;
-	int pixelWidth;
-	int pixelHeight;
-
-	bool backbufferHasStencil;
-	bool backbufferHasDepth;
+	BackbufferSettings backbufferSettings;
 
 	bool created;
 	bool active;

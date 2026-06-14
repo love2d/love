@@ -278,7 +278,6 @@ Graphics::Graphics()
 	, lastCullMode(CULL_MAX_ENUM)
 	, lastRenderPipelineKey()
 	, shaderSwitches(0)
-	, requestedBackbufferMSAA(0)
 	, attachmentStoreActions()
 	, renderBindings()
 	, uniformBufferOffset(0)
@@ -486,22 +485,15 @@ love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod m
 	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
 }
 
-void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
+void Graphics::backbufferChanged(const BackbufferSettings &settings)
 {
-	bool sizechanged = width != this->width || height != this->height
-		|| pixelwidth != this->pixelWidth || pixelheight != this->pixelHeight;
+	bool sizechanged = settings.width != backbufferSettings.width || settings.height != backbufferSettings.height
+		|| settings.pixelWidth != backbufferSettings.pixelWidth || settings.pixelHeight != backbufferSettings.pixelHeight;
 
-	bool dschanged = backbufferstencil != this->backbufferHasStencil || backbufferdepth != this->backbufferHasDepth;
-	bool msaachanged = msaa != this->requestedBackbufferMSAA;
+	bool dschanged = settings.stencil != backbufferSettings.stencil || settings.depth != backbufferSettings.depth;
+	bool msaachanged = settings.msaa != backbufferSettings.msaa;
 
-	this->width = width;
-	this->height = height;
-	this->pixelWidth = pixelwidth;
-	this->pixelHeight = pixelheight;
-
-	this->backbufferHasStencil = backbufferstencil;
-	this->backbufferHasDepth = backbufferdepth;
-	this->requestedBackbufferMSAA = msaa;
+	backbufferSettings = settings;
 
 	if (!isRenderTargetActive())
 	{
@@ -509,44 +501,42 @@ void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixe
 		resetProjection();
 	}
 
-	Texture::Settings settings;
-	settings.width = width;
-	settings.height = height;
-	settings.dpiScale = (float)pixelheight / (float)height;
-	settings.msaa = getRequestedBackbufferMSAA();
-	settings.renderTarget = true;
-	settings.readable.set(false);
+	Texture::Settings ts;
+	ts.width = settings.width;
+	ts.height = settings.height;
+	ts.dpiScale = (float)settings.pixelHeight / (float)settings.height;
+	ts.msaa = getRequestedBackbufferMSAA();
+	ts.renderTarget = true;
+	ts.readable.set(false);
 
 	if (sizechanged || msaachanged)
 	{
 		backbufferMSAA.set(nullptr);
-		if (settings.msaa > 1)
+		if (ts.msaa > 1)
 		{
-			settings.format = isGammaCorrect() ? PIXELFORMAT_BGRA8_sRGB : PIXELFORMAT_BGRA8_UNORM;
-			backbufferMSAA.set(newTexture(settings), Acquire::NORETAIN);
+			ts.format = isGammaCorrect() ? PIXELFORMAT_BGRA8_sRGB : PIXELFORMAT_BGRA8_UNORM;
+			backbufferMSAA.set(newTexture(ts), Acquire::NORETAIN);
 		}
 	}
 
 	if (sizechanged || msaachanged || dschanged)
 	{
 		backbufferDepthStencil.set(nullptr);
-		if (backbufferstencil || backbufferdepth)
+		if (settings.stencil || settings.depth)
 		{
-			if (backbufferstencil && backbufferdepth)
-				settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-			else if (backbufferstencil)
-				settings.format = PIXELFORMAT_STENCIL8;
-			else if (backbufferdepth)
-				settings.format = PIXELFORMAT_DEPTH24_UNORM;
-			backbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+			if (settings.stencil && settings.depth)
+				ts.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+			else if (settings.stencil)
+				ts.format = PIXELFORMAT_STENCIL8;
+			else if (settings.depth)
+				ts.format = PIXELFORMAT_DEPTH24_UNORM;
+			backbufferDepthStencil.set(newTexture(ts), Acquire::NORETAIN);
 		}
 	}
 }
 
-bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
+bool Graphics::setMode(void *context, const BackbufferSettings &settings)
 { @autoreleasepool {
-	this->width = width;
-	this->height = height;
 	this->metalLayer = (__bridge CAMetalLayer *) context;
 
 	metalLayer.device = device;
@@ -560,7 +550,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 	metalLayer.magnificationFilter = kCAFilterNearest;
 #endif
 
-	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferstencil, backbufferdepth, msaa);
+	backbufferChanged(settings);
 
 	created = true;
 
@@ -1785,11 +1775,6 @@ void Graphics::present(void *screenshotCallbackData)
 	updateTemporaryResources();
 	processCompletedCommandBuffers();
 }}
-
-int Graphics::getRequestedBackbufferMSAA() const
-{
-	return requestedBackbufferMSAA;
-}
 
 int Graphics::getBackbufferMSAA() const
 {

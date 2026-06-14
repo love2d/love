@@ -658,6 +658,15 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 		double scaledw, scaledh;
 		fromPixels((double) pixelWidth, (double) pixelHeight, scaledw, scaledh);
 
+		graphics::Graphics::BackbufferSettings backbufferSettings;
+		backbufferSettings.width = (int)scaledw;
+		backbufferSettings.height = (int)scaledh;
+		backbufferSettings.pixelWidth = pixelWidth;
+		backbufferSettings.pixelHeight = pixelHeight;
+		backbufferSettings.stencil = f.stencil;
+		backbufferSettings.depth = f.depth;
+		backbufferSettings.msaa = f.msaa;
+
 		if (needsetmode)
 		{
 			void *context = nullptr;
@@ -669,11 +678,11 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 #endif
 
 			// TODO: try/catch
-			graphics->setMode(context, (int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.depth, f.msaa);
+			graphics->setMode(context, backbufferSettings);
 		}
 		else
 		{
-			graphics->backbufferChanged((int) scaledw, (int) scaledh, pixelWidth, pixelHeight, f.stencil, f.depth, f.msaa);
+			graphics->backbufferChanged(backbufferSettings);
 		}
 
 		this->settings.msaa = graphics->getBackbufferMSAA();

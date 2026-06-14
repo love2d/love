@@ -64,8 +64,8 @@ public:
 	love::graphics::Texture *newTextureView(love::graphics::Texture *base, const Texture::ViewSettings &viewsettings) override;
 	love::graphics::Buffer *newBuffer(const Buffer::Settings &settings, const std::vector<Buffer::DataDeclaration> &format, const void *data, size_t size, size_t arraylength) override;
 
-	void backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
-	bool setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa) override;
+	void backbufferChanged(const BackbufferSettings &settings) override;
+	bool setMode(void *context, const BackbufferSettings &settings) override;
 	void unSetMode() override;
 
 	void setActive(bool active) override;
@@ -84,7 +84,6 @@ public:
 
 	void present(void *screenshotCallbackData) override;
 
-	int getRequestedBackbufferMSAA() const override;
 	int getBackbufferMSAA() const override;
 
 	void setColor(Colorf c) override;
@@ -231,7 +230,6 @@ private:
 
 	StrongRef<love::graphics::Texture> backbufferMSAA;
 	StrongRef<love::graphics::Texture> backbufferDepthStencil;
-	int requestedBackbufferMSAA;
 
 	AttachmentStoreActions attachmentStoreActions;
 

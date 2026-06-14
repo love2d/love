@@ -110,7 +110,6 @@ Graphics::Graphics()
 	, windowHasStencil(false)
 	, mainVAO(0)
 	, internalBackbufferFBO(0)
-	, requestedBackbufferMSAA(0)
 	, bufferMapMemory(nullptr)
 	, bufferMapMemorySize(2 * 1024 * 1024)
 	, pixelFormatUsage()
@@ -188,27 +187,15 @@ love::graphics::GraphicsReadback *Graphics::newReadbackInternal(ReadbackMethod m
 	return new GraphicsReadback(this, method, texture, slice, mipmap, rect, dest, destx, desty);
 }
 
-void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
+void Graphics::backbufferChanged(const BackbufferSettings &settings)
 {
-	bool changed = width != this->width || height != this->height
-		|| pixelwidth != this->pixelWidth || pixelheight != this->pixelHeight;
-
-	changed |= backbufferstencil != this->backbufferHasStencil || backbufferdepth != this->backbufferHasDepth;
-	changed |= msaa != this->requestedBackbufferMSAA;
-
-	this->width = width;
-	this->height = height;
-	this->pixelWidth = pixelwidth;
-	this->pixelHeight = pixelheight;
-
-	this->backbufferHasStencil = backbufferstencil;
-	this->backbufferHasDepth = backbufferdepth;
-	this->requestedBackbufferMSAA = msaa;
+	bool changed = settings != backbufferSettings;
+	backbufferSettings = settings;
 
 	if (!isRenderTargetActive())
 	{
 		// Set the viewport to top-left corner.
-		gl.setViewport({0, 0, pixelwidth, pixelheight});
+		gl.setViewport({0, 0, settings.pixelWidth, settings.pixelHeight});
 
 		// Re-apply the scissor if it was active, since the rectangle passed to
 		// glScissor is affected by the viewport dimensions.
@@ -222,7 +209,7 @@ void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixe
 		return;
 
 	bool useinternalbackbuffer = false;
-	if (msaa > 1)
+	if (settings.msaa > 1)
 		useinternalbackbuffer = true;
 
 	GLuint prevFBO = gl.getFramebuffer(OpenGL::FRAMEBUFFER_ALL);
@@ -230,27 +217,27 @@ void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixe
 
 	if (useinternalbackbuffer)
 	{
-		Texture::Settings settings;
-		settings.width = width;
-		settings.height = height;
-		settings.dpiScale = (float)pixelheight / (float)height;
-		settings.msaa = msaa;
-		settings.renderTarget = true;
-		settings.readable.set(false);
+		Texture::Settings ts;
+		ts.width = settings.width;
+		ts.height = settings.height;
+		ts.dpiScale = (float)settings.pixelHeight / (float)settings.height;
+		ts.msaa = settings.msaa;
+		ts.renderTarget = true;
+		ts.readable.set(false);
 
-		settings.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_sRGB : PIXELFORMAT_RGBA8_UNORM;
-		internalBackbuffer.set(newTexture(settings), Acquire::NORETAIN);
+		ts.format = isGammaCorrect() ? PIXELFORMAT_RGBA8_sRGB : PIXELFORMAT_RGBA8_UNORM;
+		internalBackbuffer.set(newTexture(ts), Acquire::NORETAIN);
 
 		internalBackbufferDepthStencil.set(nullptr);
-		if (backbufferstencil || backbufferdepth)
+		if (settings.stencil || settings.depth)
 		{
-			if (backbufferstencil && backbufferdepth)
-				settings.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
-			else if (backbufferstencil)
-				settings.format = PIXELFORMAT_STENCIL8;
-			else if (backbufferdepth)
-				settings.format = PIXELFORMAT_DEPTH24_UNORM;
-			internalBackbufferDepthStencil.set(newTexture(settings), Acquire::NORETAIN);
+			if (settings.stencil && settings.depth)
+				ts.format = PIXELFORMAT_DEPTH24_UNORM_STENCIL8;
+			else if (settings.stencil)
+				ts.format = PIXELFORMAT_STENCIL8;
+			else if (settings.depth)
+				ts.format = PIXELFORMAT_DEPTH24_UNORM;
+			internalBackbufferDepthStencil.set(newTexture(ts), Acquire::NORETAIN);
 		}
 
 		RenderTargets rts;
@@ -293,7 +280,7 @@ GLuint Graphics::getSystemBackbufferFBO() const
 #endif
 }
 
-bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
+bool Graphics::setMode(void */*context*/, const BackbufferSettings &settings)
 {
 	// Okay, setup OpenGL.
 	gl.initContext();
@@ -350,7 +337,7 @@ bool Graphics::setMode(void */*context*/, int width, int height, int pixelwidth,
 
 	setDebug(isDebugEnabled());
 
-	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferstencil, backbufferdepth, msaa);
+	backbufferChanged(settings);
 
 	if (batchedDrawState.vb[0] == nullptr)
 	{
@@ -1312,11 +1299,6 @@ void Graphics::present(void *screenshotCallbackData)
 
 	updatePendingReadbacks();
 	updateTemporaryResources();
-}
-
-int Graphics::getRequestedBackbufferMSAA() const
-{
-	return requestedBackbufferMSAA;
 }
 
 int Graphics::getBackbufferMSAA() const

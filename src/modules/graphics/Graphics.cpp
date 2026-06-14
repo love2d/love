@@ -201,12 +201,7 @@ Graphics::DisplayState::DisplayState()
 
 Graphics::Graphics(const char *name)
 	: Module(M_GRAPHICS, name)
-	, width(0)
-	, height(0)
-	, pixelWidth(0)
-	, pixelHeight(0)
-	, backbufferHasStencil(false)
-	, backbufferHasDepth(false)
+	, backbufferSettings()
 	, created(false)
 	, active(true)
 	, batchedDrawState()
@@ -736,7 +731,7 @@ void Graphics::validateStencilState(const StencilState &s) const
 		const auto &rts = states.back().renderTargets;
 		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
-		if (!isRenderTargetActive() && !backbufferHasStencil)
+		if (!isRenderTargetActive() && !backbufferSettings.stencil)
 			throw love::Exception("The window must have stenciling enabled to draw to the main screen's stencil buffer.");
 		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) == 0 && (dstexture == nullptr || !isPixelFormatStencil(dstexture->getPixelFormat())))
 			throw love::Exception("Drawing to the stencil buffer with a Canvas active requires either stencil=true or a custom stencil-type Canvas to be used, in setCanvas.");
@@ -750,7 +745,7 @@ void Graphics::validateDepthState(bool depthwrite) const
 		const auto &rts = states.back().renderTargets;
 		love::graphics::Texture *dstexture = rts.depthStencil.texture.get();
 
-		if (!isRenderTargetActive() && !backbufferHasDepth)
+		if (!isRenderTargetActive() && !backbufferSettings.depth)
 			throw love::Exception("The window must have depth enabled to draw to the main screen's depth buffer.");
 		else if (isRenderTargetActive() && (rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) == 0 && (dstexture == nullptr || !isPixelFormatDepth(dstexture->getPixelFormat())))
 			throw love::Exception("Drawing to the depth buffer with a Canvas active requires either depth=true or a custom depth-type Canvas to be used, in setCanvas.");
@@ -759,22 +754,22 @@ void Graphics::validateDepthState(bool depthwrite) const
 
 int Graphics::getWidth() const
 {
-	return width;
+	return backbufferSettings.width;
 }
 
 int Graphics::getHeight() const
 {
-	return height;
+	return backbufferSettings.height;
 }
 
 int Graphics::getPixelWidth() const
 {
-	return pixelWidth;
+	return backbufferSettings.pixelWidth;
 }
 
 int Graphics::getPixelHeight() const
 {
-	return pixelHeight;
+	return backbufferSettings.pixelHeight;
 }
 
 double Graphics::getCurrentDPIScale() const
@@ -789,6 +784,11 @@ double Graphics::getCurrentDPIScale() const
 double Graphics::getScreenDPIScale() const
 {
 	return (double) getPixelHeight() / (double) getHeight();
+}
+
+int Graphics::getRequestedBackbufferMSAA() const
+{
+	return backbufferSettings.msaa;
 }
 
 bool Graphics::isCreated() const
@@ -813,7 +813,12 @@ void Graphics::reset()
 
 void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight)
 {
-	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferHasStencil, backbufferHasDepth, getRequestedBackbufferMSAA());
+	BackbufferSettings s = backbufferSettings;
+	s.width = width;
+	s.height = height;
+	s.pixelWidth = pixelwidth;
+	s.pixelHeight = pixelheight;
+	backbufferChanged(s);
 }
 
 /**
@@ -1235,7 +1240,7 @@ void Graphics::setRenderTarget()
 	const RenderTargetsStrongRef prevRTs = state.renderTargets;
 
 	flushBatchedDraws();
-	setRenderTargetsInternal(RenderTargets(), pixelWidth, pixelHeight, isGammaCorrect());
+	setRenderTargetsInternal(RenderTargets(), backbufferSettings.pixelWidth, backbufferSettings.pixelHeight, isGammaCorrect());
 
 	state.renderTargets = RenderTargetsStrongRef();
 	renderTargetSwitchCount++;

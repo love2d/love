@@ -265,7 +265,7 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 
 		if (stencil.hasValue)
 		{
-			if ((!rtactive && backbufferHasStencil)
+			if ((!rtactive && backbufferSettings.stencil)
 				|| (dstexture && isPixelFormatStencil(dstexture->getPixelFormat())) || (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) != 0)
 			{
 				depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
@@ -274,7 +274,7 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 		}
 		if (depth.hasValue)
 		{
-			if ((!rtactive && backbufferHasDepth)
+			if ((!rtactive && backbufferSettings.depth)
 				|| (dstexture && isPixelFormatDepth(dstexture->getPixelFormat())) || (rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) != 0)
 			{
 				depthStencilAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -617,26 +617,18 @@ void Graphics::present(void *screenshotCallbackdata)
 	beginFrame();
 }
 
-void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
+void Graphics::backbufferChanged(const BackbufferSettings &settings)
 {
-	if (swapChain != VK_NULL_HANDLE && (pixelwidth != this->pixelWidth || pixelheight != this->pixelHeight || width != this->width || height != this->height
-		|| backbufferstencil != this->backbufferHasStencil || backbufferdepth != this->backbufferHasDepth || msaa != requestedMsaa))
+	if (swapChain != VK_NULL_HANDLE && settings != backbufferSettings)
 		requestSwapchainRecreation();
 
-	this->width = width;
-	this->height = height;
-	this->pixelWidth = pixelwidth;
-	this->pixelHeight = pixelheight;
-
-	this->backbufferHasStencil = backbufferstencil;
-	this->backbufferHasDepth = backbufferdepth;
-	this->requestedMsaa = msaa;
+	backbufferSettings = settings;
 
 	if (!isRenderTargetActive())
 		resetProjection();
 
 	if (swapChain != VK_NULL_HANDLE)
-		msaaSamples = getMsaaCount(requestedMsaa);
+		msaaSamples = getMsaaCount(settings.msaa);
 
 	// Don't wait until the next frame starts to recreate the swapchain - doing so
 	// will cause a 1 frame delay in the backbuffer size on resize, and it can cause
@@ -650,10 +642,10 @@ void Graphics::backbufferChanged(int width, int height, int pixelwidth, int pixe
 	}
 }
 
-bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int pixelheight, bool backbufferstencil, bool backbufferdepth, int msaa)
+bool Graphics::setMode(void *context, const BackbufferSettings &settings)
 {
 	// Must be called before the swapchain is created.
-	backbufferChanged(width, height, pixelwidth, pixelheight, backbufferstencil, backbufferdepth, msaa);
+	backbufferChanged(settings);
 
 	cleanUpFunctions.clear();
 	cleanUpFunctions.resize(MAX_FRAMES_IN_FLIGHT);
@@ -674,7 +666,7 @@ bool Graphics::setMode(void *context, int width, int height, int pixelwidth, int
 		initCapabilities();
 	}
 
-	msaaSamples = getMsaaCount(requestedMsaa);
+	msaaSamples = getMsaaCount(settings.msaa);
 
 	createSwapChain();
 	createImageViews();
@@ -828,11 +820,6 @@ void Graphics::setActive(bool enable)
 {
 	flushBatchedDraws();
 	active = enable;
-}
-
-int Graphics::getRequestedBackbufferMSAA() const
-{
-	return requestedMsaa;
 }
 
 int Graphics::getBackbufferMSAA() const
@@ -2076,8 +2063,8 @@ void Graphics::createSwapChain()
 		// because newTexture needs an active command buffer to do its initial
 		// layout transitions.
 		swapChainImages.clear();
-		extent.width = std::max(1, pixelWidth);
-		extent.height = std::max(1, pixelHeight);
+		extent.width = std::max(1, backbufferSettings.pixelWidth);
+		extent.height = std::max(1, backbufferSettings.pixelHeight);
 
 		if (isGammaCorrect())
 			surfaceFormat.format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -2190,8 +2177,8 @@ VkExtent2D Graphics::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
 	else
 	{
 		VkExtent2D actualExtent = {
-			static_cast<uint32_t>(pixelWidth),
-			static_cast<uint32_t>(pixelHeight)
+			static_cast<uint32_t>(backbufferSettings.pixelWidth),
+			static_cast<uint32_t>(backbufferSettings.pixelHeight)
 		};
 
 		actualExtent.width = clampuint32_t(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
@@ -2696,7 +2683,7 @@ void Graphics::setDefaultRenderPass()
 
 	RenderPassConfiguration renderPassConfiguration{};
 
-	VkFormat dsformat = backbufferHasDepth || backbufferHasStencil ? depthStencilFormat : VK_FORMAT_UNDEFINED;
+	VkFormat dsformat = backbufferSettings.depth || backbufferSettings.stencil ? depthStencilFormat : VK_FORMAT_UNDEFINED;
 	renderPassConfiguration.staticData.depthStencilAttachment = { dsformat, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_LOAD_OP_LOAD, msaaSamples };
 	if (msaaSamples & VK_SAMPLE_COUNT_1_BIT)
 		renderPassConfiguration.staticData.resolve = false;
@@ -2741,13 +2728,13 @@ void Graphics::setDefaultRenderPass()
 			renderPassState.clearColors[0].color = Texture::getClearColor(nullptr, renderPassState.mainWindowClearColorValue.value);
 		}
 
-		if (renderPassState.mainWindowClearDepthValue.hasValue && backbufferHasDepth)
+		if (renderPassState.mainWindowClearDepthValue.hasValue && backbufferSettings.depth)
 		{
 			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.depthLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			renderPassState.clearColors[1].depthStencil.depth = static_cast<float>(renderPassState.mainWindowClearDepthValue.value);
 		}
 
-		if (renderPassState.mainWindowClearStencilValue.hasValue && backbufferHasStencil)
+		if (renderPassState.mainWindowClearStencilValue.hasValue && backbufferSettings.stencil)
 		{
 			renderPassState.renderPassConfiguration.staticData.depthStencilAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			renderPassState.clearColors[1].depthStencil.stencil = static_cast<uint32_t>(renderPassState.mainWindowClearStencilValue.value);
@@ -3304,7 +3291,7 @@ VkFormat Graphics::findDepthFormat()
 
 void Graphics::createDepthResources()
 {
-	if (!backbufferHasDepth && !backbufferHasStencil)
+	if (!backbufferSettings.depth && !backbufferSettings.stencil)
 	{
 		depthImage = VK_NULL_HANDLE;
 		depthImageView = VK_NULL_HANDLE;
@@ -3343,9 +3330,9 @@ void Graphics::createDepthResources()
 	imageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 	imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-	if (backbufferHasDepth)
+	if (backbufferSettings.depth)
 		imageViewInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
-	if (backbufferHasStencil)
+	if (backbufferSettings.stencil)
 		imageViewInfo.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 	imageViewInfo.subresourceRange.baseMipLevel = 0;
 	imageViewInfo.subresourceRange.levelCount = 1;
