@@ -119,7 +119,7 @@ void GenericShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, R
 		float advance = getGlyphAdvance(g, &glyphindex);
 
 		if (positions)
-			positions->push_back({ Vector2(curpos.x, curpos.y), glyphindex });
+			positions->push_back({ Vector2(curpos.x, curpos.y), Vector2(advance, getCombinedHeight()), glyphindex });
 
 		// Advance the x position for the next glyph.
 		curpos.x += advance;

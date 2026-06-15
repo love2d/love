@@ -102,6 +102,16 @@ public:
 	int getWidth(const std::string &str);
 
 	/**
+	 * Returns the position and width of the character at a given index.
+	 *
+	 * @param index The index of the codepoint
+	 * @param str The input text
+	 * @param wraplimit The maximum width of the text for wrapping
+	 * @param align The text align mode
+	 **/
+	Vector2 getGlyphPosition(int index, const std::string &str, float wraplimit, AlignMode align, float *width);
+
+	/**
 	 * Returns the width of the passed glyph.
 	 **/
 	int getWidth(uint32 glyph);
@@ -183,6 +193,7 @@ private:
 	const Glyph &addGlyph(love::font::TextShaper::GlyphIndex glyphindex);
 	const Glyph &findGlyph(love::font::TextShaper::GlyphIndex glyphindex);
 	void printv(Graphics *gfx, const Matrix4 &t, const std::vector<DrawCommand> &drawcommands, const std::vector<GlyphVertex> &vertices);
+	float getAlign(const love::font::ColoredCodepoints &text, const Range range, float width, float wrap, AlignMode align, float *extraspacing);
 
 	StrongRef<love::font::TextShaper> shaper;
 

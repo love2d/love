@@ -103,6 +103,30 @@ int w_Font_getWidth(lua_State *L)
 	return 1;
 }
 
+int w_Font_getGlyphPosition(lua_State *L)
+{
+	Font *t = luax_checkfont(L, 1);
+	int index = luaL_checkinteger(L, 2);
+	const char *str = luaL_checkstring(L, 3);
+	float wraplimit = (float) luaL_checknumber(L, 4);
+
+	Font::AlignMode align = Font::ALIGN_LEFT;
+	const char *astr = lua_isnoneornil(L, 5) ? nullptr : luaL_checkstring(L, 5);
+	if (astr != nullptr && !Font::getConstant(astr, align))
+		return luax_enumerror(L, "alignment", Font::getConstants(align), astr);
+
+	Vector2 pos;
+	float width;
+	float height = t->getHeight();
+	luax_catchexcept(L, [&]() { pos = t->getGlyphPosition(index - 1, str, wraplimit, align, &width); });
+
+	lua_pushnumber(L, pos.x);
+	lua_pushnumber(L, pos.y);
+	lua_pushnumber(L, width);
+	lua_pushnumber(L, height);
+	return 4;
+}
+
 int w_Font_getWrap(lua_State *L)
 {
 	Font *t = luax_checkfont(L, 1);
@@ -272,6 +296,7 @@ static const luaL_Reg w_Font_functions[] =
 {
 	{ "getHeight", w_Font_getHeight },
 	{ "getWidth", w_Font_getWidth },
+	{ "getGlyphPosition", w_Font_getGlyphPosition },
 	{ "getWrap", w_Font_getWrap },
 	{ "setLineHeight", w_Font_setLineHeight },
 	{ "getLineHeight", w_Font_getLineHeight },
