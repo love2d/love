@@ -1985,9 +1985,10 @@ void Graphics::createSwapChain()
 
 	if (extent.width > 0 && extent.height > 0)
 	{
-		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-		if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
-			imageCount = swapChainSupport.capabilities.maxImageCount;
+		// Attempt triple-buffering when available.
+		uint32_t imageCount = std::max(3u, swapChainSupport.capabilities.minImageCount);
+		if (swapChainSupport.capabilities.maxImageCount > 0)
+			imageCount = std::min(imageCount, swapChainSupport.capabilities.maxImageCount);
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
