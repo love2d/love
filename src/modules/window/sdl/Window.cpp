@@ -771,12 +771,6 @@ void Window::updateSettings(const WindowSettings &newsettings, bool updateGraphi
 
 	settings.usedpiscale = newsettings.usedpiscale;
 
-	// Only minimize on focus loss if the window is in exclusive-fullscreen mode
-	if (settings.fullscreen && settings.fstype == FULLSCREEN_EXCLUSIVE)
-		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "1");
-	else
-		SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
-
 	settings.vsync = getVSync();
 
 	settings.stencil = newsettings.stencil;
