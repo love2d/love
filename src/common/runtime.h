@@ -494,6 +494,14 @@ lua_State *luax_insistpinnedthread(lua_State *L);
 lua_State *luax_getpinnedthread(lua_State *L);
 
 /**
+ * Lua C function to use with luax_preload when the given module should not
+ * be allowed on a thread. Must be called from the thread's code.
+ **/
+extern "C" {
+	int luax_module_threaderror(lua_State *L);
+}
+
+/**
  * Mark a function as deprecated. Should only be called inside wrapper function
  * code.
  **/

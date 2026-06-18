@@ -68,6 +68,10 @@ void LuaThread::threadFunction()
 	lua_pop(L, 1);
 #endif // LOVE_BUILD_STANDALONE
 
+	// We might want to add more input-related modules to this list.
+	luax_preload(L, luax_module_threaderror, "love.window");
+	luax_preload(L, luax_module_threaderror, "love.graphics");
+
 	luax_require(L, "love.thread");
 	lua_pop(L, 1);
 

@@ -1064,6 +1064,13 @@ lua_State *luax_getpinnedthread(lua_State *L)
 	return thread;
 }
 
+extern "C" int luax_module_threaderror(lua_State *L)
+{
+	// Module name is the first param in the stack.
+	const char *name = luaL_checkstring(L, 1);
+	return luaL_error(L, "The %s module cannot be used in thread code.", name);
+}
+
 void luax_markdeprecated(lua_State *L, int level, const char *name, APIType api)
 {
 	luax_markdeprecated(L, level, name, api, DEPRECATED_NO_REPLACEMENT, nullptr);
