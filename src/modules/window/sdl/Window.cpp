@@ -1628,36 +1628,8 @@ void Window::showFileDialog(const FileDialogData &data, FileDialogCallback callb
 
 void Window::requestAttention(bool continuous)
 {
-#if defined(LOVE_WINDOWS) && !defined(LOVE_WINDOWS_UWP)
-
-	if (hasFocus())
-		return;
-
-	FLASHWINFO flashinfo = { sizeof(FLASHWINFO) };
-
-	flashinfo.hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
-	flashinfo.uCount = 1;
-	flashinfo.dwFlags = FLASHW_ALL;
-
-	if (continuous)
-	{
-		flashinfo.uCount = 0;
-		flashinfo.dwFlags |= FLASHW_TIMERNOFG;
-	}
-
-	FlashWindowEx(&flashinfo);
-
-#elif defined(LOVE_MACOS)
-
-	love::macos::requestAttention(continuous);
-
-#else
-
-	LOVE_UNUSED(continuous);
-	
-#endif
-	
-	// TODO: Linux?
+	if (window != nullptr)
+		SDL_FlashWindow(window, continuous ? SDL_FLASH_UNTIL_FOCUSED : SDL_FLASH_BRIEFLY);
 }
 
 Window::SystemTheme Window::getSystemTheme() const
