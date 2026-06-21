@@ -246,7 +246,7 @@ public:
 	void setActive(bool active) override;
 	int getBackbufferMSAA() const  override;
 	void setColor(Colorf c) override;
-	void setScissor(const Rect &rect) override;
+	void setScissor(const FRect &rect) override;
 	void setScissor() override;
 	void setStencilState(const StencilState &s) override;
 	void setDepthMode(CompareMode compare, bool write) override;

@@ -568,11 +568,11 @@ int w_setScissor(lua_State *L)
 		return 0;
 	}
 
-	Rect rect;
-	rect.x = (int) luaL_checkinteger(L, 1);
-	rect.y = (int) luaL_checkinteger(L, 2);
-	rect.w = (int) luaL_checkinteger(L, 3);
-	rect.h = (int) luaL_checkinteger(L, 4);
+	FRect rect;
+	rect.x = (float) luaL_checknumber(L, 1);
+	rect.y = (float) luaL_checknumber(L, 2);
+	rect.w = (float) luaL_checknumber(L, 3);
+	rect.h = (float) luaL_checknumber(L, 4);
 
 	if (rect.w < 0 || rect.h < 0)
 		return luaL_error(L, "Can't set scissor with negative width and/or height.");
@@ -583,11 +583,11 @@ int w_setScissor(lua_State *L)
 
 int w_intersectScissor(lua_State *L)
 {
-	Rect rect;
-	rect.x = (int) luaL_checkinteger(L, 1);
-	rect.y = (int) luaL_checkinteger(L, 2);
-	rect.w = (int) luaL_checkinteger(L, 3);
-	rect.h = (int) luaL_checkinteger(L, 4);
+	FRect rect;
+	rect.x = (float) luaL_checknumber(L, 1);
+	rect.y = (float) luaL_checknumber(L, 2);
+	rect.w = (float) luaL_checknumber(L, 3);
+	rect.h = (float) luaL_checknumber(L, 4);
 
 	if (rect.w < 0 || rect.h < 0)
 		return luaL_error(L, "Can't set scissor with negative width and/or height.");
@@ -598,14 +598,14 @@ int w_intersectScissor(lua_State *L)
 
 int w_getScissor(lua_State *L)
 {
-	Rect rect;
+	FRect rect;
 	if (!instance()->getScissor(rect))
 		return 0;
 
-	lua_pushinteger(L, rect.x);
-	lua_pushinteger(L, rect.y);
-	lua_pushinteger(L, rect.w);
-	lua_pushinteger(L, rect.h);
+	lua_pushnumber(L, rect.x);
+	lua_pushnumber(L, rect.y);
+	lua_pushnumber(L, rect.w);
+	lua_pushnumber(L, rect.h);
 
 	return 4;
 }

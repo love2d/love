@@ -107,27 +107,27 @@ void Deprecations::draw(Graphics *gfx)
 		strings.push_back({"\n(And " + std::to_string(remaining) + " more)", white});
 
 	int padding = 5;
-	int width = 600;
+	float width = 600;
 
 	for (const auto &coloredstr : strings)
-		width = std::max(width, font->getWidth(coloredstr.str) + padding * 2);
+		width = std::max(width, (float)font->getWidth(coloredstr.str) + padding * 2);
 
-	float wraplimit = std::min(gfx->getWidth(), width - padding * 2);
+	float wraplimit = std::min((float)gfx->getWidth(), width - padding * 2);
 
 	std::vector<std::string> wrappedlines;
 	font->getWrap(strings, wraplimit, wrappedlines);
 
 	int linecount = std::min((int) wrappedlines.size(), maxcount);
-	int height = font->getHeight() * linecount + padding * 2;
+	float height = font->getHeight() * linecount + padding * 2;
 
 	int x = 0;
-	int y = std::max(gfx->getHeight() - height, 0);
+	int y = std::max(gfx->getHeight() - height, 0.0f);
 
 	gfx->setColor(Colorf(0, 0, 0, 0.85 * alpha));
 	gfx->rectangle(Graphics::DRAW_FILL, x, y, width, height);
 
 	gfx->setColor(Colorf(1, 0.9, 0.8, 1 * alpha));
-	gfx->setScissor({x, y, width, height});
+	gfx->setScissor({(float)x, (float)y, width, height});
 
 	Matrix4 textm(x + padding, y + padding, 0, 1, 1, 0, 0, 0, 0);
 	gfx->printf(strings, font.get(), wraplimit, Font::ALIGN_LEFT, textm);

@@ -619,8 +619,8 @@ public:
 	 * and not drawn. Scissoring is automatically enabled.
 	 * @param rect The rectangle defining the scissor area.
 	 **/
-	virtual void setScissor(const Rect &rect) = 0;
-	void intersectScissor(const Rect &rect);
+	virtual void setScissor(const FRect &rect) = 0;
+	void intersectScissor(const FRect &rect);
 
 	/**
 	 * Clears any scissor that has been created.
@@ -631,7 +631,7 @@ public:
 	 * Gets the current scissor box.
 	 * @return Whether the scissor is enabled.
 	 */
-	bool getScissor(Rect &rect) const;
+	bool getScissor(FRect &rect) const;
 
 	void setStencilMode(StencilMode mode, int value);
 	void setStencilMode();
@@ -966,7 +966,7 @@ protected:
 		float pointSize = 1.0f;
 
 		bool scissor = false;
-		Rect scissorRect = Rect();
+		FRect scissorRect = FRect();
 
 		StencilState stencil;
 

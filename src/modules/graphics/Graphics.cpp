@@ -1489,9 +1489,9 @@ bool Graphics::findVertexAttributes(VertexAttributesID id, VertexAttributes &att
 	return true;
 }
 
-void Graphics::intersectScissor(const Rect &rect)
+void Graphics::intersectScissor(const FRect &rect)
 {
-	Rect currect = states.back().scissorRect;
+	FRect currect = states.back().scissorRect;
 
 	if (!states.back().scissor)
 	{
@@ -1501,17 +1501,17 @@ void Graphics::intersectScissor(const Rect &rect)
 		currect.h = std::numeric_limits<int>::max();
 	}
 
-	int x1 = std::max(currect.x, rect.x);
-	int y1 = std::max(currect.y, rect.y);
+	float x1 = std::max(currect.x, rect.x);
+	float y1 = std::max(currect.y, rect.y);
 
-	int x2 = std::min(currect.x + currect.w, rect.x + rect.w);
-	int y2 = std::min(currect.y + currect.h, rect.y + rect.h);
+	float x2 = std::min(currect.x + currect.w, rect.x + rect.w);
+	float y2 = std::min(currect.y + currect.h, rect.y + rect.h);
 
-	Rect newrect = {x1, y1, std::max(0, x2 - x1), std::max(0, y2 - y1)};
+	FRect newrect = {x1, y1, std::max(0.0f, x2 - x1), std::max(0.0f, y2 - y1)};
 	setScissor(newrect);
 }
 
-bool Graphics::getScissor(Rect &rect) const
+bool Graphics::getScissor(FRect &rect) const
 {
 	const DisplayState &state = states.back();
 	rect = state.scissorRect;

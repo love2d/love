@@ -1306,7 +1306,7 @@ int Graphics::getBackbufferMSAA() const
 	return internalBackbuffer.get() ? internalBackbuffer->getMSAA() : 0;
 }
 
-void Graphics::setScissor(const Rect &rect, bool rtActive)
+void Graphics::setScissor(const FRect &rect, bool rtActive)
 {
 	flushBatchedDraws();
 
@@ -1318,10 +1318,10 @@ void Graphics::setScissor(const Rect &rect, bool rtActive)
 	double dpiscale = getCurrentDPIScale();
 
 	Rect glrect;
-	glrect.x = (int) (rect.x * dpiscale);
-	glrect.y = (int) (rect.y * dpiscale);
-	glrect.w = (int) (rect.w * dpiscale);
-	glrect.h = (int) (rect.h * dpiscale);
+	glrect.x = (int) roundf(rect.x * dpiscale);
+	glrect.y = (int) roundf(rect.y * dpiscale);
+	glrect.w = (int) roundf(rect.w * dpiscale);
+	glrect.h = (int) roundf(rect.h * dpiscale);
 
 	// OpenGL's reversed y-coordinate is compensated for in OpenGL::setScissor.
 	gl.setScissor(glrect, rtActive);
@@ -1330,7 +1330,7 @@ void Graphics::setScissor(const Rect &rect, bool rtActive)
 	state.scissorRect = rect;
 }
 
-void Graphics::setScissor(const Rect &rect)
+void Graphics::setScissor(const FRect &rect)
 {
 	setScissor(rect, isRenderTargetActive());
 }

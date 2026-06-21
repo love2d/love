@@ -72,6 +72,17 @@ struct Rect
 	}
 };
 
+struct FRect
+{
+	float x, y;
+	float w, h;
+
+	bool operator == (const FRect &rhs) const
+	{
+		return x == rhs.x && y == rhs.y && w == rhs.w && h == rhs.h;
+	}
+};
+
 inline int nextP2(int x)
 {
 	x += (x == 0);

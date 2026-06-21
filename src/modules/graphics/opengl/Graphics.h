@@ -84,7 +84,7 @@ public:
 
 	void setColor(Colorf c) override;
 
-	void setScissor(const Rect &rect) override;
+	void setScissor(const FRect &rect) override;
 	void setScissor() override;
 
 	void setStencilState(const StencilState &s) override;
@@ -154,7 +154,7 @@ private:
 
 	void setDebug(bool enable);
 
-	void setScissor(const Rect &rect, bool rtActive);
+	void setScissor(const FRect &rect, bool rtActive);
 
 	uint32 computePixelFormatUsage(PixelFormat format, bool readable);
 

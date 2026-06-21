@@ -961,10 +961,10 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, VertexAttri
 		if (state.scissor)
 		{
 			double dpiscale = getCurrentDPIScale();
-			rect.x = (NSUInteger)(state.scissorRect.x*dpiscale);
-			rect.y = (NSUInteger)(state.scissorRect.y*dpiscale);
-			rect.width = (NSUInteger)(state.scissorRect.w*dpiscale);
-			rect.height = (NSUInteger)(state.scissorRect.h*dpiscale);
+			rect.x = (NSUInteger)roundf(state.scissorRect.x*dpiscale);
+			rect.y = (NSUInteger)roundf(state.scissorRect.y*dpiscale);
+			rect.width = (NSUInteger)roundf(state.scissorRect.w*dpiscale);
+			rect.height = (NSUInteger)roundf(state.scissorRect.h*dpiscale);
 
 			if (rtw > 0 && (int)rect.x >= rtw)
 				rect.x = rtw - 1;

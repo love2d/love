@@ -997,14 +997,14 @@ void Graphics::applyScissor()
 
 	if (states.back().scissor)
 	{
-		const Rect &rect = states.back().scissorRect;
+		const FRect &rect = states.back().scissorRect;
 		double dpiScale = getCurrentDPIScale();
 
-		int minScissorX = (int)(rect.x * dpiScale);
-		int minScissorY = (int)(rect.y * dpiScale);
+		int minScissorX = (int)roundf(rect.x * dpiScale);
+		int minScissorY = (int)roundf(rect.y * dpiScale);
 
-		int maxScissorX = minScissorX + (int)(rect.w * dpiScale) - 1;
-		int maxScissorY = minScissorY + (int)(rect.h * dpiScale) - 1;
+		int maxScissorX = minScissorX + (int)roundf(rect.w * dpiScale) - 1;
+		int maxScissorY = minScissorY + (int)roundf(rect.h * dpiScale) - 1;
 
 		// Avoid negative offsets.
 		int minX = std::max(scissor.offset.x, minScissorX);
@@ -1030,7 +1030,7 @@ void Graphics::applyScissor()
 	vkCmdSetScissor(commandBuffers.at(currentFrame), 0, 1, &scissor);
 }
 
-void Graphics::setScissor(const Rect &rect)
+void Graphics::setScissor(const FRect &rect)
 {
 	flushBatchedDraws();
 
