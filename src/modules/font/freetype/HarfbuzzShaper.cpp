@@ -28,6 +28,7 @@
 #include <hb-ft.h>
 
 #include <algorithm>
+#include <cmath>
 
 namespace love
 {
@@ -44,7 +45,7 @@ static inline float fixed26_6ToFloat(int32 v)
 static int32 floatToFixed26_6(float v)
 {
 	float integer = 0;
-	float frac = modf(v, &integer);
+	float frac = std::modf(v, &integer);
 
 	return (int32)(((uint32)integer << 6) | (uint32)(frac * 64));
 }
