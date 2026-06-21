@@ -1791,7 +1791,7 @@ void Graphics::setColor(Colorf c)
 	states.back().color = c;
 }
 
-void Graphics::setScissor(const Rect &rect)
+void Graphics::setScissor(const FRect &rect)
 {
 	flushBatchedDraws();
 
