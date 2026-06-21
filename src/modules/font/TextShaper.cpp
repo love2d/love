@@ -84,7 +84,7 @@ love::Type TextShaper::type("TextShaper", &Object::type);
 
 TextShaper::TextShaper(Rasterizer *rasterizer)
 	: rasterizers{rasterizer}
-	, dpiScales{rasterizer->getDPIScale()}
+	, dpiScale(rasterizer->getDPIScale())
 	, height(floorf(rasterizer->getHeight() / rasterizer->getDPIScale() + 0.5f))
 	, pixelHeight(rasterizer->getHeight())
 	, lineHeight(1)
@@ -371,7 +371,10 @@ void TextShaper::setFallbacks(const std::vector<Rasterizer*> &fallbacks)
 	for (Rasterizer *r : fallbacks)
 	{
 		if (r->getDataType() != rasterizers[0]->getDataType())
-			throw love::Exception("Font fallbacks must be of the same font type.");
+			throw love::Exception("Font fallbacks must be of the same font type as the primary Font.");
+
+		if (r->getDPIScale() != rasterizers[0]->getDPIScale())
+			throw love::Exception("Font fallbacks must have the same DPI scales as the primary Font.");
 	}
 
 	// Clear caches.
@@ -379,13 +382,9 @@ void TextShaper::setFallbacks(const std::vector<Rasterizer*> &fallbacks)
 	glyphAdvances.clear();
 
 	rasterizers.resize(1);
-	dpiScales.resize(1);
 
 	for (Rasterizer *r : fallbacks)
-	{
 		rasterizers.push_back(r);
-		dpiScales.push_back(r->getDPIScale());
-	}
 }
 
 } // font

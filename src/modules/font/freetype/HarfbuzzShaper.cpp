@@ -36,6 +36,24 @@ namespace font
 namespace freetype
 {
 
+static inline float fixed26_6ToFloat(int32 v)
+{
+	return (v >> 6) + (v & 63) / 64.0f;
+}
+
+static int32 floatToFixed26_6(float v)
+{
+	float integer = 0;
+	float frac = modf(v, &integer);
+
+	return (int32)(((uint32)integer << 6) | (uint32)(frac * 64));
+}
+
+static float snapToPixel(float v, float dpiScale, float dpiScaleInverse)
+{
+	return roundf(v * dpiScale) * dpiScaleInverse;
+}
+
 HarfbuzzShaper::HarfbuzzShaper(TrueTypeRasterizer *rasterizer)
 	: TextShaper(rasterizer)
 	, spaceGlyphIndex()
@@ -97,8 +115,8 @@ void HarfbuzzShaper::updateSpacesForTabInfo()
 		{
 			spaceGlyphIndex.index = glyphid;
 			spaceGlyphIndex.rasterizerIndex = i;
-			tabSpacesAdvanceX = hb_font_get_glyph_h_advance(hbfont, glyphid) * SPACES_PER_TAB;
-			tabSpacesAdvanceY = hb_font_get_glyph_v_advance(hbfont, glyphid) * SPACES_PER_TAB;
+			tabSpacesAdvanceX = floatToFixed26_6(fixed26_6ToFloat(hb_font_get_glyph_h_advance(hbfont, glyphid)) * SPACES_PER_TAB);
+			tabSpacesAdvanceY = floatToFixed26_6(fixed26_6ToFloat(hb_font_get_glyph_v_advance(hbfont, glyphid)) * SPACES_PER_TAB);
 			break;
 		}
 	}
@@ -241,6 +259,8 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 		}
 	}
 
+	const float dpiScaleInverse = 1.0f / dpiScale;
+
 	std::vector<BufferRange> bufferranges;
 	computeBufferRanges(codepoints, range, bufferranges);
 
@@ -317,14 +337,18 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 
 				// Harfbuzz position coordinate systems are based on the given font.
 				// Freetype uses 26.6 fixed point coordinates, so harfbuzz does too.
-				p.position.x += (glyphpos.x_offset >> 6) / dpiScales[bufferrange.index];
-				p.position.y += (glyphpos.y_offset >> 6) / dpiScales[bufferrange.index];
+				p.position.x += fixed26_6ToFloat(glyphpos.x_offset) * dpiScaleInverse;
+				p.position.y += fixed26_6ToFloat(glyphpos.y_offset) * dpiScaleInverse;
+
+				// Snap position to the current font's source pixel grid. 
+				p.position.x = snapToPixel(p.position.x, dpiScale, dpiScaleInverse);
+				p.position.y = snapToPixel(p.position.y, dpiScale, dpiScaleInverse);
 
 				positions->push_back(p);
 			}
 
-			curpos.x += (glyphpos.x_advance >> 6) / dpiScales[bufferrange.index];
-			curpos.y += (glyphpos.y_advance >> 6) / dpiScales[bufferrange.index];
+			curpos.x += fixed26_6ToFloat(glyphpos.x_advance) * dpiScaleInverse;
+			curpos.y += fixed26_6ToFloat(glyphpos.y_advance) * dpiScaleInverse;
 
 			// Account for extra spacing given to space characters.
 			if (clustercodepoint == ' ' && extraspacing != 0.0f)
@@ -340,8 +364,8 @@ void HarfbuzzShaper::computeGlyphPositions(const ColoredCodepoints &codepoints, 
 
 	if (info != nullptr)
 	{
-		info->width = maxwidth - offset.x;
-		info->height = curpos.y - offset.y;
+		info->width = snapToPixel(maxwidth - offset.x, dpiScale, dpiScaleInverse);
+		info->height = snapToPixel(curpos.y - offset.y, dpiScale, dpiScaleInverse);
 		if (curpos.x > offset.x)
 			info->height += getCombinedHeight();
 	}
@@ -358,6 +382,8 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ra
 	int firstindexafterspace = -1;
 
 	uint32 prevcodepoint = 0;
+
+	const float dpiScaleInverse = 1.0f / dpiScale;
 
 	std::vector<BufferRange> bufferranges;
 	computeBufferRanges(codepoints, range, bufferranges);
@@ -393,7 +419,7 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ra
 				glyphpos.y_advance = HB_DIRECTION_IS_VERTICAL(direction) ? tabSpacesAdvanceY : 0;
 			}
 
-			float newwidth = w + (glyphpos.x_advance >> 6) / dpiScales[bufferrange.index];
+			float newwidth = w + fixed26_6ToFloat(glyphpos.x_advance) * dpiScaleInverse;
 
 			// Don't count trailing spaces in the output width.
 			if (isWhitespace(clustercodepoint))
@@ -407,7 +433,7 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ra
 					firstindexafterspace = info.cluster;
 
 				// Only wrap when there's a non-space character.
-				if (newwidth > wraplimit)
+				if (snapToPixel(newwidth, dpiScale, dpiScaleInverse) > wraplimit)
 				{
 					// If this is the first character, wrap from the next one instead of this one.
 					int wrapindex = (int)info.cluster > (int)range.first ? (int)info.cluster : (int)range.first + 1;
@@ -420,7 +446,7 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ra
 					}
 
 					if (width)
-						*width = outwidth;
+						*width = snapToPixel(outwidth, dpiScale, dpiScaleInverse);
 
 					return wrapindex;
 				}
@@ -434,7 +460,7 @@ int HarfbuzzShaper::computeWordWrapIndex(const ColoredCodepoints &codepoints, Ra
 	}
 
 	if (width)
-		*width = outwidth;
+		*width = snapToPixel(outwidth, dpiScale, dpiScaleInverse);
 
 	// There wasn't any wrap in the middle of the range.
 	return (int) range.last + 1;

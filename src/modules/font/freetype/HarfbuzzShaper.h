@@ -66,8 +66,8 @@ private:
 	std::vector<hb_buffer_t *> hbBuffers;
 
 	GlyphIndex spaceGlyphIndex;
-	int tabSpacesAdvanceX;
-	int tabSpacesAdvanceY;
+	int32 tabSpacesAdvanceX;
+	int32 tabSpacesAdvanceY;
 
 }; // HarfbuzzShaper
 

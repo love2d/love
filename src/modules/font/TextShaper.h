@@ -138,7 +138,7 @@ protected:
 	static inline bool isWhitespace(uint32 codepoint) { return codepoint == ' ' || codepoint == '\t'; }
 
 	std::vector<StrongRef<Rasterizer>> rasterizers;
-	std::vector<float> dpiScales;
+	float dpiScale;
 
 private:
 

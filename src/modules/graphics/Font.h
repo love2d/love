@@ -99,12 +99,12 @@ public:
 	 *
 	 * @param str A string of text.
 	 **/
-	int getWidth(const std::string &str);
+	float getWidth(const std::string &str);
 
 	/**
 	 * Returns the width of the passed glyph.
 	 **/
-	int getWidth(uint32 glyph);
+	float getWidth(uint32 glyph);
 
 	/**
 	 * Returns the maximal width of a wrapped string

@@ -608,12 +608,12 @@ void Font::printf(graphics::Graphics *gfx, const std::vector<love::font::Colored
 	printv(gfx, m, drawcommands, vertices);
 }
 
-int Font::getWidth(const std::string &str)
+float Font::getWidth(const std::string &str)
 {
 	return shaper->getWidth(str);
 }
 
-int Font::getWidth(uint32 glyph)
+float Font::getWidth(uint32 glyph)
 {
 	return shaper->getGlyphAdvance(glyph);
 }
