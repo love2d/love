@@ -57,12 +57,12 @@ public:
 	/**
 	 * Gets the width of the currently set text.
 	 **/
-	int getWidth(int index = 0) const;
+	float getWidth(int index = 0) const;
 
 	/**
 	 * Gets the height of the currently set text.
 	 **/
-	int getHeight(int index = 0) const;
+	float getHeight(int index = 0) const;
 
 	// Implements Drawable.
 	void draw(love::graphics::Graphics *gfx, const Matrix4 &m) override;
