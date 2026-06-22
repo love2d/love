@@ -74,6 +74,24 @@ VmaAllocator Graphics::getVmaAllocator() const
 	return vmaAllocator;
 }
 
+// Calling Window::getSettings is the correct abstracted way to do this, but
+// it also does a bunch more work which we want to avoid.
+static bool isWindowFullscreenExclusive()
+{
+	auto window = Module::getInstance<love::window::Window>(Module::M_WINDOW);
+	if (window == nullptr)
+		return false;
+
+	SDL_Window *handle = (SDL_Window *)window->getHandle();
+	if (handle == nullptr)
+		return false;
+
+	if ((SDL_GetWindowFlags(handle) & SDL_WINDOW_FULLSCREEN) != SDL_WINDOW_FULLSCREEN)
+		return false;
+
+	return SDL_GetWindowFullscreenMode(handle) != nullptr;
+}
+
 static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext)
 {
 	uint32_t count;
@@ -591,6 +609,21 @@ void Graphics::present(void *screenshotCallbackdata)
 				swapChainRecreationRequested = true;
 		}
 	}
+
+#ifdef VK_EXT_full_screen_exclusive
+	if (optionalDeviceExtensions.fullscreenExclusive)
+	{
+		// TODO: We really don't want to query this every frame, it has performance
+		// costs including calling into system code. But SDL doesn't yet provide an
+		// event for it: https://github.com/libsdl-org/SDL/issues/15850
+		bool fullscreenExclusive = isWindowFullscreenExclusive();
+		if (windowIsFullscreenExclusive != fullscreenExclusive)
+		{
+			windowIsFullscreenExclusive = fullscreenExclusive;
+			requestSwapchainRecreation();
+		}
+	}
+#endif
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || swapChainRecreationRequested)
 	{
@@ -1783,6 +1816,10 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 			optionalDeviceExtensions.shaderFloatControls = true;
 		if (strcmp(extension.extensionName, VK_KHR_SPIRV_1_4_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.spirv14 = true;
+#ifdef VK_EXT_full_screen_exclusive
+		if (strcmp(extension.extensionName, VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME) == 0)
+			optionalDeviceExtensions.fullscreenExclusive = true;
+#endif
 	}
 }
 
@@ -1845,6 +1882,10 @@ void Graphics::createLogicalDevice()
 		enabledExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
 	if (optionalDeviceExtensions.spirv14)
 		enabledExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+#ifdef VK_EXT_full_screen_exclusive
+	if (optionalDeviceExtensions.fullscreenExclusive)
+		enabledExtensions.push_back(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME);
+#endif
 	if (deviceApiVersion >= VK_API_VERSION_1_1)
 		enabledExtensions.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
 
@@ -2022,6 +2063,25 @@ void Graphics::createSwapChain()
 		createInfo.presentMode = presentMode;
 		createInfo.clipped = VK_TRUE;
 		createInfo.oldSwapchain = swapChain;
+
+#ifdef VK_EXT_full_screen_exclusive
+		VkSurfaceFullScreenExclusiveInfoEXT exclusiveInfo = {};
+		exclusiveInfo.sType = VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT;
+
+		if (optionalDeviceExtensions.fullscreenExclusive)
+		{
+			// This should in theory help Windows graphics drivers avoid treating
+			// desktop-fullscreen like exclusive-fullscreen, which should reduce
+			// issues with programs that interact with the window (e.g. screen recorders).
+			windowIsFullscreenExclusive = isWindowFullscreenExclusive();
+			if (windowIsFullscreenExclusive)
+				exclusiveInfo.fullScreenExclusive = VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT;
+			else
+				exclusiveInfo.fullScreenExclusive = VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT;
+
+			createInfo.pNext = &exclusiveInfo;
+		}
+#endif
 
 		VkSwapchainKHR newSwapChain = VK_NULL_HANDLE;
 		VkResult result = vkCreateSwapchainKHR(device, &createInfo, nullptr, &newSwapChain);

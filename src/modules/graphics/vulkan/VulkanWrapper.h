@@ -20,7 +20,13 @@
 
 #pragma once
 
+#include "common/config.h"
+
 #define VK_NO_PROTOTYPES
+#ifdef LOVE_WINDOWS
+	#define VK_USE_PLATFORM_WIN32_KHR
+	#define WIN32_LEAN_AND_MEAN
+#endif
 #include "libraries/vulkanheaders/vulkan.h"
 
 #include "libraries/volk/volk.h"

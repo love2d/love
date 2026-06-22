@@ -175,6 +175,9 @@ struct OptionalDeviceExtensions
 
 	// VK_KHR_spirv_1_4
 	bool spirv14 = false;
+
+	// VK_EXT_full_screen_exclusive
+	bool fullscreenExclusive = false;
 };
 
 struct QueueFamilyIndices
@@ -403,6 +406,7 @@ private:
 	uint32_t imageIndex = 0;
 	uint64 realFrameIndex = 0;
 	bool swapChainRecreationRequested = false;
+	bool windowIsFullscreenExclusive = false;
 	bool transitionColorDepthLayouts = false;
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;
 	StrongRef<love::graphics::Buffer> defaultVertexBuffer;
