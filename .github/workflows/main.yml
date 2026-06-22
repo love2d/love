@@ -60,7 +60,7 @@ jobs:
     - name: Build AppImage
       run: make LOVE_BRANCH=${{ github.sha }}
     - name: Print LuaJIT branch
-      run: git -C LuaJIT-v2.1 branch -v
+      run: git -C LuaJIT-temp-v3bp-syntax1 branch -v
     # start xvfb for test running
     - name: Start xvfb and openbox
       run: |
