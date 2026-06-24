@@ -145,6 +145,16 @@ love.test.math.Transform = function(test)
   px, py = transform:transformPoint(0, 0)
   test:assertCoords({-px, -py}, {ipx, ipy}, 'check inverse points transform')
 
+  -- check inverse and inverseOf produce same values
+  transform:reset()
+  transform:setTransformation(4, 4, math.pi / 2, 2, 2)
+  local inverseClone = transform:inverse()
+  local inverseDestinationTransform = love.math.newTransform()
+  inverseDestinationTransform:inverseOf(transform)
+  local opx1, opy1 = inverseClone:transformPoint(0, 0)
+  local opx2, opy2 = inverseDestinationTransform:transformPoint(0, 0)
+  test:assertCoords({opx1, opy1}, {opx2, opy2}, 'check inverse and inverseOf produce same values')
+
   -- check matrix manipulation
   transform:setTransformation(0, 0, 0, 1, 1, 0, 0, 0, 0)
   transform:translate(4, 4)
