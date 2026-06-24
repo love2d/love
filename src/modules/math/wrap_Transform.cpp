@@ -145,9 +145,7 @@ int w_Transform_inverseOf(lua_State *L)
 {
 	Transform *destination = luax_checktransform(L, 1);
 	Transform *source = luax_checktransform(L, 2);
-	Transform *inverseSource = source->inverse();
-	destination->setMatrix(inverseSource->getMatrix());
-	inverseSource->release();
+	destination->setMatrix(source->getMatrix().inverse());
 	lua_pushvalue(L, 1);
 	return 1;
 }
