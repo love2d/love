@@ -141,6 +141,15 @@ int w_Transform_inverse(lua_State *L)
 	return 1;
 }
 
+int w_Transform_inverseOf(lua_State *L)
+{
+	Transform *destination = luax_checktransform(L, 1);
+	Transform *source = luax_checktransform(L, 2);
+	destination->setMatrix(source->getMatrix().inverse());
+	lua_pushvalue(L, 1);
+	return 1;
+}
+
 int w_Transform_apply(lua_State *L)
 {
 	Transform *t = luax_checktransform(L, 1);
@@ -298,6 +307,7 @@ static const luaL_Reg functions[] =
 {
 	{ "clone", w_Transform_clone },
 	{ "inverse", w_Transform_inverse },
+	{ "inverseOf", w_Transform_inverseOf },
 	{ "apply", w_Transform_apply },
 	{ "isAffine2DTransform", w_Transform_isAffine2DTransform },
 	{ "translate", w_Transform_translate },
