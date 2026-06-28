@@ -1757,6 +1757,13 @@ int Graphics::rateDeviceSuitability(VkPhysicalDevice device, bool querySwapChain
 	if (!deviceFeatures.fillModeNonSolid)
 		score = 0;
 
+#ifdef LOVE_ANDROID
+	// Attempt to reduce potential driver bugs on Android by not allowing Vulkan
+	// if the device only supports Vulkan 1.0.
+	if (deviceProperties.apiVersion < VK_API_VERSION_1_1)
+		score = 0;
+#endif
+
 	return score;
 }
 
