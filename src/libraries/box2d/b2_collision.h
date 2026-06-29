@@ -244,7 +244,7 @@ B2_API void b2CollideEdgeAndCircle(b2Manifold* manifold,
 /// Compute the collision manifold between an edge and a polygon.
 B2_API void b2CollideEdgeAndPolygon(b2Manifold* manifold,
 							   const b2EdgeShape* edgeA, const b2Transform& xfA,
-							   const b2PolygonShape* circleB, const b2Transform& xfB);
+							   const b2PolygonShape* polygonB, const b2Transform& xfB);
 
 /// Clipping for contact manifolds.
 B2_API int32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2],
@@ -254,6 +254,29 @@ B2_API int32 b2ClipSegmentToLine(b2ClipVertex vOut[2], const b2ClipVertex vIn[2]
 B2_API bool b2TestOverlap(	const b2Shape* shapeA, int32 indexA,
 					const b2Shape* shapeB, int32 indexB,
 					const b2Transform& xfA, const b2Transform& xfB);
+
+/// Convex hull used for polygon collision
+struct b2Hull
+{
+	b2Vec2 points[b2_maxPolygonVertices];
+	int32 count;
+};
+
+/// Compute the convex hull of a set of points. Returns an empty hull if it fails.
+/// Some failure cases:
+/// - all points very close together
+/// - all points on a line
+/// - less than 3 points
+/// - more than b2_maxPolygonVertices points
+/// This welds close points and removes collinear points.
+b2Hull b2ComputeHull(const b2Vec2* points, int32 count);
+
+/// This determines if a hull is valid. Checks for:
+/// - convexity
+/// - collinear points
+/// This is expensive and should not be called at runtime.
+bool b2ValidateHull(const b2Hull& hull);
+
 
 // ---------------- Inline Functions ------------------------------------------
 
