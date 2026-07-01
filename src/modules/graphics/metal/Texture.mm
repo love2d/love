@@ -128,7 +128,6 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 
 	bool shouldgeneratemips = false;
 
-	std::vector<uint8> emptydata;
 	MTLRenderPassDescriptor *passdesc = nil;
 
 	// Initialize texture.
@@ -195,11 +194,12 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 			else if (getMSAA() <= 1 && !isPixelFormatDepthStencil(format) && !isPixelFormatCompressed(format))
 			{
 				// Initialize to transparent black.
-				if (emptydata.empty())
-					emptydata.resize(getPixelFormatSliceSize(format, w, h));
-
+				size_t datasize = getPixelFormatSliceSize(format, w, h);
 				Rect r = {0, 0, getPixelWidth(mip), getPixelHeight(mip)};
-				uploadByteData(emptydata.data(), emptydata.size(), mip, slice, r);
+
+				// Special case: memset(0) if data is null.
+				// TODO: make this a more sensible part of the internal Texture API?
+				uploadByteData(nullptr, datasize, mip, slice, r);
 			}
 			else
 			{
@@ -264,9 +264,11 @@ Texture::~Texture()
 void Texture::uploadByteData(const void *data, size_t size, int level, int slice, const Rect &r)
 { @autoreleasepool {
 	auto gfx = Graphics::getInstance();
-	id<MTLBuffer> buffer = [gfx->device newBufferWithBytes:data
-													length:size
-												   options:MTLResourceStorageModeShared];
+
+	id<MTLBuffer> buffer = [gfx->device newBufferWithLength:size options:MTLResourceStorageModeShared];
+
+	if (data != nullptr)
+		memcpy(buffer.contents, data, size);
 
 	id<MTLBlitCommandEncoder> encoder = gfx->useBlitEncoder();
 
@@ -300,6 +302,11 @@ void Texture::uploadByteData(const void *data, size_t size, int level, int slice
 
 	// TODO: Verify this is correct for compressed formats at small sizes.
 	size_t sliceSize = getPixelFormatSliceSize(format, r.w, r.h);
+
+	// Special case: memset(0) if data is null.
+	// TODO: make this a more sensible part of the internal Texture API?
+	if (data == nullptr)
+		[encoder fillBuffer:buffer range:NSMakeRange(0, size) value:0];
 
 	[encoder copyFromBuffer:buffer
 			   sourceOffset:0
