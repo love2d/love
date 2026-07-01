@@ -61,12 +61,7 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 	auto formatdesc = Metal::convertPixelFormat(device, format);
 	desc.pixelFormat = formatdesc.format;
 	if (formatdesc.swizzled)
-	{
-		// Swizzled formats are already only used on supported systems, this
-		// just silences a compiler warning about it.
-		if (@available(macOS 10.15, iOS 13, *))
-			desc.swizzle = formatdesc.swizzle;
-	}
+		desc.swizzle = formatdesc.swizzle;
 
 	desc.storageMode = MTLStorageModePrivate;
 
@@ -228,14 +223,11 @@ Texture::Texture(love::graphics::Graphics *gfx, id<MTLDevice> device, love::grap
 
 	if (formatdesc.swizzled)
 	{
-		if (@available(macOS 10.15, iOS 13, *))
-		{
-			texture = [basetex newTextureViewWithPixelFormat:formatdesc.format
-												 textureType:getMTLTextureType(texType, 1)
-													  levels:NSMakeRange(parentView.startMipmap, mipmapCount)
-													  slices:NSMakeRange(parentView.startLayer, slices)
-													 swizzle:formatdesc.swizzle];
-		}
+		texture = [basetex newTextureViewWithPixelFormat:formatdesc.format
+											 textureType:getMTLTextureType(texType, 1)
+												  levels:NSMakeRange(parentView.startMipmap, mipmapCount)
+												  slices:NSMakeRange(parentView.startLayer, slices)
+												 swizzle:formatdesc.swizzle];
 	}
 	else
 	{

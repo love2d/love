@@ -859,16 +859,11 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(graphics::Graphics *g
 	auto dsformat = (PixelFormat) key.depthStencilFormat;
 	if (isPixelFormatDepthStencil(dsformat))
 	{
-		if (@available(macOS 10.15, iOS 13, *))
-		{
-			// We already don't really support metal on older systems, this just
-			// silences a compiler warning about it.
-			auto formatdesc = Metal::convertPixelFormat(device, dsformat);
-			if (isPixelFormatDepth(dsformat))
-				desc.depthAttachmentPixelFormat = formatdesc.format;
-			if (isPixelFormatStencil(dsformat))
-				desc.stencilAttachmentPixelFormat = formatdesc.format;
-		}
+		auto formatdesc = Metal::convertPixelFormat(device, dsformat);
+		if (isPixelFormatDepth(dsformat))
+			desc.depthAttachmentPixelFormat = formatdesc.format;
+		if (isPixelFormatStencil(dsformat))
+			desc.stencilAttachmentPixelFormat = formatdesc.format;
 	}
 
 	VertexAttributes attributes;

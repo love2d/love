@@ -286,31 +286,24 @@ Graphics::Graphics()
 	, families()
 	, isVMDevice(false)
 { @autoreleasepool {
-	if (@available(macOS 10.15, iOS 13.0, *))
-	{
-		graphicsInstance = this;
+	graphicsInstance = this;
 #ifdef LOVE_MACOS
-		if (isLowPowerPreferred())
+	if (isLowPowerPreferred())
+	{
+		for (id<MTLDevice> dev in MTLCopyAllDevices())
 		{
-			for (id<MTLDevice> dev in MTLCopyAllDevices())
+			if (dev.isLowPower)
 			{
-				if (dev.isLowPower)
-				{
-					device = dev;
-					break;
-				}
+				device = dev;
+				break;
 			}
 		}
+	}
 #endif
-		if (device == nil)
-			device = MTLCreateSystemDefaultDevice();
-		if (device == nil)
-			throw love::Exception("Metal is not supported on this system.");
-	}
-	else
-	{
-		throw love::Exception("LOVE's Metal graphics backend requires macOS 10.15+ or iOS 13+.");
-	}
+	if (device == nil)
+		device = MTLCreateSystemDefaultDevice();
+	if (device == nil)
+		throw love::Exception("Metal is not supported on this system.");
 
 	isVMDevice = [device.name containsString:@("Apple Paravirtual device")];
 
@@ -1942,16 +1935,12 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 			flags |= all;
 			break;
 		case PIXELFORMAT_LA8_UNORM:
-			// Requires texture swizzle support.
-			if (@available(macOS 10.15, iOS 13, *))
+			// As of early 2024, the VM device doesn't properly support texture swizzles
+			// (observed on GitHub's runners) which is required for LA8 support.
+			if (!isVMDevice)
 			{
-				// As of early 2024, the VM device doesn't properly support texture swizzles
-				// (observed on GitHub's runners) which is required for LA8 support.
-				if (!isVMDevice)
-				{
-					if (families.apple[1] || families.mac[2] || families.macCatalyst[2])
-						flags |= commonsample;
-				}
+				if (families.apple[1] || families.mac[2] || families.macCatalyst[2])
+					flags |= commonsample;
 			}
 			break;
 		case PIXELFORMAT_RG16_UNORM:
@@ -2207,35 +2196,32 @@ int Graphics::getClosestMSAASamples(int requestedsamples)
 
 void Graphics::initCapabilities()
 {
-	if (@available(macOS 10.15, iOS 13.0, *))
+	for (NSInteger i = 0; i < 7; i++)
 	{
-		for (NSInteger i = 0; i < 7; i++)
-		{
-			MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyApple1 + i);
-			if ([device supportsFamily:family])
-				families.apple[1 + i] = true;
-		}
+		MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyApple1 + i);
+		if ([device supportsFamily:family])
+			families.apple[1 + i] = true;
+	}
 
-		for (NSInteger i = 0; i < 2; i++)
-		{
-			MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyMac1 + i);
-			if ([device supportsFamily:family])
-				families.mac[1 + i] = true;
-		}
+	for (NSInteger i = 0; i < 2; i++)
+	{
+		MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyMac1 + i);
+		if ([device supportsFamily:family])
+			families.mac[1 + i] = true;
+	}
 
-		for (NSInteger i = 0; i < 3; i++)
-		{
-			MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyCommon1 + i);
-			if ([device supportsFamily:family])
-				families.common[1 + i] = true;
-		}
+	for (NSInteger i = 0; i < 3; i++)
+	{
+		MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyCommon1 + i);
+		if ([device supportsFamily:family])
+			families.common[1 + i] = true;
+	}
 
-		for (NSInteger i = 0; i < 2; i++)
-		{
-			MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyMacCatalyst1 + i);
-			if ([device supportsFamily:family])
-				families.macCatalyst[1 + i] = true;
-		}
+	for (NSInteger i = 0; i < 2; i++)
+	{
+		MTLGPUFamily family = (MTLGPUFamily) (MTLGPUFamilyMacCatalyst1 + i);
+		if ([device supportsFamily:family])
+			families.macCatalyst[1 + i] = true;
 	}
 
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;

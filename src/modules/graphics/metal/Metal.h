@@ -40,7 +40,7 @@ public:
 	{
 		MTLPixelFormat format;
 		bool swizzled = false;
-		API_AVAILABLE(macos(10.15), ios(13.0)) MTLTextureSwizzleChannels swizzle;
+		MTLTextureSwizzleChannels swizzle;
 	};
 
 	static PixelFormatDesc convertPixelFormat(id<MTLDevice> device, PixelFormat format);
