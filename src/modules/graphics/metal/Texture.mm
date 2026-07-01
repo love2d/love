@@ -147,15 +147,6 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 				shouldgeneratemips = true;
 				continue;
 			}
-			else if (getMSAA() <= 1 && !isPixelFormatDepthStencil(format) && !isPixelFormatCompressed(format))
-			{
-				// Initialize to transparent black.
-				if (emptydata.empty())
-					emptydata.resize(getPixelFormatSliceSize(format, w, h));
-
-				Rect r = {0, 0, getPixelWidth(mip), getPixelHeight(mip)};
-				uploadByteData(emptydata.data(), emptydata.size(), mip, slice, r);
-			}
 			else if (isRenderTarget())
 			{
 				// Clear to transparent black.
@@ -200,6 +191,15 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 
 				id<MTLRenderCommandEncoder> encoder = [cmd renderCommandEncoderWithDescriptor:passdesc];
 				[encoder endEncoding];
+			}
+			else if (getMSAA() <= 1 && !isPixelFormatDepthStencil(format) && !isPixelFormatCompressed(format))
+			{
+				// Initialize to transparent black.
+				if (emptydata.empty())
+					emptydata.resize(getPixelFormatSliceSize(format, w, h));
+
+				Rect r = {0, 0, getPixelWidth(mip), getPixelHeight(mip)};
+				uploadByteData(emptydata.data(), emptydata.size(), mip, slice, r);
 			}
 			else
 			{
