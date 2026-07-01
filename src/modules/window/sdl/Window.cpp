@@ -1023,25 +1023,18 @@ void Window::getPosition(int &x, int &y, int &displayindex)
 
 Rect Window::getSafeArea() const
 {
-#if defined(LOVE_IOS)
-	if (window != nullptr)
-		return love::ios::getSafeArea(window);
-#elif defined(LOVE_ANDROID)
-	if (window != nullptr)
+	SDL_Rect sdlrect = {};
+	if (window != nullptr && SDL_GetWindowSafeArea(window, &sdlrect))
 	{
-		int top, left, bottom, right;
+		double x = sdlrect.x;
+		double y = sdlrect.y;
+		double w = sdlrect.w;
+		double h = sdlrect.h;
+		windowToDPICoords(&x, &y);
+		windowToDPICoords(&w, &h);
 
-		if (love::android::getSafeArea(top, left, bottom, right))
-		{
-			// DisplayCutout API returns safe area in pixels
-			// and is affected by display orientation.
-			double safeLeft, safeTop, safeWidth, safeHeight;
-			fromPixels(left, top, safeLeft, safeTop);
-			fromPixels(pixelWidth - left - right, pixelHeight - top - bottom, safeWidth, safeHeight);
-			return {(int) safeLeft, (int) safeTop, (int) safeWidth, (int) safeHeight};
-		}
+		return {(int)x, (int)y, (int)w, (int)h};
 	}
-#endif
 
 	double dw, dh;
 	fromPixels(pixelWidth, pixelHeight, dw, dh);
