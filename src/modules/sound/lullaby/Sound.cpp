@@ -27,6 +27,7 @@
 
 #include "ModPlugDecoder.h"
 #include "VorbisDecoder.h"
+#include "OpusDecoder.h"
 #include "WaveDecoder.h"
 #include "FLACDecoder.h"
 #include "MP3Decoder.h"
@@ -73,6 +74,7 @@ sound::Decoder *Sound::newDecoder(Stream *stream, int bufferSize)
 		DecoderImplFor<WaveDecoder>(),
 		DecoderImplFor<FLACDecoder>(),
 		DecoderImplFor<VorbisDecoder>(),
+		DecoderImplFor<OpusDecoder>(),
 #ifdef LOVE_SUPPORT_COREAUDIO
 		DecoderImplFor<CoreAudioDecoder>(),
 #endif

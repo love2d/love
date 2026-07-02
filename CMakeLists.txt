@@ -109,6 +109,7 @@ add_library(lovedep::Modplug INTERFACE IMPORTED)
 add_library(lovedep::Theora INTERFACE IMPORTED)
 add_library(lovedep::Vorbis INTERFACE IMPORTED)
 add_library(lovedep::Ogg INTERFACE IMPORTED)
+add_library(lovedep::Opus INTERFACE IMPORTED)
 add_library(lovedep::Zlib INTERFACE IMPORTED)
 add_library(lovedep::Lua INTERFACE IMPORTED)
 
@@ -206,6 +207,10 @@ Please see https://github.com/love2d/megasource
 	find_package(Ogg REQUIRED)
 	target_include_directories(lovedep::Ogg INTERFACE ${OGG_INCLUDE_DIR})
 	target_link_libraries(lovedep::Ogg INTERFACE ${OGG_LIBRARY})
+
+	find_package(Opus REQUIRED)
+	target_include_directories(lovedep::Opus INTERFACE ${OPUS_INCLUDE_DIR} ${OPUS_INCLUDE_DIR}/opus)
+	target_link_libraries(lovedep::Opus INTERFACE ${OPUSFILE_LIBRARY})
 
 	find_package(ZLIB REQUIRED)
 	target_include_directories(lovedep::Zlib INTERFACE ${ZLIB_INCLUDE_DIRS})
@@ -1061,6 +1066,8 @@ add_library(love_sound_lullaby STATIC
 	src/modules/sound/lullaby/Sound.h
 	src/modules/sound/lullaby/VorbisDecoder.cpp
 	src/modules/sound/lullaby/VorbisDecoder.h
+	src/modules/sound/lullaby/OpusDecoder.cpp
+	src/modules/sound/lullaby/OpusDecoder.h
 	src/modules/sound/lullaby/WaveDecoder.cpp
 	src/modules/sound/lullaby/WaveDecoder.h
 )
@@ -1068,6 +1075,7 @@ target_link_libraries(love_sound_lullaby PUBLIC
 	lovedep::Modplug
 	lovedep::Vorbis
 	lovedep::Ogg
+	lovedep::Opus
 )
 
 add_library(love_sound INTERFACE)
