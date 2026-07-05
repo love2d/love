@@ -305,6 +305,13 @@ protected:
 
 private:
 
+	enum SwapChainRequestFlags
+	{
+		SWAP_CHAIN_REQUEST_KEEP = 0,
+		SWAP_CHAIN_REQUEST_RECREATE = (1 << 0),
+		SWAP_CHAIN_REQUEST_RECREATE_SURFACE = (1 << 1),
+	};
+
 	struct SharedDescriptorPoolsRef
 	{
 		SharedDescriptorPools *pools = nullptr;
@@ -319,6 +326,7 @@ private:
 	void createPipelineCache();
 	void initVMA();
 	void createSurface();
+	void cleanupSurface();
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
@@ -405,7 +413,7 @@ private:
 	size_t currentFrame = 0;
 	uint32_t imageIndex = 0;
 	uint64 realFrameIndex = 0;
-	bool swapChainRecreationRequested = false;
+	uint32 swapChainRequestFlags = 0;
 	bool windowIsFullscreenExclusive = false;
 	bool transitionColorDepthLayouts = false;
 	VmaAllocator vmaAllocator = VK_NULL_HANDLE;

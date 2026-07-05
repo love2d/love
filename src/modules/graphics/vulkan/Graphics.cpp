@@ -606,7 +606,7 @@ void Graphics::present(void *screenshotCallbackdata)
 		{
 			VkExtent2D extent = chooseSwapExtent(capabilities);
 			if (extent.width > 0 && extent.height > 0)
-				swapChainRecreationRequested = true;
+				swapChainRequestFlags |= SWAP_CHAIN_REQUEST_RECREATE;
 		}
 	}
 
@@ -625,9 +625,12 @@ void Graphics::present(void *screenshotCallbackdata)
 	}
 #endif
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || swapChainRecreationRequested)
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || result == VK_ERROR_SURFACE_LOST_KHR
+		|| swapChainRequestFlags != SWAP_CHAIN_REQUEST_KEEP)
 	{
-		swapChainRecreationRequested = false;
+		swapChainRequestFlags |= SWAP_CHAIN_REQUEST_RECREATE;
+		if (result == VK_ERROR_SURFACE_LOST_KHR)
+			swapChainRequestFlags |= SWAP_CHAIN_REQUEST_RECREATE_SURFACE;
 		recreateSwapChain();
 	}
 	else if (result != VK_SUCCESS)
@@ -666,9 +669,8 @@ void Graphics::backbufferChanged(const BackbufferSettings &settings)
 	// Don't wait until the next frame starts to recreate the swapchain - doing so
 	// will cause a 1 frame delay in the backbuffer size on resize, and it can cause
 	// MSAA state to get out of sync for a frame.
-	if (swapChainRecreationRequested)
+	if (swapChainRequestFlags != SWAP_CHAIN_REQUEST_KEEP)
 	{
-		swapChainRecreationRequested = false;
 		submitGpuCommands(SUBMIT_NOPRESENT);
 		recreateSwapChain();
 		beginSwapChainFrame();
@@ -841,12 +843,7 @@ void Graphics::unSetMode()
 	created = false;
 
 	cleanupSwapChain(true);
-
-	if (surface != VK_NULL_HANDLE)
-	{
-		vkDestroySurfaceKHR(instance, surface, nullptr);
-		surface = VK_NULL_HANDLE;
-	}
+	cleanupSurface();
 }
 
 void Graphics::setActive(bool enable)
@@ -1386,8 +1383,15 @@ void Graphics::beginSwapChainFrame()
 		while (true)
 		{
 			VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-			if (result == VK_ERROR_OUT_OF_DATE_KHR)
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_ERROR_SURFACE_LOST_KHR)
 			{
+				swapChainRequestFlags |= SWAP_CHAIN_REQUEST_RECREATE;
+				if (result == VK_ERROR_SURFACE_LOST_KHR)
+				{
+					// TODO: do we need to worry about an infinite loop here if the surface keeps getting lost?
+					// What should happen if creation fails?
+					swapChainRequestFlags |= SWAP_CHAIN_REQUEST_RECREATE_SURFACE;
+				}
 				recreateSwapChain();
 				continue;
 			}
@@ -1994,6 +1998,15 @@ void Graphics::createSurface()
 	const void *handle = window->getHandle();
 	if (!SDL_Vulkan_CreateSurface((SDL_Window*)handle, instance, nullptr, &surface))
 		throw love::Exception("Failed to create Vulkan window surface: %s", SDL_GetError());
+}
+
+void Graphics::cleanupSurface()
+{
+	if (surface != VK_NULL_HANDLE)
+	{
+		vkDestroySurfaceKHR(instance, surface, nullptr);
+		surface = VK_NULL_HANDLE;
+	}
 }
 
 SwapChainSupportDetails Graphics::querySwapChainSupport(VkPhysicalDevice device)
@@ -2984,7 +2997,7 @@ void Graphics::requestSwapchainRecreation()
 {
 	if (swapChain != VK_NULL_HANDLE)
 	{
-		swapChainRecreationRequested = true;
+		swapChainRequestFlags |= SWAP_CHAIN_REQUEST_RECREATE;
 	}
 }
 
@@ -3566,13 +3579,21 @@ void Graphics::recreateSwapChain()
 {
 	vkDeviceWaitIdle(device);
 
-	cleanupSwapChain(false);
+	bool destroySwapChainObject = (swapChainRequestFlags & SWAP_CHAIN_REQUEST_RECREATE_SURFACE) != 0;
+	cleanupSwapChain(destroySwapChainObject);
+
+	if ((swapChainRequestFlags & SWAP_CHAIN_REQUEST_RECREATE_SURFACE) != 0)
+	{
+		cleanupSurface();
+		createSurface();
+	}
 
 	createSwapChain();
 	createImageViews();
 	createColorResources();
 	createDepthResources();
 
+	swapChainRequestFlags = SWAP_CHAIN_REQUEST_KEEP;
 	transitionColorDepthLayouts = true;
 }
 
