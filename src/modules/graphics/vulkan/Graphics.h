@@ -154,6 +154,9 @@ struct OptionalInstanceExtensions
 
 	// VK_EXT_debug_info
 	bool debugInfo = false;
+
+	// VK_KHR_get_surface_capabilities2
+	bool surfaceCapabilities2 = false;
 };
 
 struct OptionalDeviceExtensions

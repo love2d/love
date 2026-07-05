@@ -108,6 +108,8 @@ static void checkOptionalInstanceExtensions(OptionalInstanceExtensions& ext)
 			ext.physicalDeviceProperties2 = true;
 		if (strcmp(extension.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
 			ext.debugInfo = true;
+		if (strcmp(extension.extensionName, VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME) == 0)
+			ext.surfaceCapabilities2 = true;
 	}
 }
 
@@ -160,6 +162,8 @@ Graphics::Graphics()
 		extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 	if (optionalInstanceExtensions.debugInfo)
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	if (optionalInstanceExtensions.surfaceCapabilities2)
+		extensions.push_back(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME);
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
@@ -1869,6 +1873,8 @@ void Graphics::createLogicalDevice()
 		optionalDeviceExtensions.spirv14 = false;
 	if (optionalDeviceExtensions.spirv14 && deviceApiVersion < VK_API_VERSION_1_1)
 		optionalDeviceExtensions.spirv14 = false;
+	if (optionalDeviceExtensions.fullscreenExclusive && !optionalInstanceExtensions.surfaceCapabilities2)
+		optionalDeviceExtensions.fullscreenExclusive = false;
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 	deviceFeatures.samplerAnisotropy = VK_TRUE;
