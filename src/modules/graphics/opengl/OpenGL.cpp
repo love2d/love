@@ -830,6 +830,9 @@ void OpenGL::setEnableState(EnableState enablestate, bool enable)
 	case ENABLE_FRAMEBUFFER_SRGB:
 		glstate = GL_FRAMEBUFFER_SRGB;
 		break;
+	case ENABLE_DEPTH_CLAMP:
+		glstate = GL_DEPTH_CLAMP;
+		break;
 	case ENABLE_MAX_ENUM:
 		break;
 	}
