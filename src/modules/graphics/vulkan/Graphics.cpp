@@ -39,6 +39,7 @@
 #include <set>
 #include <sstream>
 #include <array>
+#include <tuple>
 
 #define VOLK_IMPLEMENTATION
 #include "libraries/volk/volk.h"
@@ -3603,9 +3604,10 @@ void Graphics::recreateSwapChain()
 	transitionColorDepthLayouts = true;
 }
 
-love::graphics::Graphics *createInstance()
+std::tuple<love::graphics::Graphics *, std::string> createInstance()
 {
 	love::graphics::Graphics *instance = nullptr;
+	std::string err;
 
 	try
 	{
@@ -3613,11 +3615,10 @@ love::graphics::Graphics *createInstance()
 	}
 	catch (love::Exception &e)
 	{
-		if (isDebugEnabled())
-			printf("Cannot create Vulkan renderer: %s\n", e.what());
+		err = "Cannot create Vulkan renderer: " + std::string(e.what()) + "\n";
 	}
 
-	return instance;
+	return { instance, err };
 }
 
 } // vulkan

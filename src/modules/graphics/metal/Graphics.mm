@@ -29,6 +29,8 @@
 #include "image/Image.h"
 #include "common/memory.h"
 
+#include <tuple>
+
 #import <QuartzCore/CAMetalLayer.h>
 
 #ifdef LOVE_MACOS
@@ -239,9 +241,10 @@ static inline void setSampler(id<MTLComputeCommandEncoder> encoder, Graphics::Re
 	}
 }
 
-love::graphics::Graphics *createInstance()
+std::tuple<love::graphics::Graphics *, std::string> createInstance()
 {
 	love::graphics::Graphics *instance = nullptr;
+	std::string err;
 
 	try
 	{
@@ -249,10 +252,10 @@ love::graphics::Graphics *createInstance()
 	}
 	catch (love::Exception &e)
 	{
-		printf("Cannot create Metal renderer: %s\n", e.what());
+		err = "Cannot create Metal renderer: " + std::string(e.what()) + "\n";
 	}
 
-	return instance;
+	return { instance, err };
 }
 
 struct DefaultVertexAttributes

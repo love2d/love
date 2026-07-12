@@ -4208,13 +4208,8 @@ static const lua_CFunction types[] =
 
 extern "C" int luaopen_love_graphics(lua_State *L)
 {
-	Graphics *instance = Graphics::createInstance();
-
-	if (instance == nullptr)
-	{
-		printf("Cannot create graphics: no supported renderer on this system.\n");
-		return luaL_error(L, "Cannot create graphics: no supported renderer on this system.");
-	}
+	Graphics *instance = nullptr;
+	luax_catchexcept(L, [&]() { instance = Graphics::createInstance(); });
 
 	WrappedModule w;
 	w.module = instance;

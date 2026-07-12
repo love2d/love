@@ -223,13 +223,17 @@ function love.errorhandler(msg)
 
 	error_printer(msg, 2)
 
-	if not love.window or not love.graphics or not love.event then
+	if not love.window then
 		return
 	end
 
-	if not love.graphics.isCreated() or not love.window.isOpen() then
-		local success, status = pcall(love.window.setMode, 800, 600)
+	if not love.graphics or not love.event or not love.graphics.isCreated() or not love.window.isOpen() then
+		local success, status
+		if love.graphics and love.event then
+			success, status = pcall(love.window.setMode, 800, 600)
+		end
 		if not success or not status then
+			love.window.showMessageBox("Error during startup", msg, "error", false)
 			return
 		end
 	end

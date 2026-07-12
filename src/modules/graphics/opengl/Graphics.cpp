@@ -39,6 +39,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iterator>
+#include <tuple>
 
 // C
 #include <cmath>
@@ -89,9 +90,10 @@ static GLenum getGLBlendFactor(BlendFactor factor)
 	return 0;
 }
 
-love::graphics::Graphics *createInstance()
+std::tuple<love::graphics::Graphics *, std::string> createInstance()
 {
 	love::graphics::Graphics *instance = nullptr;
+	std::string err;
 
 	try
 	{
@@ -99,10 +101,10 @@ love::graphics::Graphics *createInstance()
 	}
 	catch (love::Exception &e)
 	{
-		printf("Cannot create OpenGL renderer: %s\n", e.what());
+		err = "Cannot create OpenGL renderer: " + std::string(e.what()) + "\n";
 	}
 
-	return instance;
+	return { instance, err };
 }
 
 Graphics::Graphics()

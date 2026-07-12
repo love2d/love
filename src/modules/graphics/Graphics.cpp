@@ -36,6 +36,7 @@
 
 // C++
 #include <algorithm>
+#include <tuple>
 #include <stdlib.h>
 
 namespace love
@@ -106,12 +107,12 @@ bool isDebugEnabled()
 
 love::Type Graphics::type("graphics", &Module::type);
 
-namespace opengl { extern love::graphics::Graphics *createInstance(); }
+namespace opengl { extern std::tuple<love::graphics::Graphics *, std::string> createInstance(); }
 #ifdef LOVE_GRAPHICS_METAL
-namespace metal { extern love::graphics::Graphics *createInstance(); }
+namespace metal { extern std::tuple<love::graphics::Graphics *, std::string> createInstance(); }
 #endif
 #ifdef LOVE_GRAPHICS_VULKAN
-namespace vulkan { extern love::graphics::Graphics *createInstance(); }
+namespace vulkan { extern std::tuple<love::graphics::Graphics *, std::string> createInstance(); }
 #endif
 
 static const Renderer rendererOrder[] = {
@@ -164,6 +165,7 @@ bool isLowPowerPreferred()
 Graphics *Graphics::createInstance()
 {
 	Graphics *instance = Module::getInstance<Graphics>(M_GRAPHICS);
+	std::string errors;
 
 	if (instance != nullptr)
 		instance->retain();
@@ -171,23 +173,37 @@ Graphics *Graphics::createInstance()
 	{
 		for (auto r : rendererOrder)
 		{
-
 			if (std::find(_renderers.begin(), _renderers.end(), r) == _renderers.end())
 				continue;
 
+			std::string err;
+
 #ifdef LOVE_GRAPHICS_VULKAN
 			if (r == RENDERER_VULKAN)
-				instance = vulkan::createInstance();
+				std::tie(instance, err) = vulkan::createInstance();
 #endif
 			if (r == RENDERER_OPENGL)
-				instance = opengl::createInstance();
+				std::tie(instance, err) = opengl::createInstance();
 #ifdef LOVE_GRAPHICS_METAL
 			if (r == RENDERER_METAL)
-				instance = metal::createInstance();
+				std::tie(instance, err) = metal::createInstance();
 #endif
+
+			if (!err.empty())
+			{
+				errors += err;
+				if (isDebugEnabled())
+					::printf("%s", err.c_str());
+			}
+
 			if (instance != nullptr)
 				break;
 		}
+	}
+
+	if (instance == nullptr)
+	{
+		throw love::Exception("Cannot create graphics: no supported renderer on this system.\n%s", errors.c_str());
 	}
 
 	return instance;
