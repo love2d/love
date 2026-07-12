@@ -283,6 +283,15 @@ int Shape::setMask(lua_State *L)
 	return 0;
 }
 
+int Shape::setCollisionMask(lua_State *L)
+{
+	throwIfFixtureNotValid();
+	b2Filter f = fixture->GetFilterData();
+	f.maskBits = (uint16)getBits(L);
+	fixture->SetFilterData(f);
+	return 0;
+}
+
 void Shape::setGroupIndex(int index)
 {
 	throwIfFixtureNotValid();
@@ -308,6 +317,12 @@ int Shape::getMask(lua_State *L)
 {
 	throwIfFixtureNotValid();
 	return pushBits(L, ~(fixture->GetFilterData().maskBits));
+}
+
+int Shape::getCollisionMask(lua_State *L)
+{
+	throwIfFixtureNotValid();
+	return pushBits(L, fixture->GetFilterData().maskBits);
 }
 
 uint16 Shape::getBits(lua_State *L)
