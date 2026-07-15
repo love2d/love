@@ -25,6 +25,7 @@
 #include "magpie/PNGHandler.h"
 #include "magpie/STBHandler.h"
 #include "magpie/EXRHandler.h"
+#include "magpie/QOIHandler.h"
 
 #include "magpie/ddsHandler.h"
 #include "magpie/PVRHandler.h"
@@ -55,6 +56,7 @@ Image::Image()
 		new KTXHandler,
 		new PKMHandler,
 		new ASTCHandler,
+		new QOIHandler,
 	};
 }
 

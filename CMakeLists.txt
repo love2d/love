@@ -754,6 +754,8 @@ add_library(love_image_magpie STATIC
 	src/modules/image/magpie/PVRHandler.h
 	src/modules/image/magpie/STBHandler.cpp
 	src/modules/image/magpie/STBHandler.h
+    src/modules/image/magpie/QOIHandler.cpp
+	src/modules/image/magpie/QOIHandler.h
 )
 target_link_libraries(love_image_magpie PUBLIC
 	lovedep::Zlib
