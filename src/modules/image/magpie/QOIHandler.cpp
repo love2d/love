@@ -47,14 +47,14 @@ struct QOIHeader {
 
 bool QOIHandler::canDecode(Data *data)
 {
-	QOIHeader header;
-	const unsigned char *buffer = (const unsigned char *) data->getData();
-	memcpy(header.magic, buffer, 4 * sizeof(char));
-	memcpy(&header.width, buffer + offsetof(QOIHeader, width), sizeof(uint32_t));
-	memcpy(&header.height, buffer + offsetof(QOIHeader, height), sizeof(uint32_t));
+	if (data->getSize() < sizeof(QOIHeader)) {
+		return false;
+	}
 
-	bool magicOk = strcmp(header.magic, "qoif") == 0;
-	return magicOk && header.width > 0 && header.height > 0;
+	QOIHeader *header = (QOIHeader *) data->getData();
+	bool magicOk = strncmp(header->magic, "qoif", 4) == 0;
+
+	return magicOk && header->width > 0 && header->height > 0;
 }
 
 bool QOIHandler::canEncode(PixelFormat rawFormat, EncodedFormat encodedFormat)
