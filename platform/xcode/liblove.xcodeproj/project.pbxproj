@@ -56,6 +56,9 @@
 		D923E7D3296B85B9002FF1B3 /* harfbuzz.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */; };
 		D93660F82D1C727C00C0EC4B /* Touch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D93660F72D1C727C00C0EC4B /* Touch.cpp */; };
 		D93660F92D1C727C00C0EC4B /* Touch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D93660F72D1C727C00C0EC4B /* Touch.cpp */; };
+		D939704A300945BA00A8CCAD /* QOIHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = D9397048300945BA00A8CCAD /* QOIHandler.h */; };
+		D939704B300945BA00A8CCAD /* QOIHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9397049300945BA00A8CCAD /* QOIHandler.cpp */; };
+		D939704C300945BA00A8CCAD /* QOIHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9397049300945BA00A8CCAD /* QOIHandler.cpp */; };
 		D943E58E2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
 		D943E58F2A24D56000D80361 /* PhysfsIo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D943E58C2A24D56000D80361 /* PhysfsIo.cpp */; };
 		D943E5902A24D56000D80361 /* PhysfsIo.h in Headers */ = {isa = PBXBuildFile; fileRef = D943E58D2A24D56000D80361 /* PhysfsIo.h */; };
@@ -1421,6 +1424,9 @@
 		D91C76142DE3D0A2001FC408 /* visibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = visibility.h; sourceTree = "<group>"; };
 		D923E7D2296B85B9002FF1B3 /* harfbuzz.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = harfbuzz.xcframework; path = ios/libraries/harfbuzz.xcframework; sourceTree = "<group>"; };
 		D93660F72D1C727C00C0EC4B /* Touch.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Touch.cpp; sourceTree = "<group>"; };
+		D93970463009459C00A8CCAD /* qoi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = qoi.h; sourceTree = "<group>"; };
+		D9397048300945BA00A8CCAD /* QOIHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QOIHandler.h; sourceTree = "<group>"; };
+		D9397049300945BA00A8CCAD /* QOIHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QOIHandler.cpp; sourceTree = "<group>"; };
 		D943E58C2A24D56000D80361 /* PhysfsIo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PhysfsIo.cpp; sourceTree = "<group>"; };
 		D943E58D2A24D56000D80361 /* PhysfsIo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PhysfsIo.h; sourceTree = "<group>"; };
 		D9596F602CBAC93800BE58C1 /* SDL3.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SDL3.xcframework; path = shared/Frameworks/SDL3.xcframework; sourceTree = "<group>"; };
@@ -2399,6 +2405,14 @@
 			sourceTree = "<group>";
 			usesTabs = 1;
 		};
+		D93970473009459C00A8CCAD /* qoi */ = {
+			isa = PBXGroup;
+			children = (
+				D93970463009459C00A8CCAD /* qoi.h */,
+			);
+			path = qoi;
+			sourceTree = "<group>";
+		};
 		D9DB6E312B4B41100037A1F6 /* ResourceLimits */ = {
 			isa = PBXGroup;
 			children = (
@@ -2500,12 +2514,13 @@
 				FA0B79D31A958EA3000E1D17 /* glad */,
 				FAF13FBF1E20934C00F898D2 /* glslang */,
 				FA0B79D81A958EA3000E1D17 /* lodepng */,
-				FA94724527A6EE1B00817677 /* luahttps */,
 				FAAA3FD21F64B3AD00F89E99 /* lua53 */,
+				FA94724527A6EE1B00817677 /* luahttps */,
 				FA0B79DB1A958EA3000E1D17 /* luasocket */,
 				FAB17BE31ABFAA9000F9BA27 /* lz4 */,
 				FA0B7A141A958EA3000E1D17 /* noise1234 */,
 				FAC7CD591FE35E95006A60C7 /* physfs */,
+				D93970473009459C00A8CCAD /* qoi */,
 				FA18CEF123DCF67800263725 /* spirv_cross */,
 				FA0B7A171A958EA3000E1D17 /* stb */,
 				FA1557BE1CE90A2C00AFF582 /* tinyexr */,
@@ -3044,22 +3059,24 @@
 		FA0B7BC81A95902C000E1D17 /* magpie */ = {
 			isa = PBXGroup;
 			children = (
-				FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */,
 				FA41A3C71C0A1F950084430C /* ASTCHandler.h */,
-				FA0B7BCC1A95902C000E1D17 /* ddsHandler.cpp */,
+				FA41A3C61C0A1F950084430C /* ASTCHandler.cpp */,
 				FA0B7BCD1A95902C000E1D17 /* ddsHandler.h */,
-				FA1557C11CE90BD200AFF582 /* EXRHandler.cpp */,
+				FA0B7BCC1A95902C000E1D17 /* ddsHandler.cpp */,
 				FA1557C21CE90BD200AFF582 /* EXRHandler.h */,
-				FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */,
+				FA1557C11CE90BD200AFF582 /* EXRHandler.cpp */,
 				FA0B7BD91A95902C000E1D17 /* KTXHandler.h */,
-				FA0B7BDA1A95902C000E1D17 /* PKMHandler.cpp */,
+				FA0B7BD81A95902C000E1D17 /* KTXHandler.cpp */,
 				FA0B7BDB1A95902C000E1D17 /* PKMHandler.h */,
-				FA0B7BDC1A95902C000E1D17 /* PNGHandler.cpp */,
+				FA0B7BDA1A95902C000E1D17 /* PKMHandler.cpp */,
 				FA0B7BDD1A95902C000E1D17 /* PNGHandler.h */,
-				FA0B7BDE1A95902C000E1D17 /* PVRHandler.cpp */,
+				FA0B7BDC1A95902C000E1D17 /* PNGHandler.cpp */,
 				FA0B7BDF1A95902C000E1D17 /* PVRHandler.h */,
-				FA0B7BE01A95902C000E1D17 /* STBHandler.cpp */,
+				FA0B7BDE1A95902C000E1D17 /* PVRHandler.cpp */,
+				D9397048300945BA00A8CCAD /* QOIHandler.h */,
+				D9397049300945BA00A8CCAD /* QOIHandler.cpp */,
 				FA0B7BE11A95902C000E1D17 /* STBHandler.h */,
+				FA0B7BE01A95902C000E1D17 /* STBHandler.cpp */,
 			);
 			path = magpie;
 			sourceTree = "<group>";
@@ -4238,6 +4255,7 @@
 				FA18CF3D23DCF67900263725 /* GLSL.std.450.h in Headers */,
 				FA18CF3E23DCF67900263725 /* spirv_cross_containers.hpp in Headers */,
 				FA18CF1B23DCF67900263725 /* thread_group.hpp in Headers */,
+				D939704A300945BA00A8CCAD /* QOIHandler.h in Headers */,
 				FAF140861E20934C00F898D2 /* ParseHelper.h in Headers */,
 				FA0B7CE71A95902C000E1D17 /* wrap_Source.h in Headers */,
 				FA0B7B231A958EA3000E1D17 /* luasocket.h in Headers */,
@@ -4685,6 +4703,7 @@
 				FA0B7AB61A958EA3000E1D17 /* ddsparse.cpp in Sources */,
 				FABDA9F42552448300B5C523 /* b2_chain_shape.cpp in Sources */,
 				FA0B7D221A95902C000E1D17 /* Rasterizer.cpp in Sources */,
+				D939704C300945BA00A8CCAD /* QOIHandler.cpp in Sources */,
 				FAF6C9E223C2DE2900D7B5BC /* InReadableOrder.cpp in Sources */,
 				FAF140BC1E20934C00F898D2 /* ossource.cpp in Sources */,
 				FA0B7D7D1A95902C000E1D17 /* Texture.cpp in Sources */,
@@ -5118,6 +5137,7 @@
 				FA0B7DD01A95902C000E1D17 /* love.cpp in Sources */,
 				FA0B7D211A95902C000E1D17 /* Rasterizer.cpp in Sources */,
 				FABDA9F32552448300B5C523 /* b2_chain_shape.cpp in Sources */,
+				D939704B300945BA00A8CCAD /* QOIHandler.cpp in Sources */,
 				FAC7CD7C1FE35E95006A60C7 /* physfs_archiver_slb.c in Sources */,
 				FAF6C9FA23C2DE2900D7B5BC /* disassemble.cpp in Sources */,
 				FA18CF2C23DCF67900263725 /* spirv_cross.cpp in Sources */,
