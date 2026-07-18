@@ -187,7 +187,6 @@ private:
 
 	graphics::Renderer windowRenderer = graphics::RENDERER_NONE;
 
-	bool displayedWindowError;
 	ContextAttribs contextAttribs;
 
 	StrongRef<graphics::Graphics> graphics;

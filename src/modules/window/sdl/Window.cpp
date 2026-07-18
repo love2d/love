@@ -84,7 +84,6 @@ Window::Window()
 #ifdef LOVE_GRAPHICS_METAL
 	, metalView(nullptr)
 #endif
-	, displayedWindowError(false)
 	, contextAttribs()
 {
 	if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
@@ -425,8 +424,7 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 
 	if (failed)
 	{
-		std::string title = "Unable to create renderer";
-		std::string message = "This program requires a graphics card and video drivers which support OpenGL 3.3 or OpenGL ES 3.0.";
+		std::string message = "This program requires a graphics card and video drivers which support Vulkan, OpenGL 3.3, or OpenGL ES 3.0.";
 
 		if (!glversion.empty())
 			message += "\n\nDetected OpenGL version:\n" + glversion;
@@ -435,16 +433,9 @@ bool Window::createWindowAndContext(int x, int y, int w, int h, Uint32 windowfla
 		else if (!windowerror.empty())
 			message += "\n\nSDL window creation error: " + windowerror;
 
-		std::cerr << title << std::endl << message << std::endl;
+		close(false);
 
-		// Display a message box with the error, but only once.
-		if (!displayedWindowError)
-		{
-			showMessageBox(title, message, MESSAGEBOX_ERROR, false);
-			displayedWindowError = true;
-		}
-
-		close();
+		throw love::Exception("Unable to create renderer.\n%s", message.c_str());
 		return false;
 	}
 
@@ -677,8 +668,15 @@ bool Window::setWindow(int width, int height, WindowSettings *settings)
 				context = (void *) SDL_Metal_GetLayer(metalView);
 #endif
 
-			// TODO: try/catch
-			graphics->setMode(context, backbufferSettings);
+			try
+			{
+				graphics->setMode(context, backbufferSettings);
+			}
+			catch (std::exception &e)
+			{
+				close(false);
+				throw love::Exception("Failed to initialize graphics.\n%s", e.what());
+			}
 		}
 		else
 		{

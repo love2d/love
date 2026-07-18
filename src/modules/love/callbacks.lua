@@ -233,7 +233,7 @@ function love.errorhandler(msg)
 			success, status = pcall(love.window.setMode, 800, 600)
 		end
 		if not success or not status then
-			love.window.showMessageBox("Error during startup", msg, "error", false)
+			love.window.showMessageBox("Initialization error", msg, "error", false)
 			return
 		end
 	end
