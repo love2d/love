@@ -63,7 +63,7 @@ WEBPHandler::DecodedImage WEBPHandler::decode(Data *data)
 
 	unsigned char *buf = new (std::nothrow) unsigned char[imagesize];
 	if (!buf)
-		throw love::Exception("Could not decode WebP image (%s)", simplewebp_get_error_text(SIMPLEWEBP_ALLOC_ERROR));
+		throw love::Exception("Could not decode WebP image (not enough memory)");
 
 	err = simplewebp_decode(swebp, buf, nullptr);
 	simplewebp_unload(swebp);
