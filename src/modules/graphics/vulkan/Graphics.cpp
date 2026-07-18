@@ -836,7 +836,7 @@ void Graphics::initCapabilities()
 	capabilities.limits[LIMIT_THREADGROUPS_Z] = properties.limits.maxComputeWorkGroupCount[2];
 	capabilities.limits[LIMIT_RENDER_TARGETS] = properties.limits.maxColorAttachments;
 	capabilities.limits[LIMIT_TEXTURE_MSAA] = static_cast<double>(getMsaaCount(64));
-	capabilities.limits[LIMIT_ANISOTROPY] = properties.limits.maxSamplerAnisotropy;
+	capabilities.limits[LIMIT_ANISOTROPY] = optionalDeviceFeatures.samplerAnisotropy ? properties.limits.maxSamplerAnisotropy : 1.0f;
 	static_assert(LIMIT_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new system limit!");
 
 	capabilities.textureTypes[TEXTURE_2D] = true;
@@ -1141,6 +1141,9 @@ void Graphics::setDepthMode(CompareMode compare, bool write)
 
 void Graphics::setWireframe(bool enable)
 {
+	if (!optionalDeviceFeatures.fillModeNonSolid)
+		return;
+
 	flushBatchedDraws();
 
 	states.back().wireframe = enable;
@@ -1773,12 +1776,6 @@ int Graphics::rateDeviceSuitability(VkPhysicalDevice device, bool querySwapChain
 			score = 0;
 	}
 
-	if (!deviceFeatures.samplerAnisotropy)
-		score = 0;
-
-	if (!deviceFeatures.fillModeNonSolid)
-		score = 0;
-
 #ifdef LOVE_ANDROID
 	// Attempt to reduce potential driver bugs on Android by not allowing Vulkan
 	// if the device only supports Vulkan 1.0.
@@ -1890,15 +1887,20 @@ void Graphics::createLogicalDevice()
 	if (optionalDeviceExtensions.fullscreenExclusive && !optionalInstanceExtensions.surfaceCapabilities2)
 		optionalDeviceExtensions.fullscreenExclusive = false;
 
-	VkPhysicalDeviceFeatures deviceFeatures{};
-	deviceFeatures.samplerAnisotropy = VK_TRUE;
-	deviceFeatures.fillModeNonSolid = VK_TRUE;
+	VkPhysicalDeviceFeatures supportedDeviceFeatures = {};
+	vkGetPhysicalDeviceFeatures(physicalDevice, &supportedDeviceFeatures);
+	optionalDeviceFeatures.fillModeNonSolid = supportedDeviceFeatures.fillModeNonSolid;
+	optionalDeviceFeatures.samplerAnisotropy = supportedDeviceFeatures.samplerAnisotropy;
+
+	VkPhysicalDeviceFeatures enabledDeviceFeatures{};
+	enabledDeviceFeatures.samplerAnisotropy = optionalDeviceFeatures.samplerAnisotropy;
+	enabledDeviceFeatures.fillModeNonSolid = optionalDeviceFeatures.fillModeNonSolid;
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
-	createInfo.pEnabledFeatures = &deviceFeatures;
+	createInfo.pEnabledFeatures = &enabledDeviceFeatures;
 
 	std::vector<const char*> enabledExtensions(deviceExtensions.begin(), deviceExtensions.end());
 	if (optionalDeviceExtensions.extendedDynamicState)
@@ -2699,7 +2701,7 @@ void Graphics::prepareDraw(VertexAttributesID attributesID, const BufferBindings
 
 	configuration.core.renderPass = renderPassState.beginInfo.renderPass;
 	configuration.core.attributesID = attributesID;
-	configuration.core.wireFrame = states.back().wireframe;
+	configuration.core.wireFrame = states.back().wireframe && optionalDeviceFeatures.fillModeNonSolid;
 	configuration.core.blendStateKey = states.back().blend.toKey();
 	configuration.core.colorChannelMask = states.back().colorMask;
 	configuration.core.msaaSamples = renderPassState.msaa;
@@ -2978,8 +2980,8 @@ VkSampler Graphics::createSampler(const SamplerState &samplerState)
 	samplerInfo.addressModeU = Vulkan::getWrapMode(samplerState.wrapU);
 	samplerInfo.addressModeV = Vulkan::getWrapMode(samplerState.wrapV);
 	samplerInfo.addressModeW = Vulkan::getWrapMode(samplerState.wrapW);
-	samplerInfo.anisotropyEnable = samplerState.maxAnisotropy > 1 ? VK_TRUE : VK_FALSE;
-	samplerInfo.maxAnisotropy = static_cast<float>(samplerState.maxAnisotropy);
+	samplerInfo.anisotropyEnable = samplerState.maxAnisotropy > 1 && optionalDeviceFeatures.samplerAnisotropy ? VK_TRUE : VK_FALSE;
+	samplerInfo.maxAnisotropy = std::max(1.0f, std::min((float)samplerState.maxAnisotropy, (float)capabilities.limits[LIMIT_ANISOTROPY]));
 
 	// TODO: This probably needs to branch on a pixel format to determine whether
 	// it should be float vs int, and opaque vs transparent.

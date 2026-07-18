@@ -183,6 +183,12 @@ struct OptionalDeviceExtensions
 	bool fullscreenExclusive = false;
 };
 
+struct OptionalDeviceFeatures
+{
+	bool fillModeNonSolid = false;
+	bool samplerAnisotropy = false;
+};
+
 struct QueueFamilyIndices
 {
 	Optional<uint32_t> graphicsFamily;
@@ -380,6 +386,7 @@ private:
 	VkDevice device = VK_NULL_HANDLE; 
 	OptionalInstanceExtensions optionalInstanceExtensions;
 	OptionalDeviceExtensions optionalDeviceExtensions;
+	OptionalDeviceFeatures optionalDeviceFeatures;
 	VkQueue graphicsQueue = VK_NULL_HANDLE;
 	VkQueue presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
