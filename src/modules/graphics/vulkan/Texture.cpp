@@ -60,6 +60,9 @@ Texture::Texture(love::graphics::Graphics *gfx, love::graphics::Texture *base, c
 
 bool Texture::loadVolatile()
 {
+	if (imageData.image != VK_NULL_HANDLE || msaaImageData.image != VK_NULL_HANDLE)
+		return true;
+
 	allocator = vgfx->getVmaAllocator();
 	device = vgfx->getDevice();
 

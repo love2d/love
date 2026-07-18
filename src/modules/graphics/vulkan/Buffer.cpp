@@ -97,6 +97,9 @@ Buffer::Buffer(love::graphics::Graphics *gfx, const Settings &settings, const st
 
 bool Buffer::loadVolatile()
 {
+	if (buffer != VK_NULL_HANDLE)
+		return true;
+
 	allocator = vgfx->getVmaAllocator();
 
 	VkBufferCreateInfo bufferInfo{};

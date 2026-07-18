@@ -50,6 +50,9 @@ StreamBuffer::StreamBuffer(graphics::Graphics *gfx, BufferUsage mode, size_t siz
 
 bool StreamBuffer::loadVolatile()
 {
+	if (buffer != VK_NULL_HANDLE)
+		return true;
+
 	allocator = vgfx->getVmaAllocator();
 
 	VkBufferCreateInfo bufferInfo{};

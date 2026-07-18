@@ -684,110 +684,120 @@ void Graphics::backbufferChanged(const BackbufferSettings &settings)
 
 bool Graphics::setMode(void *context, const BackbufferSettings &settings)
 {
-	// Must be called before the swapchain is created.
-	backbufferChanged(settings);
-
-	cleanUpFunctions.clear();
-	cleanUpFunctions.resize(MAX_FRAMES_IN_FLIGHT);
-
-	readbackCallbacks.clear();
-	readbackCallbacks.resize(MAX_FRAMES_IN_FLIGHT);
-
 	bool createBaseObjects = physicalDevice == VK_NULL_HANDLE;
-
-	createSurface();
-
-	if (createBaseObjects)
+	
+	try
 	{
-		pickPhysicalDevice();
-		createLogicalDevice();
-		createPipelineCache();
-		initVMA();
-		initCapabilities();
-	}
+		// Must be called before the swapchain is created.
+		backbufferChanged(settings);
 
-	msaaSamples = getMsaaCount(settings.msaa);
+		cleanUpFunctions.clear();
+		cleanUpFunctions.resize(MAX_FRAMES_IN_FLIGHT);
 
-	createSwapChain();
-	createImageViews();
-	createColorResources();
-	createDepthResources();
-	transitionColorDepthLayouts = true;
+		readbackCallbacks.clear();
+		readbackCallbacks.resize(MAX_FRAMES_IN_FLIGHT);
 
-	if (createBaseObjects)
-	{
-		createCommandPool();
-		createCommandBuffers();
-		createSyncObjects();
-	}
+		createSurface();
 
-	if (localUniformBuffer == nullptr)
-		localUniformBuffer.set(new StreamBuffer(this, BUFFERUSAGE_UNIFORM, 1024 * 512 * 1), Acquire::NORETAIN);
-
-	beginFrame();
-
-	if (createBaseObjects)
-	{
-		if (batchedDrawState.vb[0] == nullptr)
+		if (createBaseObjects)
 		{
-			// Initial sizes that should be good enough for most cases. It will
-			// resize to fit if needed, later.
-			batchedDrawState.vb[0] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
-			batchedDrawState.vb[1] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
-			batchedDrawState.indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+			pickPhysicalDevice();
+			createLogicalDevice();
+			createPipelineCache();
+			initVMA();
+			initCapabilities();
 		}
 
-		if (defaultVertexBuffer == nullptr)
+		msaaSamples = getMsaaCount(settings.msaa);
+
+		createSwapChain();
+		createImageViews();
+		createColorResources();
+		createDepthResources();
+		transitionColorDepthLayouts = true;
+
+		if (createBaseObjects)
 		{
-			struct DefaultData
+			createCommandPool();
+			createCommandBuffers();
+			createSyncObjects();
+		}
+
+		if (localUniformBuffer == nullptr)
+			localUniformBuffer.set(new StreamBuffer(this, BUFFERUSAGE_UNIFORM, 1024 * 512 * 1), Acquire::NORETAIN);
+
+		beginFrame();
+
+		if (createBaseObjects)
+		{
+			if (batchedDrawState.vb[0] == nullptr)
 			{
-				float floats[4];
-				int ints[4];
-				float color[4];
-			} data;
+				// Initial sizes that should be good enough for most cases. It will
+				// resize to fit if needed, later.
+				batchedDrawState.vb[0] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 1024 * 1024 * 1);
+				batchedDrawState.vb[1] = new StreamBuffer(this, BUFFERUSAGE_VERTEX, 256 * 1024 * 1);
+				batchedDrawState.indexBuffer = new StreamBuffer(this, BUFFERUSAGE_INDEX, sizeof(uint16) * LOVE_UINT16_MAX);
+			}
 
-			data.floats[0] = 0.0f;
-			data.floats[1] = 0.0f;
-			data.floats[2] = 0.0f;
-			data.floats[3] = 1.0f;
+			if (defaultVertexBuffer == nullptr)
+			{
+				struct DefaultData
+				{
+					float floats[4];
+					int ints[4];
+					float color[4];
+				} data;
 
-			data.ints[0] = 0;
-			data.ints[1] = 0;
-			data.ints[2] = 0;
-			data.ints[3] = 1;
+				data.floats[0] = 0.0f;
+				data.floats[1] = 0.0f;
+				data.floats[2] = 0.0f;
+				data.floats[3] = 1.0f;
 
-			data.color[0] = 1.0f;
-			data.color[1] = 1.0f;
-			data.color[2] = 1.0f;
-			data.color[3] = 1.0f;
+				data.ints[0] = 0;
+				data.ints[1] = 0;
+				data.ints[2] = 0;
+				data.ints[3] = 1;
 
-			std::vector<Buffer::DataDeclaration> format = {
-				Buffer::DataDeclaration("Floats", DATAFORMAT_FLOAT_VEC4),
-				Buffer::DataDeclaration("Ints", DATAFORMAT_INT32_VEC4),
-				Buffer::DataDeclaration("Color", DATAFORMAT_FLOAT_VEC4)
-			};
+				data.color[0] = 1.0f;
+				data.color[1] = 1.0f;
+				data.color[2] = 1.0f;
+				data.color[3] = 1.0f;
 
-			Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
-			defaultVertexBuffer.set(newBuffer(settings, format, &data, sizeof(DefaultData), 1), Acquire::NORETAIN);
+				std::vector<Buffer::DataDeclaration> format = {
+					Buffer::DataDeclaration("Floats", DATAFORMAT_FLOAT_VEC4),
+					Buffer::DataDeclaration("Ints", DATAFORMAT_INT32_VEC4),
+					Buffer::DataDeclaration("Color", DATAFORMAT_FLOAT_VEC4)
+				};
 
-			VkBuffer buffer = (VkBuffer)defaultVertexBuffer->getHandle();
-			VkDeviceSize offset = 0;
-			vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), DEFAULT_VERTEX_BUFFER_BINDING, 1, &buffer, &offset);
+				Buffer::Settings settings(BUFFERUSAGEFLAG_VERTEX, BUFFERDATAUSAGE_STATIC);
+				defaultVertexBuffer.set(newBuffer(settings, format, &data, sizeof(DefaultData), 1), Acquire::NORETAIN);
+
+				VkBuffer buffer = (VkBuffer)defaultVertexBuffer->getHandle();
+				VkDeviceSize offset = 0;
+				vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), DEFAULT_VERTEX_BUFFER_BINDING, 1, &buffer, &offset);
+			}
+
+			createDefaultShaders();
+			Shader::current = Shader::standardShaders[Shader::StandardShader::STANDARD_DEFAULT];
+			createQuadIndexBuffer();
+			createFanIndexBuffer();
+
+			currentFrame = 0;
 		}
 
-		createDefaultShaders();
-		Shader::current = Shader::standardShaders[Shader::StandardShader::STANDARD_DEFAULT];
-		createQuadIndexBuffer();
-		createFanIndexBuffer();
+		Volatile::loadAll();
+		created = true;
 
-		currentFrame = 0;
+		restoreState(states.back());
 	}
-
-	restoreState(states.back());
+	catch (std::exception &)
+	{
+		unSetMode();
+		throw;
+	}
 
 	Vulkan::resetShaderSwitches();
 
-	created = true;
 	drawCalls = 0;
 	drawCallsBatched = 0;
 
@@ -845,10 +855,13 @@ void Graphics::unSetMode()
 	if (created)
 		submitGpuCommands(SUBMIT_NOPRESENT);
 
+	Volatile::unloadAll();
+
 	created = false;
 
 	cleanupSwapChain(true);
 	cleanupSurface();
+	cleanup();
 }
 
 void Graphics::setActive(bool enable)
@@ -3495,7 +3508,11 @@ void Graphics::cleanup()
 			cleanUpFn();
 	cleanUpFunctions.clear();
 
-	vmaDestroyAllocator(vmaAllocator);
+	if (vmaAllocator != VK_NULL_HANDLE)
+	{
+		vmaDestroyAllocator(vmaAllocator);
+		vmaAllocator = VK_NULL_HANDLE;
+	}
 
 	for (const auto &s : renderFinishedSemaphores)
 		vkDestroySemaphore(device, s, nullptr);
@@ -3542,6 +3559,8 @@ void Graphics::cleanup()
 		vkDestroyDevice(device, nullptr);
 		device = VK_NULL_HANDLE;
 	}
+
+	physicalDevice = VK_NULL_HANDLE;
 }
 
 void Graphics::cleanupSwapChain(bool destroySwapChainObject)

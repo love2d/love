@@ -300,6 +300,9 @@ Shader::Shader(StrongRef<love::graphics::ShaderStage> stages[], const CompileOpt
 
 bool Shader::loadVolatile()
 {
+	if (!shaderModules.empty())
+		return true;
+
 	device = vgfx->getDevice();
 
 	computePipeline = VK_NULL_HANDLE;
