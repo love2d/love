@@ -1,8 +1,8 @@
 /**
  * @file simplewebp.h
- * @author Google Inc., Miku AuahDark
+ * @author Google Inc., Miku AuahDark, and contributors
  * @brief A simple WebP decoder.
- * @version 20251007
+ * @version 20260718
  * See license at the bottom of the file.
  */
 
@@ -42,7 +42,7 @@ typedef unsigned int simplewebp_u32;
 typedef int simplewebp_i32;
 #endif
 
-#define SIMPLEWEBP_VERSION 20251007
+#define SIMPLEWEBP_VERSION 20260718
 
 /**
  * @brief SimpleWebP "input stream".
@@ -477,11 +477,13 @@ struct simplewebp_memoryinput_data
 
 static void *swebp__malloc(void *_unused, size_t size)
 {
+	(void)_unused;
 	return malloc(size);
 }
 
 static void swebp__free(void *_unused, void *mem)
 {
+	(void)_unused;
 	free(mem);
 }
 
@@ -900,6 +902,7 @@ static void swebp__alpha_apply_filters(simplewebp_u8 *ptr, size_t width, size_t 
 				default:
 					/* Should not happen */
 					predictor = 0;
+					/* FALLTHROUGH */
 				case 1:
 					predictor = x == 0 ? ptr[i - width] : ptr[i - 1];
 					break;
@@ -1141,7 +1144,7 @@ simplewebp_error simplewebp_load(simplewebp_input *input, const simplewebp_alloc
 			/* Input unused. */
 			simplewebp_close_input(&chunk_input_proxy);
 
-		if (!swebp__seek(current_position + (chunk_size + 1) & (~((size_t) 1)), &result->riff_input))
+		if (!swebp__seek(current_position + ((chunk_size + 1) & (~((size_t) 1))), &result->riff_input))
 		{
 			err = SIMPLEWEBP_IO_ERROR;
 			break;
@@ -4206,6 +4209,7 @@ static simplewebp_error swebp__vp8_parse_frame(struct swebp__vp8 *vp8d, struct s
 
 static simplewebp_error swebp__decode_lossy(simplewebp *simplewebp, struct swebp__yuvdst *destination, void *settings)
 {
+	(void)settings;
 	simplewebp_input input;
 	size_t vp8size;
 	simplewebp_u8 *vp8buffer, *decoder_mem;
@@ -4366,6 +4370,7 @@ static simplewebp_error swebp__vp8l_canonical_code(
 )
 {
 	simplewebp_u16 base[16], real_size, current_base, root, used;
+	simplewebp_u16 symbol_count, single_symbol;
 	struct swebp__vp8l_code_node *tree;
 	size_t i;
 
@@ -4375,6 +4380,8 @@ static simplewebp_error swebp__vp8l_canonical_code(
 	root = 0;
 	used = size;
 	tree = NULL;
+	symbol_count = 0;
+	single_symbol = 0;
 
 	for (i = 0; i < size; i++)
 	{
@@ -4382,10 +4389,11 @@ static simplewebp_error swebp__vp8l_canonical_code(
 		if (length > 0)
 		{
 			base[length - 1]++;
-			real_size++;
+			real_size += length;
+			symbol_count++;
+			single_symbol = (simplewebp_u16) i;
 		}
 	}
-	real_size--;
 
 	for (i = 0; i < 16; i++)
 	{
@@ -4421,6 +4429,10 @@ static simplewebp_error swebp__vp8l_canonical_code(
 
 	code->size = size;
 	code->tree = tree;
+
+	if (symbol_count == 1)
+		root = single_symbol;
+
 	code->symbol[0] = root & 0xFF;
 	code->symbol[1] = (root >> 8) & 0xFF;
 
@@ -4454,7 +4466,7 @@ static simplewebp_error swebp__vp8l_decode_code_complex(
 	simplewebp_u8 lengths[256 + 24 + 2048];
 	simplewebp_u16 limit, count, p;
 	simplewebp_error err;
-	struct swebp__vp8l_code_node lencode_treemem[18];
+	struct swebp__vp8l_code_node lencode_treemem[19 * 7];
 	struct swebp__vp8l_code lc;
 
 	lencode_read = (simplewebp_u8) swebp__vp8l_bitread_read(br, 4) + 4;
@@ -4745,7 +4757,7 @@ static simplewebp_error swebp__decode_vp8l_image(
 
 			if (codeword < swebp__vp8l_literals_count)
 			{
-				struct swebp__pixel color = {0};
+				struct swebp__pixel color = {0, 0, 0, 0};
 				color.r = (simplewebp_u8) swebp__vp8l_read_code(br, &g->code[1]);
 				color.g = (simplewebp_u8) codeword;
 				color.b = (simplewebp_u8) swebp__vp8l_read_code(br, &g->code[2]);
@@ -4854,6 +4866,8 @@ static simplewebp_error swebp__decode_color_index_transform(
 	struct swebp__pixel **dest
 )
 {
+	(void)width;
+	(void)height;
 	simplewebp_u32 color_count, i;
 	simplewebp_error err;
 	struct swebp__pixel *pixel_data;
@@ -5082,7 +5096,7 @@ static void swebp__apply_index_transform(
 	simplewebp_u32 color_count;
 	simplewebp_u8 bits, mask, mod, rb;
 	size_t stride;
-	const struct swebp__pixel transparent_black = {0};
+	const struct swebp__pixel transparent_black = {0, 0, 0, 0};
 
 	color_count = ((simplewebp_u32) size) + 1;
 	bits = swebp__vp8l_index_reduction(color_count);
@@ -5116,7 +5130,7 @@ static simplewebp_error swebp__decode_lossless_bitstream_main(
 	struct swebp__pixel *filter_data[4];
 	simplewebp_u8 filter_bits[4];
 	simplewebp_bool filter_active[4];
-	int i;
+	size_t i;
 	simplewebp_error err;
 
 	simplewebp_get_dimensions(simplewebp, &actual_width, &actual_height);
@@ -5227,34 +5241,36 @@ static simplewebp_error swebp__decode_lossless_bitstream_main(
 	}
 
 	/* Apply transform */
-	i--;
-	for (; i >= 0; i--)
 	{
-		simplewebp_u8 ttype;
-		ttype = filter_list & 3;
-
-		switch (ttype)
+		int j = (int)(i - 1);
+		for (; j >= 0; j--)
 		{
-			case 0:
-				/* Predictor Transform */
-				swebp__apply_predictor_transform(rgba, width, height, filter_bits[i], filter_data[i]);
-				break;
-			case 1:
-				/* Color Transform */
-				swebp__apply_color_transform(rgba, width, height, filter_bits[i], filter_data[i]);
-				break;
-			case 2:
-				/* Green Transform */
-				swebp__apply_green_sub_transform(rgba, width, height);
-				break;
-			case 3:
-				/* Color Index Transform */
-				width = (simplewebp_u32) full_width;
-				swebp__apply_index_transform(rgba, width, height, filter_bits[i], filter_data[i]);
-				break;
-		}
+			simplewebp_u8 ttype;
+			ttype = filter_list & 3;
 
-		filter_list >>= 2;
+			switch (ttype)
+			{
+				case 0:
+					/* Predictor Transform */
+					swebp__apply_predictor_transform(rgba, width, height, filter_bits[j], filter_data[j]);
+					break;
+				case 1:
+					/* Color Transform */
+					swebp__apply_color_transform(rgba, width, height, filter_bits[j], filter_data[j]);
+					break;
+				case 2:
+					/* Green Transform */
+					swebp__apply_green_sub_transform(rgba, width, height);
+					break;
+				case 3:
+					/* Color Index Transform */
+					width = (simplewebp_u32) full_width;
+					swebp__apply_index_transform(rgba, width, height, filter_bits[j], filter_data[j]);
+					break;
+			}
+
+			filter_list >>= 2;
+		}
 	}
 
 	swebp__batch_free(simplewebp, (void **) filter_data, sizeof(simplewebp_u8) * 4);
@@ -5491,7 +5507,7 @@ simplewebp_error simplewebp_load_from_filename(const char *filename, const simpl
  * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
  *    products derived from this software without specific prior written permission.
  * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES,
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
