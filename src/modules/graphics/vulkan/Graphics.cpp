@@ -122,13 +122,25 @@ Graphics::Graphics()
 		throw love::Exception("Could not initialize SDL video subsystem (%s)", SDL_GetError());
 
 	if (!SDL_Vulkan_LoadLibrary(nullptr))
+	{
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
 		throw love::Exception("could not find vulkan");
+	}
 
-	volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
+	PFN_vkGetInstanceProcAddr handler = (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr();
+	if (handler == nullptr)
+	{
+		SDL_Vulkan_UnloadLibrary();
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
+		throw love::Exception("Could not find Vulkan function loader");
+	}
+
+	volkInitializeCustom(handler);
 
 	if (isDebugEnabled() && !checkValidationSupport())
 	{
 		SDL_Vulkan_UnloadLibrary();
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
 		throw love::Exception("validation layers requested, but not available");
 	}
 
@@ -152,7 +164,8 @@ Graphics::Graphics()
 	if (extensions_string == nullptr)
 	{
 		SDL_Vulkan_UnloadLibrary();
-		throw love::Exception("couldn't retrieve sdl vulkan extensions");
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
+		throw love::Exception("couldn't retrieve SDL Vulkan extensions");
 	}
 
 	std::vector<const char*> extensions(extensions_string, extensions_string + count);
@@ -179,6 +192,7 @@ Graphics::Graphics()
 	if (result != VK_SUCCESS)
 	{
 		SDL_Vulkan_UnloadLibrary();
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
 		throw love::Exception("couldn't create vulkan instance: %s", Vulkan::getErrorString(result));
 	}
 
@@ -207,6 +221,7 @@ Graphics::Graphics()
 	{
 		vkDestroyInstance(instance, nullptr);
 		SDL_Vulkan_UnloadLibrary();
+		SDL_QuitSubSystem(SDL_INIT_VIDEO);
 		throw love::Exception("no suitable vulkan physical devices found");
 	}
 }
@@ -1698,8 +1713,8 @@ void Graphics::pickPhysicalDevice()
 // if the score is 0 the device is unsuitable
 int Graphics::rateDeviceSuitability(VkPhysicalDevice device, bool querySwapChain)
 {
-	VkPhysicalDeviceProperties deviceProperties;
-	VkPhysicalDeviceFeatures deviceFeatures;
+	VkPhysicalDeviceProperties deviceProperties = {};
+	VkPhysicalDeviceFeatures deviceFeatures = {};
 	vkGetPhysicalDeviceProperties(device, &deviceProperties);
 	vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
