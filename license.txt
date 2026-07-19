@@ -111,7 +111,7 @@ This distribution contains code from the following projects (full license text b
 
  - simplewebp
 	Website: https://github.com/MikuAuahDark/simplewebp
-	Source download: https://github.com/MikuAuahDark/simplewebp/blob/85157b0e5e115a76db87d5484570e44cf5c34e87/simplewebp.h
+	Source download: https://github.com/MikuAuahDark/simplewebp/blob/d1a728a1f8ec7348ca2a5039b6dd813b83986fbb/simplewebp.h
 	License: 3-Clause BSD
 	Copyright (c) 2010 Google Inc., 2023 Miku AuahDark
 
