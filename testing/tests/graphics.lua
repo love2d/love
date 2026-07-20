@@ -1452,6 +1452,67 @@ love.test.graphics.line = function(test)
 end
 
 
+-- love.graphics.line: a sharp corner (miter or bevel) and a zero-length
+-- segment must not spike outside the line, checked by drawing each and
+-- asserting no lit pixel falls outside the input points' bounds.
+love.test.graphics.lineSharpCorner = function(test)
+  local width = 10
+  local halfwidth = width / 2
+
+  -- Draw 'points' as a line with the given join, then fail if any pixel is lit
+  -- outside the points' bounding box (grown by 'margin'), or if nothing drew.
+  local function assertNoSpike(label, join, points, margin)
+    local minx, miny, maxx, maxy = math.huge, math.huge, -math.huge, -math.huge
+    for i = 1, #points, 2 do
+      minx = math.min(minx, points[i]);     maxx = math.max(maxx, points[i])
+      miny = math.min(miny, points[i + 1]); maxy = math.max(maxy, points[i + 1])
+    end
+
+    local size = 64
+    local canvas = love.graphics.newCanvas(size, size)
+    love.graphics.push('all')
+      love.graphics.setCanvas(canvas)
+      love.graphics.clear(0, 0, 0, 0)
+      love.graphics.setLineStyle('rough')   -- crisp edges, no anti-alias halo
+      love.graphics.setLineWidth(width)
+      love.graphics.setLineJoin(join)
+      love.graphics.setColor(1, 1, 1, 1)
+      love.graphics.line(points)
+    love.graphics.pop()
+
+    local imgdata = love.graphics.readbackTexture(canvas)
+    local lit, outside = 0, 0
+    for ix = 0, size - 1 do
+      for iy = 0, size - 1 do
+        local _, _, _, alpha = imgdata:getPixel(ix, iy)
+        if alpha > 0 then
+          lit = lit + 1
+          if ix < minx - margin or ix > maxx + margin or
+             iy < miny - margin or iy > maxy + margin then
+            outside = outside + 1
+          end
+        end
+      end
+    end
+    test:assertTrue(lit > 20, 'line was drawn (' .. label .. ')')
+    test:assertEquals(0, outside, 'no pixels outside the line bounds (' .. label .. ')')
+  end
+
+  -- sharp bend on short segments (a hairpin):
+  --     (30,20) *---------* (38,20)     <- segment 0
+  --             *  (30,21)              <- segment 1 folds sharply back
+  local hairpin = {30, 20, 38, 20, 30, 21}
+  assertNoSpike('miter, sharp corner', 'miter', hairpin, halfwidth + 2)
+  assertNoSpike('bevel, sharp corner', 'bevel', hairpin, halfwidth + 2)
+
+  -- zero-length segment (middle point repeated): must still render sanely; it
+  -- used to make the bevel join emit NaN vertices.
+  local duplicate = {16, 16, 40, 16, 40, 16, 40, 40}
+  assertNoSpike('miter, duplicate point', 'miter', duplicate, halfwidth + 2)
+  assertNoSpike('bevel, duplicate point', 'bevel', duplicate, halfwidth + 2)
+end
+
+
 -- love.graphics.points
 love.test.graphics.points = function(test)
   local canvas = love.graphics.newCanvas(16, 16)
