@@ -104,7 +104,6 @@ message(STATUS "Target platform: ${LOVE_TARGET_PLATFORM}")
 add_library(lovedep::SDL INTERFACE IMPORTED)
 add_library(lovedep::Freetype INTERFACE IMPORTED)
 add_library(lovedep::Harfbuzz INTERFACE IMPORTED)
-add_library(lovedep::OpenAL INTERFACE IMPORTED)
 add_library(lovedep::Modplug INTERFACE IMPORTED)
 add_library(lovedep::Theora INTERFACE IMPORTED)
 add_library(lovedep::Vorbis INTERFACE IMPORTED)
@@ -126,7 +125,6 @@ if(MEGA)
 	# action.
 	set(LOVE_MOVE_DLLS
 		${MEGA_SDL3}
-		${MEGA_OPENAL}
 	)
 
 	# LOVE_EXTRA_DLLS are non-runtime DLLs which should be bundled with the
@@ -139,7 +137,6 @@ if(MEGA)
 	target_link_libraries(lovedep::SDL INTERFACE ${MEGA_SDL3})
 	target_link_libraries(lovedep::Freetype INTERFACE ${MEGA_FREETYPE})
 	target_link_libraries(lovedep::Harfbuzz INTERFACE ${MEGA_HARFBUZZ})
-	target_link_libraries(lovedep::OpenAL INTERFACE ${MEGA_OPENAL})
 	target_link_libraries(lovedep::Modplug INTERFACE ${MEGA_MODPLUG})
 	target_link_libraries(lovedep::Theora INTERFACE ${MEGA_LIBTHEORA})
 	target_link_libraries(lovedep::Vorbis INTERFACE ${MEGA_LIBVORBIS} ${MEGA_LIBVORBISFILE})
@@ -186,10 +183,6 @@ Please see https://github.com/love2d/megasource
 	find_package(Harfbuzz REQUIRED)
 	target_include_directories(lovedep::Harfbuzz INTERFACE ${HARFBUZZ_INCLUDE_DIR})
 	target_link_libraries(lovedep::Harfbuzz INTERFACE ${HARFBUZZ_LIBRARY})
-
-	find_package(OpenAL REQUIRED)
-	target_include_directories(lovedep::OpenAL INTERFACE ${OPENAL_INCLUDE_DIR})
-	target_link_libraries(lovedep::OpenAL INTERFACE ${OPENAL_LIBRARY})
 
 	find_package(ModPlug REQUIRED)
 	target_include_directories(lovedep::Modplug INTERFACE ${MODPLUG_INCLUDE_DIR})
@@ -344,7 +337,6 @@ add_library(love_audio_root STATIC
 )
 target_link_libraries(love_audio_root PUBLIC
 	lovedep::Lua
-	lovedep::OpenAL
 )
 
 add_library(love_audio_null STATIC
@@ -369,9 +361,6 @@ add_library(love_audio_openal STATIC
 	src/modules/audio/openal/Filter.h
 	src/modules/audio/openal/Effect.cpp
 	src/modules/audio/openal/Effect.h
-)
-target_link_libraries(love_audio_openal PUBLIC
-	lovedep::OpenAL
 )
 
 add_library(love_audio INTERFACE)
@@ -1679,6 +1668,18 @@ add_library(love_3p_lz4
 )
 
 #
+# MojoAL
+#
+
+target_compile_definitions(love_3p_mojoal AL_LIBTYPE_STATIC)
+add_library(love_3p_mojoal
+	src/libraries/mojoAL/mojoal.c
+	src/libraries/mojoAL/AL/al.h
+	src/libraries/mojoAL/AL/alc.h
+)
+target_link_libraries(love_3p_mojoal lovedep::SDL)
+
+#
 # noise1234
 #
 
@@ -1946,6 +1947,7 @@ set(LIBLOVE_LIBRARIES
 	love_3p_lua53
 	love_3p_luahttps
 	love_3p_lz4
+	love_3p_mojoal
 	love_3p_noise1234
 	love_3p_physfs
 	love_3p_spirv_cross
@@ -1966,7 +1968,7 @@ love_group_projects(NAME "liblove" NESTED TARGETS ${LIBLOVE_DEPENDENCIES})
 love_group_projects(NAME "liblove/libraries" NESTED TARGETS ${LIBLOVE_LIBRARIES})
 love_group_projects(NAME "liblove" TARGETS liblove ${LOVE_EXTRA_DEPENDECIES})
 
-love_group_projects(NAME "lovedep" TARGETS lovedep::SDL lovedep::Freetype lovedep::Harfbuzz lovedep::OpenAL lovedep::Modplug lovedep::Theora lovedep::Vorbis lovedep::Ogg lovedep::Zlib lovedep::Lua)
+love_group_projects(NAME "lovedep" TARGETS lovedep::SDL lovedep::Freetype lovedep::Harfbuzz lovedep::Modplug lovedep::Theora lovedep::Vorbis lovedep::Ogg lovedep::Zlib lovedep::Lua)
 love_group_projects(NAME "lovedep" TARGETS lua51 alcommon al-excommon harfbuzz-subset zlib)
 
 
