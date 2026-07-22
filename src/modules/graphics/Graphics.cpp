@@ -566,7 +566,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 		}
 	}
 
-	return Shader::validate(stages, err);
+	return Shader::validate(stages, err, options);
 }
 
 Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType, bool depthSample)

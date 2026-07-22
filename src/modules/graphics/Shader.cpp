@@ -650,7 +650,7 @@ Shader::Shader(StrongRef<ShaderStage> _stages[], const CompileOptions &options)
 	, debugName(options.debugName)
 {
 	std::string err;
-	if (!validateInternal(_stages, err, reflection))
+	if (!validateInternal(_stages, err, reflection, options))
 		throw love::Exception("%s", err.c_str());
 
 	std::vector<std::string> unsetVertexInputLocations;
@@ -1029,10 +1029,10 @@ bool Shader::isUsingDeprecatedTextureUniform() const
 	return it != reflection.allUniforms.end() && it->second->stageMask != 0;
 }
 
-bool Shader::validate(StrongRef<ShaderStage> stages[], std::string& err)
+bool Shader::validate(StrongRef<ShaderStage> stages[], std::string& err, const CompileOptions &options)
 {
 	Reflection reflection;
-	return validateInternal(stages, err, reflection);
+	return validateInternal(stages, err, reflection, options);
 }
 
 static DataBaseType getBaseType(glslang::TBasicType basictype)
@@ -1246,7 +1246,7 @@ static bool AddFieldsToFormat(std::vector<Buffer::DataDeclaration> &format, int 
 	return true;
 }
 
-bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, Reflection &reflection)
+bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err, Reflection &reflection, const CompileOptions &options)
 {
 	glslang::TProgram program;
 
@@ -1349,9 +1349,9 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		}
 		else if (type->isImage())
 		{
-			if ((info.stages & (~EShLangComputeMask)) != 0)
+			if ((info.stages & (~EShLangComputeMask)) != 0 && !options.features[FEATURE_STORAGE_TEXTURES])
 			{
-				err = "Shader validation error:\nStorage Texture uniform variables (image2D, etc) are only allowed in compute shaders.";
+				err = "Shader validation error:\nStorage Texture uniform variables (image2D, etc) are only allowed in compute shaders unless explicitly enabled.";
 				return false;
 			}
 
@@ -1467,9 +1467,9 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		{
 			const glslang::TQualifier &qualifiers = type->getQualifier();
 
-			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && ((info.stages & (~EShLangComputeMask)) != 0))
+			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && ((info.stages & (~EShLangComputeMask)) != 0) && !options.features[FEATURE_WRITABLE_BUFFERS])
 			{
-				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must be marked as readonly in vertex and pixel shaders.";
+				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must be marked as readonly in vertex and pixel shaders unless explicitly enabled.";
 				return false;
 			}
 
@@ -1871,6 +1871,12 @@ bool Shader::getConstant(BuiltinUniform in, const char *&out)
 {
 	return builtinNames.find(in, out);
 }
+
+STRINGMAP_CLASS_BEGIN(Shader, Shader::Feature, Shader::FEATURE_MAX_ENUM, feature)
+{
+	{ "write", Shader::FEATURE_WRITE },
+}
+STRINGMAP_CLASS_END(Shader, Shader::Feature, Shader::FEATURE_MAX_ENUM, feature)
 
 } // graphics
 } // love
