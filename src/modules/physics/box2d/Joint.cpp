@@ -78,8 +78,6 @@ Joint::Type Joint::getType() const
 		return JOINT_WELD;
 	case e_wheelJoint:
 		return JOINT_WHEEL;
-	case e_ropeJoint:
-		return JOINT_ROPE;
 	case e_motorJoint:
 		return JOINT_MOTOR;
 	default:
