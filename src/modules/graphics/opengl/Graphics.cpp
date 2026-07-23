@@ -1632,9 +1632,9 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_TEXEL);
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = gl.isCopyTextureToBufferSupported();
 	capabilities.features[FEATURE_INDIRECT_DRAW] = capabilities.features[FEATURE_GLSL4];
-	capabilities.features[FEATURE_VERTEX_WRITE] = true;
-	capabilities.features[FEATURE_PIXEL_WRITE] = true;
-	capabilities.features[FEATURE_IMAGE_ATOMICS] = true;
+	capabilities.features[FEATURE_VERTEX_WRITE] = capabilities.features[FEATURE_GLSL4];
+	capabilities.features[FEATURE_PIXEL_WRITE] = capabilities.features[FEATURE_GLSL4];
+	capabilities.features[FEATURE_IMAGE_ATOMICS] = capabilities.features[FEATURE_GLSL4];
 	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();

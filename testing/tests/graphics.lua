@@ -1003,6 +1003,72 @@ love.test.graphics.Shader = function(test)
   else
     test:assertTrue(true, "skip shader IO test")
   end
+
+  if love.graphics.getSupported().glsl4 and love.graphics.getSupported().vertexwrite and love.graphics.getSupported().pixelwrite then
+    local success, message = pcall(love.graphics.newShader, [[
+      #pragma language glsl4
+
+      buffer ColorBuffer
+      {
+        vec4 colors[];
+      };
+
+      void effect()
+      {
+        colors[0] = VaryingColor;
+        love_PixelColor = colors[0];
+      }
+    ]])
+
+    test:assertFalse(success, "shader should not compile")
+    test:assertEquals("Shader validation error:\nStorage Buffer block 'ColorBuffer' must be marked as readonly in vertex and pixel shaders unless explicitly enabled.", message)
+
+    success, message = pcall(love.graphics.newShader, [[
+      #pragma language glsl4
+
+      buffer ColorBuffer
+      {
+        vec4 colors[];
+      };
+
+      void effect()
+      {
+        colors[0] = VaryingColor;
+        love_PixelColor = colors[0];
+      }
+    ]], { write = true })
+
+    test:assertTrue(success, "shader should compile")
+
+    success, message = pcall(love.graphics.newShader, [[
+      #pragma language glsl4
+      
+	    layout(rgba32f) uniform image2D RGBAImage;
+      
+      void effect()
+      {
+        love_PixelColor = VaryingColor * imageLoad(RGBAImage, ivec2(gl_FragCoord.xy));
+        }
+      ]])
+      
+      test:assertFalse(success, "shader should not compile")
+      test:assertEquals("Shader validation error:\nStorage Texture uniform variables (image2D, etc) are only allowed in compute shaders unless explicitly enabled.", message)
+      
+      success, message = pcall(love.graphics.newShader, [[
+        #pragma language glsl4
+
+        layout(rgba32f) uniform image2D RGBAImage;
+
+        void effect()
+        {
+          love_PixelColor = VaryingColor * imageLoad(RGBAImage, ivec2(gl_FragCoord.xy));
+        }
+      ]], { write = true })
+
+    test:assertTrue(success, "shader should compile")
+  else
+    test:assertTrue(true, "skip feature test")
+  end
 end
 
 
