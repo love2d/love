@@ -821,6 +821,8 @@ bool Graphics::setMode(void *context, const BackbufferSettings &settings)
 
 void Graphics::initCapabilities()
 {
+	VkPhysicalDeviceFeatures features;
+	vkGetPhysicalDeviceFeatures(physicalDevice, &features);
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = true;
 	capabilities.features[FEATURE_CLAMP_ONE] = true;
@@ -834,7 +836,10 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_TEXEL_BUFFER] = true;
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
 	capabilities.features[FEATURE_INDIRECT_DRAW] = true;
-	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_VERTEX_WRITE] = features.vertexPipelineStoresAndAtomics;
+	capabilities.features[FEATURE_PIXEL_WRITE] = features.fragmentStoresAndAtomics;
+	capabilities.features[FEATURE_IMAGE_ATOMICS] = true;
+	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -972,6 +977,7 @@ void Graphics::draw(const DrawCommand &cmd)
 			0);
 	}
 
+	endDraw();
 	drawCalls++;
 }
 
@@ -1005,6 +1011,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 			0);
 	}
 
+	endDraw();
 	drawCalls++;
 }
 
@@ -1036,6 +1043,7 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 			0);
 		baseVertex += quadcount * 4;
 
+		endDraw();
 		drawCalls++;
 	}
 }
@@ -1281,7 +1289,7 @@ graphics::StreamBuffer *Graphics::newStreamBuffer(BufferUsage type, size_t size)
 	return new StreamBuffer(this, type, size);
 }
 
-static bool computeDispatchBarrierFlags(Shader *shader, VkAccessFlags &dstAccessFlags, VkPipelineStageFlags &dstStageFlags)
+static bool shaderBarrierFlags(Shader *shader, VkAccessFlags &dstAccessFlags, VkPipelineStageFlags &dstStageFlags)
 {
 	for (const auto &info : shader->getActiveTextureInfo())
 	{
@@ -1323,7 +1331,7 @@ bool Graphics::dispatch(love::graphics::Shader *shader, int x, int y, int z)
 	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 	barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 	VkPipelineStageFlags dstStageMask = 0;
-	if (!computeDispatchBarrierFlags(computeShader, barrier.dstAccessMask, dstStageMask))
+	if (!shaderBarrierFlags(computeShader, barrier.dstAccessMask, dstStageMask))
 		return false;
 
 	usedShadersInFrame.insert(computeShader);
@@ -1352,7 +1360,7 @@ bool Graphics::dispatch(love::graphics::Shader *shader, love::graphics::Buffer *
 	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 	barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 	VkPipelineStageFlags dstStageMask = 0;
-	if (!computeDispatchBarrierFlags(computeShader, barrier.dstAccessMask, dstStageMask))
+	if (!shaderBarrierFlags(computeShader, barrier.dstAccessMask, dstStageMask))
 		return false;
 
 	usedShadersInFrame.insert(computeShader);
@@ -2776,6 +2784,23 @@ void Graphics::prepareDraw(VertexAttributesID attributesID, const BufferBindings
 
 	if (buffercount > 0)
 		vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), VERTEX_BUFFER_BINDING_START, buffercount, vkbuffers, vkoffsets);
+}
+
+void Graphics::endDraw()
+{
+	auto shader = dynamic_cast<Shader *>(Shader::current);
+	if (!shader)
+		return;
+
+	VkMemoryBarrier barrier{};
+	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+	barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+	VkPipelineStageFlags dstStageMask = 0;
+	if (!shaderBarrierFlags(shader, barrier.dstAccessMask, dstStageMask))
+		return;
+
+	if (barrier.dstAccessMask != 0 || dstStageMask != 0)
+		vkCmdPipelineBarrier(commandBuffers.at(currentFrame), VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, dstStageMask, 0, 1, &barrier, 0, nullptr, 0, nullptr);
 }
 
 void Graphics::setDefaultRenderPass()

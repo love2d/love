@@ -566,7 +566,7 @@ bool Graphics::validateShader(bool gles, const std::vector<std::string> &stagess
 		}
 	}
 
-	return Shader::validate(stages, err);
+	return Shader::validate(stages, err, options);
 }
 
 Texture *Graphics::getDefaultTexture(TextureType type, DataBaseType dataType, bool depthSample)
@@ -2988,6 +2988,9 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "texelbuffer",              Graphics::FEATURE_TEXEL_BUFFER         },
 	{ "copytexturetobuffer",      Graphics::FEATURE_COPY_TEXTURE_TO_BUFFER },
 	{ "indirectdraw",             Graphics::FEATURE_INDIRECT_DRAW        },
+	{ "vertexwrite",              Graphics::FEATURE_VERTEX_WRITE         },
+	{ "pixelwrite",               Graphics::FEATURE_PIXEL_WRITE          },
+	{ "imageatomics",             Graphics::FEATURE_IMAGE_ATOMICS        },
 }
 STRINGMAP_CLASS_END(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)
 

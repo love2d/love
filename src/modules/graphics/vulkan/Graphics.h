@@ -379,6 +379,7 @@ private:
 	void applyScissor();
 	VkSampler createSampler(const SamplerState &sampler);
 	void requestSwapchainRecreation();
+	void endDraw();
 
 	VkInstance instance = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;

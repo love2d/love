@@ -56,6 +56,12 @@ public:
 		LANGUAGE_MAX_ENUM
 	};
 
+	enum Feature
+	{
+		FEATURE_WRITE,
+		FEATURE_MAX_ENUM
+	};
+
 	// Built-in uniform variables.
 	enum BuiltinUniform
 	{
@@ -119,6 +125,7 @@ public:
 	{
 		std::map<std::string, std::string> defines;
 		std::string debugName;
+		bool features[FEATURE_MAX_ENUM] = {};
 	};
 
 	struct SourceInfo
@@ -275,7 +282,7 @@ public:
 	static SourceInfo getSourceInfo(const std::string &src);
 	static std::string createShaderStageCode(Graphics *gfx, ShaderStageType stage, const std::string &code, const CompileOptions &options, const SourceInfo &info, bool gles, bool checksystemfeatures);
 
-	static bool validate(StrongRef<ShaderStage> stages[], std::string &err);
+	static bool validate(StrongRef<ShaderStage> stages[], std::string &err, const CompileOptions &options);
 
 	static bool initialize();
 	static void deinitialize();
@@ -287,6 +294,8 @@ public:
 
 	static bool getConstant(const char *in, BuiltinUniform &out);
 	static bool getConstant(BuiltinUniform in, const char *&out);
+
+	STRINGMAP_CLASS_DECLARE(Feature);
 
 protected:
 
@@ -330,7 +339,7 @@ protected:
 
 	static std::string canonicaliizeUniformName(const std::string &name);
 	static size_t getUniformDataSizePacked(const UniformInfo &u);
-	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, Reflection &reflection);
+	static bool validateInternal(StrongRef<ShaderStage> stages[], std::string& err, Reflection &reflection, const CompileOptions &options);
 	static DataBaseType getDataBaseType(PixelFormat format);
 	static bool isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b);
 

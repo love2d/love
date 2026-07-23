@@ -2250,8 +2250,24 @@ void Graphics::initCapabilities()
 		capabilities.features[FEATURE_INDIRECT_DRAW] = true;
 	else
 		capabilities.features[FEATURE_INDIRECT_DRAW] = false;
+
+	// Apple 3 devices support read/write to buffers in functions, while Apple 4 supports read/write to images.
+	// So let's err on the safe side and check support for Apple 4.
+	if (families.apple[4])
+	{
+		capabilities.features[FEATURE_VERTEX_WRITE] = true;
+		capabilities.features[FEATURE_PIXEL_WRITE] = true;
+	}
+	else
+	{
+		capabilities.features[FEATURE_VERTEX_WRITE] = false;
+		capabilities.features[FEATURE_PIXEL_WRITE] = false;
+	}
+
+	// Not supported until Metal 3
+	capabilities.features[FEATURE_IMAGE_ATOMICS] = false;
 	
-	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;
