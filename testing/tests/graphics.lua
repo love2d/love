@@ -1005,9 +1005,13 @@ love.test.graphics.Shader = function(test)
   end
 
   if love.graphics.getSupported().glsl4 and love.graphics.getSupported().vertexwrite and love.graphics.getSupported().pixelwrite then
-    local success, message = pcall(love.graphics.newShader, [[
+    local name = love.graphics.getRendererInfo()
+    local isGLES = name:match("OpenGL ES") ~= nil
+
+    local success, message = love.graphics.validateShader(isGLES, [[
       #pragma language glsl4
 
+      #ifdef PIXEL
       buffer ColorBuffer
       {
         vec4 colors[];
@@ -1018,12 +1022,20 @@ love.test.graphics.Shader = function(test)
         colors[0] = VaryingColor;
         love_PixelColor = colors[0];
       }
+      #endif
+
+      #ifdef VERTEX
+      vec4 position(mat4 m, vec4 p)
+      {
+        return m * p;
+      }
+      #endif
     ]])
 
-    test:assertFalse(success, "shader should not compile")
+    test:assertFalse(success, "shader should not validate (SSBO)")
     test:assertEquals("Shader validation error:\nStorage Buffer block 'ColorBuffer' must be marked as readonly in vertex and pixel shaders unless explicitly enabled.", message)
 
-    success, message = pcall(love.graphics.newShader, [[
+    success, message = love.graphics.validateShader(isGLES, [[
       #pragma language glsl4
 
       buffer ColorBuffer
@@ -1038,34 +1050,40 @@ love.test.graphics.Shader = function(test)
       }
     ]], { write = true })
 
-    test:assertTrue(success, "shader should compile")
+    test:assertTrue(success, "shader should validate (SSBO)")
+    test:assertEquals(nil, message)
 
-    success, message = pcall(love.graphics.newShader, [[
-      #pragma language glsl4
-      
-	    layout(rgba32f) uniform image2D RGBAImage;
-      
-      void effect()
-      {
-        love_PixelColor = VaryingColor * imageLoad(RGBAImage, ivec2(gl_FragCoord.xy));
-        }
-      ]])
-      
-      test:assertFalse(success, "shader should not compile")
-      test:assertEquals("Shader validation error:\nStorage Texture uniform variables (image2D, etc) are only allowed in compute shaders unless explicitly enabled.", message)
-      
-      success, message = pcall(love.graphics.newShader, [[
+    success, message = love.graphics.validateShader(isGLES, [[
         #pragma language glsl4
 
-        layout(rgba32f) uniform image2D RGBAImage;
+        layout(rgba32f) uniform readonly highp image2D RGBAImage;
 
         void effect()
         {
           love_PixelColor = VaryingColor * imageLoad(RGBAImage, ivec2(gl_FragCoord.xy));
         }
-      ]], { write = true })
+    ]])
+      
+    test:assertFalse(success, "shader should not validate (image)")
+    test:assertEquals("Shader validation error:\nStorage Texture uniform variables (image2D, etc) are only allowed in compute shaders unless explicitly enabled.", message)
+    
+    success, message = love.graphics.validateShader(isGLES, [[
+      #pragma language glsl4
 
-    test:assertTrue(success, "shader should compile")
+      #ifdef GL_ES
+        precision highp float;
+      #endif
+
+      layout(rgba32f) uniform readonly highp image2D RGBAImage;
+
+      void effect()
+      {
+        love_PixelColor = VaryingColor * imageLoad(RGBAImage, ivec2(gl_FragCoord.xy));
+      }
+    ]], { write = true })
+
+    test:assertTrue(success, "shader should validate (image)")
+    test:assertEquals(nil, message)
   else
     test:assertTrue(true, "skip feature test")
   end
