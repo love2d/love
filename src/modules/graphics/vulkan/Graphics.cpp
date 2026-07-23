@@ -821,6 +821,8 @@ bool Graphics::setMode(void *context, const BackbufferSettings &settings)
 
 void Graphics::initCapabilities()
 {
+	VkPhysicalDeviceFeatures features;
+	vkGetPhysicalDeviceFeatures(physicalDevice, &features);
 	capabilities.features[FEATURE_MULTI_RENDER_TARGET_FORMATS] = true;
 	capabilities.features[FEATURE_CLAMP_ZERO] = true;
 	capabilities.features[FEATURE_CLAMP_ONE] = true;
@@ -834,7 +836,10 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_TEXEL_BUFFER] = true;
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = true;
 	capabilities.features[FEATURE_INDIRECT_DRAW] = true;
-	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_VERTEX_WRITE] = features.vertexPipelineStoresAndAtomics;
+	capabilities.features[FEATURE_PIXEL_WRITE] = features.fragmentStoresAndAtomics;
+	capabilities.features[FEATURE_IMAGE_ATOMICS] = true;
+	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);

@@ -1307,6 +1307,7 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 	reflection.textureCount = 0;
 	reflection.bufferCount = 0;
 
+	auto &capabilities = Module::getInstance<Graphics>(Module::M_GRAPHICS)->getCapabilities();
 	for (int i = 0; i < program.getNumUniformVariables(); i++)
 	{
 		const glslang::TObjectReflection &info = program.getUniform(i);
@@ -1349,9 +1350,21 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		}
 		else if (type->isImage())
 		{
-			if ((info.stages & (~EShLangComputeMask)) != 0 && !options.features[FEATURE_STORAGE_TEXTURES])
+			if ((info.stages & (~EShLangComputeMask)) != 0 && !options.features[FEATURE_WRITE])
 			{
 				err = "Shader validation error:\nStorage Texture uniform variables (image2D, etc) are only allowed in compute shaders unless explicitly enabled.";
+				return false;
+			}
+
+			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && ((info.stages & (~EShLangFragmentMask)) != 0) && !capabilities.features[Graphics::FEATURE_PIXEL_WRITE])
+			{
+				err = "Shader validation error:\nPlatform does not have writable Storage Texture uniform variables (image2D, etc) capabilities in pixel shaders.";
+				return false;
+			}
+
+			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && ((info.stages & (~EShLangVertexMask)) != 0) && !capabilities.features[Graphics::FEATURE_VERTEX_WRITE])
+			{
+				err = "Shader validation error:\nPlatform does not have writable Storage Texture uniform variables (image2D, etc) capabilities in vertex shaders.";
 				return false;
 			}
 
@@ -1467,9 +1480,21 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 		{
 			const glslang::TQualifier &qualifiers = type->getQualifier();
 
-			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && ((info.stages & (~EShLangComputeMask)) != 0) && !options.features[FEATURE_WRITABLE_BUFFERS])
+			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && ((info.stages & (~EShLangComputeMask)) != 0) && !options.features[FEATURE_WRITE])
 			{
 				err = "Shader validation error:\nStorage Buffer block '" + info.name + "' must be marked as readonly in vertex and pixel shaders unless explicitly enabled.";
+				return false;
+			}
+			
+			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && ((info.stages & (~EShLangFragmentMask)) != 0) && !capabilities.features[Graphics::FEATURE_PIXEL_WRITE])
+			{
+				err = "Shader validation error:\nPlatform does not have writable Storage Buffer blocks capabilities in pixel shaders.";
+				return false;
+			}
+
+			if ((!qualifiers.isReadOnly() || qualifiers.isWriteOnly()) && ((info.stages & (~EShLangVertexMask)) != 0) && !capabilities.features[Graphics::FEATURE_VERTEX_WRITE])
+			{
+				err = "Shader validation error:\nPlatform does not have writable Storage Buffer blocks capabilities in vertex shaders.";
 				return false;
 			}
 
