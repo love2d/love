@@ -1990,6 +1990,11 @@ uint32 OpenGL::getPixelFormatUsageFlags(PixelFormat pixelformat)
 	case PIXELFORMAT_RGBA32_UINT:
 	case PIXELFORMAT_RGB10A2_UINT:
 		flags |= PIXELFORMATUSAGEFLAGS_SAMPLE | PIXELFORMATUSAGEFLAGS_RENDERTARGET;
+		if (pixelformat == PIXELFORMAT_R32_INT || pixelformat == PIXELFORMAT_R32_UINT)
+		{
+			if (GLAD_VERSION_4_3 || GLAD_ES_VERSION_3_2)
+				flags |= PIXELFORMATUSAGEFLAGS_SHADERATOMICS;
+		}
 		if (GLAD_VERSION_4_3)
 			flags |= computewrite;
 		if (GLAD_ES_VERSION_3_1)

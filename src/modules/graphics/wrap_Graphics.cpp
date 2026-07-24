@@ -3007,6 +3007,7 @@ int w_getTextureFormats(lua_State *L)
 
 	bool rt = luax_checkboolflag(L, 1, Texture::getConstant(Texture::SETTING_RENDER_TARGET));
 	bool computewrite = luax_boolflag(L, 1, Texture::getConstant(Texture::SETTING_COMPUTE_WRITE), false);
+	bool shaderatomics = luax_boolflag(L, 1, "shaderatomics", false);
 
 	OptionalBool readable;
 	lua_getfield(L, 1, Texture::getConstant(Texture::SETTING_READABLE));
@@ -3034,6 +3035,8 @@ int w_getTextureFormats(lua_State *L)
 			usage |= PIXELFORMATUSAGEFLAGS_SAMPLE;
 		if (computewrite)
 			usage |= PIXELFORMATUSAGEFLAGS_COMPUTEWRITE;
+		if (shaderatomics)
+			usage |= PIXELFORMATUSAGEFLAGS_SHADERATOMICS;
 
 		luax_pushboolean(L, instance()->isPixelFormatSupported(format, (PixelFormatUsageFlags) usage));
 		lua_setfield(L, -2, name);

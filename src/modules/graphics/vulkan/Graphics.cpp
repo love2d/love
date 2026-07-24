@@ -1237,6 +1237,16 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 			return false;
 	}
 
+	if (usage & PIXELFORMATUSAGEFLAGS_SHADERATOMICS)
+	{
+		if (!(featureFlags & VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT))
+			return false;
+
+		// TODO: supporting float formats when available may need GLSL extensions.
+		if (format != PIXELFORMAT_R32_INT && format != PIXELFORMAT_R32_UINT)
+			return false;
+	}
+
 	if (usage & PIXELFORMATUSAGEFLAGS_MSAA)
 	{
 		VkImageFormatProperties properties;

@@ -60,12 +60,13 @@ enum TextureType
 
 enum PixelFormatUsage
 {
-	PIXELFORMATUSAGE_SAMPLE,       // Any sampling in shaders.
-	PIXELFORMATUSAGE_LINEAR,       // Linear filtering.
-	PIXELFORMATUSAGE_RENDERTARGET, // Usable as a render target.
-	PIXELFORMATUSAGE_BLEND,        // Blend support when used as a render target.
-	PIXELFORMATUSAGE_MSAA,         // MSAA support when used as a render target.
-	PIXELFORMATUSAGE_COMPUTEWRITE, // Writable in compute shaders via imageStore.
+	PIXELFORMATUSAGE_SAMPLE,        // Any sampling in shaders.
+	PIXELFORMATUSAGE_LINEAR,        // Linear filtering.
+	PIXELFORMATUSAGE_RENDERTARGET,  // Usable as a render target.
+	PIXELFORMATUSAGE_BLEND,         // Blend support when used as a render target.
+	PIXELFORMATUSAGE_MSAA,          // MSAA support when used as a render target.
+	PIXELFORMATUSAGE_COMPUTEWRITE,  // Writable in compute shaders via imageStore.
+	PIXELFORMATUSAGE_SHADERATOMICS, // Supports atomic load/store in compute shaders.
 	PIXELFORMATUSAGE_MAX_ENUM
 };
 
@@ -78,6 +79,7 @@ enum PixelFormatUsageFlags
 	PIXELFORMATUSAGEFLAGS_BLEND = (1 << PIXELFORMATUSAGE_BLEND),
 	PIXELFORMATUSAGEFLAGS_MSAA = (1 << PIXELFORMATUSAGE_MSAA),
 	PIXELFORMATUSAGEFLAGS_COMPUTEWRITE = (1 << PIXELFORMATUSAGE_COMPUTEWRITE),
+	PIXELFORMATUSAGEFLAGS_SHADERATOMICS = (1 << PIXELFORMATUSAGE_SHADERATOMICS),
 };
 
 struct SamplerState
