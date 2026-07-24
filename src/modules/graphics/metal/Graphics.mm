@@ -2025,6 +2025,11 @@ bool Graphics::isPixelFormatSupported(PixelFormat format, uint32 usage)
 		case PIXELFORMAT_RGB10A2_UINT:
 			// If MSAA support for int formats is added this should be split up.
 			flags |= sample | rt | computewrite;
+			if (format == PIXELFORMAT_R32_INT || format == PIXELFORMAT_R32_UINT)
+			{
+				if (@available(macOS 14.0, iOS 17.0, *))
+					flags |= PIXELFORMATUSAGEFLAGS_SHADERATOMICS;
+			}
 			break;
 
 		case PIXELFORMAT_RGBA4_UNORM:

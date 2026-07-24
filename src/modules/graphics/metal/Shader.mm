@@ -537,7 +537,10 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 		}
 
 		CompilerMSL::Options options;
-		options.set_msl_version(2, 1);
+		if (@available(macOS 14.0, iOS 17.0, *))
+			options.set_msl_version(3, 1); // For image atomics.
+		else
+			options.set_msl_version(2, 1);
 		options.texture_buffer_native = true;
 #ifdef LOVE_IOS
 		options.platform = CompilerMSL::Options::iOS;
@@ -556,8 +559,9 @@ void Shader::compileFromGLSLang(id<MTLDevice> device, const glslang::TProgram &p
 
 		MTLCompileOptions *opts = [MTLCompileOptions new];
 
-		// Silences warning. We already only use metal on these OS versions.
-		if (@available(macOS 10.14, iOS 12.0, *))
+		if (@available(macOS 14.0, iOS 17.0, *))
+			opts.languageVersion = MTLLanguageVersion3_1; // For image atomics.
+		else
 			opts.languageVersion = MTLLanguageVersion2_1;
 
 		NSError *err = nil;
