@@ -1,4 +1,5 @@
-// Copyright (C) 2020 The Khronos Group Inc.
+//
+// Copyright 2026 Google LLC
 //
 // All rights reserved.
 //
@@ -14,7 +15,7 @@
 //    disclaimer in the documentation and/or other materials provided
 //    with the distribution.
 //
-//    Neither the name of The Khronos Group Inc. nor the names of its
+//    Neither the name of 3Dlabs Inc. Ltd. nor the names of its
 //    contributors may be used to endorse or promote products derived
 //    from this software without specific prior written permission.
 //
@@ -30,33 +31,33 @@
 // LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+//
 
-#ifndef GLSLANG_BUILD_INFO
-#define GLSLANG_BUILD_INFO
+#ifndef GLSLANG_INCLUDE_DEFER_H
+#define GLSLANG_INCLUDE_DEFER_H
 
-#define GLSLANG_VERSION_MAJOR 16
-#define GLSLANG_VERSION_MINOR 3
-#define GLSLANG_VERSION_PATCH 0
-#define GLSLANG_VERSION_FLAVOR ""
+#include <utility>
 
-#define GLSLANG_VERSION_GREATER_THAN(major, minor, patch) \
-    ((GLSLANG_VERSION_MAJOR) > (major) || ((major) == GLSLANG_VERSION_MAJOR && \
-    ((GLSLANG_VERSION_MINOR) > (minor) || ((minor) == GLSLANG_VERSION_MINOR && \
-     (GLSLANG_VERSION_PATCH) > (patch)))))
+namespace glslang {
 
-#define GLSLANG_VERSION_GREATER_OR_EQUAL_TO(major, minor, patch) \
-    ((GLSLANG_VERSION_MAJOR) > (major) || ((major) == GLSLANG_VERSION_MAJOR && \
-    ((GLSLANG_VERSION_MINOR) > (minor) || ((minor) == GLSLANG_VERSION_MINOR && \
-     (GLSLANG_VERSION_PATCH >= (patch))))))
+// An object that, when destroyed, executes a given function.
+// Use this to perform work along all exit paths from a function.
+template <typename F>
+class Defer {
+ public:
+  explicit Defer(F&& f) : f_(std::move(f)) { }
+  Defer(Defer&&) = default;
+  ~Defer() { f_(); } // Run the given function.
+ private:
+  Defer(const Defer&) = delete;
+  Defer& operator=(const Defer&) = delete;
+  F f_;
+};
 
-#define GLSLANG_VERSION_LESS_THAN(major, minor, patch) \
-    ((GLSLANG_VERSION_MAJOR) < (major) || ((major) == GLSLANG_VERSION_MAJOR && \
-    ((GLSLANG_VERSION_MINOR) < (minor) || ((minor) == GLSLANG_VERSION_MINOR && \
-     (GLSLANG_VERSION_PATCH) < (patch)))))
+// Template argument deduction guide for Defer.
+template <typename T>
+Defer(T) -> Defer<T>;
 
-#define GLSLANG_VERSION_LESS_OR_EQUAL_TO(major, minor, patch) \
-    ((GLSLANG_VERSION_MAJOR) < (major) || ((major) == GLSLANG_VERSION_MAJOR && \
-    ((GLSLANG_VERSION_MINOR) < (minor) || ((minor) == GLSLANG_VERSION_MINOR && \
-     (GLSLANG_VERSION_PATCH <= (patch))))))
+} // namespace glslang
 
-#endif // GLSLANG_BUILD_INFO
+#endif

@@ -55,7 +55,9 @@ namespace glslang {
 //
 void TType::buildMangledName(TString& mangledName) const
 {
-    if (isMatrix())
+    if (isTensorARM())
+        mangledName += 'T';
+    else if (isMatrix())
         mangledName += 'm';
     else if (isVector())
         mangledName += 'v';
@@ -84,6 +86,7 @@ void TType::buildMangledName(TString& mangledName) const
     case EbtRayQuery:           mangledName += "rq";     break;
     case EbtSpirvType:          mangledName += "spv-t";  break;
     case EbtHitObjectNV:        mangledName += "ho";     break;
+    case EbtHitObjectEXT:       mangledName += "ho";     break;
     case EbtTensorLayoutNV:     mangledName += "tl";     break;
     case EbtTensorViewNV:       mangledName += "tv";     break;
     case EbtSampler:
@@ -344,6 +347,24 @@ void TSymbolTableLevel::setFunctionExtensions(const char* name, int num, const c
     }
 }
 
+// Call the callback function to determine the required extensions
+void TSymbolTableLevel::setFunctionExtensionsCallback(const char* name, std::function<std::vector<const char *>(const char *)> const &func)
+{
+    tLevel::const_iterator candidate = level.lower_bound(name);
+    while (candidate != level.end()) {
+        const TString& candidateName = (*candidate).first;
+        TString::size_type parenAt = candidateName.find_first_of('(');
+        if (parenAt != candidateName.npos && candidateName.compare(0, parenAt, name) == 0) {
+            TSymbol* symbol = candidate->second;
+
+            auto exts = func(candidateName.c_str());
+            symbol->setExtensions(exts.size(), exts.data());
+        } else
+            break;
+        ++candidate;
+    }
+}
+
 // Make a single function require an extension(s). i.e., this will only set the extensions for the symbol that matches 'name' exactly.
 // This is different from setFunctionExtensions, which uses std::map::lower_bound to effectively set all symbols that start with 'name'.
 // Should only be used for a version/profile that actually needs the extension(s).
@@ -423,6 +444,7 @@ TFunction::TFunction(const TFunction& copyOf) : TSymbol(copyOf)
     defined = copyOf.defined;
     prototyped = copyOf.prototyped;
     implicitThis = copyOf.implicitThis;
+    variadic = copyOf.variadic;
     illegalImplicitThis = copyOf.illegalImplicitThis;
     defaultParamCount = copyOf.defaultParamCount;
     spirvInst = copyOf.spirvInst;

@@ -171,6 +171,9 @@ bool TParseContextBase::lValueErrorCheck(const TSourceLoc& loc, const char* op, 
         case EbtHitObjectNV:
             message = "can't modify hitObjectNV";
             break;
+        case EbtHitObjectEXT:
+            message = "can't modify hitObjectEXT";
+            break;
         default:
             break;
         }
@@ -279,7 +282,7 @@ void TParseContextBase::trackLinkage(TSymbol& symbol)
 
 // Ensure index is in bounds, correct if necessary.
 // Give an error if not.
-void TParseContextBase::checkIndex(const TSourceLoc& loc, const TType& type, int& index)
+void TParseContextBase::checkIndex(const TSourceLoc& loc, const TType& type, int64_t& index)
 {
     const auto sizeIsSpecializationExpression = [&type]() {
         return type.containsSpecializationSize() &&
@@ -424,7 +427,7 @@ const TFunction* TParseContextBase::selectFunction(
         // to even be a potential match, number of arguments must be >= the number of
         // fixed (non-default) parameters, and <= the total (including parameter with defaults).
         if (call.getParamCount() < candidate.getFixedParamCount() ||
-            call.getParamCount() > candidate.getParamCount())
+            (call.getParamCount() > candidate.getParamCount() && !candidate.isVariadic()))
             continue;
 
         // see if arguments are convertible
@@ -463,7 +466,8 @@ const TFunction* TParseContextBase::selectFunction(
     const auto betterParam = [&call, &better](const TFunction& can1, const TFunction& can2) -> bool {
         // is call -> can2 better than call -> can1 for any parameter
         bool hasBetterParam = false;
-        for (int param = 0; param < call.getParamCount(); ++param) {
+        const int paramCount = std::min({call.getParamCount(), can1.getParamCount(), can2.getParamCount()});
+        for (int param = 0; param < paramCount; ++param) {
             if (better(*call[param].type, *can1[param].type, *can2[param].type)) {
                 hasBetterParam = true;
                 break;
@@ -474,12 +478,23 @@ const TFunction* TParseContextBase::selectFunction(
 
     const auto equivalentParams = [&call, &better](const TFunction& can1, const TFunction& can2) -> bool {
         // is call -> can2 equivalent to call -> can1 for all the call parameters?
-        for (int param = 0; param < call.getParamCount(); ++param) {
+        const int paramCount = std::min({call.getParamCount(), can1.getParamCount(), can2.getParamCount()});
+        for (int param = 0; param < paramCount; ++param) {
             if (better(*call[param].type, *can1[param].type, *can2[param].type) ||
                 better(*call[param].type, *can2[param].type, *can1[param].type))
                 return false;
         }
         return true;
+    };
+
+    const auto enabled = [this](const TFunction& candidate) -> bool {
+        bool enabled = candidate.getNumExtensions() == 0;
+        for (int i = 0; i < candidate.getNumExtensions(); ++i) {
+            TExtensionBehavior behavior = getExtensionBehavior(candidate.getExtensions()[i]);
+            if (behavior == EBhEnable || behavior == EBhRequire)
+                enabled = true;
+        }
+        return enabled;
     };
 
     const TFunction* incumbent = viableCandidates.front();
@@ -497,7 +512,7 @@ const TFunction* TParseContextBase::selectFunction(
 
         // In the case of default parameters, it may have an identical initial set, which is
         // also ambiguous
-        if (betterParam(*incumbent, candidate) || equivalentParams(*incumbent, candidate))
+        if ((betterParam(*incumbent, candidate) || equivalentParams(*incumbent, candidate)) && enabled(candidate))
             tie = true;
     }
 

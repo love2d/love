@@ -189,6 +189,11 @@ public:
         operands[idx] = immediate;
     }
 
+    void clearOperands() {
+        operands.clear();
+        idOperand.clear();
+    }
+
     void addStringOperand(const char* str)
     {
         unsigned int word = 0;
@@ -222,6 +227,7 @@ public:
     }
     Id getResultId() const { return resultId; }
     Id getTypeId() const { return typeId; }
+    void setTypeId(Id tId) { typeId = tId; }
     Id getIdOperand(int op) const {
         assert(idOperand[op]);
         return operands[op];
@@ -380,6 +386,7 @@ public:
         case Op::OpReturn:
         case Op::OpReturnValue:
         case Op::OpUnreachable:
+        case Op::OpAbortKHR:
             return true;
         default:
             return false;
@@ -574,7 +581,8 @@ public:
     }
     StorageClass getStorageClass(Id typeId) const
     {
-        assert(idToInstruction[typeId]->getOpCode() == spv::Op::OpTypePointer);
+        assert(idToInstruction[typeId]->getOpCode() == spv::Op::OpTypePointer ||
+               idToInstruction[typeId]->getOpCode() == spv::Op::OpTypeUntypedPointerKHR);
         return (StorageClass)idToInstruction[typeId]->getImmediateOperand(0);
     }
 

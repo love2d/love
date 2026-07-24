@@ -252,6 +252,7 @@ struct HexFloatTraits {
   // The bias of the exponent. (How much we need to subtract from the stored
   // value to get the correct value.)
   static const uint32_t exponent_bias = 0;
+  static bool supportsInfinity() { return true; }
 };
 
 // Traits for IEEE float.
@@ -266,6 +267,7 @@ struct HexFloatTraits<FloatProxy<float>> {
   static const uint_type num_exponent_bits = 8;
   static const uint_type num_fraction_bits = 23;
   static const uint_type exponent_bias = 127;
+  static bool supportsInfinity() { return true; }
 };
 
 // Traits for IEEE double.
@@ -280,6 +282,7 @@ struct HexFloatTraits<FloatProxy<double>> {
   static const uint_type num_exponent_bits = 11;
   static const uint_type num_fraction_bits = 52;
   static const uint_type exponent_bias = 1023;
+  static bool supportsInfinity() { return true; }
 };
 
 // Traits for IEEE half.
@@ -294,6 +297,7 @@ struct HexFloatTraits<FloatProxy<Float16>> {
   static const uint_type num_exponent_bits = 5;
   static const uint_type num_fraction_bits = 10;
   static const uint_type exponent_bias = 15;
+  static bool supportsInfinity() { return true; }
 };
 
 template <>
@@ -306,6 +310,7 @@ struct HexFloatTraits<FloatProxy<FloatE5M2>> {
   static const uint_type num_exponent_bits = 5;
   static const uint_type num_fraction_bits = 2;
   static const uint_type exponent_bias = 15;
+  static bool supportsInfinity() { return true; }
 };
 
 template <>
@@ -318,6 +323,7 @@ struct HexFloatTraits<FloatProxy<FloatE4M3>> {
   static const uint_type num_exponent_bits = 4;
   static const uint_type num_fraction_bits = 3;
   static const uint_type exponent_bias = 7;
+  static bool supportsInfinity() { return false; }
 };
 
 enum round_direction {
@@ -337,6 +343,7 @@ class HexFloat {
   typedef typename Traits::int_type int_type;
   typedef typename Traits::underlying_type underlying_type;
   typedef typename Traits::native_type native_type;
+  using Traits_T = Traits;
 
   explicit HexFloat(T f) : value_(f) {}
 
@@ -678,14 +685,22 @@ class HexFloat {
         (getBits() & exponent_mask) == exponent_mask && significand != 0;
     bool is_inf =
         !is_nan &&
-        ((exponent + carried) > static_cast<int_type>(other_T::exponent_bias) ||
+        (((exponent + carried) > static_cast<int_type>(other_T::exponent_bias) && other_T::Traits_T::supportsInfinity()) ||
+         ((exponent + carried) > static_cast<int_type>(other_T::exponent_bias + 1) && !other_T::Traits_T::supportsInfinity()) ||
          (significand == 0 && (getBits() & exponent_mask) == exponent_mask));
 
     // If we are Nan or Inf we should pass that through.
     if (is_inf) {
-      other.set_value(BitwiseCast<typename other_T::underlying_type>(
-          static_cast<typename other_T::uint_type>(
-              (negate ? other_T::sign_mask : 0) | other_T::exponent_mask)));
+      if (other_T::Traits_T::supportsInfinity()) {
+        // encode as +/-inf
+        other.set_value(BitwiseCast<typename other_T::underlying_type>(
+            static_cast<typename other_T::uint_type>(
+                (negate ? other_T::sign_mask : 0) | other_T::exponent_mask)));
+      } else {
+        // encode as +/-nan
+        other.set_value(BitwiseCast<typename other_T::underlying_type>(
+            static_cast<typename other_T::uint_type>(negate ? ~0 : ~other_T::sign_mask)));
+      }
       return;
     }
     if (is_nan) {

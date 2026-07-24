@@ -229,6 +229,7 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_ARB_draw_instanced]               = EBhDisable;
     extensionBehavior[E_GL_ARB_bindless_texture]             = EBhDisable;
     extensionBehavior[E_GL_ARB_fragment_coord_conventions]   = EBhDisable;
+    extensionBehavior[E_GL_ARB_conservative_depth]           = EBhDisable;
 
 
     extensionBehavior[E_GL_KHR_shader_subgroup_basic]            = EBhDisable;
@@ -268,6 +269,7 @@ void TParseVersions::initializeExtensionBehavior()
 
     extensionBehavior[E_GL_EXT_control_flow_attributes2]                = EBhDisable;
     extensionBehavior[E_GL_EXT_spec_constant_composites]                = EBhDisable;
+    extensionBehavior[E_GL_EXT_abort]                                   = EBhDisable;
 
     extensionBehavior[E_GL_KHR_cooperative_matrix]                      = EBhDisable;
     extensionBehavior[E_GL_NV_cooperative_vector]                       = EBhDisable;
@@ -304,6 +306,7 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_NV_ray_tracing]                           = EBhDisable;
     extensionBehavior[E_GL_NV_ray_tracing_motion_blur]               = EBhDisable;
     extensionBehavior[E_GL_NV_fragment_shader_barycentric]           = EBhDisable;
+    extensionBehavior[E_GL_KHR_compute_shader_derivatives]           = EBhDisable;
     extensionBehavior[E_GL_NV_compute_shader_derivatives]            = EBhDisable;
     extensionBehavior[E_GL_NV_shader_texture_footprint]              = EBhDisable;
     extensionBehavior[E_GL_NV_mesh_shader]                           = EBhDisable;
@@ -316,14 +319,21 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_NV_cooperative_matrix2]                   = EBhDisable;
     extensionBehavior[E_GL_NV_cluster_acceleration_structure]        = EBhDisable;
     extensionBehavior[E_GL_NV_linear_swept_spheres]                  = EBhDisable;
+    extensionBehavior[E_GL_NV_push_constant_bank]                    = EBhDisable;
+    extensionBehavior[E_GL_NV_explicit_typecast]                     = EBhDisable;
 
     // ARM
     extensionBehavior[E_GL_ARM_shader_core_builtins]                 = EBhDisable;
+    extensionBehavior[E_GL_ARM_tensors]                              = EBhDisable;
+    extensionBehavior[E_GL_ARM_tensors_bfloat16]                     = EBhDisable;
+    extensionBehavior[E_GL_ARM_tensors_float_e5m2]                   = EBhDisable;
+    extensionBehavior[E_GL_ARM_tensors_float_e4m3]                   = EBhDisable;
 
     // QCOM
     extensionBehavior[E_GL_QCOM_image_processing]                    = EBhDisable;
     extensionBehavior[E_GL_QCOM_image_processing2]                   = EBhDisable;
     extensionBehavior[E_GL_QCOM_tile_shading]                        = EBhDisable;
+    extensionBehavior[E_GL_QCOM_cooperative_matrix_conversion]       = EBhDisable;
 
     // AEP
     extensionBehavior[E_GL_ANDROID_extension_pack_es31a]             = EBhDisable;
@@ -342,6 +352,7 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_EXT_texture_buffer]                       = EBhDisable;
     extensionBehavior[E_GL_EXT_texture_cube_map_array]               = EBhDisable;
     extensionBehavior[E_GL_EXT_null_initializer]                     = EBhDisable;
+    extensionBehavior[E_GL_EXT_descriptor_heap]                      = EBhDisable;
 
     // OES matching AEP
     extensionBehavior[E_GL_OES_geometry_shader]          = EBhDisable;
@@ -383,6 +394,10 @@ void TParseVersions::initializeExtensionBehavior()
     extensionBehavior[E_GL_EXT_bfloat16]                    = EBhDisable;
     extensionBehavior[E_GL_EXT_float_e4m3]                  = EBhDisable;
     extensionBehavior[E_GL_EXT_float_e5m2]                  = EBhDisable;
+    extensionBehavior[E_GL_EXT_uniform_buffer_unsized_array] = EBhDisable;
+    extensionBehavior[E_GL_EXT_shader_64bit_indexing]       = EBhDisable;
+    extensionBehavior[E_GL_EXT_conservative_depth]          = EBhDisable;
+    extensionBehavior[E_GL_EXT_long_vector]                 = EBhDisable;
 
     // OVR extensions
     extensionBehavior[E_GL_OVR_multiview]                = EBhDisable;
@@ -408,6 +423,8 @@ void TParseVersions::initializeExtensionBehavior()
 
     extensionBehavior[E_GL_EXT_integer_dot_product]                    = EBhDisable;
 
+    extensionBehavior[E_GL_EXT_shader_invocation_reorder]              = EBhDisable;
+
     // Record extensions not for spv.
     spvUnsupportedExt.push_back(E_GL_ARB_bindless_texture);
 }
@@ -429,6 +446,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_EXT_shader_texture_lod 1\n"
             "#define GL_EXT_shadow_samplers 1\n"
             "#define GL_EXT_fragment_shading_rate 1\n"
+            "#define GL_EXT_conservative_depth 1\n"
 
             // AEP
             "#define GL_ANDROID_extension_pack_es31a 1\n"
@@ -448,6 +466,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_EXT_shader_implicit_conversions 1\n"
             "#define GL_EXT_shader_integer_mix 1\n"
             "#define GL_EXT_blend_func_extended 1\n"
+            "#define GL_EXT_descriptor_heap 1\n"
 
             // OES matching AEP
             "#define GL_OES_geometry_shader 1\n"
@@ -464,6 +483,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_QCOM_image_processing 1\n"
             "#define GL_QCOM_image_processing2 1\n"
             "#define GL_QCOM_tile_shading 1\n"
+            "#define GL_QCOM_cooperative_matrix_conversion 1\n"
             ;
 
             if (version >= 300) {
@@ -517,6 +537,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_NV_gpu_shader5 1\n"
             "#define GL_ARB_draw_instanced 1\n"
             "#define GL_ARB_fragment_coord_conventions 1\n"
+            "#define GL_ARB_conservative_depth 1\n"
 
             "#define GL_EXT_shader_non_constant_global_initializers 1\n"
             "#define GL_EXT_shader_image_load_formatted 1\n"
@@ -537,6 +558,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_EXT_shared_memory_block 1\n"
             "#define GL_EXT_shader_integer_mix 1\n"
             "#define GL_EXT_spec_constant_composites 1\n"
+            "#define GL_EXT_abort 1\n"
 
             // GL_KHR_shader_subgroup
             "#define GL_KHR_shader_subgroup_basic 1\n"
@@ -584,6 +606,7 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_NV_ray_tracing 1\n"
             "#define GL_NV_ray_tracing_motion_blur 1\n"
             "#define GL_NV_fragment_shader_barycentric 1\n"
+            "#define GL_KHR_compute_shader_derivatives 1\n"
             "#define GL_NV_compute_shader_derivatives 1\n"
             "#define GL_NV_shader_texture_footprint 1\n"
             "#define GL_NV_mesh_shader 1\n"
@@ -591,10 +614,12 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_NV_integer_cooperative_matrix 1\n"
             "#define GL_NV_shader_invocation_reorder 1\n"
             "#define GL_NV_cooperative_matrix2 1\n"
+            "#define GL_NV_explicit_typecast 1\n"
 
             "#define GL_QCOM_image_processing 1\n"
             "#define GL_QCOM_image_processing2 1\n"
             "#define GL_QCOM_tile_shading 1\n"
+            "#define GL_QCOM_cooperative_matrix_conversion 1\n"
 
             "#define GL_EXT_shader_explicit_arithmetic_types 1\n"
             "#define GL_EXT_shader_explicit_arithmetic_types_int8 1\n"
@@ -623,6 +648,11 @@ void TParseVersions::getPreamble(std::string& preamble)
             "#define GL_EXT_bfloat16 1\n"
             "#define GL_EXT_float_e5m2 1\n"
             "#define GL_EXT_float_e4m3 1\n"
+            "#define GL_EXT_uniform_buffer_unsized_array 1\n"
+            "#define GL_EXT_shader_64bit_indexing 1\n"
+
+            "#define GL_EXT_shader_invocation_reorder 1\n"
+            "#define GL_EXT_descriptor_heap 1\n"
             ;
 
         if (spvVersion.spv == 0) {
@@ -644,6 +674,20 @@ void TParseVersions::getPreamble(std::string& preamble)
         if (version >= 130) {
             preamble +="#define GL_FRAGMENT_PRECISION_HIGH 1\n";
         }
+
+        if (version >= 460) {
+            preamble +=
+                "#define GL_ARM_tensors 1\n"
+                "#define GL_ARM_tensors_bfloat16 1\n"
+                "#define GL_ARM_tensors_float_e5m2 1\n"
+                "#define GL_ARM_tensors_float_e4m3 1\n"
+                ;
+        }
+    }
+
+    if ((!isEsProfile() && version >= 460) ||
+        (isEsProfile() && version >= 320)) {
+        preamble += "#define GL_EXT_nontemporal_keyword 1\n";
     }
 
     if ((!isEsProfile() && version >= 140) ||
@@ -712,8 +756,8 @@ void TParseVersions::getPreamble(std::string& preamble)
         case EShLangClosestHit:     preamble += "#define GL_CLOSEST_HIT_SHADER_EXT 1 \n";           break;
         case EShLangMiss:           preamble += "#define GL_MISS_SHADER_EXT 1 \n";                  break;
         case EShLangCallable:       preamble += "#define GL_CALLABLE_SHADER_EXT 1 \n";              break;
-        case EShLangTask:           preamble += "#define GL_TASK_SHADER_NV 1 \n";                   break;
-        case EShLangMesh:           preamble += "#define GL_MESH_SHADER_NV 1 \n";                   break;
+        case EShLangTask:           preamble += "#define GL_TASK_SHADER_EXT 1 \n";                  break;
+        case EShLangMesh:           preamble += "#define GL_MESH_SHADER_EXT 1 \n";                  break;
         default:                                                                                    break;
         }
     }
@@ -1463,6 +1507,14 @@ void TParseVersions::coopmatCheck(const TSourceLoc& loc, const char* op, bool bu
     }
 }
 
+void TParseVersions::coopmatConverisonCheckQCOM(const TSourceLoc& loc, const char* op, bool builtIn)
+{
+  if (!builtIn) {
+    const char* const extensions[] = {E_GL_KHR_cooperative_matrix};
+    requireExtensions(loc, sizeof(extensions) / sizeof(extensions[0]), extensions, op);
+  }
+}
+
 void TParseVersions::tensorLayoutViewCheck(const TSourceLoc& loc, const char* op, bool builtIn)
 {
     if (!builtIn) {
@@ -1483,6 +1535,22 @@ void TParseVersions::intattachmentCheck(const TSourceLoc& loc, const char* op, b
 {
     if (!builtIn) {
         const char* const extensions[] = {E_GL_QCOM_tile_shading};
+        requireExtensions(loc, sizeof(extensions)/sizeof(extensions[0]), extensions, op);
+    }
+}
+
+void TParseVersions::tensorCheckARM(const TSourceLoc& loc, const char* op, bool builtIn)
+{
+    if (!builtIn) {
+        const char* const extensions[] = {E_GL_ARM_tensors};
+        requireExtensions(loc, sizeof(extensions)/sizeof(extensions[0]), extensions, op);
+    }
+}
+
+void TParseVersions::longVectorCheck(const TSourceLoc& loc, const char* op, bool builtIn)
+{
+    if (!builtIn) {
+        const char* const extensions[] = {E_GL_EXT_long_vector};
         requireExtensions(loc, sizeof(extensions)/sizeof(extensions[0]), extensions, op);
     }
 }
