@@ -2263,11 +2263,8 @@ void Graphics::initCapabilities()
 		capabilities.features[FEATURE_VERTEX_WRITE] = false;
 		capabilities.features[FEATURE_PIXEL_WRITE] = false;
 	}
-
-	// Not supported until Metal 3
-	capabilities.features[FEATURE_IMAGE_ATOMICS] = false;
 	
-	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 15, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;

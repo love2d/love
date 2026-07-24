@@ -1634,8 +1634,7 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_INDIRECT_DRAW] = capabilities.features[FEATURE_GLSL4];
 	capabilities.features[FEATURE_VERTEX_WRITE] = capabilities.features[FEATURE_GLSL4];
 	capabilities.features[FEATURE_PIXEL_WRITE] = capabilities.features[FEATURE_GLSL4];
-	capabilities.features[FEATURE_IMAGE_ATOMICS] = capabilities.features[FEATURE_GLSL4];
-	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 15, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();
