@@ -251,7 +251,7 @@ front-run any choice. Resolution status (architect-ratified):
 | D1 | Filesystem seam | **A — replace the module.** Gates 6.2. |
 | D2 | Save-dir backing | **Closed — OPFS, separate untracked namespace, eager-flush (eventual durability, declared).** See below. |
 | D3 | Window/context | **A — `setMode` drives the real canvas/context.** Gates 6.3. |
-| D4 | Reload granularity | **Open** — not C; between A and B; post-step-6, blocks nothing here. |
+| D4 | Reload granularity | **Open — deferred past Beta.** Not C; between A and B. Beta ships module-granularity live-edit (the 6.7 `pump_invalidate` + write path) with **restart** as the fallback for `main.lua`-direct edits; `main.lua`-direct live-edit (D4=A whole-chunk) is not required for Beta. |
 | D5 | Supported-edit class | **A — minimal & explicit**, restart fallback. |
 | D6 | Console channel | **A — pure stdio now**, architected so B (host structured tap) can layer on without engine changes. |
 | D7 | Archive/`.love` mounting: who unzips | **Open** — host-side JS unzip vs a guest-side zip reader over the in-tree zlib. Directory enumeration (`getDirectoryItems` over `fs_list`) landed pre-step-7; runtime zip mounting is deferred (most browser games do not mount a `.zip` at runtime). See D7 below. |
@@ -374,6 +374,14 @@ are written, and Lua can't tell them apart syntactically.
 - **OPEN — not C; between A and B; needs more discussion.** Restart is the blessed
   fallback for whatever the chosen mechanism can't apply. Post-step-6; blocks
   nothing in step 6.
+- **Beta disposition (architect-ratified):** deferred past Beta. Beta ships the
+  6.7 mechanism as-is — module-granularity live-edit (`pump_invalidate` + the
+  write path, live for `require`'d game modules) with **restart** as the honest
+  fallback for `main.lua`-direct edits (which `main.lua` is not `require`'d, so
+  the whole-chunk D4=A path would be needed to make live). `main.lua`-direct
+  live-edit is explicitly **not** a Beta requirement; the interactive shell
+  demonstrates module-granularity live-edit only. D4 is revisited if/when a
+  consumer needs `main.lua`-direct hotswap.
 
 ### D5 — Supported-edit class (live-edit): what is guaranteed live
 
