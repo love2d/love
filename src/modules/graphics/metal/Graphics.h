@@ -210,7 +210,7 @@ private:
 	id<MTLDepthStencilState> getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil);
 	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, VertexAttributesID attributesID);
 	bool applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::graphics::Shader *shader);
-	void applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader, Texture *maintex);
+	bool applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader, Texture *maintex);
 
 	id<MTLCommandQueue> commandQueue;
 

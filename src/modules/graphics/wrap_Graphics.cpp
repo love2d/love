@@ -1586,6 +1586,20 @@ static int w_getShaderSource(lua_State *L, int startidx, std::vector<std::string
 		if (!lua_isnoneornil(L, -1))
 			options.debugName = luax_checkstring(L, -1);
 		lua_pop(L, 1);
+
+		for (int feature = 0; feature < Shader::FEATURE_MAX_ENUM; ++feature)
+		{
+			const char *featureKey;
+			if (Shader::getConstant((Shader::Feature)feature, featureKey))
+			{
+				lua_getfield(L, optionsidx, featureKey);
+				if (!lua_isnoneornil(L, -1))
+				{
+					options.features[feature] = lua_toboolean(L, -1);
+				}
+				lua_pop(L, 1);
+			}
+		}
 	}
 
 	return 0;

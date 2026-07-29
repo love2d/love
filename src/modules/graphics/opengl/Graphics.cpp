@@ -444,7 +444,7 @@ void Graphics::setActive(bool enable)
 	active = enable;
 }
 
-static bool computeDispatchBarriers(Shader *shader, GLbitfield &preDispatchBarriers, GLbitfield &postDispatchBarriers)
+static bool shaderBarriers(Shader *shader, GLbitfield &preDispatchBarriers, GLbitfield &postDispatchBarriers)
 {
 	for (auto buffer : shader->getActiveWritableStorageBuffers())
 	{
@@ -505,7 +505,7 @@ bool Graphics::dispatch(love::graphics::Shader *s, int x, int y, int z)
 	GLbitfield preDispatchBarriers = 0;
 	GLbitfield postDispatchBarriers = 0;
 
-	if (!computeDispatchBarriers(shader, preDispatchBarriers, postDispatchBarriers))
+	if (!shaderBarriers(shader, preDispatchBarriers, postDispatchBarriers))
 		return false;
 
 	// glMemoryBarrier before dispatch to make sure non-compute-read ->
@@ -534,7 +534,7 @@ bool Graphics::dispatch(love::graphics::Shader *s, love::graphics::Buffer *indir
 	GLbitfield preDispatchBarriers = 0;
 	GLbitfield postDispatchBarriers = 0;
 
-	if (!computeDispatchBarriers(shader, preDispatchBarriers, postDispatchBarriers))
+	if (!shaderBarriers(shader, preDispatchBarriers, postDispatchBarriers))
 		return false;
 
 	if (preDispatchBarriers != 0)
@@ -559,6 +559,15 @@ void Graphics::draw(const DrawCommand &cmd)
 	VertexAttributes attributes;
 	findVertexAttributes(cmd.attributesID, attributes);
 
+	GLbitfield preDrawBarriers = 0;
+	GLbitfield postDrawBarriers = 0;
+
+	if (!shaderBarriers((Shader *)Shader::current, preDrawBarriers, postDrawBarriers))
+		return;
+
+	if (preDrawBarriers != 0)
+		glMemoryBarrier(preDrawBarriers);
+
 	gl.prepareDraw(this);
 	gl.setVertexAttributes(attributes, *cmd.buffers);
 	gl.bindTextureToUnit(cmd.texture, 0, false);
@@ -576,6 +585,9 @@ void Graphics::draw(const DrawCommand &cmd)
 	else
 		glDrawArrays(glprimitivetype, cmd.vertexStart, cmd.vertexCount);
 
+	if (postDrawBarriers != 0)
+		glMemoryBarrier(postDrawBarriers);
+
 	++drawCalls;
 }
 
@@ -583,6 +595,15 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 {
 	VertexAttributes attributes;
 	findVertexAttributes(cmd.attributesID, attributes);
+
+	GLbitfield preDrawBarriers = 0;
+	GLbitfield postDrawBarriers = 0;
+
+	if (!shaderBarriers((Shader *)Shader::current, preDrawBarriers, postDrawBarriers))
+		return;
+
+	if (preDrawBarriers != 0)
+		glMemoryBarrier(preDrawBarriers);
 
 	gl.prepareDraw(this);
 	gl.setVertexAttributes(attributes, *cmd.buffers);
@@ -606,6 +627,9 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 		glDrawElementsInstanced(glprimitivetype, cmd.indexCount, gldatatype, gloffset, cmd.instanceCount);
 	else
 		glDrawElements(glprimitivetype, cmd.indexCount, gldatatype, gloffset);
+	
+	if (postDrawBarriers != 0)
+		glMemoryBarrier(postDrawBarriers);
 
 	++drawCalls;
 }
@@ -638,6 +662,12 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 	const int MAX_VERTICES_PER_DRAW = LOVE_UINT16_MAX;
 	const int MAX_QUADS_PER_DRAW    = MAX_VERTICES_PER_DRAW / 4;
 
+	GLbitfield preDrawBarriers = 0;
+	GLbitfield postDrawBarriers = 0;
+
+	if (!shaderBarriers((Shader *)Shader::current, preDrawBarriers, postDrawBarriers))
+		return;
+
 	VertexAttributes attributes;
 	findVertexAttributes(attributesID, attributes);
 
@@ -655,9 +685,16 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 
 		for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
 		{
+			if (preDrawBarriers != 0)
+				glMemoryBarrier(preDrawBarriers);
+
 			int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
 
 			glDrawElementsBaseVertex(GL_TRIANGLES, quadcount * 6, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0), basevertex);
+
+			if (postDrawBarriers != 0)
+				glMemoryBarrier(postDrawBarriers);
+
 			++drawCalls;
 
 			basevertex += quadcount * 4;
@@ -671,11 +708,18 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 
 		for (int quadindex = 0; quadindex < count; quadindex += MAX_QUADS_PER_DRAW)
 		{
+			if (preDrawBarriers != 0)
+				glMemoryBarrier(preDrawBarriers);
+
 			gl.setVertexAttributes(attributes, bufferscopy);
 
 			int quadcount = std::min(MAX_QUADS_PER_DRAW, count - quadindex);
 
 			glDrawElements(GL_TRIANGLES, quadcount * 6, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
+
+			if (postDrawBarriers != 0)
+				glMemoryBarrier(postDrawBarriers);
+
 			++drawCalls;
 
 			if (count > MAX_QUADS_PER_DRAW)
@@ -1593,7 +1637,9 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_TEXEL);
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = gl.isCopyTextureToBufferSupported();
 	capabilities.features[FEATURE_INDIRECT_DRAW] = capabilities.features[FEATURE_GLSL4];
-	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_VERTEX_WRITE] = capabilities.features[FEATURE_GLSL4];
+	capabilities.features[FEATURE_PIXEL_WRITE] = capabilities.features[FEATURE_GLSL4];
+	static_assert(FEATURE_MAX_ENUM == 15, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();

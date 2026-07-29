@@ -1105,7 +1105,7 @@ bool Graphics::applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::g
 	return allWritableVariablesSet;
 }
 
-void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader, love::graphics::Texture *maintex)
+bool Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader, love::graphics::Texture *maintex)
 {
 	Shader *s = (Shader *)shader;
 
@@ -1168,6 +1168,8 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 
 	uniformBufferOffset += alignUp(size, alignment);
 
+	bool allWritableVariablesSet = true;
+
 	for (const Shader::TextureBinding &b : s->getTextureBindings())
 	{
 		id<MTLTexture> texture = b.texture;
@@ -1183,7 +1185,13 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 		uint8 sampindex = b.samplerStages[SHADERSTAGE_VERTEX];
 
 		if (texindex != LOVE_UINT8_MAX)
+		{
 			setTexture(renderEncoder, bindings, SHADERSTAGE_VERTEX, texindex, texture);
+
+			if ((b.access & Shader::ACCESS_WRITE) != 0 && texture == nil)
+				allWritableVariablesSet = false;
+		}
+
 		if (sampindex != LOVE_UINT8_MAX)
 			setSampler(renderEncoder, bindings, SHADERSTAGE_VERTEX, sampindex, samplertex);
 
@@ -1191,7 +1199,13 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 		sampindex = b.samplerStages[SHADERSTAGE_PIXEL];
 
 		if (texindex != LOVE_UINT8_MAX)
+		{
 			setTexture(renderEncoder, bindings, SHADERSTAGE_PIXEL, texindex, texture);
+
+			if ((b.access & Shader::ACCESS_WRITE) != 0 && texture == nil)
+				allWritableVariablesSet = false;
+		}
+
 		if (sampindex != LOVE_UINT8_MAX)
 			setSampler(renderEncoder, bindings, SHADERSTAGE_PIXEL, sampindex, samplertex);
 	}
@@ -1200,11 +1214,24 @@ void Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	{
 		uint8 index = b.stages[SHADERSTAGE_VERTEX];
 		if (index != LOVE_UINT8_MAX)
+		{
 			setBuffer(renderEncoder, bindings, SHADERSTAGE_VERTEX, index, b.buffer, 0);
+
+			if ((b.access & Shader::ACCESS_WRITE) != 0 && b.buffer == nil)
+				allWritableVariablesSet = false;
+		}
+
 		index = b.stages[SHADERSTAGE_PIXEL];
 		if (index != LOVE_UINT8_MAX)
+		{
 			setBuffer(renderEncoder, bindings, SHADERSTAGE_PIXEL, index, b.buffer, 0);
+
+			if ((b.access & Shader::ACCESS_WRITE) != 0 && b.buffer == nil)
+				allWritableVariablesSet = false;
+		}
 	}
+
+	return allWritableVariablesSet;
 }
 
 static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, love::graphics::Shader *shader, const BufferBindings *buffers, Graphics::RenderEncoderBindings &bindings)
@@ -1240,7 +1267,8 @@ void Graphics::draw(const DrawCommand &cmd)
 	}
 
 	applyRenderState(encoder, cmd.attributesID);
-	applyShaderUniforms(encoder, Shader::current, cmd.texture);
+	if (!applyShaderUniforms(encoder, Shader::current, cmd.texture))
+		return;
 
 	setVertexBuffers(encoder, Shader::current, cmd.buffers, renderBindings);
 
@@ -1272,7 +1300,8 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	}
 
 	applyRenderState(encoder, cmd.attributesID);
-	applyShaderUniforms(encoder, Shader::current, cmd.texture);
+	if (!applyShaderUniforms(encoder, Shader::current, cmd.texture))
+		return;
 
 	setVertexBuffers(encoder, Shader::current, cmd.buffers, renderBindings);
 
@@ -1337,7 +1366,8 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 	}
 
 	applyRenderState(encoder, attributesID);
-	applyShaderUniforms(encoder, Shader::current, texture);
+	if (!applyShaderUniforms(encoder, Shader::current, texture))
+		return;
 
 	id<MTLBuffer> ib = getMTLBuffer(quadIndexBuffer);
 
@@ -2255,8 +2285,21 @@ void Graphics::initCapabilities()
 		capabilities.features[FEATURE_INDIRECT_DRAW] = true;
 	else
 		capabilities.features[FEATURE_INDIRECT_DRAW] = false;
+
+	// Apple 3 devices support read/write to buffers in functions, while Apple 4 supports read/write to images.
+	// So let's err on the safe side and check support for Apple 4.
+	if (families.apple[4])
+	{
+		capabilities.features[FEATURE_VERTEX_WRITE] = true;
+		capabilities.features[FEATURE_PIXEL_WRITE] = true;
+	}
+	else
+	{
+		capabilities.features[FEATURE_VERTEX_WRITE] = false;
+		capabilities.features[FEATURE_PIXEL_WRITE] = false;
+	}
 	
-	static_assert(FEATURE_MAX_ENUM == 13, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	static_assert(FEATURE_MAX_ENUM == 15, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	// https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 	capabilities.limits[LIMIT_POINT_SIZE] = 511;
