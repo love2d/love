@@ -957,6 +957,11 @@ void Graphics::draw(const DrawCommand &cmd)
 {
 	prepareDraw(cmd.attributesID, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
+	VkAccessFlags dstAccessMask;
+	VkPipelineStageFlags dstStageMask;
+	if (!prepareBarrier(dstAccessMask, dstStageMask))
+		return;
+
 	if (cmd.indirectBuffer != nullptr)
 	{
 		vkCmdDrawIndirect(
@@ -976,13 +981,18 @@ void Graphics::draw(const DrawCommand &cmd)
 			0);
 	}
 
-	endDraw();
+	tryBarrier(dstAccessMask, dstStageMask);
 	drawCalls++;
 }
 
 void Graphics::draw(const DrawIndexedCommand &cmd)
 {
 	prepareDraw(cmd.attributesID, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
+
+	VkAccessFlags dstAccessMask;
+	VkPipelineStageFlags dstStageMask;
+	if (!prepareBarrier(dstAccessMask, dstStageMask))
+		return;
 
 	vkCmdBindIndexBuffer(
 		commandBuffers.at(currentFrame),
@@ -1010,7 +1020,7 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 			0);
 	}
 
-	endDraw();
+	tryBarrier(dstAccessMask, dstStageMask);
 	drawCalls++;
 }
 
@@ -1020,6 +1030,12 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 	const int MAX_QUADS_PER_DRAW = MAX_VERTICES_PER_DRAW / 4;
 
 	prepareDraw(attributesID, buffers, texture, PRIMITIVE_TRIANGLES, CULL_NONE);
+
+	VkAccessFlags dstAccessMask;
+	VkPipelineStageFlags dstStageMask;
+	if (!prepareBarrier(dstAccessMask, dstStageMask))
+		return;
+
 
 	vkCmdBindIndexBuffer(
 		commandBuffers.at(currentFrame),
@@ -1042,7 +1058,7 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 			0);
 		baseVertex += quadcount * 4;
 
-		endDraw();
+		tryBarrier(dstAccessMask, dstStageMask);
 		drawCalls++;
 	}
 }
@@ -2785,18 +2801,27 @@ void Graphics::prepareDraw(VertexAttributesID attributesID, const BufferBindings
 		vkCmdBindVertexBuffers(commandBuffers.at(currentFrame), VERTEX_BUFFER_BINDING_START, buffercount, vkbuffers, vkoffsets);
 }
 
-void Graphics::endDraw()
+bool Graphics::prepareBarrier(VkAccessFlags &dstAccessMask, VkPipelineStageFlags &dstStageMask)
 {
 	auto shader = dynamic_cast<Shader *>(Shader::current);
 	if (!shader)
+		return false;
+
+	if (!shaderBarrierFlags(shader, dstAccessMask, dstStageMask))
+		return false;
+
+	return true;
+}
+
+void Graphics::tryBarrier(VkAccessFlags dstAccessMask, VkPipelineStageFlags dstStageMask)
+{
+	if (dstAccessMask == 0 && dstStageMask == 0)
 		return;
 
 	VkMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
 	barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-	VkPipelineStageFlags dstStageMask = 0;
-	if (!shaderBarrierFlags(shader, barrier.dstAccessMask, dstStageMask))
-		return;
+	barrier.dstAccessMask = dstAccessMask;
 
 	if (barrier.dstAccessMask != 0 || dstStageMask != 0)
 		vkCmdPipelineBarrier(commandBuffers.at(currentFrame), VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, dstStageMask, 0, 1, &barrier, 0, nullptr, 0, nullptr);

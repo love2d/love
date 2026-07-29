@@ -562,7 +562,9 @@ void Graphics::draw(const DrawCommand &cmd)
 	GLbitfield preDrawBarriers = 0;
 	GLbitfield postDrawBarriers = 0;
 
-	shaderBarriers((Shader *)Shader::current, preDrawBarriers, postDrawBarriers);
+	if (!shaderBarriers((Shader *)Shader::current, preDrawBarriers, postDrawBarriers))
+		return;
+
 	if (preDrawBarriers != 0)
 		glMemoryBarrier(preDrawBarriers);
 
@@ -597,7 +599,9 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 	GLbitfield preDrawBarriers = 0;
 	GLbitfield postDrawBarriers = 0;
 
-	shaderBarriers((Shader *)Shader::current, preDrawBarriers, postDrawBarriers);
+	if (!shaderBarriers((Shader *)Shader::current, preDrawBarriers, postDrawBarriers))
+		return;
+
 	if (preDrawBarriers != 0)
 		glMemoryBarrier(preDrawBarriers);
 
@@ -661,7 +665,8 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 	GLbitfield preDrawBarriers = 0;
 	GLbitfield postDrawBarriers = 0;
 
-	shaderBarriers((Shader *)Shader::current, preDrawBarriers, postDrawBarriers);
+	if (!shaderBarriers((Shader *)Shader::current, preDrawBarriers, postDrawBarriers))
+		return;
 
 	VertexAttributes attributes;
 	findVertexAttributes(attributesID, attributes);
