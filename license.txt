@@ -109,11 +109,17 @@ This distribution contains code from the following projects (full license text b
 	License: MIT/Expat
 	Copyright (c) 2017 Sean Barrett
 
+ - simplewebp
+	Website: https://github.com/MikuAuahDark/simplewebp
+	Source download: https://github.com/MikuAuahDark/simplewebp/blob/d1a728a1f8ec7348ca2a5039b6dd813b83986fbb/simplewebp.h
+	License: 3-Clause BSD
+	Copyright (c) 2010 Google Inc., 2023 Miku AuahDark
+
  - qoi
-    Website: https://qoiformat.org/
-    Source download: https://github.com/phoboslab/qoi/blob/97bacc86a9c4abf5a2d452102dc26546c4c670b9/qoi.h
-    Licence: MIT
-    Copyright (c) 2022 Dominic Szablewski
+	Website: https://qoiformat.org/
+	Source download: https://github.com/phoboslab/qoi/blob/97bacc86a9c4abf5a2d452102dc26546c4c670b9/qoi.h
+	Licence: MIT
+	Copyright (c) 2022 Dominic Szablewski
 
  - OpenAL Soft
 	Website: https://openal-soft.org/
