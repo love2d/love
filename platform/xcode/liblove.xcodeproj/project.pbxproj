@@ -94,6 +94,10 @@
 		D9F0C2DC2C680A5500BB2D25 /* UnixLibraryLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F0C2D22C680A5500BB2D25 /* UnixLibraryLoader.cpp */; };
 		D9F0C2DD2C680A5500BB2D25 /* UnixLibraryLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F0C2D22C680A5500BB2D25 /* UnixLibraryLoader.cpp */; };
 		D9F318AE3013F85300CFB9D0 /* NonSemanticShaderDebugInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = D9F318AD3013F85300CFB9D0 /* NonSemanticShaderDebugInfo.h */; };
+		D9F318B5301AE2E100CFB9D0 /* WEBPHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F318B4301AE2E100CFB9D0 /* WEBPHandler.cpp */; };
+		D9F318B6301AE2E100CFB9D0 /* WEBPHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D9F318B4301AE2E100CFB9D0 /* WEBPHandler.cpp */; };
+		D9F318B7301AE2E100CFB9D0 /* WEBPHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = D9F318B3301AE2E100CFB9D0 /* WEBPHandler.h */; };
+		D9F318BA301AE2FE00CFB9D0 /* simplewebp.h in Headers */ = {isa = PBXBuildFile; fileRef = D9F318B8301AE2FE00CFB9D0 /* simplewebp.h */; };
 		FA0A3A5F23366CE9001C269E /* floattypes.h in Headers */ = {isa = PBXBuildFile; fileRef = FA0A3A5D23366CE9001C269E /* floattypes.h */; };
 		FA0A3A6023366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
 		FA0A3A6123366CE9001C269E /* floattypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FA0A3A5E23366CE9001C269E /* floattypes.cpp */; };
@@ -1449,6 +1453,9 @@
 		D9F0C2D12C680A5500BB2D25 /* OpenSSLConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenSSLConnection.h; sourceTree = "<group>"; };
 		D9F0C2D22C680A5500BB2D25 /* UnixLibraryLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UnixLibraryLoader.cpp; sourceTree = "<group>"; };
 		D9F318AD3013F85300CFB9D0 /* NonSemanticShaderDebugInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NonSemanticShaderDebugInfo.h; sourceTree = "<group>"; };
+		D9F318B3301AE2E100CFB9D0 /* WEBPHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WEBPHandler.h; sourceTree = "<group>"; };
+		D9F318B4301AE2E100CFB9D0 /* WEBPHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = WEBPHandler.cpp; sourceTree = "<group>"; };
+		D9F318B8301AE2FE00CFB9D0 /* simplewebp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = simplewebp.h; sourceTree = "<group>"; };
 		FA08F5AE16C7525600F007B5 /* liblove-macosx.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "liblove-macosx.plist"; path = "macosx/liblove-macosx.plist"; sourceTree = "<group>"; };
 		FA0A3A5D23366CE9001C269E /* floattypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = floattypes.h; sourceTree = "<group>"; };
 		FA0A3A5E23366CE9001C269E /* floattypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = floattypes.cpp; sourceTree = "<group>"; };
@@ -2429,6 +2436,14 @@
 			path = generic;
 			sourceTree = "<group>";
 		};
+		D9F318B9301AE2FE00CFB9D0 /* simplewebp */ = {
+			isa = PBXGroup;
+			children = (
+				D9F318B8301AE2FE00CFB9D0 /* simplewebp.h */,
+			);
+			path = simplewebp;
+			sourceTree = "<group>";
+		};
 		FA08F5AC16C751BA00F007B5 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -2516,6 +2531,7 @@
 				FA0B7A141A958EA3000E1D17 /* noise1234 */,
 				FAC7CD591FE35E95006A60C7 /* physfs */,
 				D93970473009459C00A8CCAD /* qoi */,
+				D9F318B9301AE2FE00CFB9D0 /* simplewebp */,
 				FA18CEF123DCF67800263725 /* spirv_cross */,
 				FA0B7A171A958EA3000E1D17 /* stb */,
 				FA1557BE1CE90A2C00AFF582 /* tinyexr */,
@@ -3072,6 +3088,8 @@
 				D9397049300945BA00A8CCAD /* QOIHandler.cpp */,
 				FA0B7BE11A95902C000E1D17 /* STBHandler.h */,
 				FA0B7BE01A95902C000E1D17 /* STBHandler.cpp */,
+				D9F318B3301AE2E100CFB9D0 /* WEBPHandler.h */,
+				D9F318B4301AE2E100CFB9D0 /* WEBPHandler.cpp */,
 			);
 			path = magpie;
 			sourceTree = "<group>";
@@ -4130,6 +4148,7 @@
 				FA0B7DB31A95902C000E1D17 /* wrap_Image.h in Headers */,
 				FAF140591E20934C00F898D2 /* Common.h in Headers */,
 				FA0B7EC31A95902C000E1D17 /* threads.h in Headers */,
+				D9F318BA301AE2FE00CFB9D0 /* simplewebp.h in Headers */,
 				FA0B7AC21A958EA3000E1D17 /* enet.h in Headers */,
 				FA4F2BA71DE1E36400CA37D7 /* RecordingDevice.h in Headers */,
 				FA0B7E201A95902C000E1D17 /* Physics.h in Headers */,
@@ -4302,6 +4321,7 @@
 				FA0B7CEA1A95902C000E1D17 /* Event.h in Headers */,
 				FA0B7E351A95902C000E1D17 /* WeldJoint.h in Headers */,
 				FABDA9CB2552448300B5C523 /* b2_pulley_joint.h in Headers */,
+				D9F318B7301AE2E100CFB9D0 /* WEBPHandler.h in Headers */,
 				FA0B7E2F1A95902C000E1D17 /* RopeJoint.h in Headers */,
 				FA0B7D141A95902C000E1D17 /* Font.h in Headers */,
 				FA0B7E591A95902C000E1D17 /* wrap_Joint.h in Headers */,
@@ -4968,6 +4988,7 @@
 				FA0B7B381A958EA3000E1D17 /* wuff_internal.c in Sources */,
 				FA0B7DF81A95902C000E1D17 /* Body.cpp in Sources */,
 				FABDA9EE2552448300B5C523 /* b2_circle_shape.cpp in Sources */,
+				D9F318B5301AE2E100CFB9D0 /* WEBPHandler.cpp in Sources */,
 				FA4F2BB41DE1E4BD00CA37D7 /* RecordingDevice.cpp in Sources */,
 				FA0B7DF51A95902C000E1D17 /* wrap_Mouse.cpp in Sources */,
 				FA0B7E861A95902C000E1D17 /* CoreAudioDecoder.cpp in Sources */,
@@ -5401,6 +5422,7 @@
 				FA0B7D481A95902C000E1D17 /* Polyline.cpp in Sources */,
 				217DFC111D9F6D490055D849 /* usocket.c in Sources */,
 				FAC7CD891FE35E95006A60C7 /* physfs_archiver_dir.c in Sources */,
+				D9F318B6301AE2E100CFB9D0 /* WEBPHandler.cpp in Sources */,
 				FAF140751E20934C00F898D2 /* IntermTraverse.cpp in Sources */,
 				FA0B7CE21A95902C000E1D17 /* wrap_Audio.cpp in Sources */,
 				FACA06AC293EE5CD001A2557 /* wrap_Sensor.cpp in Sources */,
