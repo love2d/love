@@ -273,7 +273,7 @@ int w_Source_setVolumeLimits(lua_State *L)
 	Source *t = luax_checksource(L, 1);
 	float vmin = (float)luaL_checknumber(L, 2);
 	float vmax = (float)luaL_checknumber(L, 3);
-	if (vmin < .0f || vmin > 1.f || vmax < .0f || vmax > 1.f)
+	if (vmin < .0f || vmin > 1.f || vmax < .0f)
 		return luaL_error(L, "Invalid volume limits: [%f:%f]. Must be in [0:1]", vmin, vmax);
 	t->setMinVolume(vmin);
 	t->setMaxVolume(vmax);
