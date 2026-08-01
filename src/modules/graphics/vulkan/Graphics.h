@@ -282,7 +282,7 @@ public:
 	VkCommandBuffer getCommandBufferForDataTransfer();
 	void queueCleanUp(std::function<void()> cleanUp);
 	void addReadbackCallback(std::function<void()> callback);
-	void submitGpuCommands(SubmitMode, void *screenshotCallbackData = nullptr);
+	image::ImageData *submitGpuCommands(SubmitMode);
 	VkSampler getCachedSampler(const SamplerState &sampler);
 	SharedDescriptorPools *acquireDescriptorPools(int dynamicUniformBuffers, int sampledTextures, int storageTextures, int texelBuffers, int storageBuffers);
 	void releaseDescriptorPools(SharedDescriptorPools *pools);

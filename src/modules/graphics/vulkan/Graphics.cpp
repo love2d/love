@@ -392,7 +392,7 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 	startRenderPass();
 }
 
-void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallbackData)
+image::ImageData *Graphics::submitGpuCommands(SubmitMode submitMode)
 {
 	flushBatchedDraws();
 
@@ -514,6 +514,8 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 	if (result != VK_SUCCESS)
 		throw love::Exception("Failed to submit Vulkan draw command buffer: %s", Vulkan::getErrorString(result));
 	
+	image::ImageData *screenshotImageData = nullptr;
+
 	if (submitMode == SUBMIT_NOPRESENT || submitMode == SUBMIT_RESTART || screenshotBuffer != VK_NULL_HANDLE)
 	{
 		vkQueueWaitIdle(graphicsQueue);
@@ -529,63 +531,54 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 		{
 			auto imageModule = Module::getInstance<love::image::Image>(M_IMAGE);
 
-			for (int i = 0; i < (int)pendingScreenshotCallbacks.size(); i++)
+			try
 			{
-				const auto &info = pendingScreenshotCallbacks[i];
-				image::ImageData *img = nullptr;
-
-				try
+				screenshotImageData = imageModule->newImageData(
+					swapChainExtent.width,
+					swapChainExtent.height,
+					PIXELFORMAT_RGBA8_UNORM,
+					screenshotAllocationInfo.pMappedData);
+			}
+			catch (love::Exception &)
+			{
+				for (int i = 0; i < (int)pendingScreenshotCallbacks.size(); i++)
 				{
-					img = imageModule->newImageData(
-						swapChainExtent.width,
-						swapChainExtent.height,
-						PIXELFORMAT_RGBA8_UNORM,
-						screenshotAllocationInfo.pMappedData);
+					const auto &ninfo = pendingScreenshotCallbacks[i];
+					ninfo.callback(&ninfo, nullptr, nullptr);
 				}
-				catch (love::Exception &)
-				{
-					info.callback(&info, nullptr, nullptr);
-					for (int j = i + 1; j < (int)pendingScreenshotCallbacks.size(); j++)
-					{
-						const auto& ninfo = pendingScreenshotCallbacks[j];
-						ninfo.callback(&ninfo, nullptr, nullptr);
-					}
-					vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
-					pendingScreenshotCallbacks.clear();
-					throw;
-				}
-
-				uint8 *screenshot = (uint8*)img->getData();
-
-				if (swapChainImageFormat == VK_FORMAT_B8G8R8A8_UNORM || swapChainImageFormat == VK_FORMAT_B8G8R8A8_SRGB)
-				{
-					// Convert from BGRA to RGBA and replace alpha with full opacity.
-					for (size_t i = 0; i < img->getSize(); i += 4)
-					{
-						uint8 r = screenshot[i + 2];
-						screenshot[i + 2] = screenshot[i + 0];
-						screenshot[i + 0] = r;
-						screenshot[i + 3] = 255;
-					}
-				}
-				else
-				{
-					// Replace alpha with full opacity.
-					for (size_t i = 0; i < img->getSize(); i += 4)
-						screenshot[i + 3] = 255;
-				}
-
-				info.callback(&info, img, screenshotCallbackData);
-				img->release();
+				vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
+				pendingScreenshotCallbacks.clear();
+				throw;
 			}
 
 			vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
-			pendingScreenshotCallbacks.clear();
+
+			uint8 *screenshot = (uint8*)screenshotImageData->getData();
+
+			if (swapChainImageFormat == VK_FORMAT_B8G8R8A8_UNORM || swapChainImageFormat == VK_FORMAT_B8G8R8A8_SRGB)
+			{
+				// Convert from BGRA to RGBA and replace alpha with full opacity.
+				for (size_t i = 0; i < screenshotImageData->getSize(); i += 4)
+				{
+					uint8 r = screenshot[i + 2];
+					screenshot[i + 2] = screenshot[i + 0];
+					screenshot[i + 0] = r;
+					screenshot[i + 3] = 255;
+				}
+			}
+			else
+			{
+				// Replace alpha with full opacity.
+				for (size_t i = 0; i < screenshotImageData->getSize(); i += 4)
+					screenshot[i + 3] = 255;
+			}
 		}
 
 		if (submitMode == SUBMIT_RESTART)
 			startRecordingGraphicsCommands();
 	}
+
+	return screenshotImageData;
 }
 
 void Graphics::present(void *screenshotCallbackdata)
@@ -601,7 +594,7 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	deprecations.draw(this);
 
-	submitGpuCommands(SUBMIT_PRESENT, screenshotCallbackdata);
+	image::ImageData *screenshotImageData = submitGpuCommands(SUBMIT_PRESENT);
 
 	VkResult result = VK_SUCCESS;
 
@@ -671,6 +664,18 @@ void Graphics::present(void *screenshotCallbackdata)
 	realFrameIndex++;
 
 	beginFrame();
+
+	if (screenshotImageData)
+	{
+		for (int i = 0; i < pendingScreenshotCallbacks.size(); i++)
+		{
+			const auto &info = pendingScreenshotCallbacks[i];
+			info.callback(&info, screenshotImageData, screenshotCallbackdata);
+		}
+		pendingScreenshotCallbacks.clear();
+
+		screenshotImageData->release();
+	}
 }
 
 void Graphics::backbufferChanged(const BackbufferSettings &settings)
