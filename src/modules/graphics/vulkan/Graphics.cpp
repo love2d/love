@@ -957,8 +957,8 @@ void Graphics::draw(const DrawCommand &cmd)
 {
 	prepareDraw(cmd.attributesID, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
-	VkAccessFlags dstAccessMask;
-	VkPipelineStageFlags dstStageMask;
+	VkAccessFlags dstAccessMask = 0;
+	VkPipelineStageFlags dstStageMask = 0;
 	if (!prepareBarrier(dstAccessMask, dstStageMask))
 		return;
 
@@ -989,8 +989,8 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 {
 	prepareDraw(cmd.attributesID, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
-	VkAccessFlags dstAccessMask;
-	VkPipelineStageFlags dstStageMask;
+	VkAccessFlags dstAccessMask = 0;
+	VkPipelineStageFlags dstStageMask = 0;
 	if (!prepareBarrier(dstAccessMask, dstStageMask))
 		return;
 
@@ -1031,8 +1031,8 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 
 	prepareDraw(attributesID, buffers, texture, PRIMITIVE_TRIANGLES, CULL_NONE);
 
-	VkAccessFlags dstAccessMask;
-	VkPipelineStageFlags dstStageMask;
+	VkAccessFlags dstAccessMask = 0;
+	VkPipelineStageFlags dstStageMask = 0;
 	if (!prepareBarrier(dstAccessMask, dstStageMask))
 		return;
 
