@@ -393,7 +393,7 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 	startRenderPass();
 }
 
-image::ImageData *Graphics::submitGpuCommands(SubmitMode submitMode)
+StrongRef<image::ImageData> Graphics::submitGpuCommands(SubmitMode submitMode)
 {
 	flushBatchedDraws();
 
@@ -515,7 +515,7 @@ image::ImageData *Graphics::submitGpuCommands(SubmitMode submitMode)
 	if (result != VK_SUCCESS)
 		throw love::Exception("Failed to submit Vulkan draw command buffer: %s", Vulkan::getErrorString(result));
 	
-	image::ImageData *screenshotImageData = nullptr;
+	StrongRef<image::ImageData> screenshotImageData;
 
 	if (submitMode == SUBMIT_NOPRESENT || submitMode == SUBMIT_RESTART || screenshotBuffer != VK_NULL_HANDLE)
 	{
@@ -534,11 +534,12 @@ image::ImageData *Graphics::submitGpuCommands(SubmitMode submitMode)
 
 			try
 			{
-				screenshotImageData = imageModule->newImageData(
+				screenshotImageData.set(imageModule->newImageData(
 					swapChainExtent.width,
 					swapChainExtent.height,
 					PIXELFORMAT_RGBA8_UNORM,
-					screenshotAllocationInfo.pMappedData);
+					screenshotAllocationInfo.pMappedData),
+					Acquire::NORETAIN);
 			}
 			catch (love::Exception &)
 			{
@@ -595,7 +596,7 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	deprecations.draw(this);
 
-	image::ImageData *screenshotImageData = submitGpuCommands(SUBMIT_PRESENT);
+	StrongRef<image::ImageData> screenshotImageData = submitGpuCommands(SUBMIT_PRESENT);
 
 	VkResult result = VK_SUCCESS;
 
@@ -674,8 +675,6 @@ void Graphics::present(void *screenshotCallbackdata)
 			info.callback(&info, screenshotImageData, screenshotCallbackdata);
 		}
 		pendingScreenshotCallbacks.clear();
-
-		screenshotImageData->release();
 	}
 }
 
