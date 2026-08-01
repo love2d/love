@@ -291,6 +291,7 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 			if (color.hasValue)
 			{
 				auto texture = i < rts.colors.size() ? rts.colors[i].texture.get() : nullptr;
+				attachment.colorAttachment = i;
 				attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				attachment.clearValue.color = Texture::getClearColor(texture, color.value);
 			}
