@@ -87,10 +87,10 @@ love.test.audio.Source = function(test)
   test:assertFalse(stereo:isPlaying(), 'check stopped playing')
 
   -- check volume limits
-  stereo:setVolumeLimits(0.1, 0.5)
+  stereo:setVolumeLimits(0.1, 5.5)
   local min, max = stereo:getVolumeLimits()
   test:assertRange(min, 0.1, 0.2, 'check min limit')
-  test:assertRange(max, 0.5, 0.6, 'check max limit')
+  test:assertRange(max, 5.5, 5.6, 'check max limit')
 
   -- check setting volume
   stereo:setVolume(1)
