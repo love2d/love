@@ -54,5 +54,9 @@ function Video:isPlaying()
 	return self:getStream():isPlaying()
 end
 
+function Video:getDuration()
+	return self:getStream():getDuration()
+end
+
 -- DO NOT REMOVE THE NEXT LINE. It is used to load this file as a C++ string.
 --)luastring"--"
