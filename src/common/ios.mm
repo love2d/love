@@ -376,13 +376,18 @@ bool setAudioMixWithOthers(bool mixEnabled)
 {
 	@autoreleasepool
 	{
-		NSString *category = AVAudioSessionCategorySoloAmbient;
-		NSError *err;
+		AVAudioSession *session = [AVAudioSession sharedInstance];
+		NSString *category = AVAudioSessionCategoryPlayback;
+		NSUInteger options = 0;
+		NSError *err = nil;
 
 		if (mixEnabled)
-			category = AVAudioSessionCategoryAmbient;
+			options = AVAudioSessionCategoryOptionMixWithOthers;
 
-		bool success = [[AVAudioSession sharedInstance] setCategory:category error:&err];
+		bool success = [session setCategory:category
+							mode:AVAudioSessionModeDefault
+							options:options
+							error:&err];
 		if (!success)
 			NSLog(@"Error in AVAudioSession setCategory: %@", [err localizedDescription]);
 
