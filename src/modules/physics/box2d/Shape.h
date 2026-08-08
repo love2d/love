@@ -161,8 +161,10 @@ public:
 
 	int setCategory(lua_State *L);
 	int setMask(lua_State *L);
+	int setCollisionMask(lua_State *L);
 	int getCategory(lua_State *L);
 	int getMask(lua_State *L);
+	int getCollisionMask(lua_State *L);
 	uint16 getBits(lua_State *L);
 	int pushBits(lua_State *L, uint16 bits);
 
