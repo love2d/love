@@ -276,7 +276,7 @@ int w_setCanvas(lua_State *L)
 	// called with none -> reset to default buffer
 	if (lua_isnoneornil(L, 1))
 	{
-		instance()->setRenderTarget();
+		luax_catchexcept(L, [&]() { instance()->setRenderTarget(); });
 		return 0;
 	}
 
@@ -577,7 +577,7 @@ int w_setScissor(lua_State *L)
 	if (rect.w < 0 || rect.h < 0)
 		return luaL_error(L, "Can't set scissor with negative width and/or height.");
 
-	instance()->setScissor(rect);
+	luax_catchexcept(L, [&]() { instance()->setScissor(rect); });
 	return 0;
 }
 
@@ -592,7 +592,7 @@ int w_intersectScissor(lua_State *L)
 	if (rect.w < 0 || rect.h < 0)
 		return luaL_error(L, "Can't set scissor with negative width and/or height.");
 
-	instance()->intersectScissor(rect);
+	luax_catchexcept(L, [&]() { instance()->intersectScissor(rect); });
 	return 0;
 }
 
@@ -1426,7 +1426,8 @@ int w_newImageFont(lua_State *L)
 	love::font::Rasterizer *rasterizer = luax_checktype<love::font::Rasterizer>(L, 1);
 
 	// Create the font.
-	Font *font = instance()->newFont(rasterizer);
+	Font *font = nullptr;
+	luax_catchexcept(L, [&]() { font = instance()->newFont(rasterizer); });
 
 	// Push the type.
 	luax_pushtype(L, font);
@@ -1570,7 +1571,7 @@ static int w_getShaderSource(lua_State *L, int startidx, std::vector<std::string
 					{
 						const char *val = lua_tostring(L, -1);
 						if (val == nullptr)
-							luaL_argerror(L, optionsidx, "'defines' table values must be strings, numbers, or booleans.");
+							return luaL_argerror(L, optionsidx, "'defines' table values must be strings, numbers, or booleans.");
 						defval = val;
 					}
 				}
@@ -1892,55 +1893,58 @@ static Buffer *luax_newbuffer(lua_State *L, int idx, Buffer::Settings settings, 
 
 	if (lua_istable(L, idx))
 	{
-		Buffer::Mapper mapper(*b);
-		char *data = (char *) mapper.data;
-		const auto &members = b->getDataMembers();
-		size_t stride = b->getArrayStride();
-
-		if (tableoftables)
+		luax_catchexcept(L, [&]()
 		{
-			for (size_t i = 0; i < arraylength; i++)
+			Buffer::Mapper mapper(*b);
+			char *data = (char *) mapper.data;
+			const auto &members = b->getDataMembers();
+			size_t stride = b->getArrayStride();
+
+			if (tableoftables)
 			{
-				// get arraydata[index]
-				lua_rawgeti(L, 2, i + 1);
-				luaL_checktype(L, -1, LUA_TTABLE);
-
-				// get arraydata[index][j]
-				for (int j = 1; j <= ncomponents; j++)
-					lua_rawgeti(L, -j, j);
-
-				int idx = -ncomponents;
-
-				for (const Buffer::DataMember &member : members)
+				for (size_t i = 0; i < arraylength; i++)
 				{
-					luax_writebufferdata(L, idx, member.decl.format, data + member.offset);
-					idx += member.info.components;
-				}
+					// get arraydata[index]
+					lua_rawgeti(L, 2, i + 1);
+					luaL_checktype(L, -1, LUA_TTABLE);
 
-				lua_pop(L, ncomponents + 1);
-				data += stride;
+					// get arraydata[index][j]
+					for (int j = 1; j <= ncomponents; j++)
+						lua_rawgeti(L, -j, j);
+
+					int idx = -ncomponents;
+
+					for (const Buffer::DataMember &member : members)
+					{
+						luax_writebufferdata(L, idx, member.decl.format, data + member.offset);
+						idx += member.info.components;
+					}
+
+					lua_pop(L, ncomponents + 1);
+					data += stride;
+				}
 			}
-		}
-		else // Flat array
-		{
-			for (size_t i = 0; i < arraylength; i++)
+			else // Flat array
 			{
-				// get arraydata[arrayindex * ncomponents + componentindex]
-				for (int componentindex = 1; componentindex <= ncomponents; componentindex++)
-					lua_rawgeti(L, 2, i * ncomponents + componentindex);
-
-				int idx = -ncomponents;
-
-				for (const Buffer::DataMember &member : members)
+				for (size_t i = 0; i < arraylength; i++)
 				{
-					luax_writebufferdata(L, idx, member.decl.format, data + member.offset);
-					idx += member.info.components;
-				}
+					// get arraydata[arrayindex * ncomponents + componentindex]
+					for (int componentindex = 1; componentindex <= ncomponents; componentindex++)
+						lua_rawgeti(L, 2, i * ncomponents + componentindex);
 
-				lua_pop(L, ncomponents);
-				data += stride;
+					int idx = -ncomponents;
+
+					for (const Buffer::DataMember &member : members)
+					{
+						luax_writebufferdata(L, idx, member.decl.format, data + member.offset);
+						idx += member.info.components;
+					}
+
+					lua_pop(L, ncomponents);
+					data += stride;
+				}
 			}
-		}
+		});
 	}
 
 	return b;
@@ -2192,7 +2196,7 @@ static Mesh *newCustomMesh(lua_State *L)
 		}
 
 		t->setVertexDataModified(0, stride * numvertices);
-		t->flush();
+		luax_catchexcept(L, [&]() { t->flush(); });
 	}
 
 	if (t->getVertexBuffer() != nullptr)
@@ -2605,7 +2609,7 @@ int w_setColorMask(lua_State *L)
 		mask.a = luax_checkboolean(L, 4);
 	}
 
-	instance()->setColorMask(mask);
+	luax_catchexcept(L, [&]() { instance()->setColorMask(mask); });
 
 	return 0;
 }
@@ -2867,7 +2871,7 @@ int w_getLineJoin(lua_State *L)
 int w_setPointSize(lua_State *L)
 {
 	float size = (float)luaL_checknumber(L, 1);
-	instance()->setPointSize(size);
+	luax_catchexcept(L, [&]() { instance()->setPointSize(size); });
 	return 0;
 }
 
@@ -2957,7 +2961,7 @@ int w_getFrontFaceWinding(lua_State *L)
 
 int w_setWireframe(lua_State *L)
 {
-	instance()->setWireframe(luax_checkboolean(L, 1));
+	luax_catchexcept(L, [&]() { instance()->setWireframe(luax_checkboolean(L, 1)); });
 	return 0;
 }
 
@@ -2976,7 +2980,7 @@ int w_setShader(lua_State *L)
 	}
 
 	Shader *shader = luax_checkshader(L, 1);
-	instance()->setShader(shader);
+	luax_catchexcept(L, [&]() { instance()->setShader(shader); });
 	return 0;
 }
 
@@ -3891,9 +3895,9 @@ int w_copyTextureToBuffer(lua_State *L)
 	return 0;
 }
 
-int w_flushBatch(lua_State *)
+int w_flushBatch(lua_State *L)
 {
-	instance()->flushBatchedDraws();
+	luax_catchexcept(L, [&]() { instance()->flushBatchedDraws(); });
 	return 0;
 }
 
@@ -4028,13 +4032,13 @@ int w_setProjection(lua_State *L)
 	float elements[16];
 	love::math::luax_checkmatrix(L, idx, layout, elements);
 
-	instance()->setProjection(Matrix4(elements));
+	luax_catchexcept(L, [&]() { instance()->setProjection(Matrix4(elements)); });
 	return 0;
 }
 
-int w_resetProjection(lua_State */*L*/)
+int w_resetProjection(lua_State *L)
 {
-	instance()->resetProjection();
+	luax_catchexcept(L, [&]() { instance()->resetProjection(); });
 	return 0;
 }
 

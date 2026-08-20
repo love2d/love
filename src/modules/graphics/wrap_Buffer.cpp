@@ -257,7 +257,7 @@ static int w_Buffer_setArrayData(lua_State *L)
 		size_t datasize = std::min(d->getSize() - dataoffset, count * stride);
 		const void *sourcedata = (const uint8 *) d->getData() + dataoffset;
 
-		t->fill(bufferoffset, datasize, sourcedata);
+		luax_catchexcept(L, [&]() { t->fill(bufferoffset, datasize, sourcedata); });
 		return 0;
 	}
 
@@ -289,7 +289,8 @@ static int w_Buffer_setArrayData(lua_State *L)
 	if (destindex + count > arraylength)
 		return luaL_error(L, "Too many array elements (expected at most %d, got %d)", arraylength - destindex, count);
 
-	char *data = (char *) t->map(Buffer::MAP_WRITE_INVALIDATE, bufferoffset, count * stride);
+	char *data = nullptr;
+	luax_catchexcept(L, [&]() { data = (char *)t->map(Buffer::MAP_WRITE_INVALIDATE, bufferoffset, count * stride); });
 
 	if (tableoftables)
 	{

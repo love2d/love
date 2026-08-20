@@ -72,7 +72,7 @@ int w_Mesh_setVertices(lua_State *L)
 		memcpy(bytedata, d->getData(), datasize);
 
 		t->setVertexDataModified(byteoffset, datasize);
-		t->flush();
+		luax_catchexcept(L, [&]() { t->flush(); });
 
 		return 0;
 	}
@@ -117,7 +117,7 @@ int w_Mesh_setVertices(lua_State *L)
 	}
 
 	t->setVertexDataModified(byteoffset, vertcount * stride);
-	t->flush();
+	luax_catchexcept(L, [&]() { t->flush(); });
 
 	return 0;
 }
@@ -425,7 +425,7 @@ int w_Mesh_getVertexBuffer(lua_State *L)
 int w_Mesh_flush(lua_State *L)
 {
 	Mesh *t = luax_checkmesh(L, 1);
-	t->flush();
+	luax_catchexcept(L, [&]() { t->flush(); });
 	return 0;
 }
 
