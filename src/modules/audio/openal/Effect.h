@@ -24,20 +24,8 @@
 #include "common/config.h"
 
 // OpenAL
-#ifdef LOVE_APPLE_USE_FRAMEWORKS // Frameworks have different include paths.
-#ifdef LOVE_IOS
-#include <OpenAL/alc.h>
-#include <OpenAL/al.h>
-#else
-#include <OpenAL-Soft/alc.h>
-#include <OpenAL-Soft/al.h>
-#include <OpenAL-Soft/alext.h>
-#endif
-#else
-#include <alc.h>
-#include <al.h>
-#include <alext.h>
-#endif
+#include <mojoAL/AL/alc.h>
+#include <mojoAL/AL/al.h>
 
 #include <vector>
 #include <map>
