@@ -43,9 +43,11 @@ namespace ios
 std::string getLoveInResources(bool &fused);
 
 /**
- * Causes devices with vibration support to vibrate for about 0.5 seconds.
+ * Causes devices with vibration support to vibrate for the specified duration.
+ * On iOS 13+, uses Core Haptics for precise duration control.
+ * On iOS < 13, falls back to legacy 0.5 seconds of vibration.
  **/
-void vibrate();
+void vibrate(double seconds);
 
 /**
  * Enable mix mode (e.g. with background music apps) and playback with a muted device.
