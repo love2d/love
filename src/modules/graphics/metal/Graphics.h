@@ -141,6 +141,8 @@ public:
 
 	static Graphics *getInstance() { return graphicsInstance; }
 
+	void waitForFence(love::graphics::Texture *texture, id<MTLBlitCommandEncoder> encoder);
+
 	id<MTLDevice> device;
 
 private:
@@ -211,6 +213,9 @@ private:
 	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, VertexAttributesID attributesID);
 	bool applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::graphics::Shader *shader);
 	bool applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader, Texture *maintex);
+	bool updateFences(love::graphics::Shader *shader);
+	void updateFences(id<MTLComputeCommandEncoder> encoder, love::graphics::Shader *shader);
+	void updateFences(id<MTLRenderCommandEncoder> encoder, love::graphics::Shader *shader);
 
 	id<MTLCommandQueue> commandQueue;
 
@@ -251,6 +256,7 @@ private:
 
 	bool isVMDevice;
 
+	std::unordered_map<love::graphics::Texture *, id<MTLFence>> textureFences;
 }; // Graphics
 
 } // metal
