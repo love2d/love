@@ -84,8 +84,6 @@ void b2MouseJoint::InitVelocityConstraints(const b2SolverData& data)
 
 	b2Rot qB(aB);
 
-	float mass = m_bodyB->GetMass();
-
 	float d = m_damping;
 	float k = m_stiffness;
 
@@ -118,7 +116,7 @@ void b2MouseJoint::InitVelocityConstraints(const b2SolverData& data)
 	m_C *= m_beta;
 
 	// Cheat with some damping
-	wB *= 0.98f;
+	wB *= b2Max(0.0f, 1.0f - 0.02f * (60.0f * data.step.dt));
 
 	if (data.step.warmStarting)
 	{
