@@ -20,6 +20,7 @@
 
 // LOVE
 #include "System.h"
+#include "data/ByteData.h"
 #include "window/Window.h"
 
 // SDL
@@ -82,6 +83,83 @@ std::string System::getClipboardText() const
 
 	return text;
 }
+
+void System::setClipboardData(const love::Data *data, const std::vector<std::string> &mimetypes) const
+{
+	// SDL requires the video subsystem to be initialized and a window to be
+	// opened in order for clipboard text to work, on at least some platforms.
+	if (!isWindowOpen())
+		throw love::Exception("A window must be created in order for setClipboardData to function properly.");
+
+	std::vector<const char*> mimetypes_cstr;
+
+	// Using c_str() is probably fine in this circumstance, the mimetypes paramter is not very likely going to messed with on purpose.
+	// The std::vector is created in a wrapper function, the array shouldn't get modfied until it isn't referenced anymore by C++.
+	for (const std::string& str: mimetypes)
+		mimetypes_cstr.push_back(str.c_str());
+
+	bool success = SDL_SetClipboardData(
+		[] (void *userdata, const char *mime_type, size_t *size) -> const void* {
+			const love::Data *data = (const love::Data *)userdata;
+
+			*size = data->getSize();
+			return data->getData();
+		},
+
+		[] (void *userdata) {}, // unused cleanup function (cleanup will be handled by C++ and/or Lua)
+		(void *)data,
+
+		mimetypes_cstr.data(), mimetypes_cstr.size()
+	);
+
+	if (!success)
+		throw love::Exception("Could not set clipboard data: %s", SDL_GetError());
+}
+
+ByteData *System::getClipboardData(const std::string &mimetype) const
+{
+	size_t size = 0;
+
+	if (!isWindowOpen())
+		throw love::Exception("A window must be created in order for getClipboardData to function properly.");
+
+
+	void *data_ptr = SDL_GetClipboardData(mimetype.c_str(), &size);
+	ByteData *data = nullptr;
+	if (data_ptr)
+	{
+		data = new ByteData(data_ptr, size, false);
+		SDL_free(data_ptr);
+	}
+
+	return data;
+}
+
+std::vector<std::string> System::getClipboardTypes() const
+{
+	std::vector<std::string> result;
+	size_t count = 0;
+
+	// SDL requires the video subsystem to be initialized and a window to be
+	// opened in order for clipboard text to work, on at least some platforms.
+	if (!isWindowOpen())
+		throw love::Exception("A window must be created in order for getClipboardTypes to function properly.");
+
+	char **mimetypes = SDL_GetClipboardMimeTypes(&count);
+	if (!mimetypes)
+		throw love::Exception("Could not get clipboard types: %s", SDL_GetError());
+
+	for (size_t i = 0; i < count; i++)
+	{
+		const char *mimetype = mimetypes[i];
+		result.push_back(mimetype);
+	}
+
+	SDL_free(mimetypes);
+
+	return result;
+}
+
 
 love::system::System::PowerState System::getPowerInfo(int &seconds, int &percent) const
 {

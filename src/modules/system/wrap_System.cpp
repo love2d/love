@@ -20,6 +20,7 @@
 
 // LOVE
 #include "wrap_System.h"
+#include "common/runtime.h"
 #include "sdl/System.h"
 
 namespace love
@@ -59,6 +60,52 @@ int w_getClipboardText(lua_State *L)
 	std::string text;
 	luax_catchexcept(L, [&]() { text = instance()->getClipboardText(); });
 	luax_pushstring(L, text);
+	return 1;
+}
+
+int w_setClipboardData(lua_State *L)
+{
+	int args = lua_gettop(L) - 1;
+	love::Data *data = luax_checktype<love::Data>(L, 1);
+
+	// TODO: also support tables for a list of mimetypes
+	std::vector<std::string> mimetypes;
+	for (int i = 0; i < args; i++)
+		mimetypes.push_back(luax_checkstring(L, 2 + i));
+
+	luax_catchexcept(L, [&]() { instance()->setClipboardData(data, mimetypes); });
+	return 0;
+}
+
+int w_getClipboardData(lua_State *L)
+{
+	std::string mimetype = luax_checkstring(L, 1);
+
+	love::data::ByteData *data = nullptr;
+	luax_catchexcept(L, [&]() { data = instance()->getClipboardData(mimetype); });
+
+	// FIXME: shouldn't this error?
+	if (data == nullptr)
+		return 0;
+
+	luax_pushtype(L, data);
+	data->release();
+	return 1;
+}
+
+int w_getClipboardTypes(lua_State* L)
+{
+	int i = 1;
+	std::vector<std::string> mimetypes = instance()->getClipboardTypes();
+
+	lua_createtable(L, mimetypes.size(), 0);
+
+	for (const std::string& str: mimetypes)
+	{
+		luax_pushstring(L, str);
+		lua_rawseti(L, -2, i++);
+	}
+
 	return 1;
 }
 
@@ -128,8 +175,15 @@ static const luaL_Reg functions[] =
 	{ "getOS", w_getOS },
 	{ "getProcessorCount", w_getProcessorCount },
 	{ "getMemorySize", w_getMemorySize },
+
 	{ "setClipboardText", w_setClipboardText },
 	{ "getClipboardText", w_getClipboardText },
+
+	{ "setClipboardData", w_setClipboardData },
+	{ "getClipboardData", w_getClipboardData },
+
+	{ "getClipboardTypes", w_getClipboardTypes },
+
 	{ "getPowerInfo", w_getPowerInfo },
 	{ "openURL", w_openURL },
 	{ "vibrate", w_vibrate },
