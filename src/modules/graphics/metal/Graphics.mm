@@ -614,6 +614,8 @@ void Graphics::submitCommandBuffer(SubmitType type)
 		[commandBuffer commit];
 		commandBuffer = nil;
 	}
+
+	textureFences.clear();
 }
 
 void Graphics::submitAllEncoders(SubmitType type)
@@ -1234,6 +1236,60 @@ bool Graphics::applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, lo
 	return allWritableVariablesSet;
 }
 
+void Graphics::updateFences(id<MTLComputeCommandEncoder> encoder, love::graphics::Shader *shader)
+{
+	Shader *s = (Shader *)shader;
+	for (const Shader::TextureBinding &b : s->getTextureBindings())
+	{
+		uint8 texindex = b.textureStages[SHADERSTAGE_COMPUTE];
+		love::graphics::Texture *sampler = b.samplerTexture;
+		if (texindex != LOVE_UINT8_MAX && (b.access & Shader::ACCESS_WRITE) != 0 && sampler != nil)
+		{
+			auto iter = textureFences.find(sampler);
+			if (iter == textureFences.end())
+			{
+				iter = textureFences.emplace(sampler, [device newFence]).first;
+			}
+
+			id<MTLFence> fence = iter->second;
+			[encoder updateFence:fence];
+		}
+	}
+}
+
+void Graphics::updateFences(id<MTLRenderCommandEncoder> encoder, love::graphics::Shader *shader)
+{
+	Shader *s = (Shader *)shader;
+	for (const Shader::TextureBinding &b : s->getTextureBindings())
+	{
+		uint8 texindex = b.textureStages[SHADERSTAGE_COMPUTE];
+		love::graphics::Texture *sampler = b.samplerTexture;
+		if (texindex != LOVE_UINT8_MAX && (b.access & Shader::ACCESS_WRITE) != 0 && sampler != nil)
+		{
+			auto iter = textureFences.find(sampler);
+			if (iter == textureFences.end())
+			{
+				iter = textureFences.emplace(sampler, [device newFence]).first;
+			}
+
+			id<MTLFence> fence = iter->second;
+			[encoder updateFence:fence
+					 afterStages:(MTLRenderStageVertex | MTLRenderStageFragment)];
+		}
+	}
+}
+
+void Graphics::waitForFence(love::graphics::Texture *texture, id<MTLBlitCommandEncoder> encoder)
+{ @autoreleasepool {
+	auto iter = textureFences.find(texture);
+	if (iter != textureFences.end())
+	{
+		id<MTLFence> fence = iter->second;
+		[encoder waitForFence:fence];
+		textureFences.erase(iter);
+	}
+}}
+
 static void setVertexBuffers(id<MTLRenderCommandEncoder> encoder, love::graphics::Shader *shader, const BufferBindings *buffers, Graphics::RenderEncoderBindings &bindings)
 {
 	Shader *s = (Shader *)shader;
@@ -1286,6 +1342,8 @@ void Graphics::draw(const DrawCommand &cmd)
 				  instanceCount:cmd.instanceCount];
 	}
 
+	updateFences(encoder, Shader::current);
+
 	++drawCalls;
 }}
 
@@ -1325,6 +1383,8 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 					 indexBufferOffset:cmd.indexBufferOffset
 						 instanceCount:cmd.instanceCount];
 	}
+
+	updateFences(encoder, Shader::current);
 
 	++drawCalls;
 }}
@@ -1422,6 +1482,8 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 				advanceVertexOffsets(attributes, bufferscopy, quadcount * 4);
 		}
 	}
+
+	updateFences(encoder, Shader::current);
 }}
 
 bool Graphics::dispatch(love::graphics::Shader *s, int x, int y, int z)
@@ -1445,6 +1507,8 @@ bool Graphics::dispatch(love::graphics::Shader *s, int x, int y, int z)
 
 	[computeEncoder dispatchThreadgroups:MTLSizeMake(x, y, z)
 				   threadsPerThreadgroup:MTLSizeMake(tX, tY, tZ)];
+	
+	updateFences(computeEncoder, s);
 
 	return true;
 }}
@@ -1471,6 +1535,8 @@ bool Graphics::dispatch(love::graphics::Shader *s, love::graphics::Buffer *indir
 	[computeEncoder dispatchThreadgroupsWithIndirectBuffer:getMTLBuffer(indirectargs)
 									  indirectBufferOffset:argsoffset
 									 threadsPerThreadgroup:MTLSizeMake(tX, tY, tZ)];
+
+	updateFences(computeEncoder, s);
 
 	return true;
 }

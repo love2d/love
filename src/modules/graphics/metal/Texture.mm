@@ -360,7 +360,8 @@ void Texture::copyFromBuffer(love::graphics::Buffer *source, size_t sourceoffset
 
 void Texture::copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, const Rect &rect, size_t destoffset, int destwidth, size_t size)
 { @autoreleasepool {
-	id<MTLBlitCommandEncoder> encoder = Graphics::getInstance()->useBlitEncoder();
+	auto gfx = Graphics::getInstance();
+	id<MTLBlitCommandEncoder> encoder = gfx->useBlitEncoder();
 	id<MTLBuffer> buffer = (__bridge id<MTLBuffer>)(void *) dest->getHandle();
 
 	size_t rowSize = 0;
@@ -374,6 +375,8 @@ void Texture::copyToBuffer(love::graphics::Buffer *dest, int slice, int mipmap, 
 	MTLBlitOption options = MTLBlitOptionNone;
 	if (isPixelFormatDepthStencil(format))
 		options = MTLBlitOptionDepthFromDepthStencil;
+
+	gfx->waitForFence(this, encoder);
 
 	[encoder copyFromTexture:texture
 				 sourceSlice:texType == TEXTURE_VOLUME ? 0 : slice

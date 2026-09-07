@@ -1087,6 +1087,66 @@ love.test.graphics.Shader = function(test)
   else
     test:assertTrue(true, "skip feature test")
   end
+
+  if love.graphics.getSupported().glsl4 then
+    -- On Metal, readback of an image's values after atomic operations are performed on it could be incorrect
+    local imageBuffer = love.graphics.newTexture(512, 512, { format = "r32i", canvas = true, computewrite = true })
+    local shader = love.graphics.newComputeShader([[
+      layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+      #ifdef GL_ES
+        precision highp float;
+      #endif
+
+      layout (r32i) restrict uniform highp iimage2D ImageBuffer;
+
+      uniform int IncrementValue;
+
+      void computemain()
+      {
+        ivec2 size = imageSize(ImageBuffer);
+        ivec2 coordinate = ivec2(gl_GlobalInvocationID.xy);
+
+        if (!(coordinate.x < size.x && coordinate.y < size.y))
+        {
+          return;
+        }
+
+        imageAtomicAdd(ImageBuffer, coordinate, IncrementValue);
+      }
+    ]])
+    shader:send("ImageBuffer", imageBuffer)
+
+    local rng = love.math.newRandomGenerator(0)
+    local currentValue = 0
+    for _ = 1, 100 do
+      local value = rng:random(-16, 16)
+      local iterations = rng:random(2, 8)
+
+      shader:send("IncrementValue", value)
+
+      local x, y, z = shader:getLocalThreadgroupSize()
+      love.graphics.dispatchThreadgroups(
+        shader,
+        math.max(math.ceil(imageBuffer:getWidth() / x), 1),
+        math.max(math.ceil(imageBuffer:getHeight() / y), 1),
+        math.max(math.ceil(iterations / z), 1)
+      )
+
+      local pixelX = rng:random(0, imageBuffer:getWidth() - 1)
+      local pixelY = rng:random(0, imageBuffer:getHeight() - 1)
+
+      local imageData = love.graphics.readbackTexture(imageBuffer, nil, nil, pixelX, pixelY, 1, 1)
+
+      local nextValue = currentValue + value * iterations
+      local readbackValue = imageData:getInt32(0)
+
+      test:assertEquals(nextValue, readbackValue, "expect readback value to equal next value")
+      currentValue = nextValue
+    end
+  else
+    test:assertTrue(true, "skip atomic readback test")
+  end
 end
 
 
