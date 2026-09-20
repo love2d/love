@@ -25,6 +25,7 @@
 #include "common/config.h"
 #include "common/Module.h"
 #include "common/StringMap.h"
+#include "data/ByteData.h"
 
 // stdlib
 #include <string>
@@ -33,6 +34,7 @@ namespace love
 {
 namespace system
 {
+using ByteData = love::data::ByteData;
 
 class System : public Module
 {
@@ -78,6 +80,22 @@ public:
 	 * Gets the contents of the system's text clipboard.
 	 **/
 	virtual std::string getClipboardText() const = 0;
+
+	/**
+	 * Replaces the contents of specific mimetype in the system's clipboard with data.
+	 * @param data The clipboard data to set.
+	 **/
+	virtual void setClipboardData(const love::Data *data, const std::vector<std::string> &mimetypes) const = 0;
+
+	/**
+	 * Gets the contents of a specific mimetype in the system's clipboard.
+	 **/
+	virtual ByteData *getClipboardData(const std::string &mimetype) const = 0;
+
+	/**
+	 * Get list of mimetypes currently in the system's clipboard.
+	 **/
+	virtual std::vector<std::string> getClipboardTypes() const = 0;
 
 	/**
 	 * Gets information about the system's power supply.

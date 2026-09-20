@@ -48,6 +48,11 @@ public:
 	void setClipboardText(const std::string &text) const override;
 	std::string getClipboardText() const override;
 
+	void setClipboardData(const love::Data *data, const std::vector<std::string> &mimetypes) const override;
+	ByteData *getClipboardData(const std::string &mimetype) const override;
+
+	std::vector<std::string> getClipboardTypes() const override;
+
 	PowerState getPowerInfo(int &seconds, int &percent) const override;
 	bool openURL(const std::string &url) const override;
 	std::vector<std::string> getPreferredLocales() const override;
