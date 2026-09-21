@@ -49,6 +49,11 @@ public:
 	virtual ~RopeJoint();
 
 	/**
+	 * Gets the type of this joint.
+	 **/
+	Type getType() const override;
+
+	/**
 	 * Gets the maximum length of the rope.
 	 **/
 	float getMaxLength() const;
