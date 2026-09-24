@@ -266,10 +266,10 @@ vector<Vector2> BezierCurve::renderSegment(double start, double end, int accurac
 		size_t end_idx = size_t(end * vertices.size() + 0.5);
 		return std::vector<Vector2>(vertices.begin() + start_idx, vertices.begin() + end_idx);
 	}
-	else if (end > start)
+	else if (start > end)
 	{
-		size_t start_idx = size_t(end * vertices.size() + 0.5);
-		size_t end_idx = size_t(start * vertices.size());
+		size_t start_idx = size_t(end * vertices.size());
+		size_t end_idx = size_t(start * vertices.size() + 0.5);
 		return std::vector<Vector2>(vertices.begin() + start_idx, vertices.begin() + end_idx);
 	}
 	return vertices;
