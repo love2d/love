@@ -109,6 +109,13 @@ int w_VideoStream_isPlaying(lua_State *L)
 	return 1;
 }
 
+int w_VideoStream_getDuration(lua_State *L)
+{
+	auto stream = luax_checkvideostream(L, 1);
+	lua_pushnumber(L, stream->getDuration());
+	return 1;
+}
+
 static const luaL_Reg videostream_functions[] =
 {
 	{ "setSync", w_VideoStream_setSync },
@@ -119,6 +126,7 @@ static const luaL_Reg videostream_functions[] =
 	{ "rewind", w_VideoStream_rewind },
 	{ "tell", w_VideoStream_tell },
 	{ "isPlaying", w_VideoStream_isPlaying },
+	{ "getDuration", w_VideoStream_getDuration },
 	{ 0, 0 }
 };
 
