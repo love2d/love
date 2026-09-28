@@ -50,6 +50,8 @@ public:
 		Hinting hinting = HINTING_NORMAL;
 		OptionalFloat dpiScale;
 		bool sdf = false;
+		bool bold = false;
+		bool italic = false;
 	};
 
 	virtual ~TrueTypeRasterizer() {}
