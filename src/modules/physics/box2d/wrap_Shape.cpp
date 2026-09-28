@@ -272,12 +272,30 @@ int w_Shape_setMask(lua_State *L)
 	return ret;
 }
 
+int w_Shape_setCollisionMask(lua_State *L)
+{
+	Shape *t = luax_checkshape(L, 1);
+	lua_remove(L, 1);
+	int ret = 0;
+	luax_catchexcept(L, [&]() { ret = t->setCollisionMask(L); });
+	return ret;
+}
+
 int w_Shape_getMask(lua_State *L)
 {
 	Shape *t = luax_checkshape(L, 1);
 	lua_remove(L, 1);
 	int ret = 0;
 	luax_catchexcept(L, [&]() { ret = t->getMask(L); });
+	return ret;
+}
+
+int w_Shape_getCollisionMask(lua_State *L)
+{
+	Shape *t = luax_checkshape(L, 1);
+	lua_remove(L, 1);
+	int ret = 0;
+	luax_catchexcept(L, [&]() { ret = t->getCollisionMask(L); });
 	return ret;
 }
 
@@ -372,7 +390,9 @@ const luaL_Reg w_Shape_functions[] =
 	{ "setCategory", w_Shape_setCategory },
 	{ "getCategory", w_Shape_getCategory },
 	{ "setMask", w_Shape_setMask },
+	{ "setCollisionMask", w_Shape_setCollisionMask },
 	{ "getMask", w_Shape_getMask },
+	{ "getCollisionMask", w_Shape_getCollisionMask },
 	{ "setUserData", w_Shape_setUserData },
 	{ "getUserData", w_Shape_getUserData },
 	{ "getBoundingBox", w_Shape_getBoundingBox },
