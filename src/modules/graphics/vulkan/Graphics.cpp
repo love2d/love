@@ -496,7 +496,7 @@ StrongRef<image::ImageData> Graphics::submitGpuCommands(SubmitMode submitMode)
 	submitInfo.commandBufferCount = static_cast<uint32_t>(submitCommandbuffers.size());
 	submitInfo.pCommandBuffers = submitCommandbuffers.data();
 
-	VkSemaphore signalSemaphores[] = { nullptr };
+	VkSemaphore signalSemaphores[] = { VK_NULL_HANDLE };
 
 	VkFence fence = VK_NULL_HANDLE;
 
