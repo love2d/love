@@ -496,7 +496,7 @@ StrongRef<image::ImageData> Graphics::submitGpuCommands(SubmitMode submitMode)
 	submitInfo.commandBufferCount = static_cast<uint32_t>(submitCommandbuffers.size());
 	submitInfo.pCommandBuffers = submitCommandbuffers.data();
 
-	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores.at(imageIndex) };
+	VkSemaphore signalSemaphores[] = { nullptr };
 
 	VkFence fence = VK_NULL_HANDLE;
 
@@ -504,6 +504,7 @@ StrongRef<image::ImageData> Graphics::submitGpuCommands(SubmitMode submitMode)
 	{
 		if (!swapChainImages.empty())
 		{
+			signalSemaphores[0] = renderFinishedSemaphores.at(imageIndex);
 			submitInfo.signalSemaphoreCount = 1;
 			submitInfo.pSignalSemaphores = signalSemaphores;
 		}
