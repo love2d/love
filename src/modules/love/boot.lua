@@ -117,10 +117,27 @@ function love.boot()
 				main_file = source_leaf
 				custom_main_file = true
 				full_source = love.path.getFull(full_source:sub(1, -(#source_leaf + 1)))
+
+				can_has_game = pcall(love.filesystem.setSource, full_source)
+			else
+				can_has_game = pcall(love.filesystem.setSource, full_source)
+
+				if not can_has_game then
+        			local original_source = full_source
+
+           			main_file = source_leaf
+              		custom_main_file = true
+              		full_source = love.path.getFull(full_source:sub(1, -(#source_leaf + 1)))
+
+        			can_has_game = pcall(love.filesystem.setSource, full_source)
+
+        			if can_has_game and not love.filesystem.getInfo(main_file) then
+            			can_has_game = false
+            			full_source = original_source
+        			end
+    			end
 			end
 		end
-
-		can_has_game = pcall(love.filesystem.setSource, full_source)
 
 		if not can_has_game then
 			invalid_game_path = full_source
@@ -441,7 +458,13 @@ function love.init()
 		love.filesystem._setAndroidSaveExternal(c.externalstorage)
 		love.filesystem.setIdentity(c.identity or love.filesystem.getIdentity(), c.appendidentity)
 		if love.filesystem.getInfo(main_file) then
-			require(main_file:gsub("%.lua$", ""))
+    		if main_file:match("%.lua$") then
+        		require((main_file:gsub("%.lua$", "")))
+    		else
+      			-- Probably bytecode
+        		local chunk = assert(love.filesystem.load(main_file))
+        		chunk()
+    		end
 		end
 	end
 
@@ -451,7 +474,7 @@ function love.init()
 		local gamestr = gamepath == "" and "" or " at "..gamepath
 		error("No code to run"..gamestr.."\nYour game might be packaged incorrectly.\nMake sure "..main_file.." is at the top level of the zip or folder.")
 	elseif invalid_game_path then
-		error("Cannot load game at path '" .. invalid_game_path .. "'.\nMake sure a folder exists at the specified path.")
+		error("Cannot load game at path '" .. invalid_game_path .. "'.\nMake sure a folder or file exists at the specified path.")
 	end
 end
 
