@@ -2214,7 +2214,7 @@ love.test.graphics.setCanvas = function(test)
   local imgdata2 = love.graphics.readbackTexture(canvas2, 1, 2) -- readback mipmap
   test:compareImg(imgdata2)
 
-  if love.graphics.getSupported().shaderoutputlayers and love.graphics.getSupported().glsl4 then
+  if love.graphics.getSupported().shaderlayers and love.graphics.getSupported().glsl4 then
     local shader = love.graphics.newShader [[
       #pragma language glsl4
 
