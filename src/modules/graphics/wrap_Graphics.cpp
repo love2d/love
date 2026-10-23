@@ -254,14 +254,14 @@ int w_getQuadIndexBuffer(lua_State *L)
 	return 1;
 }
 
-static Graphics::RenderTarget checkRenderTarget(lua_State *L, int idx, bool allLayers)
+static Graphics::RenderTarget checkRenderTarget(lua_State *L, int idx, bool shaderLayer)
 {
 	lua_rawgeti(L, idx, 1);
 	Graphics::RenderTarget target(luax_checktexture(L, -1), 0);
 	lua_pop(L, 1);
 
 	TextureType type = target.texture->getTextureType();
-	if (allLayers)
+	if (shaderLayer)
 	{
 		if (type == TEXTURE_2D_ARRAY)
 			luax_checkunsetflag(L, idx, "layer");
@@ -302,19 +302,19 @@ int w_setCanvas(lua_State *L)
 		bool table_of_tables = lua_istable(L, -1);
 		lua_pop(L, 1);
 
-		targets.allLayers = luax_boolflag(L, 1, "alllayers", false);
+		targets.shaderLayer = luax_boolflag(L, 1, "shaderlayer", false);
 
 		for (int i = 1; i <= (int) luax_objlen(L, 1); i++)
 		{
 			lua_rawgeti(L, 1, i);
 
 			if (table_of_tables)
-				targets.colors.push_back(checkRenderTarget(L, -1, targets.allLayers));
+				targets.colors.push_back(checkRenderTarget(L, -1, targets.shaderLayer));
 			else
 			{
 				targets.colors.emplace_back(luax_checktexture(L, -1), 0);
 
-				if (targets.colors.back().texture->getTextureType() != TEXTURE_2D && !targets.allLayers)
+				if (targets.colors.back().texture->getTextureType() != TEXTURE_2D && !targets.shaderLayer)
 					return luaL_error(L, "Non-2D textures must use the table-of-tables variant of setCanvas.");
 			}
 
@@ -327,7 +327,7 @@ int w_setCanvas(lua_State *L)
 		lua_getfield(L, 1, "depthstencil");
 		int dstype = lua_type(L, -1);
 		if (dstype == LUA_TTABLE)
-			targets.depthStencil = checkRenderTarget(L, -1, targets.allLayers);
+			targets.depthStencil = checkRenderTarget(L, -1, targets.shaderLayer);
 		else if (dstype == LUA_TBOOLEAN)
 			targets.temporaryRTFlags |= luax_toboolean(L, -1) ? (tempdepthflag | tempstencilflag) : 0;
 		else if (dstype != LUA_TNONE && dstype != LUA_TNIL)
@@ -412,7 +412,7 @@ int w_getCanvas(lua_State *L)
 		return 1;
 	}
 
-	bool shouldUseTablesVariant = targets.depthStencil.texture != nullptr || targets.allLayers;
+	bool shouldUseTablesVariant = targets.depthStencil.texture != nullptr || targets.shaderLayer;
 
 	if (!shouldUseTablesVariant)
 	{
@@ -442,10 +442,10 @@ int w_getCanvas(lua_State *L)
 			lua_setfield(L, -2, "depthstencil");
 		}
 
-		if (targets.allLayers)
+		if (targets.shaderLayer)
 		{
 			lua_pushboolean(L, true);
-			lua_setfield(L, -2, "alllayers");
+			lua_setfield(L, -2, "shaderlayer");
 		}
 
 		return 1;

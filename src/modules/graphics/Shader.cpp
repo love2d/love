@@ -621,7 +621,7 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 	if (gfx->isUsingNoTextureCubeShadowBiasHack())
 		ss << "#define LOVE_NO_TEXTURECUBESHADOWBIAS_HACK 1\n";
 	
-	if (gfx->getCapabilities().features[Graphics::FEATURE_SHADER_OUTPUT_LAYER] && stage == SHADERSTAGE_VERTEX)
+	if (gfx->getCapabilities().features[Graphics::FEATURE_SHADER_LAYER] && stage == SHADERSTAGE_VERTEX)
 		ss << "#extension GL_ARB_shader_viewport_layer_array : enable\n";
 
 	for (const auto &def : options.defines)
@@ -961,7 +961,7 @@ bool Shader::isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b)
 	return false;
 }
 
-void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
+void Shader::validateDrawState(Graphics *gfx, PrimitiveType primtype, Texture *maintex) const
 {
 	if ((primtype == PRIMITIVE_POINTS) != reflection.usesPointSize)
 	{
@@ -971,16 +971,11 @@ void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 			throw love::Exception("The gl_PointSize variable must be set in a vertex shader when drawing points.");
 	}
 
-	auto rts = Module::getInstance<Graphics>(Module::M_GRAPHICS)->getRenderTargets();
+	auto rts = gfx->getRenderTargets();
 	bool shaderUsesLayerRendering = reflection.usesLayer;
-	bool renderTargetUsesLayerRendering = rts.allLayers;
+	bool renderTargetUsesLayerRendering = rts.shaderLayer;
 	if (shaderUsesLayerRendering != renderTargetUsesLayerRendering)
-	{
-		if (shaderUsesLayerRendering && !renderTargetUsesLayerRendering)
-			throw love::Exception("The active shader can only be used with all layers of an array image texture bound as the current canvas");
-		else if (!shaderUsesLayerRendering && renderTargetUsesLayerRendering)
-			throw love::Exception("The gl_Layer variable must be set in a vertex shader when all layers of an array image texture bound as the current canvas");
-	}
+		throw love::Exception("Both the gl_Layer variable must be written to in the vertex shader and the field 'shaderlayer' must be true when binding a canvas to use layer rendering.");
 
 	if (maintex == nullptr)
 		return;

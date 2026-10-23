@@ -942,7 +942,7 @@ void Graphics::applyRenderState(id<MTLRenderCommandEncoder> encoder, VertexAttri
 	uint32 dirtyState = dirtyRenderState;
 	const auto &state = states.back();
 	
-	MTLPrimitiveTopologyClass topology = getMTLTopologyClass(primitiveType, state.renderTargets.allLayers);
+	MTLPrimitiveTopologyClass topology = getMTLTopologyClass(primitiveType, state.renderTargets.shaderLayer);
 
 	if (dirtyState & (STATEBIT_VIEWPORT | STATEBIT_SCISSOR))
 	{
@@ -1523,8 +1523,11 @@ void Graphics::setRenderTargetsInternal(const RenderTargets &rts, int /*pixelw*/
 	passDesc.stencilAttachment = nil;
 	passDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
 
-	if (rts.allLayers)
-		passDesc.renderTargetArrayLength = rts.getFirstTarget().texture->getLayerCount();
+	if (rts.shaderLayer)
+	{
+		auto& target = rts.getFirstTarget();
+		passDesc.renderTargetArrayLength = target.texture->getSliceCount(target.mipmap);
+	}
 
 	auto ds = rts.depthStencil.texture;
 	if (isbackbuffer && ds == nullptr)
@@ -2325,7 +2328,7 @@ void Graphics::initCapabilities()
 	}
 
 	if (families.mac[2] || families.apple[5])
-		capabilities.features[FEATURE_SHADER_OUTPUT_LAYER] = true;
+		capabilities.features[FEATURE_SHADER_LAYER] = true;
 	
 	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 

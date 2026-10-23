@@ -1174,7 +1174,7 @@ GLuint Graphics::bindCachedFBO(const RenderTargets &targets)
 					TextureType textype = rt.texture->getTextureType();
 
 					int layer = 0, face = 0;
-					if (targets.allLayers)
+					if (targets.shaderLayer)
 					{
 						layer = textype == TEXTURE_CUBE ? 0 : OpenGL::FRAMEBUFFER_ALL_LAYERS;
 						face = textype == TEXTURE_CUBE ? OpenGL::FRAMEBUFFER_ALL_FACES : 0;
@@ -1650,7 +1650,7 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_VERTEX_WRITE] = capabilities.features[FEATURE_GLSL4];
 	capabilities.features[FEATURE_PIXEL_WRITE] = capabilities.features[FEATURE_GLSL4];
 	capabilities.features[FEATURE_PIXEL_WRITE] = capabilities.features[FEATURE_GLSL4];
-	capabilities.features[FEATURE_SHADER_OUTPUT_LAYER] = GLAD_ARB_shader_viewport_layer_array;
+	capabilities.features[FEATURE_SHADER_LAYER] = GLAD_ARB_shader_viewport_layer_array;
 	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();

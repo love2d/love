@@ -2267,7 +2267,7 @@ love.test.graphics.setCanvas = function(test)
     love.graphics.setShader(shader)
     love.graphics.setCanvas({
       arrayCanvas,
-      alllayers = true,
+      shaderlayer = true,
     })
 
     love.graphics.clear(1, 1, 1, 1)

@@ -843,7 +843,7 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_INDIRECT_DRAW] = true;
 	capabilities.features[FEATURE_VERTEX_WRITE] = features.vertexPipelineStoresAndAtomics;
 	capabilities.features[FEATURE_PIXEL_WRITE] = features.fragmentStoresAndAtomics;
-	capabilities.features[FEATURE_SHADER_OUTPUT_LAYER] = optionalDeviceExtensions.shaderOutputLayer;
+	capabilities.features[FEATURE_SHADER_LAYER] = optionalDeviceExtensions.shaderOutputLayer;
 	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	VkPhysicalDeviceProperties properties;
@@ -2972,7 +2972,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh)
 	for (const auto &color : rts.colors)
 	{
 		auto tex = (Texture*)color.texture;
-		int slice = rts.allLayers ? Texture::RENDER_TARGET_VIEW_ALL_LAYERS : color.slice;
+		int slice = rts.shaderLayer ? Texture::RENDER_TARGET_VIEW_ALL_LAYERS : color.slice;
 		if (tex->getMSAA() > 1)
 		{
 			configuration.colorViews.push_back(tex->getMSAARenderTargetView(color.mipmap, slice));
@@ -2986,7 +2986,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh)
 	if (rts.depthStencil.texture != nullptr)
 	{
 		auto tex = (Texture*)rts.depthStencil.texture;
-		int slice = rts.allLayers ? Texture::RENDER_TARGET_VIEW_ALL_LAYERS : rts.depthStencil.slice;
+		int slice = rts.shaderLayer ? Texture::RENDER_TARGET_VIEW_ALL_LAYERS : rts.depthStencil.slice;
 		if (tex->getMSAA() > 1)
 			configuration.staticData.depthView = tex->getMSAARenderTargetView(rts.depthStencil.mipmap, slice);
 		else
@@ -2995,7 +2995,7 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh)
 
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
 	configuration.staticData.height = static_cast<uint32_t>(pixelh);
-	configuration.staticData.layers = rts.allLayers ? rts.getFirstTarget().texture->getLayerCount() : 1;
+	configuration.staticData.layers = rts.shaderLayer ? rts.getFirstTarget().texture->getLayerCount() : 1;
 
 	uint32_t numClearValues = static_cast<uint32_t>(rts.colors.size() + 1);
 	renderPassState.clearColors.resize(numClearValues);

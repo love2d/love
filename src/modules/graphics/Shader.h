@@ -268,7 +268,7 @@ public:
 	void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture);
 
 	const UniformInfo *getMainTextureInfo() const;
-	void validateDrawState(PrimitiveType primtype, Texture *maintexture) const;
+	void validateDrawState(Graphics *gfx, PrimitiveType primtype, Texture *maintexture) const;
 
 	void getLocalThreadgroupSize(int *x, int *y, int *z);
 

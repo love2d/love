@@ -757,7 +757,7 @@ void Mesh::drawInternal(Graphics *gfx, const Matrix4 &m, int instancecount, Buff
 		Shader::attachDefault(primitiveType == PRIMITIVE_POINTS ? Shader::STANDARD_POINTS : Shader::STANDARD_DEFAULT);
 
 	if (Shader::current)
-		Shader::current->validateDrawState(primitiveType, texture);
+		Shader::current->validateDrawState(gfx, primitiveType, texture);
 
 	bool attributesIDneedsupdate = !attributesID.isValid();
 
