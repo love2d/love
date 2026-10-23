@@ -1092,10 +1092,14 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	if (rtcount > capabilities.limits[LIMIT_RENDER_TARGETS])
 		throw love::Exception("This system can't simultaneously render to %d textures.", rtcount);
 
+	if (rts.shaderLayer && !capabilities.features[FEATURE_SHADER_LAYER])
+		throw love::Exception("This system does not support layered rendering");
+
 	bool hasSRGBtexture = false;
 	int pixelw = firsttex->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firsttex->getPixelHeight(firsttarget.mipmap);
 	int reqmsaa = firsttex->getRequestedMSAA();
+	int layercount = firsttex->getLayerCount();
 
 	for (int i = 0; i < rtcount; i++)
 	{
@@ -1118,6 +1122,9 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 		if (c->getRequestedMSAA() != reqmsaa)
 			throw love::Exception("All textures must have the same MSAA value.");
+		
+		if (rts.shaderLayer && c->getLayerCount() != layercount)
+			throw love::Exception("All textures must have same layer count.");
 
 		if (isPixelFormatDepthStencil(format))
 			throw love::Exception("Depth/stencil format textures must be used with the 'depthstencil' field of the table passed into setCanvas.");
@@ -1144,6 +1151,9 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		if (c->getRequestedMSAA() != firsttex->getRequestedMSAA())
 			throw love::Exception("All Textures must have the same MSAA value.");
 
+		if (rts.shaderLayer && c->getLayerCount() != layercount)
+			throw love::Exception("All textures must have same layer count.");
+
 		if (mip < 0 || mip >= c->getMipmapCount())
 			throw love::Exception("Invalid mipmap level %d.", mip + 1);
 
@@ -1155,6 +1165,9 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 	if (rts.depthStencil.texture == nullptr && rts.temporaryRTFlags != 0)
 	{
+		if (rts.shaderLayer)
+			throw love::Exception("Cannot automatically create depth/stencil buffer when using multilayer rendering");
+
 		bool wantsdepth   = (rts.temporaryRTFlags & TEMPORARY_RT_DEPTH) != 0;
 		bool wantsstencil = (rts.temporaryRTFlags & TEMPORARY_RT_STENCIL) != 0;
 
@@ -1219,6 +1232,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 
 	refs.depthStencil = RenderTargetStrongRef(rts.depthStencil.texture, rts.depthStencil.slice);
 	refs.temporaryRTFlags = rts.temporaryRTFlags;
+	refs.shaderLayer = rts.shaderLayer;
 
 	std::swap(state.renderTargets, refs);
 
@@ -1282,6 +1296,7 @@ Graphics::RenderTargets Graphics::getRenderTargets() const
 
 	rts.depthStencil = RenderTarget(curRTs.depthStencil.texture, curRTs.depthStencil.slice, curRTs.depthStencil.mipmap);
 	rts.temporaryRTFlags = curRTs.temporaryRTFlags;
+	rts.shaderLayer = curRTs.shaderLayer;
 
 	return rts;
 }
@@ -2049,7 +2064,7 @@ Graphics::BatchedVertexData Graphics::requestBatchedDraw(const BatchedDrawComman
 			Shader::attachDefault(state.standardShaderType);
 
 		if (Shader::current != nullptr)
-			Shader::current->validateDrawState(cmd.primitiveMode, cmd.texture);
+			Shader::current->validateDrawState(this, cmd.primitiveMode, cmd.texture);
 	}
 
 	if (shouldresize)
@@ -2256,7 +2271,7 @@ void Graphics::drawFromShader(PrimitiveType primtype, int vertexcount, int insta
 	if (vertexcount < 0 || instancecount < 0)
 		throw love::Exception("drawFromShader vertex and instance count parameters must not be negative.");
 
-	Shader::current->validateDrawState(primtype, maintexture);
+	Shader::current->validateDrawState(this, primtype, maintexture);
 
 	BufferBindings buffers;
 	DrawCommand cmd(noAttributesID, &buffers);
@@ -2288,7 +2303,7 @@ void Graphics::drawFromShader(Buffer *indexbuffer, int indexcount, int instancec
 	if (Shader::isDefaultActive() || !Shader::current)
 		throw love::Exception("drawFromShader can only be used with a custom shader.");
 
-	Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, maintexture);
+	Shader::current->validateDrawState(this, PRIMITIVE_TRIANGLES, maintexture);
 
 	BufferBindings buffers;
 	DrawIndexedCommand cmd(noAttributesID, &buffers, indexbuffer);
@@ -2317,7 +2332,7 @@ void Graphics::drawFromShaderIndirect(PrimitiveType primtype, Buffer *indirectar
 
 	validateIndirectArgsBuffer(INDIRECT_ARGS_DRAW_VERTICES, indirectargs, argsindex);
 
-	Shader::current->validateDrawState(primtype, maintexture);
+	Shader::current->validateDrawState(this, primtype, maintexture);
 
 	BufferBindings buffers;
 	DrawCommand cmd(noAttributesID, &buffers);
@@ -2342,7 +2357,7 @@ void Graphics::drawFromShaderIndirect(Buffer *indexbuffer, Buffer *indirectargs,
 
 	validateIndirectArgsBuffer(INDIRECT_ARGS_DRAW_INDICES, indirectargs, argsindex);
 
-	Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, maintexture);
+	Shader::current->validateDrawState(this, PRIMITIVE_TRIANGLES, maintexture);
 
 	BufferBindings buffers;
 	DrawIndexedCommand cmd(noAttributesID, &buffers, indexbuffer);
@@ -2990,6 +3005,7 @@ STRINGMAP_CLASS_BEGIN(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, f
 	{ "indirectdraw",             Graphics::FEATURE_INDIRECT_DRAW        },
 	{ "vertexwrite",              Graphics::FEATURE_VERTEX_WRITE         },
 	{ "pixelwrite",               Graphics::FEATURE_PIXEL_WRITE          },
+	{ "shaderlayer",              Graphics::FEATURE_SHADER_LAYER         },
 }
 STRINGMAP_CLASS_END(Graphics, Graphics::Feature, Graphics::FEATURE_MAX_ENUM, feature)
 

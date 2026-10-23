@@ -122,6 +122,7 @@ struct FramebufferConfiguration
 
 		uint32_t width = 0;
 		uint32_t height = 0;
+		int layers = 1;
 
 		VkRenderPass renderPass = VK_NULL_HANDLE;
 	} staticData;
@@ -181,6 +182,9 @@ struct OptionalDeviceExtensions
 
 	// VK_EXT_full_screen_exclusive
 	bool fullscreenExclusive = false;
+
+	// VK_EXT_shader_viewport_index_layer
+	bool shaderOutputLayer = false;
 };
 
 struct OptionalDeviceFeatures

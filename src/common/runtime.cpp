@@ -376,6 +376,16 @@ int luax_checkintflag(lua_State *L, int table_index, const char *key)
 	return retval;
 }
 
+void luax_checkunsetflag(lua_State *L, int table_index, const char *key)
+{
+	lua_getfield(L, table_index, key);
+	if (!lua_isnoneornil(L, -1))
+	{
+		std::string err = "expected field '" + std::string(key) + "' to be unset in table";
+		luaL_argerror(L, table_index, err.c_str());
+	}
+}
+
 int luax_assert_argc(lua_State *L, int min)
 {
 	int argc = lua_gettop(L);

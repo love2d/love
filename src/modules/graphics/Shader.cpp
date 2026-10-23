@@ -620,6 +620,9 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 
 	if (gfx->isUsingNoTextureCubeShadowBiasHack())
 		ss << "#define LOVE_NO_TEXTURECUBESHADOWBIAS_HACK 1\n";
+	
+	if (gfx->getCapabilities().features[Graphics::FEATURE_SHADER_LAYER] && stage == SHADERSTAGE_VERTEX)
+		ss << "#extension GL_ARB_shader_viewport_layer_array : enable\n";
 
 	for (const auto &def : options.defines)
 		ss << "#define " + def.first + " " + def.second + "\n";
@@ -958,7 +961,7 @@ bool Shader::isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b)
 	return false;
 }
 
-void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
+void Shader::validateDrawState(Graphics *gfx, PrimitiveType primtype, Texture *maintex) const
 {
 	if ((primtype == PRIMITIVE_POINTS) != reflection.usesPointSize)
 	{
@@ -967,6 +970,12 @@ void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 		else
 			throw love::Exception("The gl_PointSize variable must be set in a vertex shader when drawing points.");
 	}
+
+	auto rts = gfx->getRenderTargets();
+	bool shaderUsesLayerRendering = reflection.usesLayer;
+	bool renderTargetUsesLayerRendering = rts.shaderLayer;
+	if (shaderUsesLayerRendering != renderTargetUsesLayerRendering)
+		throw love::Exception("Both the gl_Layer variable must be written to in the vertex shader and the field 'shaderlayer' must be true when binding a canvas to use layer rendering.");
 
 	if (maintex == nullptr)
 		return;
@@ -1273,6 +1282,7 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 	{
 		// NOTE: this doesn't check whether the use affects final output...
 		reflection.usesPointSize = vertintermediate->inIoAccessed("gl_PointSize");
+		reflection.usesLayer = vertintermediate->inIoAccessed("gl_Layer");
 	}
 
 	if (stages[SHADERSTAGE_COMPUTE] != nullptr)

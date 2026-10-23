@@ -270,7 +270,7 @@ void TextBatch::draw(Graphics *gfx, const Matrix4 &m)
 		firsttex = drawCommands[0].texture;
 
 	if (Shader::current)
-		Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, firsttex);
+		Shader::current->validateDrawState(gfx, PRIMITIVE_TRIANGLES, firsttex);
 
 	int totalverts = 0;
 	for (const Font::DrawCommand &cmd : drawCommands)

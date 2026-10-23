@@ -208,7 +208,7 @@ private:
 	void endPass(bool presenting);
 
 	id<MTLDepthStencilState> getCachedDepthStencilState(const DepthState &depth, const StencilState &stencil);
-	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, VertexAttributesID attributesID);
+	void applyRenderState(id<MTLRenderCommandEncoder> renderEncoder, VertexAttributesID attributesID, PrimitiveType primitiveType);
 	bool applyShaderUniforms(id<MTLComputeCommandEncoder> encoder, love::graphics::Shader *shader);
 	bool applyShaderUniforms(id<MTLRenderCommandEncoder> renderEncoder, love::graphics::Shader *shader, Texture *maintex);
 

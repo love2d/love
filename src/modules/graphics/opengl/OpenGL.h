@@ -116,6 +116,9 @@ public:
 		GLint swizzle[4];
 	};
 
+	static const int FRAMEBUFFER_ALL_LAYERS = -1;
+	static const int FRAMEBUFFER_ALL_FACES = -1;
+
 	class TempDebugGroup
 	{
 	public:
