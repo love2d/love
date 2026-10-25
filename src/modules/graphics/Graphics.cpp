@@ -1099,7 +1099,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 	int pixelw = firsttex->getPixelWidth(firsttarget.mipmap);
 	int pixelh = firsttex->getPixelHeight(firsttarget.mipmap);
 	int reqmsaa = firsttex->getRequestedMSAA();
-	int layercount = firsttex->getLayerCount();
+	int layercount = firsttex->getSliceCount(firsttarget.mipmap);
 
 	for (int i = 0; i < rtcount; i++)
 	{
@@ -1123,7 +1123,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		if (c->getRequestedMSAA() != reqmsaa)
 			throw love::Exception("All textures must have the same MSAA value.");
 		
-		if (rts.shaderLayer && c->getLayerCount() != layercount)
+		if (rts.shaderLayer && c->getSliceCount(mip) != layercount)
 			throw love::Exception("All textures must have same layer count.");
 
 		if (isPixelFormatDepthStencil(format))
@@ -1151,7 +1151,7 @@ void Graphics::setRenderTargets(const RenderTargets &rts)
 		if (c->getRequestedMSAA() != firsttex->getRequestedMSAA())
 			throw love::Exception("All Textures must have the same MSAA value.");
 
-		if (rts.shaderLayer && c->getLayerCount() != layercount)
+		if (rts.shaderLayer && c->getSliceCount(mip) != layercount)
 			throw love::Exception("All textures must have same layer count.");
 
 		if (mip < 0 || mip >= c->getMipmapCount())

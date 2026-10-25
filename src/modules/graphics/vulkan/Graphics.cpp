@@ -2995,7 +2995,9 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh)
 
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
 	configuration.staticData.height = static_cast<uint32_t>(pixelh);
-	configuration.staticData.layers = rts.shaderLayer ? rts.getFirstTarget().texture->getLayerCount() : 1;
+
+	RenderTarget firstTarget = rts.getFirstTarget();
+	configuration.staticData.layers = rts.shaderLayer ? firstTarget->getSliceCount(firstTarget.mipmap) : 1;
 
 	uint32_t numClearValues = static_cast<uint32_t>(rts.colors.size() + 1);
 	renderPassState.clearColors.resize(numClearValues);
