@@ -2213,6 +2213,82 @@ love.test.graphics.setCanvas = function(test)
   test:compareImg(imgdata)
   local imgdata2 = love.graphics.readbackTexture(canvas2, 1, 2) -- readback mipmap
   test:compareImg(imgdata2)
+
+  if love.graphics.getSupported().shaderlayers and love.graphics.getSupported().glsl4 then
+    local shader = love.graphics.newShader [[
+      #pragma language glsl4
+
+      #ifdef VERTEX
+
+      restrict readonly buffer ColorsBuffer
+      {
+        vec4 Colors[];
+      };
+
+      vec4 position(mat4 viewModelTransform, vec4 vertexPosition)
+      {
+        VaryingColor *= Colors[gl_InstanceID];
+        gl_Layer = gl_InstanceID;
+        return viewModelTransform * vertexPosition;
+      }
+
+      #endif
+    ]]
+
+    local mesh = love.graphics.newMesh({
+      { location = 0, name = "VertexPosition", format = "floatvec4" },
+      { location = 1, name = "VertexColor", format = "floatvec4" },
+    }, {
+      { 0, 0, 0, 1, 1, 1, 1, 1 },
+      { 32, 0, 0, 1, 1, 1, 1, 1 },
+      { 32, 32, 0, 1, 1, 1, 1, 1 },
+      { 32, 32, 0, 1, 1, 1, 1, 1 },
+      { 0, 32, 0, 1, 1, 1, 1, 1 },
+      { 0, 0, 0, 1, 1, 1, 1, 1 },
+    }, "triangles")
+
+    local arrayCanvas = love.graphics.newTexture(256, 256, 4, { canvas = true })
+    local buffer = love.graphics.newBuffer(
+      {
+        { location = 0, name = "color", format = "floatvec4" }
+      },
+      4,
+      { shaderstorage = true }
+    )
+    shader:send("ColorsBuffer", buffer)
+
+    buffer:setArrayData({
+      1, 0, 0, 1,
+      0, 1, 0, 1,
+      0, 0, 1, 1,
+      1, 0, 1, 1
+    })
+
+    love.graphics.setShader(shader)
+    love.graphics.setCanvas({
+      arrayCanvas,
+      shaderlayer = true,
+    })
+
+    love.graphics.clear(1, 1, 1, 1)
+    
+    love.graphics.drawInstanced(mesh, 4, 10, 10)
+
+    love.graphics.setShader()
+    love.graphics.setCanvas()
+    
+    local layer1data = love.graphics.readbackTexture(arrayCanvas, 1)
+    test:compareImg(layer1data)
+  
+    local layer2data = love.graphics.readbackTexture(arrayCanvas, 2)
+    test:compareImg(layer2data)
+  
+    local layer3data = love.graphics.readbackTexture(arrayCanvas, 3)
+    test:compareImg(layer3data)
+
+    local layer4data = love.graphics.readbackTexture(arrayCanvas, 4)
+    test:compareImg(layer4data)
+  end
 end
 
 

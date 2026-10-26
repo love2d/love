@@ -65,6 +65,7 @@ public:
 		uint32 blendStateKey;
 		uint64 colorRenderTargetFormats;
 		uint32 depthStencilFormat;
+		uint32 topology;
 		ColorChannelMask colorChannelMask;
 		uint8 msaa;
 

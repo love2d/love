@@ -909,10 +909,16 @@ void OpenGL::framebufferTexture(GLenum attachment, TextureType texType, GLuint t
 		glFramebufferTexture3D(GL_FRAMEBUFFER, attachment, textarget, texture, level, layer);
 		break;
 	case TEXTURE_2D_ARRAY:
-		glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, texture, level, layer);
+		if (layer == FRAMEBUFFER_ALL_LAYERS)
+			glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture, level);
+		else
+			glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment, texture, level, layer);
 		break;
 	case TEXTURE_CUBE:
-		glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, texture, level);
+		if (face == FRAMEBUFFER_ALL_FACES)
+			glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture, level);
+		else
+			glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, texture, level);
 		break;
 	default:
 		break;
