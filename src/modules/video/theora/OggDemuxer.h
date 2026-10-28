@@ -55,6 +55,7 @@ public:
 	bool isEos() const;
 	const std::string &getFilename() const;
 	bool seek(ogg_packet &packet, double target, std::function<double(int64)> getTime);
+	double getDuration(std::function<double(int64)> getTime);
 
 private:
 	StrongRef<love::filesystem::File> file;
