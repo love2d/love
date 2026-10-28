@@ -23,18 +23,8 @@
 
 #include "common/config.h"
 
-#ifdef LOVE_APPLE_USE_FRAMEWORKS
-#ifdef LOVE_IOS
-#include <OpenAL/alc.h>
-#include <OpenAL/al.h>
-#else
-#include <OpenAL-Soft/alc.h>
-#include <OpenAL-Soft/al.h>
-#endif
-#else
-#include <alc.h>
-#include <al.h>
-#endif
+#include <mojoAL/AL/alc.h>
+#include <mojoAL/AL/al.h>
 
 #include "audio/RecordingDevice.h"
 #include "sound/SoundData.h"
