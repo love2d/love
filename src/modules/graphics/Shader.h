@@ -298,6 +298,12 @@ public:
 	STRINGMAP_CLASS_DECLARE(Feature);
 
 protected:
+	struct FragmentOutput
+	{
+		int location;
+		int componentCount;
+		std::string name;
+	};
 
 	struct Reflection
 	{
@@ -310,6 +316,7 @@ protected:
 		std::map<std::string, UniformInfo> localUniforms;
 
 		std::map<std::string, UniformInfo *> allUniforms;
+		std::map<int, FragmentOutput> fragmentOutputs;
 
 		std::map<std::string, std::vector<LocalUniformValue>> localUniformInitializerValues;
 
