@@ -976,6 +976,20 @@ void Shader::validateDrawState(Graphics *gfx, PrimitiveType primtype, Texture *m
 	bool renderTargetUsesLayerRendering = rts.shaderLayer;
 	if (shaderUsesLayerRendering != renderTargetUsesLayerRendering)
 		throw love::Exception("Both the gl_Layer variable must be written to in the vertex shader and the field 'shaderlayer' must be true when binding a canvas to use layer rendering.");
+	
+	for (int i = 0; i < rts.colors.size(); ++i)
+	{
+		Texture *attachment = rts.colors.at(i).texture;
+		int attachmentPixelComponentCount = getPixelFormatColorComponents(attachment->getPixelFormat());
+
+		auto iter = reflection.fragmentOutputs.find(i);
+		if (iter == reflection.fragmentOutputs.end())
+			throw love::Exception("Missing pixel shader output for canvas at index %d", i + 1);
+		
+		const FragmentOutput& output = iter->second;
+		if (output.componentCount < attachmentPixelComponentCount)
+			throw love::Exception("Pixel shader output '%s' has only writes %d components but canvas at index %d has %d components", output.name.c_str(), output.componentCount, i + 1, attachmentPixelComponentCount);
+	}
 
 	if (maintex == nullptr)
 		return;
@@ -1262,12 +1276,21 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
 		if (stages[i] != nullptr)
+		{
+			stages[i]->getGLSLangValidationShader()->setAutoMapLocations(true);
 			program.addShader(stages[i]->getGLSLangValidationShader());
+		}
 	}
 
 	if (!program.link((EShMessages)(EShMsgValidateCrossStageIO | EshMsgOverlappingLocations)))
 	{
 		err = "Cannot compile shader:\n\n" + std::string(program.getInfoLog()) + "\n" + std::string(program.getInfoDebugLog());
+		return false;
+	}
+
+	if (!program.mapIO())
+	{
+		err = "Could not map shader input/outputs.";
 		return false;
 	}
 
@@ -1312,6 +1335,38 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 			location = -1;
 
 		reflection.vertexInputs[info.name] = location;
+	}
+
+	for (int i = 0; i < program.getNumPipeOutputs(); ++i)
+	{
+		const glslang::TObjectReflection &info = program.getPipeOutput(i);
+
+		if (info.name.rfind("gl_", 0) == 0)
+			continue;
+
+		int location = info.layoutLocation();
+		if (location == glslang::TQualifier::layoutLocationEnd)
+		{
+			err = "Pixel output " + info.name + " does not have 'location' layout qualifier in pixel shader code";
+			return false;
+		}
+
+		for (int j = 0; j < info.size; ++j)
+		{
+			FragmentOutput output;
+			output.name = info.name;
+			output.location = location + j;
+			output.componentCount = info.getType()->getVectorSize();
+
+			auto iter = reflection.fragmentOutputs.find(output.location);
+			if (iter != reflection.fragmentOutputs.end())
+			{
+				err = "Pixel output " + info.name + " has same 'location' layout qualifier as " + iter->second.name;
+				return false;
+			}
+
+			reflection.fragmentOutputs[output.location] = output;
+		}
 	}
 
 	reflection.textureCount = 0;
