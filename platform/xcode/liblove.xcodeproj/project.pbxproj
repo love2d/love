@@ -50,6 +50,13 @@
 		217DFC101D9F6D490055D849 /* url.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD41D9F6D490055D849 /* url.lua.h */; };
 		217DFC111D9F6D490055D849 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		217DFC121D9F6D490055D849 /* usocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD61D9F6D490055D849 /* usocket.h */; };
+		64928BD0309D110C001B6663 /* eclair.c in Sources */ = {isa = PBXBuildFile; fileRef = 64928BCD309D110C001B6663 /* eclair.c */; };
+		64928BD1309D110C001B6663 /* eclair_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 64928BCE309D110C001B6663 /* eclair_apple.m */; };
+		64928BD2309D110C001B6663 /* eclair.c in Sources */ = {isa = PBXBuildFile; fileRef = 64928BCD309D110C001B6663 /* eclair.c */; };
+		64928BD3309D110C001B6663 /* eclair_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 64928BCE309D110C001B6663 /* eclair_apple.m */; };
+		64928BD4309D110C001B6663 /* eclair_backend.h in Headers */ = {isa = PBXBuildFile; fileRef = 64928BCF309D110C001B6663 /* eclair_backend.h */; };
+		64928BD5309D110C001B6663 /* eclair.h in Headers */ = {isa = PBXBuildFile; fileRef = 64928BCC309D110C001B6663 /* eclair.h */; };
+		64928BD7309D1141001B6663 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64928BD6309D1141001B6663 /* AVFoundation.framework */; };
 		D91C76122DE3D088001FC408 /* spvUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = D91C76112DE3D088001FC408 /* spvUtil.h */; };
 		D91C76132DE3D088001FC408 /* spirv.hpp11 in Resources */ = {isa = PBXBuildFile; fileRef = D91C76102DE3D088001FC408 /* spirv.hpp11 */; };
 		D91C76152DE3D0A2001FC408 /* visibility.h in Headers */ = {isa = PBXBuildFile; fileRef = D91C76142DE3D0A2001FC408 /* visibility.h */; };
@@ -1420,6 +1427,11 @@
 		217DFBD41D9F6D490055D849 /* url.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = url.lua.h; sourceTree = "<group>"; };
 		217DFBD51D9F6D490055D849 /* usocket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = usocket.c; sourceTree = "<group>"; };
 		217DFBD61D9F6D490055D849 /* usocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = usocket.h; sourceTree = "<group>"; };
+		64928BCC309D110C001B6663 /* eclair.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = eclair.h; path = eclair/eclair.h; sourceTree = "<group>"; };
+		64928BCD309D110C001B6663 /* eclair.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = eclair.c; path = eclair/eclair.c; sourceTree = "<group>"; };
+		64928BCE309D110C001B6663 /* eclair_apple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = eclair_apple.m; path = eclair/eclair_apple.m; sourceTree = "<group>"; };
+		64928BCF309D110C001B6663 /* eclair_backend.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = eclair_backend.h; path = eclair/eclair_backend.h; sourceTree = "<group>"; };
+		64928BD6309D1141001B6663 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		D91C76102DE3D088001FC408 /* spirv.hpp11 */ = {isa = PBXFileReference; lastKnownFileType = text; path = spirv.hpp11; sourceTree = "<group>"; };
 		D91C76112DE3D088001FC408 /* spvUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = spvUtil.h; sourceTree = "<group>"; };
 		D91C76142DE3D0A2001FC408 /* visibility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = visibility.h; sourceTree = "<group>"; };
@@ -2352,6 +2364,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64928BD7309D1141001B6663 /* AVFoundation.framework in Frameworks */,
 				FA18CEE723DBC6F700263725 /* Metal.framework in Frameworks */,
 				FA27B3C91B498623008A9DCE /* theora.framework in Frameworks */,
 				FAA627CE18E7E1560080752D /* CoreServices.framework in Frameworks */,
@@ -2406,6 +2419,17 @@
 			name = love;
 			sourceTree = "<group>";
 			usesTabs = 1;
+		};
+		64928BCB309D10F1001B6663 /* eclair */ = {
+			isa = PBXGroup;
+			children = (
+				64928BCC309D110C001B6663 /* eclair.h */,
+				64928BCD309D110C001B6663 /* eclair.c */,
+				64928BCE309D110C001B6663 /* eclair_apple.m */,
+				64928BCF309D110C001B6663 /* eclair_backend.h */,
+			);
+			name = eclair;
+			sourceTree = "<group>";
 		};
 		D93970473009459C00A8CCAD /* qoi */ = {
 			isa = PBXGroup;
@@ -2517,6 +2541,7 @@
 		FA0B794D1A958EA3000E1D17 /* libraries */ = {
 			isa = PBXGroup;
 			children = (
+				64928BCB309D10F1001B6663 /* eclair */,
 				FABDA9102552448200B5C523 /* box2d */,
 				FA0B79B41A958EA3000E1D17 /* ddsparse */,
 				FA522D5023F9FF2A0059EE3C /* dr */,
@@ -3614,6 +3639,7 @@
 		FA577A6616C7199700860150 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				64928BD6309D1141001B6663 /* AVFoundation.framework */,
 				D9596F602CBAC93800BE58C1 /* SDL3.xcframework */,
 				FA18CEE623DBC6F700263725 /* Metal.framework */,
 				FA0B7EEB1A959125000E1D17 /* macosx */,
@@ -4410,6 +4436,8 @@
 				217DFBFA1D9F6D490055D849 /* select.h in Headers */,
 				FABDA9BF2552448300B5C523 /* b2_types.h in Headers */,
 				FA0B7DF61A95902C000E1D17 /* wrap_Mouse.h in Headers */,
+				64928BD4309D110C001B6663 /* eclair_backend.h in Headers */,
+				64928BD5309D110C001B6663 /* eclair.h in Headers */,
 				FAF140661E20934C00F898D2 /* gl_types.h in Headers */,
 				FA0B7E801A95902C000E1D17 /* Joint.h in Headers */,
 				FA0B7D2F1A95902C000E1D17 /* Drawable.h in Headers */,
@@ -4869,6 +4897,8 @@
 				FA0B7E461A95902C000E1D17 /* wrap_Contact.cpp in Sources */,
 				FA94727C27A6EE1B00817677 /* HTTPSClient.cpp in Sources */,
 				FA0B7D161A95902C000E1D17 /* Font.cpp in Sources */,
+				64928BD0309D110C001B6663 /* eclair.c in Sources */,
+				64928BD1309D110C001B6663 /* eclair_apple.m in Sources */,
 				FA0B7EB61A95902C000E1D17 /* wrap_System.cpp in Sources */,
 				FA0B7DAC1A95902C000E1D17 /* STBHandler.cpp in Sources */,
 				FADF53F91E3C7ACD00012CC0 /* Buffer.cpp in Sources */,
@@ -5303,6 +5333,8 @@
 				FAF1409D1E20934C00F898D2 /* reflection.cpp in Sources */,
 				FA94727B27A6EE1B00817677 /* HTTPSClient.cpp in Sources */,
 				FAAA3FDB1F64B3AD00F89E99 /* lutf8lib.c in Sources */,
+				64928BD2309D110C001B6663 /* eclair.c in Sources */,
+				64928BD3309D110C001B6663 /* eclair_apple.m in Sources */,
 				FA18CEDE23DBC6E000263725 /* Shader.mm in Sources */,
 				FAF1408A1E20934C00F898D2 /* Pp.cpp in Sources */,
 				FA76344A1E28722A0066EF9E /* StreamBuffer.cpp in Sources */,
