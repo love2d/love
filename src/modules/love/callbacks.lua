@@ -214,6 +214,28 @@ end
 
 local utf8 = require("utf8")
 
+local function stripInvalidUTF8(str)
+	if type(str) ~= "string" then
+		return tostring(str)
+	end
+
+	local result = {}
+	local i = 1
+	while i <= #str do
+		local ulen, pos = utf8.len(str, i)
+		if ulen then
+			table.insert(result, str:sub(i))
+			break
+		else
+			if pos > i then
+				table.insert(result, str:sub(i, pos - 1))
+			end
+			i = pos + 1
+		end
+	end
+	return table.concat(result)
+end
+
 local function error_printer(msg, layer)
 	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
 end
@@ -264,11 +286,7 @@ function love.errorhandler(msg)
 
 	love.graphics.origin()
 
-	local sanitizedmsg = {}
-	for char in msg:gmatch(utf8.charpattern) do
-		table.insert(sanitizedmsg, char)
-	end
-	sanitizedmsg = table.concat(sanitizedmsg)
+	local sanitizedmsg = stripInvalidUTF8(msg)
 
 	local err = {}
 
