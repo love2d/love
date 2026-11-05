@@ -1087,6 +1087,35 @@ love.test.graphics.Shader = function(test)
   else
     test:assertTrue(true, "skip feature test")
   end
+
+  local shader9 = love.graphics.newShader [[
+    #ifdef PIXEL
+
+    layout (location = 0) out vec2 OutVec2;
+
+    void pixelmain()
+    {
+      OutVec2 = vec2(1.0, 0.0);
+    }
+
+    #endif
+  ]]
+
+  love.graphics.push("all")
+    love.graphics.setCanvas(canvas)
+    love.graphics.setShader(shader9)
+    local res, err = pcall(love.graphics.rectangle, "fill", 0, 0, 256, 256)
+  love.graphics.pop()
+
+  test:assertEquals("Pixel shader output 'OutVec2' has only writes 2 components but canvas at index 1 has 4 components", err, "pixel output component validation")
+
+  local canvas5 = love.graphics.newCanvas(16, 16)
+  love.graphics.push("all")
+    love.graphics.setCanvas(canvas, canvas5)
+    local res, err = pcall(love.graphics.rectangle, "fill", 0, 0, 256, 256)
+  love.graphics.pop()
+
+  test:assertEquals("Missing pixel shader output for canvas at index 2", err, "attachment validation")
 end
 
 
@@ -2214,7 +2243,7 @@ love.test.graphics.setCanvas = function(test)
   local imgdata2 = love.graphics.readbackTexture(canvas2, 1, 2) -- readback mipmap
   test:compareImg(imgdata2)
 
-  if love.graphics.getSupported().shaderlayers and love.graphics.getSupported().glsl4 then
+  if love.graphics.getSupported().shaderlayer and love.graphics.getSupported().glsl4 then
     local shader = love.graphics.newShader [[
       #pragma language glsl4
 
