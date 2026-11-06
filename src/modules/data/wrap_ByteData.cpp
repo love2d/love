@@ -51,9 +51,7 @@ int w_ByteData_setString(lua_State *L)
 	const char *str = luaL_checklstring(L, 2, &size);
 	int64 offset = (int64)luaL_optnumber(L, 3, 0);
 
-	size = std::min(size, t->getSize());
-
-	if (size == 0)
+	if (size == 0) 
 		return 0;
 
 	if (offset < 0 || offset + (int64) size > (int64) t->getSize())
