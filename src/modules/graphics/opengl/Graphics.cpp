@@ -1173,8 +1173,18 @@ GLuint Graphics::bindCachedFBO(const RenderTargets &targets)
 				{
 					TextureType textype = rt.texture->getTextureType();
 
-					int layer = textype == TEXTURE_CUBE ? 0 : rt.slice;
-					int face = textype == TEXTURE_CUBE ? rt.slice : 0;
+					int layer = 0, face = 0;
+					if (targets.shaderLayer)
+					{
+						layer = textype == TEXTURE_CUBE ? 0 : OpenGL::FRAMEBUFFER_ALL_LAYERS;
+						face = textype == TEXTURE_CUBE ? OpenGL::FRAMEBUFFER_ALL_FACES : 0;
+					}
+					else
+					{
+						layer = textype == TEXTURE_CUBE ? 0 : rt.slice;
+						face = textype == TEXTURE_CUBE ? rt.slice : 0;
+					}
+
 					int level = rt.mipmap;
 
 					gl.framebufferTexture(attachment, textype, handle, level, layer, face);
@@ -1632,14 +1642,16 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_PIXEL_SHADER_HIGHP] = true;
 	capabilities.features[FEATURE_SHADER_DERIVATIVES] = true;
 	capabilities.features[FEATURE_GLSL3] = true;
-	capabilities.features[FEATURE_GLSL4] = GLAD_ES_VERSION_3_1 || (gl.isCoreProfile() && GLAD_VERSION_4_3);
+	capabilities.features[FEATURE_GLSL4] = GLAD_ES_VERSION_3_2 || (gl.isCoreProfile() && GLAD_VERSION_4_3);
 	capabilities.features[FEATURE_INSTANCING] = true;
 	capabilities.features[FEATURE_TEXEL_BUFFER] = gl.isBufferUsageSupported(BUFFERUSAGE_TEXEL);
 	capabilities.features[FEATURE_COPY_TEXTURE_TO_BUFFER] = gl.isCopyTextureToBufferSupported();
 	capabilities.features[FEATURE_INDIRECT_DRAW] = capabilities.features[FEATURE_GLSL4];
 	capabilities.features[FEATURE_VERTEX_WRITE] = capabilities.features[FEATURE_GLSL4];
 	capabilities.features[FEATURE_PIXEL_WRITE] = capabilities.features[FEATURE_GLSL4];
-	static_assert(FEATURE_MAX_ENUM == 15, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_PIXEL_WRITE] = capabilities.features[FEATURE_GLSL4];
+	capabilities.features[FEATURE_SHADER_LAYER] = GLAD_ARB_shader_viewport_layer_array;
+	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	capabilities.limits[LIMIT_POINT_SIZE] = gl.getMaxPointSize();
 	capabilities.limits[LIMIT_TEXTURE_SIZE] = gl.getMax2DTextureSize();

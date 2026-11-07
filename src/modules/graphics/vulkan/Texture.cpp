@@ -320,8 +320,12 @@ void Texture::unloadVolatile()
 			if (imageData.allocation != VK_NULL_HANDLE)
 				vmaDestroyImage(allocator, imageData.image, imageData.allocation);
 			for (const auto &views : imageData.renderTargetImageViews)
-				for (const auto &view : views)
+			{
+				for (const auto &view : views.imageViews)
 					vkDestroyImageView(device, view, nullptr);
+				if (views.multiImageView != VK_NULL_HANDLE)
+					vkDestroyImageView(device, views.multiImageView, nullptr);
+			}
 		});
 	}
 
@@ -350,14 +354,18 @@ VkImageView Texture::getRenderTargetView(int mip, int layer)
 {
 	if (imageData.renderTargetImageViews.empty())
 		return imageData.imageView;
-	return imageData.renderTargetImageViews.at(mip).at(layer);
+	if (layer == RENDER_TARGET_VIEW_ALL_LAYERS)
+		return imageData.renderTargetImageViews.at(mip).multiImageView;
+	return imageData.renderTargetImageViews.at(mip).imageViews.at(layer);
 }
 
 VkImageView Texture::getMSAARenderTargetView(int mip, int layer)
 {
 	if (msaaImageData.renderTargetImageViews.empty())
 		return msaaImageData.imageView;
-	return msaaImageData.renderTargetImageViews.at(mip).at(layer);
+	if (layer == RENDER_TARGET_VIEW_ALL_LAYERS)
+		return msaaImageData.renderTargetImageViews.at(mip).multiImageView;
+	return msaaImageData.renderTargetImageViews.at(mip).imageViews.at(layer);
 }
 
 VkSampleCountFlagBits Texture::getMsaaSamples() const
@@ -436,7 +444,7 @@ void Texture::createRenderTargetImageViews(VulkanImageData &data)
 	data.renderTargetImageViews.resize(getMipmapCount());
 	for (int mip = 0; mip < getMipmapCount(); mip++)
 	{
-		data.renderTargetImageViews.at(mip).resize(layerCount);
+		data.renderTargetImageViews.at(mip).imageViews.resize(layerCount);
 
 		for (int slice = 0; slice < layerCount; slice++)
 		{
@@ -457,9 +465,19 @@ void Texture::createRenderTargetImageViews(VulkanImageData &data)
 			viewInfo.components.b = vulkanFormat.swizzleB;
 			viewInfo.components.a = vulkanFormat.swizzleA;
 
-			VkResult result = vkCreateImageView(device, &viewInfo, nullptr, &data.renderTargetImageViews.at(mip).at(slice));
+			VkResult result = vkCreateImageView(device, &viewInfo, nullptr, &data.renderTargetImageViews.at(mip).imageViews.at(slice));
 			if (result != VK_SUCCESS)
 				throw love::Exception("Could not create Vulkan render target image view: %s", Vulkan::getErrorString(result));
+
+			if (slice == 0 && (texType == TEXTURE_2D_ARRAY || texType == TEXTURE_CUBE))
+			{
+				VkImageViewCreateInfo multiLayerViewInfo = viewInfo;
+				multiLayerViewInfo.subresourceRange.layerCount = layerCount - rootView.startLayer;
+
+				VkResult multiLayerResult = vkCreateImageView(device, &multiLayerViewInfo, nullptr, &data.renderTargetImageViews.at(mip).multiImageView);
+				if (multiLayerResult != VK_SUCCESS)
+					throw love::Exception("Could not create Vulkan render target image view: %s", Vulkan::getErrorString(result));
+			}
 		}
 	}
 }

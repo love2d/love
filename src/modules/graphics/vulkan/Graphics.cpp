@@ -291,6 +291,7 @@ void Graphics::clear(const std::vector<OptionalColorD> &colors, OptionalInt sten
 			if (color.hasValue)
 			{
 				auto texture = i < rts.colors.size() ? rts.colors[i].texture.get() : nullptr;
+				attachment.colorAttachment = i;
 				attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				attachment.clearValue.color = Texture::getClearColor(texture, color.value);
 			}
@@ -392,7 +393,7 @@ void Graphics::discard(const std::vector<bool> &colorbuffers, bool depthstencil)
 	startRenderPass();
 }
 
-void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallbackData)
+StrongRef<image::ImageData> Graphics::submitGpuCommands(SubmitMode submitMode)
 {
 	flushBatchedDraws();
 
@@ -514,6 +515,8 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 	if (result != VK_SUCCESS)
 		throw love::Exception("Failed to submit Vulkan draw command buffer: %s", Vulkan::getErrorString(result));
 	
+	StrongRef<image::ImageData> screenshotImageData;
+
 	if (submitMode == SUBMIT_NOPRESENT || submitMode == SUBMIT_RESTART || screenshotBuffer != VK_NULL_HANDLE)
 	{
 		vkQueueWaitIdle(graphicsQueue);
@@ -529,63 +532,55 @@ void Graphics::submitGpuCommands(SubmitMode submitMode, void *screenshotCallback
 		{
 			auto imageModule = Module::getInstance<love::image::Image>(M_IMAGE);
 
-			for (int i = 0; i < (int)pendingScreenshotCallbacks.size(); i++)
+			try
 			{
-				const auto &info = pendingScreenshotCallbacks[i];
-				image::ImageData *img = nullptr;
-
-				try
+				screenshotImageData.set(imageModule->newImageData(
+					swapChainExtent.width,
+					swapChainExtent.height,
+					PIXELFORMAT_RGBA8_UNORM,
+					screenshotAllocationInfo.pMappedData),
+					Acquire::NORETAIN);
+			}
+			catch (love::Exception &)
+			{
+				for (int i = 0; i < (int)pendingScreenshotCallbacks.size(); i++)
 				{
-					img = imageModule->newImageData(
-						swapChainExtent.width,
-						swapChainExtent.height,
-						PIXELFORMAT_RGBA8_UNORM,
-						screenshotAllocationInfo.pMappedData);
+					const auto &ninfo = pendingScreenshotCallbacks[i];
+					ninfo.callback(&ninfo, nullptr, nullptr);
 				}
-				catch (love::Exception &)
-				{
-					info.callback(&info, nullptr, nullptr);
-					for (int j = i + 1; j < (int)pendingScreenshotCallbacks.size(); j++)
-					{
-						const auto& ninfo = pendingScreenshotCallbacks[j];
-						ninfo.callback(&ninfo, nullptr, nullptr);
-					}
-					vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
-					pendingScreenshotCallbacks.clear();
-					throw;
-				}
-
-				uint8 *screenshot = (uint8*)img->getData();
-
-				if (swapChainImageFormat == VK_FORMAT_B8G8R8A8_UNORM || swapChainImageFormat == VK_FORMAT_B8G8R8A8_SRGB)
-				{
-					// Convert from BGRA to RGBA and replace alpha with full opacity.
-					for (size_t i = 0; i < img->getSize(); i += 4)
-					{
-						uint8 r = screenshot[i + 2];
-						screenshot[i + 2] = screenshot[i + 0];
-						screenshot[i + 0] = r;
-						screenshot[i + 3] = 255;
-					}
-				}
-				else
-				{
-					// Replace alpha with full opacity.
-					for (size_t i = 0; i < img->getSize(); i += 4)
-						screenshot[i + 3] = 255;
-				}
-
-				info.callback(&info, img, screenshotCallbackData);
-				img->release();
+				vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
+				pendingScreenshotCallbacks.clear();
+				throw;
 			}
 
 			vmaDestroyBuffer(vmaAllocator, screenshotBuffer, screenshotAllocation);
-			pendingScreenshotCallbacks.clear();
+
+			uint8 *screenshot = (uint8*)screenshotImageData->getData();
+
+			if (swapChainImageFormat == VK_FORMAT_B8G8R8A8_UNORM || swapChainImageFormat == VK_FORMAT_B8G8R8A8_SRGB)
+			{
+				// Convert from BGRA to RGBA and replace alpha with full opacity.
+				for (size_t i = 0; i < screenshotImageData->getSize(); i += 4)
+				{
+					uint8 r = screenshot[i + 2];
+					screenshot[i + 2] = screenshot[i + 0];
+					screenshot[i + 0] = r;
+					screenshot[i + 3] = 255;
+				}
+			}
+			else
+			{
+				// Replace alpha with full opacity.
+				for (size_t i = 0; i < screenshotImageData->getSize(); i += 4)
+					screenshot[i + 3] = 255;
+			}
 		}
 
 		if (submitMode == SUBMIT_RESTART)
 			startRecordingGraphicsCommands();
 	}
+
+	return screenshotImageData;
 }
 
 void Graphics::present(void *screenshotCallbackdata)
@@ -601,7 +596,7 @@ void Graphics::present(void *screenshotCallbackdata)
 
 	deprecations.draw(this);
 
-	submitGpuCommands(SUBMIT_PRESENT, screenshotCallbackdata);
+	StrongRef<image::ImageData> screenshotImageData = submitGpuCommands(SUBMIT_PRESENT);
 
 	VkResult result = VK_SUCCESS;
 
@@ -671,6 +666,16 @@ void Graphics::present(void *screenshotCallbackdata)
 	realFrameIndex++;
 
 	beginFrame();
+
+	if (screenshotImageData)
+	{
+		for (int i = 0; i < pendingScreenshotCallbacks.size(); i++)
+		{
+			const auto &info = pendingScreenshotCallbacks[i];
+			info.callback(&info, screenshotImageData, screenshotCallbackdata);
+		}
+		pendingScreenshotCallbacks.clear();
+	}
 }
 
 void Graphics::backbufferChanged(const BackbufferSettings &settings)
@@ -838,7 +843,8 @@ void Graphics::initCapabilities()
 	capabilities.features[FEATURE_INDIRECT_DRAW] = true;
 	capabilities.features[FEATURE_VERTEX_WRITE] = features.vertexPipelineStoresAndAtomics;
 	capabilities.features[FEATURE_PIXEL_WRITE] = features.fragmentStoresAndAtomics;
-	static_assert(FEATURE_MAX_ENUM == 15, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
+	capabilities.features[FEATURE_SHADER_LAYER] = optionalDeviceExtensions.shaderOutputLayer;
+	static_assert(FEATURE_MAX_ENUM == 16, "Graphics::initCapabilities must be updated when adding a new graphics feature!");
 
 	VkPhysicalDeviceProperties properties;
 	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
@@ -957,8 +963,8 @@ void Graphics::draw(const DrawCommand &cmd)
 {
 	prepareDraw(cmd.attributesID, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
-	VkAccessFlags dstAccessMask;
-	VkPipelineStageFlags dstStageMask;
+	VkAccessFlags dstAccessMask = 0;
+	VkPipelineStageFlags dstStageMask = 0;
 	if (!prepareBarrier(dstAccessMask, dstStageMask))
 		return;
 
@@ -989,8 +995,8 @@ void Graphics::draw(const DrawIndexedCommand &cmd)
 {
 	prepareDraw(cmd.attributesID, *cmd.buffers, cmd.texture, cmd.primitiveType, cmd.cullMode);
 
-	VkAccessFlags dstAccessMask;
-	VkPipelineStageFlags dstStageMask;
+	VkAccessFlags dstAccessMask = 0;
+	VkPipelineStageFlags dstStageMask = 0;
 	if (!prepareBarrier(dstAccessMask, dstStageMask))
 		return;
 
@@ -1031,8 +1037,8 @@ void Graphics::drawQuads(int start, int count, VertexAttributesID attributesID, 
 
 	prepareDraw(attributesID, buffers, texture, PRIMITIVE_TRIANGLES, CULL_NONE);
 
-	VkAccessFlags dstAccessMask;
-	VkPipelineStageFlags dstStageMask;
+	VkAccessFlags dstAccessMask = 0;
+	VkPipelineStageFlags dstStageMask = 0;
 	if (!prepareBarrier(dstAccessMask, dstStageMask))
 		return;
 
@@ -1890,6 +1896,10 @@ static void findOptionalDeviceExtensions(VkPhysicalDevice physicalDevice, Option
 			optionalDeviceExtensions.shaderFloatControls = true;
 		if (strcmp(extension.extensionName, VK_KHR_SPIRV_1_4_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.spirv14 = true;
+#ifdef VK_EXT_shader_viewport_index_layer
+		if (strcmp(extension.extensionName, VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME) == 0)
+			optionalDeviceExtensions.shaderOutputLayer = true;
+#endif
 #ifdef VK_EXT_full_screen_exclusive
 		if (strcmp(extension.extensionName, VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME) == 0)
 			optionalDeviceExtensions.fullscreenExclusive = true;
@@ -1963,6 +1973,10 @@ void Graphics::createLogicalDevice()
 		enabledExtensions.push_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
 	if (optionalDeviceExtensions.spirv14)
 		enabledExtensions.push_back(VK_KHR_SPIRV_1_4_EXTENSION_NAME);
+#ifdef VK_EXT_shader_viewport_index_layer
+	if (optionalDeviceExtensions.shaderOutputLayer)
+		enabledExtensions.push_back(VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME);
+#endif
 #ifdef VK_EXT_full_screen_exclusive
 	if (optionalDeviceExtensions.fullscreenExclusive)
 		enabledExtensions.push_back(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME);
@@ -2401,7 +2415,7 @@ VkFramebuffer Graphics::createFramebuffer(FramebufferConfiguration &configuratio
 	createInfo.pAttachments = attachments.data();
 	createInfo.width = configuration.staticData.width;
 	createInfo.height = configuration.staticData.height;
-	createInfo.layers = 1;
+	createInfo.layers = (uint32_t)std::max(configuration.staticData.layers, 1);
 
 	VkFramebuffer frameBuffer;
 	VkResult result = vkCreateFramebuffer(device, &createInfo, nullptr, &frameBuffer);
@@ -2958,27 +2972,32 @@ void Graphics::setRenderPass(const RenderTargets &rts, int pixelw, int pixelh)
 	for (const auto &color : rts.colors)
 	{
 		auto tex = (Texture*)color.texture;
+		int slice = rts.shaderLayer ? Texture::RENDER_TARGET_VIEW_ALL_LAYERS : color.slice;
 		if (tex->getMSAA() > 1)
 		{
-			configuration.colorViews.push_back(tex->getMSAARenderTargetView(color.mipmap, color.slice));
-			configuration.colorResolveViews.push_back(tex->getRenderTargetView(color.mipmap, color.slice));
+			configuration.colorViews.push_back(tex->getMSAARenderTargetView(color.mipmap, slice));
+			configuration.colorResolveViews.push_back(tex->getRenderTargetView(color.mipmap, slice));
 		}
 		else
 		{
-			configuration.colorViews.push_back(tex->getRenderTargetView(color.mipmap, color.slice));
+			configuration.colorViews.push_back(tex->getRenderTargetView(color.mipmap, slice));
 		}
 	}
 	if (rts.depthStencil.texture != nullptr)
 	{
 		auto tex = (Texture*)rts.depthStencil.texture;
+		int slice = rts.shaderLayer ? Texture::RENDER_TARGET_VIEW_ALL_LAYERS : rts.depthStencil.slice;
 		if (tex->getMSAA() > 1)
-			configuration.staticData.depthView = tex->getMSAARenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
+			configuration.staticData.depthView = tex->getMSAARenderTargetView(rts.depthStencil.mipmap, slice);
 		else
-			configuration.staticData.depthView = tex->getRenderTargetView(rts.depthStencil.mipmap, rts.depthStencil.slice);
+			configuration.staticData.depthView = tex->getRenderTargetView(rts.depthStencil.mipmap, slice);
 	}
 
 	configuration.staticData.width = static_cast<uint32_t>(pixelw);
 	configuration.staticData.height = static_cast<uint32_t>(pixelh);
+
+	RenderTarget firstTarget = rts.getFirstTarget();
+	configuration.staticData.layers = rts.shaderLayer ? firstTarget.texture->getSliceCount(firstTarget.mipmap) : 1;
 
 	uint32_t numClearValues = static_cast<uint32_t>(rts.colors.size() + 1);
 	renderPassState.clearColors.resize(numClearValues);

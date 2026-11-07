@@ -819,6 +819,7 @@ id<MTLRenderPipelineState> Shader::getCachedRenderPipeline(graphics::Graphics *g
 	desc.vertexFunction = functions[SHADERSTAGE_VERTEX];
 	desc.fragmentFunction = functions[SHADERSTAGE_PIXEL];
 
+	desc.inputPrimitiveTopology = (MTLPrimitiveTopologyClass)key.topology;
 	desc.rasterSampleCount = std::max((int) key.msaa, 1);
 
 	for (int i = 0; i < MAX_COLOR_RENDER_TARGETS; i++)

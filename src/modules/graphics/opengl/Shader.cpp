@@ -316,6 +316,15 @@ bool Shader::loadVolatile()
 			glBindAttribLocation(program, i, (const GLchar *) name);
 	}
 
+	if (GLAD_VERSION_3_0)
+	{
+		for (auto &i: reflection.fragmentOutputs)
+		{
+			FragmentOutput &fragmentOutput = i.second;
+			glBindFragDataLocation(program, fragmentOutput.location, fragmentOutput.name.c_str());
+		}
+	}
+
 	glLinkProgram(program);
 
 	GLint status;

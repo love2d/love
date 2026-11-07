@@ -40,6 +40,7 @@ class Texture final
 	, public Volatile
 {
 public:
+	static const int RENDER_TARGET_VIEW_ALL_LAYERS = -1;
 
 	Texture(love::graphics::Graphics *gfx, const Settings &settings, const Slices *data);
 	Texture(love::graphics::Graphics *gfx, love::graphics::Texture *base, const Texture::ViewSettings &viewsettings);
@@ -73,6 +74,11 @@ public:
 	static VkClearColorValue getClearColor(love::graphics::Texture *texture, const ColorD &color);
 
 private:
+	struct VulkanRenderTargetImageView
+	{
+		std::vector<VkImageView> imageViews;
+		VkImageView multiImageView = VK_NULL_HANDLE;
+	};
 
 	struct VulkanImageData
 	{
@@ -80,7 +86,7 @@ private:
 		VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
 		VmaAllocation allocation = VK_NULL_HANDLE;
 		VkImageView imageView = VK_NULL_HANDLE;
-		std::vector<std::vector<VkImageView>> renderTargetImageViews;
+		std::vector<VulkanRenderTargetImageView> renderTargetImageViews;
 	};
 
 	void createTextureImageView();

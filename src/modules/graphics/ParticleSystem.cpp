@@ -1038,7 +1038,7 @@ void ParticleSystem::draw(Graphics *gfx, const Matrix4 &m)
 		Shader::attachDefault(Shader::STANDARD_DEFAULT);
 
 	if (Shader::current)
-		Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, texture);
+		Shader::current->validateDrawState(gfx, PRIMITIVE_TRIANGLES, texture);
 
 	const Vector2 *positions = texture->getQuad()->getVertexPositions();
 	const Vector2 *texcoords = texture->getQuad()->getVertexTexCoords();

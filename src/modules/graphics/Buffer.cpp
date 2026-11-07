@@ -44,10 +44,10 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 	, immutable(false)
 {
 	if (size == 0 && arraylength == 0)
-		throw love::Exception("Size or array length must be specified.");
+		throw love::Exception("Buffer size or array length must be greater than 0.");
 
 	if (bufferformat.size() == 0)
-		throw love::Exception("Data format must contain values.");
+		throw love::Exception("Buffer data format must contain values.");
 
 	const auto &caps = gfx->getCapabilities();
 
@@ -117,8 +117,8 @@ Buffer::Buffer(Graphics *gfx, const Settings &settings, const std::vector<DataDe
 
 		if (texelbuffer)
 		{
-			if (format != bufferformat[0].format)
-				throw love::Exception("All values in a texel buffer must have the same format.");
+			if (bufferformat.size() > 1)
+				throw love::Exception("Texel buffers only support a single value per element.");
 
 			if (decl.arrayLength > 0)
 				throw love::Exception("Arrays are not supported in texel buffers.");

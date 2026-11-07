@@ -620,6 +620,9 @@ std::string Shader::createShaderStageCode(Graphics *gfx, ShaderStageType stage, 
 
 	if (gfx->isUsingNoTextureCubeShadowBiasHack())
 		ss << "#define LOVE_NO_TEXTURECUBESHADOWBIAS_HACK 1\n";
+	
+	if (gfx->getCapabilities().features[Graphics::FEATURE_SHADER_LAYER] && stage == SHADERSTAGE_VERTEX)
+		ss << "#extension GL_ARB_shader_viewport_layer_array : enable\n";
 
 	for (const auto &def : options.defines)
 		ss << "#define " + def.first + " " + def.second + "\n";
@@ -958,7 +961,7 @@ bool Shader::isResourceBaseTypeCompatible(DataBaseType a, DataBaseType b)
 	return false;
 }
 
-void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
+void Shader::validateDrawState(Graphics *gfx, PrimitiveType primtype, Texture *maintex) const
 {
 	if ((primtype == PRIMITIVE_POINTS) != reflection.usesPointSize)
 	{
@@ -966,6 +969,26 @@ void Shader::validateDrawState(PrimitiveType primtype, Texture *maintex) const
 			throw love::Exception("The active shader can only be used to draw points.");
 		else
 			throw love::Exception("The gl_PointSize variable must be set in a vertex shader when drawing points.");
+	}
+
+	auto rts = gfx->getRenderTargets();
+	bool shaderUsesLayerRendering = reflection.usesLayer;
+	bool renderTargetUsesLayerRendering = rts.shaderLayer;
+	if (shaderUsesLayerRendering != renderTargetUsesLayerRendering)
+		throw love::Exception("Both the gl_Layer variable must be written to in the vertex shader and the field 'shaderlayer' must be true when binding a canvas to use layer rendering.");
+	
+	for (int i = 0; i < rts.colors.size(); ++i)
+	{
+		Texture *attachment = rts.colors.at(i).texture;
+		int attachmentPixelComponentCount = getPixelFormatColorComponents(attachment->getPixelFormat());
+
+		auto iter = reflection.fragmentOutputs.find(i);
+		if (iter == reflection.fragmentOutputs.end())
+			throw love::Exception("Missing pixel shader output for canvas at index %d", i + 1);
+		
+		const FragmentOutput& output = iter->second;
+		if (output.componentCount < attachmentPixelComponentCount)
+			throw love::Exception("Pixel shader output '%s' has only writes %d components but canvas at index %d has %d components", output.name.c_str(), output.componentCount, i + 1, attachmentPixelComponentCount);
 	}
 
 	if (maintex == nullptr)
@@ -1253,12 +1276,21 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 	for (int i = 0; i < SHADERSTAGE_MAX_ENUM; i++)
 	{
 		if (stages[i] != nullptr)
+		{
+			stages[i]->getGLSLangValidationShader()->setAutoMapLocations(true);
 			program.addShader(stages[i]->getGLSLangValidationShader());
+		}
 	}
 
 	if (!program.link((EShMessages)(EShMsgValidateCrossStageIO | EshMsgOverlappingLocations)))
 	{
 		err = "Cannot compile shader:\n\n" + std::string(program.getInfoLog()) + "\n" + std::string(program.getInfoDebugLog());
+		return false;
+	}
+
+	if (!program.mapIO())
+	{
+		err = "Could not map shader input/outputs.";
 		return false;
 	}
 
@@ -1273,6 +1305,7 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 	{
 		// NOTE: this doesn't check whether the use affects final output...
 		reflection.usesPointSize = vertintermediate->inIoAccessed("gl_PointSize");
+		reflection.usesLayer = vertintermediate->inIoAccessed("gl_Layer");
 	}
 
 	if (stages[SHADERSTAGE_COMPUTE] != nullptr)
@@ -1302,6 +1335,38 @@ bool Shader::validateInternal(StrongRef<ShaderStage> stages[], std::string &err,
 			location = -1;
 
 		reflection.vertexInputs[info.name] = location;
+	}
+
+	for (int i = 0; i < program.getNumPipeOutputs(); ++i)
+	{
+		const glslang::TObjectReflection &info = program.getPipeOutput(i);
+
+		if (info.name.rfind("gl_", 0) == 0)
+			continue;
+
+		int location = info.layoutLocation();
+		if (location == glslang::TQualifier::layoutLocationEnd)
+		{
+			err = "Pixel output " + info.name + " does not have 'location' layout qualifier in pixel shader code";
+			return false;
+		}
+
+		for (int j = 0; j < info.size; ++j)
+		{
+			FragmentOutput output;
+			output.name = info.name;
+			output.location = location + j;
+			output.componentCount = info.getType()->getVectorSize();
+
+			auto iter = reflection.fragmentOutputs.find(output.location);
+			if (iter != reflection.fragmentOutputs.end())
+			{
+				err = "Pixel output " + info.name + " has same 'location' layout qualifier as " + iter->second.name;
+				return false;
+			}
+
+			reflection.fragmentOutputs[output.location] = output;
+		}
 	}
 
 	reflection.textureCount = 0;

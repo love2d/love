@@ -393,7 +393,7 @@ void SpriteBatch::draw(Graphics *gfx, const Matrix4 &m)
 	}
 
 	if (Shader::current)
-		Shader::current->validateDrawState(PRIMITIVE_TRIANGLES, texture);
+		Shader::current->validateDrawState(gfx, PRIMITIVE_TRIANGLES, texture);
 
 	flush(); // Upload any modified sprite data to the GPU.
 

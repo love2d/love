@@ -180,6 +180,8 @@ double luax_numberflag(lua_State *L, int table_index, const char *key, double de
 bool luax_checkboolflag(lua_State *L, int table_index, const char *key);
 int luax_checkintflag(lua_State *L, int table_index, const char *key);
 
+void luax_checkunsetflag(lua_State *L, int table_index, const char *key);
+
 /**
  * Convert the value at the specified index to an Lua number, and then
  * convert to a float.

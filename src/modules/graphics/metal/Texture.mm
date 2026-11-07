@@ -81,6 +81,17 @@ Texture::Texture(love::graphics::Graphics *gfxbase, id<MTLDevice> device, const 
 		}
 	}
 
+	if (@available(macOS 14.0, iOS 17.0, *))
+	{
+		// FIXME: This is imperfect, r32i views of r32f source textures aren't covered
+		// (and don't appear to be supported in atomic ops in general, on Metal).
+		// Note: This disables lossless compression, but according to the docs
+		// MTLTextureUsageShaderWrite does as well, so it would already be off in this
+		// situation.
+		if (computeWrite && gfx->isPixelFormatSupported(format, PIXELFORMATUSAGEFLAGS_SHADERATOMICS))
+			desc.usage |= MTLTextureUsageShaderAtomic;
+	}
+
 	texture = [device newTextureWithDescriptor:desc];
 
 	if (texture == nil)

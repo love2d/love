@@ -64,10 +64,7 @@ FileData *File::read(int64 size)
 	int64 bytesRead = read(fileData->getData(), size);
 
 	if (bytesRead < 0 || (bytesRead == 0 && bytesRead != size))
-	{
-		delete fileData;
 		throw love::Exception("Could not read from file.");
-	}
 
 	if (bytesRead < size)
 	{

@@ -176,6 +176,9 @@ float Source::getMinVolume() const
 
 void Source::setMaxVolume(float volume)
 {
+	#ifndef AL_SOFT_gain_clamp_ex
+		volume = std::min(volume, 1.0f);
+	#endif
 	this->maxVolume = volume;
 }
 

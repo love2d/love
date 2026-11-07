@@ -141,7 +141,7 @@ int w_newPolygonBody(lua_State *L)
 	if (!Body::getConstant(typestr, btype))
 		return luax_enumerror(L, "Body type", Body::getConstants(btype), typestr);
 
-	int argc = lua_gettop(L);
+	int argc = lua_gettop(L) - 2;
 
 	bool istable = lua_istable(L, 3);
 	if (istable)

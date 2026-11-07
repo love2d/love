@@ -165,6 +165,7 @@ public:
 		FEATURE_INDIRECT_DRAW,
 		FEATURE_VERTEX_WRITE,
 		FEATURE_PIXEL_WRITE,
+		FEATURE_SHADER_LAYER,
 		FEATURE_MAX_ENUM
 	};
 
@@ -403,10 +404,12 @@ public:
 		std::vector<RenderTarget> colors;
 		RenderTarget depthStencil;
 		uint32 temporaryRTFlags;
+		bool shaderLayer;
 
 		RenderTargets()
 			: depthStencil(nullptr)
 			, temporaryRTFlags(0)
+			, shaderLayer(false)
 		{}
 
 		const RenderTarget &getFirstTarget() const
@@ -426,7 +429,7 @@ public:
 					return false;
 			}
 
-			if (depthStencil != other.depthStencil || temporaryRTFlags != other.temporaryRTFlags)
+			if (depthStencil != other.depthStencil || temporaryRTFlags != other.temporaryRTFlags || shaderLayer != other.shaderLayer)
 				return false;
 
 			return true;
@@ -438,10 +441,12 @@ public:
 		std::vector<RenderTargetStrongRef> colors;
 		RenderTargetStrongRef depthStencil;
 		uint32 temporaryRTFlags;
+		bool shaderLayer;
 
 		RenderTargetsStrongRef()
 			: depthStencil(nullptr)
 			, temporaryRTFlags(0)
+			, shaderLayer(false)
 		{}
 
 		const RenderTargetStrongRef &getFirstTarget() const

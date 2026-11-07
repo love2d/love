@@ -268,7 +268,7 @@ public:
 	void setVideoTextures(Texture *ytexture, Texture *cbtexture, Texture *crtexture);
 
 	const UniformInfo *getMainTextureInfo() const;
-	void validateDrawState(PrimitiveType primtype, Texture *maintexture) const;
+	void validateDrawState(Graphics *gfx, PrimitiveType primtype, Texture *maintexture) const;
 
 	void getLocalThreadgroupSize(int *x, int *y, int *z);
 
@@ -298,6 +298,12 @@ public:
 	STRINGMAP_CLASS_DECLARE(Feature);
 
 protected:
+	struct FragmentOutput
+	{
+		int location;
+		int componentCount;
+		std::string name;
+	};
 
 	struct Reflection
 	{
@@ -310,6 +316,7 @@ protected:
 		std::map<std::string, UniformInfo> localUniforms;
 
 		std::map<std::string, UniformInfo *> allUniforms;
+		std::map<int, FragmentOutput> fragmentOutputs;
 
 		std::map<std::string, std::vector<LocalUniformValue>> localUniformInitializerValues;
 
@@ -320,6 +327,7 @@ protected:
 
 		int localThreadgroupSize[3];
 		bool usesPointSize;
+		bool usesLayer;
 	};
 
 	std::string getShaderStageDebugName(ShaderStageType stage) const;

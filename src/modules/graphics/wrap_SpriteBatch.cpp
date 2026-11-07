@@ -132,7 +132,7 @@ int w_SpriteBatch_clear(lua_State *L)
 int w_SpriteBatch_flush(lua_State *L)
 {
 	SpriteBatch *t = luax_checkspritebatch(L, 1);
-	t->flush();
+	luax_catchexcept(L, [&]() { t->flush(); });
 	return 0;
 }
 
