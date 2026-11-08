@@ -28,6 +28,11 @@
 // treat adjacent segments with angles between their directions <5 degree as straight
 static const float LINES_PARALLEL_EPS = 0.05f;
 
+// Maximum ratio of a miter join's length to the half line width. Sharper
+// corners give a longer miter, so past this ratio the join becomes a bevel to
+// avoid a spike. 10 is the default used by HTML canvas and PostScript.
+static const float MITER_LIMIT = 10.0f;
+
 namespace love
 {
 namespace graphics
@@ -133,6 +138,36 @@ void NoneJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Vec
 }
 
 
+/** Emit the four boundary normals of a bevel join.
+ *
+ * The outer edge is cut flat using the two segment normals. The inner edge
+ * normally meets at the intersection point d, but when the two segments are
+ * short d lands far past the corner and would fold the strip into a spike, so
+ * in that case the inner corner is cut flat too (an inner bevel), which keeps
+ * each segment at its full width. Shared by the bevel join and by the miter
+ * join when it falls back to a bevel.
+ */
+static void addBevelNormals(std::vector<Vector2> &normals, float det, const Vector2 &d,
+                            const Vector2 &segmentNormal, const Vector2 &newSegmentNormal,
+                            float segmentLength, float newSegmentLength)
+{
+	bool innerFits = d.getLength() <= std::min(segmentLength, newSegmentLength);
+	if (det > 0) // 'left' turn -> inner edge on the +normal side
+	{
+		normals.push_back(innerFits ? d : segmentNormal);
+		normals.push_back(-segmentNormal);
+		normals.push_back(innerFits ? d : newSegmentNormal);
+		normals.push_back(-newSegmentNormal);
+	}
+	else
+	{
+		normals.push_back(segmentNormal);
+		normals.push_back(innerFits ? -d : -segmentNormal);
+		normals.push_back(newSegmentNormal);
+		normals.push_back(innerFits ? -d : -newSegmentNormal);
+	}
+}
+
 /** Calculate line boundary points.
  *
  * Sketch:
@@ -214,8 +249,23 @@ void MiterJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 		// cramers rule
 		float lambda = Vector2::cross((newSegmentNormal - segmentNormal), newSegment) / det;
 		Vector2 d = segmentNormal + segment * lambda;
-		normals.push_back(d);
-		normals.push_back(-d);
+
+		// a sharp corner makes the miter grow without bound, and short segments
+		// push it past the neighboring vertices; either way it becomes a long
+		// spike, so fall back to a bevel join
+		float miterLength = d.getLength();
+		if (miterLength > MITER_LIMIT * halfwidth
+			|| miterLength > std::min(segmentLength, newSegmentLength))
+		{
+			anchors.push_back(pointA);
+			anchors.push_back(pointA);
+			addBevelNormals(normals, det, d, segmentNormal, newSegmentNormal, segmentLength, newSegmentLength);
+		}
+		else
+		{
+			normals.push_back(d);
+			normals.push_back(-d);
+		}
 	}
 
 	segment = newSegment;
@@ -246,6 +296,11 @@ void BevelJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 {
 	Vector2 newSegment = (pointB - pointA);
 	float newSegmentLength = newSegment.getLength();
+	if (newSegmentLength == 0.0f)
+	{
+		// degenerate segment, skip it
+		return;
+	}
 
 	float det = Vector2::cross(segment, newSegment);
 	if (fabs(det) / (segmentLength * newSegmentLength) < LINES_PARALLEL_EPS)
@@ -281,20 +336,8 @@ void BevelJoinPolyline::renderEdge(std::vector<Vector2> &anchors, std::vector<Ve
 	anchors.push_back(pointA);
 	anchors.push_back(pointA);
 	anchors.push_back(pointA);
-	if (det > 0) // 'left' turn -> intersection on the top
-	{
-		normals.push_back(d);
-		normals.push_back(-segmentNormal);
-		normals.push_back(d);
-		normals.push_back(-newSegmentNormal);
-	}
-	else
-	{
-		normals.push_back(segmentNormal);
-		normals.push_back(-d);
-		normals.push_back(newSegmentNormal);
-		normals.push_back(-d);
-	}
+	addBevelNormals(normals, det, d, segmentNormal, newSegmentNormal, segmentLength, newSegmentLength);
+
 	segment = newSegment;
 	segmentLength = newSegmentLength;
 	segmentNormal = newSegmentNormal;
