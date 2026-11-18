@@ -1,7 +1,7 @@
 # Lövetest
 Test suite for the [Löve](https://github.com/love2d/love) APIs, based off of [this issue](https://github.com/love2d/love/issues/1745).
 
-Currently written for [Löve 12](https://github.com/love2d/love/tree/12.0-development), which is still in development. As such the test suite may fail if you try to run it with an older version of Löve due to it trying to call methods that don't exist.
+Currently written for [Löve 12](https://github.com/love2d/love/tree/main), which is still in development. As such the test suite may fail if you try to run it with an older version of Löve due to it trying to call methods that don't exist.
 
 While the test suite is part of the main Löve repo, the test suite has it's own repo [here](https://github.com/ellraiser/love-test) so that it can be used with other builds like [love-potion](https://github.com/lovebrew/lovepotion). If you would like to contribute to the test suite please raise a PR on the [love-test](https://github.com/ellraiser/love-test) repo.
 
