@@ -50,6 +50,12 @@
 		217DFC101D9F6D490055D849 /* url.lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD41D9F6D490055D849 /* url.lua.h */; };
 		217DFC111D9F6D490055D849 /* usocket.c in Sources */ = {isa = PBXBuildFile; fileRef = 217DFBD51D9F6D490055D849 /* usocket.c */; };
 		217DFC121D9F6D490055D849 /* usocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217DFBD61D9F6D490055D849 /* usocket.h */; };
+		645E8E7530AFBA49007006A5 /* Speech.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 645E8E7130AFBA49007006A5 /* Speech.cpp */; };
+		645E8E7630AFBA49007006A5 /* wrap_Speech.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 645E8E7330AFBA49007006A5 /* wrap_Speech.cpp */; };
+		645E8E7730AFBA49007006A5 /* Speech.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 645E8E7130AFBA49007006A5 /* Speech.cpp */; };
+		645E8E7830AFBA49007006A5 /* wrap_Speech.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 645E8E7330AFBA49007006A5 /* wrap_Speech.cpp */; };
+		645E8E7930AFBA49007006A5 /* wrap_Speech.h in Headers */ = {isa = PBXBuildFile; fileRef = 645E8E7230AFBA49007006A5 /* wrap_Speech.h */; };
+		645E8E7A30AFBA49007006A5 /* Speech.h in Headers */ = {isa = PBXBuildFile; fileRef = 645E8E7030AFBA49007006A5 /* Speech.h */; };
 		64928BD0309D110C001B6663 /* eclair.c in Sources */ = {isa = PBXBuildFile; fileRef = 64928BCD309D110C001B6663 /* eclair.c */; };
 		64928BD1309D110C001B6663 /* eclair_apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 64928BCE309D110C001B6663 /* eclair_apple.m */; };
 		64928BD2309D110C001B6663 /* eclair.c in Sources */ = {isa = PBXBuildFile; fileRef = 64928BCD309D110C001B6663 /* eclair.c */; };
@@ -1427,6 +1433,10 @@
 		217DFBD41D9F6D490055D849 /* url.lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = url.lua.h; sourceTree = "<group>"; };
 		217DFBD51D9F6D490055D849 /* usocket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = usocket.c; sourceTree = "<group>"; };
 		217DFBD61D9F6D490055D849 /* usocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = usocket.h; sourceTree = "<group>"; };
+		645E8E7030AFBA49007006A5 /* Speech.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Speech.h; sourceTree = "<group>"; };
+		645E8E7130AFBA49007006A5 /* Speech.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Speech.cpp; sourceTree = "<group>"; };
+		645E8E7230AFBA49007006A5 /* wrap_Speech.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wrap_Speech.h; sourceTree = "<group>"; };
+		645E8E7330AFBA49007006A5 /* wrap_Speech.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = wrap_Speech.cpp; sourceTree = "<group>"; };
 		64928BCC309D110C001B6663 /* eclair.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = eclair.h; path = eclair/eclair.h; sourceTree = "<group>"; };
 		64928BCD309D110C001B6663 /* eclair.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = eclair.c; path = eclair/eclair.c; sourceTree = "<group>"; };
 		64928BCE309D110C001B6663 /* eclair_apple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = eclair_apple.m; path = eclair/eclair_apple.m; sourceTree = "<group>"; };
@@ -2420,6 +2430,17 @@
 			sourceTree = "<group>";
 			usesTabs = 1;
 		};
+		645E8E7430AFBA49007006A5 /* speech */ = {
+			isa = PBXGroup;
+			children = (
+				645E8E7030AFBA49007006A5 /* Speech.h */,
+				645E8E7130AFBA49007006A5 /* Speech.cpp */,
+				645E8E7230AFBA49007006A5 /* wrap_Speech.h */,
+				645E8E7330AFBA49007006A5 /* wrap_Speech.cpp */,
+			);
+			path = speech;
+			sourceTree = "<group>";
+		};
 		64928BCB309D10F1001B6663 /* eclair */ = {
 			isa = PBXGroup;
 			children = (
@@ -2778,6 +2799,7 @@
 		FA0B7B3C1A95902C000E1D17 /* modules */ = {
 			isa = PBXGroup;
 			children = (
+				645E8E7430AFBA49007006A5 /* speech */,
 				FA0B7B3D1A95902C000E1D17 /* audio */,
 				FACA02DF1F5E396B0084B28F /* data */,
 				FA0B7B521A95902C000E1D17 /* event */,
@@ -4605,6 +4627,8 @@
 				FA0B7DE41A95902C000E1D17 /* wrap_RandomGenerator.h in Headers */,
 				FAC8E55023B01C0D007B07C8 /* macos.h in Headers */,
 				FA0B7E0B1A95902C000E1D17 /* EdgeShape.h in Headers */,
+				645E8E7930AFBA49007006A5 /* wrap_Speech.h in Headers */,
+				645E8E7A30AFBA49007006A5 /* Speech.h in Headers */,
 				FA0B7EDA1A95902D000E1D17 /* wrap_Timer.h in Headers */,
 				FA0B7EB11A95902C000E1D17 /* System.h in Headers */,
 				FA0B7E1A1A95902C000E1D17 /* MotorJoint.h in Headers */,
@@ -4822,6 +4846,8 @@
 				FADF54351E3DAE6E00012CC0 /* wrap_SpriteBatch.cpp in Sources */,
 				FA4F2BB51DE1E4C300CA37D7 /* wrap_RecordingDevice.cpp in Sources */,
 				FA4F2C111DE936FE00CA37D7 /* unix.c in Sources */,
+				645E8E7530AFBA49007006A5 /* Speech.cpp in Sources */,
+				645E8E7630AFBA49007006A5 /* wrap_Speech.cpp in Sources */,
 				FA1BA0A31E16D97500AA2803 /* wrap_Font.cpp in Sources */,
 				FABDA9842552448200B5C523 /* b2_chain_polygon_contact.cpp in Sources */,
 				FADF53FE1E3D74F200012CC0 /* TextBatch.cpp in Sources */,
@@ -5258,6 +5284,8 @@
 				FACA02EE1F5E396B0084B28F /* Compressor.cpp in Sources */,
 				FAF140801E20934C00F898D2 /* parseConst.cpp in Sources */,
 				FA4B66C91ABBCF1900558F15 /* Timer.cpp in Sources */,
+				645E8E7730AFBA49007006A5 /* Speech.cpp in Sources */,
+				645E8E7830AFBA49007006A5 /* wrap_Speech.cpp in Sources */,
 				FA0B7E911A95902C000E1D17 /* ModPlugDecoder.cpp in Sources */,
 				FA0B7E511A95902C000E1D17 /* wrap_FrictionJoint.cpp in Sources */,
 				FABDA9832552448200B5C523 /* b2_chain_polygon_contact.cpp in Sources */,
