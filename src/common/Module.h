@@ -53,6 +53,7 @@ public:
 		M_PHYSICS,
 		M_SENSOR,
 		M_SOUND,
+		M_SPEECH,
 		M_SYSTEM,
 		M_THREAD,
 		M_TIMER,
