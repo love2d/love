@@ -1081,6 +1081,20 @@ target_link_libraries(love_sound INTERFACE
 )
 
 #
+# love.speech
+#
+
+add_library(love_speech STATIC
+	src/modules/speech/Speech.cpp
+	src/modules/speech/Speech.h
+	src/modules/speech/wrap_Speech.cpp
+	src/modules/speech/wrap_Speech.h
+)
+target_link_libraries(love_speech PUBLIC
+	lovedep::Lua
+)
+
+#
 # love.system
 #
 
@@ -1937,6 +1951,7 @@ set(LIBLOVE_DEPENDENCIES
 	love_physics
 	love_sensor
 	love_sound
+	love_speech
 	love_system
 	love_thread
 	love_timer
